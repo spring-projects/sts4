@@ -76,11 +76,15 @@ public class ModulithService {
 	private static final String CMD_LIST_MODULITH_PROJECTS = "sts/modulith/projects";
 	
 	private final ExecutorService executor;
+	private final ProjectObserver.Listener projectListener;
+	private final ProjectObserver projectObserver;
+	private final JavaProjectFinder projectFinder;
 	
 	private SimpleLanguageServer server;
 	private SpringSymbolIndex springIndex;
 	private BootJavaReconcileEngine reconciler;
 	private BootJavaConfig config;
+	private boolean autoTrackingProjects;
 	
 	private Map<URI, AppModules> cache;
 	private Map<URI, CompletableFuture<Boolean>> metadataRequested;
@@ -94,6 +98,8 @@ public class ModulithService {
 			BootJavaReconcileEngine reconciler,
 			BootJavaConfig config
 	) {
+		this.projectFinder = projectFinder;
+		this.projectObserver = projectObserver;
 		this.config = config;
 		this.cache = new ConcurrentHashMap<>();
 		this.metadataRequested = new ConcurrentHashMap<>();
@@ -102,8 +108,9 @@ public class ModulithService {
 		this.springIndex = springIndex;
 		this.reconciler = reconciler;
 		this.executor = Executors.newCachedThreadPool();
+		this.autoTrackingProjects = false;
 		
-		projectObserver.addListener(new ProjectObserver.Listener() {
+		this.projectListener = new ProjectObserver.Listener() {
 			
 			@Override
 			public void deleted(IJavaProject project) {
@@ -113,13 +120,7 @@ public class ModulithService {
 			
 			@Override
 			public void created(IJavaProject project) {
-				if (isModulithDependentProject(project)) {
-					if (anyClassFilesPresent(project)) {
-						requestMetadata(project, DEBOUNCE_TIME).thenAccept(res -> startListening(project));
-					} else {
-						startListening(project);
-					}
-				}
+				projectAdded(project);
 			}
 			
 			@Override
@@ -135,7 +136,7 @@ public class ModulithService {
 					}
 				}
 			}
-		});
+		};
 		
 		server.onCommand(CMD_MODULITH_REFRESH, params -> {
 			String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
@@ -150,6 +151,31 @@ public class ModulithService {
 			);
 		});
 		
+		config.addListener(v -> setAutoTrackingProjects(config.isModulithAutoProjectTrackingEnabled()));
+		
+	}
+	
+	private void projectAdded(IJavaProject project) {
+		if (isModulithDependentProject(project)) {
+			if (anyClassFilesPresent(project)) {
+				requestMetadata(project, DEBOUNCE_TIME).thenAccept(res -> startListening(project));
+			} else {
+				startListening(project);
+			}
+		}
+	}
+	
+	private void setAutoTrackingProjects(boolean autoTrackingProjects) {
+		if (this.autoTrackingProjects != autoTrackingProjects) {
+			this.autoTrackingProjects = autoTrackingProjects;
+			if (autoTrackingProjects) {
+				projectObserver.addListener(projectListener);
+				projectFinder.all().forEach(this::projectAdded);
+			} else {
+				projectObserver.removeListener(projectListener);
+				projectFinder.all().forEach(this::stopListening);
+			}
+		}
 	}
 	
 	private boolean startListening(IJavaProject project) {

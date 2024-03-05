@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -42,6 +42,9 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		addField(new BooleanFieldEditor(Constants.PREF_SCAN_JAVA_TEST_SOURCES, "Scan Java test sources", fieldEditorParent));
 		
 		addField(new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", fieldEditorParent));
+
+		// Experimental Modulith support
+		addField(new BooleanFieldEditor(Constants.PREF_MODULITH, "Spring Boot Modulith automatic project tracking and metadata update", fieldEditorParent));
 		
 		Composite c = new Composite(fieldEditorParent, SWT.NONE);
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(c);

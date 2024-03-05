@@ -60,6 +60,8 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 				"org.springframework.rewrite.test.*",
 				"rewrite.test.*"
 		}));
+		
+		preferenceStore.setDefault(Constants.PREF_MODULITH, true);
 	}
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -212,6 +212,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("validation", validation);
 		bootJavaObj.put("remote-apps", getAllRemoteApps());
+		bootJavaObj.put("modulith-project-tracking", preferenceStore.getBoolean(Constants.PREF_MODULITH));
 		
 		bootJavaObj.put("rewrite", Map.of(
 				"recipe-filters", StringListEditor.decode(preferenceStore.getString(Constants.PREF_REWRITE_RECIPE_FILTERS)),
