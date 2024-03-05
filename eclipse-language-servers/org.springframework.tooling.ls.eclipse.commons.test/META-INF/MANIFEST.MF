@@ -19,4 +19,5 @@ Require-Bundle: org.junit,
 Import-Package: com.google.gson,
  com.google.gson.annotations,
  com.google.gson.reflect,
- com.google.gson.stream
+ com.google.gson.stream,
+ org.apache.commons.io
