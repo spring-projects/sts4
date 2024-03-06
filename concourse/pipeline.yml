@@ -268,19 +268,6 @@ resources:
 #     secret_access_key: ((s3_prod_secretkey))
 #     region_name: ((s3_prod_region))
 #     regexp: release/STS4/fatjars/spring-boot-language-server-(.*).jar
-- name: vscode-snapshot-website
-  type: s3-multi
-  icon: content-save-outline
-  source:
-    bucket: ((s3_prod_bucket))
-    access_key_id: ((s3_svc_accesskey))
-    secret_access_key: ((s3_svc_secretkey))
-    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
-    region_name: ((s3_region))
-    path: snapshot/STS4/vscode-extensions
-    change_dir_to: website
-    options:
-    - "--acl public-read"
 - name: vscode-snapshot-website-akamai
   type: s3-multi
   icon: content-save-outline
@@ -1139,7 +1126,6 @@ jobs:
   - task: build-website
     file: sts4/concourse/tasks/build-vscode-website.yml
   - in_parallel:
-    - put: vscode-snapshot-website
     - put: vscode-snapshot-website-akamai      
 # - name: build-fatjars
 #   plan:
