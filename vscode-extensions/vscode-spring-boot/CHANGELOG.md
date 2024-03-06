@@ -1,3 +1,19 @@
+## 2024-03-13 (4.22.0 RELEASE, incl. language servers version 1.53.0)
+
+#### important highlights
+
+* _(Spring Boot)_ **Add Spring Boot Starters...** InlayHint in Spring Boot projects `pom.xml` next to `<dependencies>` tag (VSCode only at the moment)
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ `Add Starters` CodeLens/InlayHint in the Spring Boot's project pom [#1194](https://github.com/spring-projects/sts4/issues/1194)
+* _(Spring Boot)_ adjustments to version validations [#1199](https://github.com/spring-projects/sts4/issues/1199)
+* _(Spring Boot)_ TestJars support [#1197](https://github.com/spring-projects/sts4/issues/1197)
+* _(Spring Boot)_ Bind update of Spring Modulith metadata to a full project build [#1172](https://github.com/spring-projects/sts4/issues/1172)
+* _(Spring Boot)_ exception thrown under the hood when file URL protocol is unknown [#1192](https://github.com/spring-projects/sts4/issues/1192)
+* _(Spring Boot)_ Fix JavaModelException with non-Java projects [#1188](https://github.com/spring-projects/sts4/pull/1188)
+* _(Spring Boot)_ throws exception when closing editors [#1179](https://github.com/spring-projects/sts4/issues/1179)
+
 ## 2024-02-07 (4.21.1 RELEASE, incl. language servers version 1.52.0)
 
 #### important highlights
