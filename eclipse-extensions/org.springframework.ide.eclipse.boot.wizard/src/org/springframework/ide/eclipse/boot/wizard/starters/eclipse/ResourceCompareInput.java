@@ -42,12 +42,16 @@ import java.util.function.Predicate;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.CompareEditorInput;
 import org.eclipse.compare.CompareUI;
+import org.eclipse.compare.CompareViewerPane;
 import org.eclipse.compare.CompareViewerSwitchingPane;
 import org.eclipse.compare.IStreamContentAccessor;
 import org.eclipse.compare.ITypedElement;
+import org.eclipse.compare.Splitter;
 import org.eclipse.compare.contentmergeviewer.ContentMergeViewer;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
+import org.eclipse.compare.internal.AbstractViewer;
 import org.eclipse.compare.internal.BufferedResourceNode;
+import org.eclipse.compare.internal.CompareContentViewerSwitchingPane;
 import org.eclipse.compare.internal.CompareMessages;
 import org.eclipse.compare.internal.CompareUIPlugin;
 import org.eclipse.compare.internal.IMergeViewerTestAdapter;
@@ -76,6 +80,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
@@ -665,7 +670,7 @@ public class ResourceCompareInput extends CompareEditorInput {
 			Set<Object> visited = new HashSet<>();
 			Queue<Object> toVisit = new LinkedList<>(getStructuredSelection().toList());
 			// To avoid problems with currently opened TextMergeViewer close whatever was opened
-//			fireOpen(new OpenEvent(this, StructuredSelection.EMPTY));
+			fireOpen(new OpenEvent(this, StructuredSelection.EMPTY));
 			while (!toVisit.isEmpty()) {
 				Object o = toVisit.poll();
 				if (!visited.contains(o)) {
@@ -734,6 +739,48 @@ public class ResourceCompareInput extends CompareEditorInput {
 			Log.log(e);
 			return null;
 		}
+	}
+
+	class CustomNullViewer extends AbstractViewer {
+
+		private final Control fDummy;
+		private final Composite parent;
+		private boolean firstSetInput = true;
+
+		public CustomNullViewer(Composite parent) {
+			this.parent = parent;
+			fDummy= new Tree(parent, SWT.NULL);
+
+		}
+
+		@Override
+		public void setInput(Object input) {
+			if (!parent.isDisposed() && firstSetInput) {
+				CompareViewerPane.clearToolBar(parent);
+			}
+			super.setInput(input);
+			firstSetInput = false;
+		}
+
+		@Override
+		public Control getControl() {
+			return fDummy;
+		}
+	}
+
+	@Override
+	protected CompareViewerSwitchingPane createContentViewerSwitchingPane(Splitter parent, int style, CompareEditorInput cei) {
+		return new CompareContentViewerSwitchingPane(parent, style, cei) {
+			@Override
+			protected Viewer getViewer(Viewer oldViewer, Object input) {
+				if (input instanceof MyDiffNode n) {
+					if (ITypedElement.FOLDER_TYPE.equals(n.getId().getType())) {
+						return new CustomNullViewer(this);
+					}
+				}
+				return super.getViewer(oldViewer, input);
+			}
+		};
 	}
 
 	@Override
