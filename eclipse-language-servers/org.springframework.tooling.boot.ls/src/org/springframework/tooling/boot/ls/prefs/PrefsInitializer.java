@@ -50,8 +50,7 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		
 		preferenceStore.setDefault(Constants.PREF_REWRITE_RECIPE_FILTERS, StringListEditor.encode(new String[] {
 				"org.openrewrite.java.spring.boot2.SpringBoot2JUnit4to5Migration",
-				"org.openrewrite.java.spring.boot2.SpringBoot2BestPractices",
-				"org.openrewrite.java.spring.boot2.SpringBoot1To2Migration",
+				"org.openrewrite.java.spring.boot3.SpringBoot3BestPractices",
 				"org.openrewrite.java.testing.junit5.JUnit5BestPractices",
 				"org.openrewrite.java.testing.junit5.JUnit4to5Migration",
 				"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7",
