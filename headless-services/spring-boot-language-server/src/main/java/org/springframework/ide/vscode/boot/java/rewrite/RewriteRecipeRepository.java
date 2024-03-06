@@ -439,7 +439,7 @@ public class RewriteRecipeRepository {
 				final MessageActionItem applyChanges = new MessageActionItem("Apply");
 				ShowMessageRequestParams messageParams = new ShowMessageRequestParams();
 				messageParams.setType(MessageType.Info);
-				messageParams.setMessage("Do you want to preview chnages before applying or apply right away?");
+				messageParams.setMessage("Do you want to preview changes before applying or apply right away?");
 				messageParams.setActions(List.of(applyChanges, previewChanges));
 				return server.getClient().showMessageRequest(messageParams).thenApply(previewChanges::equals);
 			} else {
