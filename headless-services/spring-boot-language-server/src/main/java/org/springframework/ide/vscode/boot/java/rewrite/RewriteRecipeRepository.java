@@ -172,7 +172,7 @@ public class RewriteRecipeRepository {
 					recipes.put(r.getName(), r);					
 					// HACK: add Jakarta XML Bind migration recipe again as there are cases when maven dependency isn't added
 					if (r.getName().startsWith("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_")) {
-						AddDependency addDepXmlBindDep = new AddDependency("jakarta.xml.bind", "jakarta.xml.bind-api", "latest.release", null, null, null, "javax.xml.bind..*", null, null, null, null, true);
+						AddDependency addDepXmlBindDep = new AddDependency("jakarta.xml.bind", "jakarta.xml.bind-api", "latest.release", null, null, null, "javax.xml.bind..*", null, null, null, null, false);
 						r.getDescriptor().getRecipeList().add(addDepXmlBindDep.getDescriptor());
 						r.getRecipeList().add(addDepXmlBindDep);
 					}
