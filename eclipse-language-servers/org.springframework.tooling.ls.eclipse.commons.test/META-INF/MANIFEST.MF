@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Test
 Bundle-SymbolicName: org.springframework.tooling.ls.eclipse.commons.test
-Bundle-Version: 4.22.0.qualifier
+Bundle-Version: 4.22.1.qualifier
 Automatic-Module-Name: org.springframework.tooling.ls.eclipse.commons.test
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.junit,
