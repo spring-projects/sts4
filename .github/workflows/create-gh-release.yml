@@ -1,7 +1,7 @@
 name: Create Release
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       version:
         description: Github release marker, i.e. 4.20.1.RELEASE
