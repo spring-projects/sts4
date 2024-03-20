@@ -10,6 +10,12 @@
             id="org.springframework.ide.eclipse.boot.properties.editor.convertPropertiesToYaml"
             name="Convert .properties to .yaml">
       </command>
+      <command
+            categoryId="org.springframework.ide.eclipse.boot.commands.category"
+            defaultHandler="org.springframework.ide.eclipse.boot.refactoring.ConvertYamlToPropertiesHandler"
+            id="org.springframework.ide.eclipse.boot.properties.editor.convertYamlToProperties"
+            name="Convert .yaml to .properties">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
@@ -24,21 +30,62 @@
                        <count
                              value="1">
                        </count>
-                       <or>
-                         <with variable="activeEditorId">
-                           <equals value="SpringBootPropertyEditor"/>
-                         </with>
-                         <with variable="activeMenuSelection">
+                       <with
+                             variable="activeMenuSelection">
                           <iterate
-                               ifEmpty="false">
-                             <adapt type="org.eclipse.core.resources.IResource">
-                                  <test property="org.eclipse.core.resources.extension" value="properties" />
+                                ifEmpty="false">
+                             <adapt
+                                   type="org.eclipse.core.resources.IResource">
+                                <and>
+                                   <test
+                                         property="org.springsource.ide.eclipse.boot.isBootResource">
+                                   </test>
+                                   <test
+                                         property="org.eclipse.core.resources.extension"
+                                         value="properties">
+                                   </test>
+                                </and>
                              </adapt>
                           </iterate>
-                         </with>
-                       </or>
+                       </with>
                    </and>
                 </visibleWhen>
+            </command>
+            <command
+                  commandId="org.springframework.ide.eclipse.boot.properties.editor.convertYamlToProperties"
+                  icon="icons/boot-icon.png">
+               <visibleWhen
+                     checkEnabled="false">
+                  <and>
+                     <count
+                           value="1">
+                     </count>
+                     <with
+                           variable="activeMenuSelection">
+                        <iterate
+                              ifEmpty="false">
+                           <adapt
+                                 type="org.eclipse.core.resources.IResource">
+                              <and>
+                                 <test
+                                       property="org.springsource.ide.eclipse.boot.isBootResource">
+                                 </test>
+                                 <or>
+                                    <test
+                                          property="org.eclipse.core.resources.extension"
+                                          value="yml">
+                                    </test>
+                                    <test
+                                          property="org.eclipse.core.resources.extension"
+                                          value="yaml">
+                                    </test>
+                                 </or>
+                              </and>
+                           </adapt>
+                        </iterate>
+                     </with>
+                  </and>
+               </visibleWhen>
             </command>
             
       </menuContribution>
