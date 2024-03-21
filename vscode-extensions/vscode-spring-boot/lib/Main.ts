@@ -40,7 +40,6 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
         preferJdk: true,
         jvmHeap: '1024m',
         vmArgs: [
-            '-XX:+HeapDumpOnOutOfMemoryError'
         ],
         checkjvm: (context: ExtensionContext, jvm: commons.JVM) => {
             let version = jvm.getMajorVersion();
