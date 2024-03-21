@@ -34,12 +34,12 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.eclipse.boot.refactoring.ConvertYamlToPropertiesRefactoring;
-import org.springframework.ide.eclipse.boot.refactoring.test.ConvertPropertiesToYamlTest.Checker;
+import org.springframework.ide.eclipse.boot.refactoring.test.ConvertPropertiesToYamlRefactoringTest.Checker;
 import org.springframework.ide.eclipse.boot.test.BootProjectTestHarness;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.IOUtil;
 import org.springsource.ide.eclipse.commons.tests.util.StsTestUtil;
 
-public class ConvertYamlToPropertiesTest {
+public class ConvertYamlToPropertiesRefactoringTest {
 
 	BootProjectTestHarness projects = new BootProjectTestHarness(getWorkspace());
 
@@ -281,6 +281,35 @@ public class ConvertYamlToPropertiesTest {
 		);
 	}
 
+	@Test public void multipleDocsConversion() throws Exception {
+		do_conversionTest(
+				"some:\n" +
+				"  other:\n" +
+				"    thing: blah\n" +
+				"  thing: vvvv\n" +
+				"\n" +
+				"---\n" +
+				"some:\n" +
+				"  other:\n" +
+				"    thing: blah\n" +
+				"  thing: vvvv\n" +
+				"\n" +
+				"---\n" +
+				"some:\n" +
+				"  other:\n" +
+				"    thing: blah\n" +
+				"  thing: vvvv\n"
+				, // ==>
+				"some.other.thing=blah\n" +
+				"some.thing=vvvv\n" +
+				"#---\n" +
+				"some.other.thing=blah\n" +
+				"some.thing=vvvv\n" +
+				"#---\n" +
+				"some.other.thing=blah\n" +
+				"some.thing=vvvv\n"
+		);
+	}
 
 
 }

@@ -33,6 +33,7 @@ import org.eclipse.text.edits.ReplaceEdit;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.comments.CommentType;
 import org.yaml.snakeyaml.events.CommentEvent;
 import org.yaml.snakeyaml.events.Event;
 import org.yaml.snakeyaml.events.StreamEndEvent;
@@ -44,11 +45,12 @@ public class ConvertYamlToPropertiesRefactoring extends Refactoring {
 
 	private IFile propsFile;
 	private final IFile yamlFile;
-	private String propsContent;
+	private StringBuilder propsContent;
 	private int inputTextLen;
 
 	public ConvertYamlToPropertiesRefactoring(IFile yamlFile) {
 		this.yamlFile = yamlFile;
+		this.propsContent = new StringBuilder();
 	}
 
 	@Override
@@ -93,33 +95,41 @@ public class ConvertYamlToPropertiesRefactoring extends Refactoring {
 			return status;
 		}
 
-		Map<String, ?> o = null;
 		try (InputStream content = yamlFile.getContents()) {
-			o = new Yaml().load(content);
+			for (Object d : new Yaml().loadAll(yamlFile.getContents())) {
+				if (d instanceof Map) {
+					// Add doc divider if not empty
+					@SuppressWarnings("unchecked")
+					Map<String, ?> o = (Map<String, ?>) d;
+					try {
+						YamlToPropertiesConverter converter = new YamlToPropertiesConverter(o);
+						Properties props = converter.getProperties();
+						StringWriter write = new StringWriter();
+						props.store(write, null);
+						write.flush();
+						write.close();
+						if (!propsContent.isEmpty()) {
+							propsContent.append("#---\n");
+						}
+						// Skip over the date header. Comments are not present but date header is.
+						if (write.getBuffer().charAt(0) == '#') {
+							int idx = write.getBuffer().indexOf("\n");
+							this.propsContent.append(idx >= 0 && idx < write.getBuffer().length() ? write.getBuffer().substring(idx + 1) : write.getBuffer().toString());
+						} else {
+							this.propsContent.append(write.getBuffer().toString());
+						}
+						status.merge(converter.getStatus());
+					} catch (IOException e) {
+						status.merge(RefactoringStatus.create(ExceptionUtil.status(e, "Problems writing to .properties file: "+propsFile.getFullPath())));
+					}
+				} else if (d == null) {
+					if (!propsContent.isEmpty()) {
+						propsContent.append("#---\n");
+					}
+				}
+			}
 		} catch (Exception e) {
 			status.merge(RefactoringStatus.create(ExceptionUtil.status(e, "Problems parsing as a .yaml file: "+yamlFile.getFullPath())));
-		}
-		if (o != null) {
-			try {
-				YamlToPropertiesConverter converter = new YamlToPropertiesConverter(o);
-				Properties props = converter.getProperties();
-				StringWriter write = new StringWriter();
-				props.store(write, null);
-				write.flush();
-				write.close();
-				// Skip over the date header. Comments are not present but date header is.
-				if (write.getBuffer().charAt(0) == '#') {
-					int idx = write.getBuffer().indexOf("\n");
-					this.propsContent = idx >= 0 && idx < write.getBuffer().length() ? write.getBuffer().substring(idx + 1) : write.getBuffer().toString();
-				} else {
-					this.propsContent = write.getBuffer().toString();
-				}
-				status.merge(converter.getStatus());
-			} catch (IOException e) {
-				status.merge(RefactoringStatus.create(ExceptionUtil.status(e, "Problems writing to .properties file: "+propsFile.getFullPath())));
-			}
-		} else {
-			propsContent = "";
 		}
 		return status;
 	}
@@ -135,8 +145,12 @@ public class ConvertYamlToPropertiesRefactoring extends Refactoring {
 				if (e instanceof StreamEndEvent) {
 					inputTextLen = e.getEndMark().getIndex();
 				}
-				if (!hasComments && e instanceof CommentEvent) {
-					hasComments = true;
+				if (!hasComments && e instanceof CommentEvent ce) {
+					if (ce.getCommentType() == CommentType.BLANK_LINE) {
+						// document separator
+					} else {
+						hasComments = true;
+					}
 				}
 			}
 			return hasComments;
@@ -152,7 +166,7 @@ public class ConvertYamlToPropertiesRefactoring extends Refactoring {
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		CompositeChange changes = new CompositeChange(getName());
 		TextFileChange textChange = new TextFileChange(getName(), yamlFile);
-		textChange.setEdit(new ReplaceEdit(0, inputTextLen, propsContent));
+		textChange.setEdit(new ReplaceEdit(0, inputTextLen, propsContent.toString()));
 		changes.add(textChange);
 		changes.add(new RenameResourceChange(yamlFile.getFullPath(), propsFile.getName()));
 		changes.initializeValidationData(pm);

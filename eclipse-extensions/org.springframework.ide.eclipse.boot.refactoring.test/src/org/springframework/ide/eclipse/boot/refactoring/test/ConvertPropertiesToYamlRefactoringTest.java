@@ -38,7 +38,7 @@ import org.springframework.ide.eclipse.boot.test.BootProjectTestHarness;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.IOUtil;
 import org.springsource.ide.eclipse.commons.tests.util.StsTestUtil;
 
-public class ConvertPropertiesToYamlTest {
+public class ConvertPropertiesToYamlRefactoringTest {
 
 	public interface Checker<T> {
 		void check(T it) throws Exception;
