@@ -18,7 +18,6 @@ import org.springframework.ide.vscode.commons.languageserver.composable.Language
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.InlayHintHandler;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
@@ -37,7 +36,7 @@ public class PomLanguageServerComponents implements LanguageServerComponents{
 
 	@Override
 	public Optional<InlayHintHandler> getInlayHintHandler() {
-		return LspClient.currentClient() == LspClient.Client.ECLIPSE ? Optional.empty() : Optional.of(inlayHintHandler);
+		return Optional.of(inlayHintHandler);
 	}
 
 }
