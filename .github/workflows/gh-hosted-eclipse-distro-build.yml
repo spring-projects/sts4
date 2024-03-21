@@ -235,7 +235,7 @@ jobs:
 
   sign-osx-distros:
     needs: [ eclipse-distro-build ]
-    runs-on: macos-latest-xl
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
@@ -264,7 +264,7 @@ jobs:
       - name: Install appdmg
         run: |
           python3 -m pip install setuptools
-          npm install -g aboyko-appdmg
+          npm install -g appdmg
       - name: Cloudgate S3 Configuration
         uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
         with:

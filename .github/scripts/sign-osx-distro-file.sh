@@ -66,7 +66,7 @@ echo '  "format": "UDZO"' >> dmg-config.json
 echo '}' >> dmg-config.json
 cat ./dmg-config.json
 dmg_filename=${filename%.*.*}.dmg
-aboyko-appdmg ./dmg-config.json ../${dmg_filename}
+appdmg ./dmg-config.json ../${dmg_filename}
 
 cd ..
 rm -rf ./${destination_folder_name}
