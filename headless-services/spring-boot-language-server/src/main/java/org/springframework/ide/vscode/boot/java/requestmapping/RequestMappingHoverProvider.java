@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,8 +28,9 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.MarkupContent;
+import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
@@ -37,12 +40,14 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
 import org.springframework.ide.vscode.boot.java.livehover.v2.RequestMappingMetrics;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
 
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -286,7 +291,15 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			String contextPath = liveData.getContextPath();
 			List<Renderable> renderableUrls = Arrays.stream(paths).flatMap(path -> {
 				String url = UrlUtil.createUrl(urlScheme, host, port, path, contextPath);
-				return Stream.of(Renderables.link(url, url), Renderables.lineBreak());
+				String text = url;
+				switch (LspClient.currentClient()) {
+				case VSCODE:
+				case THEIA:
+					url = "command:vscode-spring-boot.open.url?%s".formatted(URLEncoder.encode(new Gson().toJson(url), StandardCharsets.UTF_8));
+					break;
+				default:
+				}
+				return Stream.of(Renderables.link(text, url), Renderables.lineBreak());
 			})
 			.collect(Collectors.toList());
 
@@ -318,7 +331,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		}
 		// PT 163470104 - Add content at hover construction to avoid separators
 		// being added between the content itself
-		return new Hover(ImmutableList.of(Either.forLeft(contentVal.toString())));
+		return new Hover(new MarkupContent(MarkupKind.MARKDOWN, contentVal.toString()));
 	}
 	
 	private String createHoverMetricsContent(RequestMappingMetrics metrics) {
