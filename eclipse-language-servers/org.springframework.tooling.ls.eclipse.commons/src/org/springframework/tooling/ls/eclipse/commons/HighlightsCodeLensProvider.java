@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2023 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -48,14 +48,19 @@ public class HighlightsCodeLensProvider extends AbstractCodeMiningProvider {
 	private static final Map<String, Function<Command, Consumer<MouseEvent>>> ACTION_MAP = new HashMap<>();
 	static {
 		ACTION_MAP.put("sts.open.url", (cmd) -> {
-			return (me) -> {
-				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-				if (!cmd.getArguments().isEmpty() && cmd.getArguments().get(0) instanceof JsonPrimitive) {
-					String url = ((JsonPrimitive)cmd.getArguments().get(0)).getAsString();
-					LSPEclipseUtils.open(url, page, null);
-				}
-			};
+			return (me) -> opneUrlCommand(cmd);
 		});
+		ACTION_MAP.put("vscode-spring-boot.open.url", (cmd) -> {
+			return (me) -> opneUrlCommand(cmd);
+		});
+	}
+
+	private static void opneUrlCommand(Command cmd) {
+		IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+		if (!cmd.getArguments().isEmpty() && cmd.getArguments().get(0) instanceof JsonPrimitive) {
+			String url = ((JsonPrimitive)cmd.getArguments().get(0)).getAsString();
+			LSPEclipseUtils.open(url, page, null);
+		}
 	}
 
 	private static Consumer<MouseEvent> action(Command cmd) {

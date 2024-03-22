@@ -172,6 +172,12 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
             }
         });
 
+        commands.registerCommand('vscode-spring-boot.open.url', (openUrl) => {
+            const openWithExternalBrowser = workspace.getConfiguration("spring.tools").get("openWith") === "external";
+            const browserCommand = openWithExternalBrowser ? "vscode.open" : "simpleBrowser.api.open";
+            return commands.executeCommand(browserCommand, Uri.parse(openUrl));
+        });
+
         return new ApiManager(client).api;
     });
 }

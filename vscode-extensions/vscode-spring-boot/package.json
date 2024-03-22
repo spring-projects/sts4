@@ -134,6 +134,12 @@
         "command": "vscode-spring-boot.set.log-levels",
         "title": "Set Log Levels",
         "category": "Spring Boot"
+      },
+      {
+        "command": "vscode-spring-boot.open.url",
+        "title": "Open Boot App Page URL",
+        "category": "Spring Boot",
+        "enablement": "never"
       }
     ],
     "configuration": [
@@ -238,6 +244,20 @@
             "type": "boolean",
             "default": true,
             "description": "Enable/Disable Spring Boot TestJars launch environment variables"
+          },
+          "spring.tools.openWith": {
+            "default": "integrated",
+            "type": "string",
+            "enum": [
+              "integrated",
+              "external"
+            ],
+            "enumDescriptions": [
+              "VS Code's integrated browser",
+              "External default browser"
+            ],
+            "scope": "window",
+            "description": "Defines which browser to use when opening Spring Boot apps web pages."
           }
         }
       },
