@@ -621,20 +621,24 @@ public class Editor {
 		StringBuilder buf = new StringBuilder();
 		boolean first = true;
 		Either<List<Either<String, MarkedString>>, MarkupContent> contents = hover.getContents();
-		for (Either<String, MarkedString> block : contents.getLeft()) {
-			if (!first) {
-				buf.append("\n\n");
+		if (contents.isLeft()) {
+			for (Either<String, MarkedString> block : contents.getLeft()) {
+				if (!first) {
+					buf.append("\n\n");
+				}
+				if (block.isLeft()) {
+					String s = block.getLeft();
+					buf.append(s);
+				} else if (block.isRight()) {
+					MarkedString ms = block.getRight();
+					buf.append("```"+ms.getLanguage()+"\n");
+					buf.append(ms.getValue());
+					buf.append("\n```");
+				}
+				first = false;
 			}
-			if (block.isLeft()) {
-				String s = block.getLeft();
-				buf.append(s);
-			} else if (block.isRight()) {
-				MarkedString ms = block.getRight();
-				buf.append("```"+ms.getLanguage()+"\n");
-				buf.append(ms.getValue());
-				buf.append("\n```");
-			}
-			first = false;
+		} else {
+			buf.append(contents.getRight().getValue());
 		}
 		return buf.toString();
 	}
