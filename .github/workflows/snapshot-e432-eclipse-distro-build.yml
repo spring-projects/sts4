@@ -1,7 +1,7 @@
-name: Snapshot - 4.29 Eclipse STS Distribution Build
+name: Snapshot - 4.32 Eclipse STS Distribution Build
 
 concurrency:
-  group: e429-snapshot
+  group: e432-snapshot
   cancel-in-progress: true
 
 on:
@@ -17,6 +17,6 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
-      eclipse_profile: 'e429'
+      eclipse_profile: 'e432'
       build_type: 'snapshot'
     secrets: inherit
