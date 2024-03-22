@@ -3,6 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Boot Launch Tests
 Bundle-SymbolicName: org.springframework.ide.eclipse.boot.launch.test
 Bundle-Version: 4.22.1.qualifier
+Import-Package: org.apache.commons.io,
+ org.apache.commons.lang3
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.junit,
