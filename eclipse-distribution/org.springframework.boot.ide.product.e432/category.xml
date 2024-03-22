@@ -131,7 +131,7 @@
 <!--	<bundle id="javassist.source"/> -->
 	<bundle id="javax.activation"/>
 <!--	<bundle id="javax.activation.source"/> -->
-	<bundle id="javax.annotation"/>
+<!--	<bundle id="javax.annotation"/> -->
 <!--	<bundle id="javax.annotation.source"/> -->
 <!--	<bundle id="javax.ws.rs"/> -->
 <!--	<bundle id="javax.xml.bind"/> -->
@@ -140,6 +140,7 @@
 	<bundle id="org.aopalliance"/>
 	<bundle id="org.apache.log4j"/>
 	<bundle id="org.yaml.snakeyaml"/>
+	<bundle id="org.snakeyaml.engine"/>
 	<bundle id="org.eclipse.lsp4e"/>
 	<bundle id="org.eclipse.lsp4e.debug"/>
 	<bundle id="org.eclipse.lsp4e.jdt"/>

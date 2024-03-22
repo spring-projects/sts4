@@ -15,7 +15,7 @@
 	<packaging>eclipse-repository</packaging>
 
 	<properties>
-		<justj.repository>https://download.eclipse.org/justj/jres/17/updates/release/latest/</justj.repository>
+		<justj.repository>https://download.eclipse.org/justj/jres/21/updates/release/latest/</justj.repository>
 	</properties>
 
 	<build>
@@ -97,6 +97,7 @@
 					</formats>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.eclipse.tycho.extras</groupId>
 				<artifactId>tycho-eclipserun-plugin</artifactId>
@@ -339,6 +340,7 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
+
 					<execution>
 						<id>generate-s3-upload-info</id>
 						<phase>verify</phase>
@@ -383,6 +385,7 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
+
 				</executions>
 			</plugin>
 
