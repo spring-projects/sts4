@@ -184,14 +184,16 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			@Override
 			public List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params) {
 				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
-				LanguageId language = doc.getLanguageId();
-				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
-				if (subComponents != null) {
-					return subComponents.stream()
-							.map(sc -> sc.getDocumentSymbolProvider())
-							.filter(ds -> ds.isPresent())
-							.flatMap(ds -> ds.get().handle(params).stream())
-							.collect(Collectors.toList());
+				if (doc != null) {
+					LanguageId language = doc.getLanguageId();
+					List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
+					if (subComponents != null) {
+						return subComponents.stream()
+								.map(sc -> sc.getDocumentSymbolProvider())
+								.filter(ds -> ds.isPresent())
+								.flatMap(ds -> ds.get().handle(params).stream())
+								.collect(Collectors.toList());
+					}
 				}
 				//No applicable subEngine...
 				return Collections.emptyList();
