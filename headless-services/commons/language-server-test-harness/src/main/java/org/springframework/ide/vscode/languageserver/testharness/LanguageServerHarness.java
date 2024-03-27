@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2023 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -87,6 +87,8 @@ import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.RenameFile;
 import org.eclipse.lsp4j.ResourceOperation;
 import org.eclipse.lsp4j.ResourceOperationKind;
+import org.eclipse.lsp4j.ShowDocumentParams;
+import org.eclipse.lsp4j.ShowDocumentResult;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentClientCapabilities;
@@ -440,6 +442,11 @@ public class LanguageServerHarness {
 
 				@Override
 				public void liveProcessLogLevelUpdated(LiveProcessLoggersSummary processKey) {	
+				}
+
+				@Override
+				public CompletableFuture<ShowDocumentResult> showDocument(ShowDocumentParams params) {
+					return CompletableFuture.completedFuture(new ShowDocumentResult(true));
 				}
 
 			});
@@ -810,15 +817,14 @@ public class LanguageServerHarness {
 				.collect(Collectors.toList());
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void perform(Command command) throws Exception {
+	public Object perform(Command command) throws Exception {
 		List<Object> args = command.getArguments();
 		//Note convert the params to a 'typeless' Object because that is more representative on how it will be
 		// received when we get it in a real client/server setting (i.e. parsed from json).
 		JsonArray jsonArray = gson.toJsonTree(args).getAsJsonArray();
 		List<Object> untypedParams = new ArrayList<>(jsonArray.size());
 		jsonArray.forEach(e -> untypedParams.add(e));
-		getServer().getWorkspaceService()
+		return getServer().getWorkspaceService()
 			.executeCommand(new ExecuteCommandParams(command.getCommand(), untypedParams))
 			.get();
 	}

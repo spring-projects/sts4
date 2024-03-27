@@ -280,6 +280,14 @@
             class="org.springframework.tooling.boot.ls.commands.AddStartersHandler"
             commandId="spring.initializr.addStarters">
       </handler>
+      <handler
+            class="org.springframework.tooling.boot.ls.commands.ConvertBootPropertiesHanlder$ConvertYamlToPropertiesHanlder"
+            commandId="org.springframework.tooling.boot.ls.properties.convert-yaml-to-props">
+      </handler>
+      <handler
+            class="org.springframework.tooling.boot.ls.commands.ConvertBootPropertiesHanlder$ConvertPropertiesToYamlHandler"
+            commandId="org.springframework.tooling.boot.ls.properties.convert-props-to-yaml">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -328,6 +336,16 @@
                optional="true"
                typeId="org.eclipse.lsp4e.pathParameterType">
          </commandParameter>
+      </command>
+      <command
+            description="Converts Spring Boot properties file from .properties format to .yaml format"
+            id="org.springframework.tooling.boot.ls.properties.convert-yaml-to-props"
+            name="Convert .yaml to .properties">
+      </command>
+      <command
+            description="Converts Spring Boot properties file from .yaml format to .properties format"
+            id="org.springframework.tooling.boot.ls.properties.convert-props-to-yaml"
+            name="Convert .properties to .yaml">
       </command>
    </extension>
 
@@ -762,6 +780,72 @@
                         </adapt>
                      </or>
                   </iterate>
+               </and>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.springframework.tooling.boot.ls.properties.convert-props-to-yaml"
+               icon="icons/boot-icon.png">
+            <visibleWhen
+                  checkEnabled="false">
+               <and>
+                  <count
+                        value="1">
+                  </count>
+                  <with
+                        variable="activeMenuSelection">
+                     <iterate
+                           ifEmpty="false">
+                        <adapt
+                              type="org.eclipse.core.resources.IResource">
+                           <and>
+                              <test
+                                    property="org.springsource.ide.eclipse.boot.isBootResource">
+                              </test>
+                              <test
+                                    property="org.eclipse.core.resources.extension"
+                                    value="properties">
+                              </test>
+                           </and>
+                        </adapt>
+                     </iterate>
+                  </with>
+               </and>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.springframework.tooling.boot.ls.properties.convert-yaml-to-props"
+               icon="icons/boot-icon.png">
+            <visibleWhen
+                  checkEnabled="false">
+               <and>
+                  <count
+                        value="1">
+                  </count>
+                  <with
+                        variable="activeMenuSelection">
+                     <iterate
+                           ifEmpty="false">
+                        <adapt
+                              type="org.eclipse.core.resources.IResource">
+                           <and>
+                              <test
+                                    property="org.springsource.ide.eclipse.boot.isBootResource">
+                              </test>
+                              <or>
+                                 <test
+                                       property="org.eclipse.core.resources.extension"
+                                       value="yml">
+                                 </test>
+                                 <test
+                                       property="org.eclipse.core.resources.extension"
+                                       value="yaml">
+                                 </test>
+                              </or>
+                           </and>
+                        </adapt>
+                     </iterate>
+                  </with>
                </and>
             </visibleWhen>
          </command>

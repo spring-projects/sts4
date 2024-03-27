@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.composable;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
@@ -40,11 +42,13 @@ import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandle
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.InlayHintHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.LanguageComputer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.LazyTextDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableMap;
@@ -65,8 +69,8 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			}
 		}
 
-		public CompositeLanguageServerComponents build(SimpleLanguageServer server) {
-			return new CompositeLanguageServerComponents(server, this);
+		public CompositeLanguageServerComponents build(ApplicationContext appContext) {
+			return new CompositeLanguageServerComponents(appContext, this);
 		}
 	}
 
@@ -78,7 +82,8 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 	private final DocumentSymbolHandler docSymbolHandler;
 	private final InlayHintHandler inlayHintHandler;
 
-	public CompositeLanguageServerComponents(SimpleLanguageServer server, Builder builder) {
+	public CompositeLanguageServerComponents(ApplicationContext appContext, Builder builder) {
+		SimpleLanguageServer server = appContext.getBean(SimpleLanguageServer.class);
 		this.componentsByLanguageId = ImmutableMap.copyOf(builder.componentsByLanguageId);
 		//Create composite Reconcile engine
 		if (componentsByLanguageId.values().stream().flatMap(l -> l.stream()).map(LanguageServerComponents::getReconcileEngine).anyMatch(Optional::isPresent)) {
@@ -145,7 +150,7 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			
 			@Override
 			public List<? extends CodeLens> handle(CancelChecker cancelToken, CodeLensParams params) {
-				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
+				TextDocument doc = getDoc(appContext, params.getTextDocument().getUri());
 				LanguageId language = doc.getLanguageId();
 				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
 				if (subComponents != null) {
@@ -183,17 +188,15 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			
 			@Override
 			public List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params) {
-				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
-				if (doc != null) {
-					LanguageId language = doc.getLanguageId();
-					List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
-					if (subComponents != null) {
-						return subComponents.stream()
-								.map(sc -> sc.getDocumentSymbolProvider())
-								.filter(ds -> ds.isPresent())
-								.flatMap(ds -> ds.get().handle(params).stream())
-								.collect(Collectors.toList());
-					}
+				TextDocument doc = getDoc(appContext, params.getTextDocument().getUri());
+				LanguageId language = doc.getLanguageId();
+				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
+				if (subComponents != null) {
+					return subComponents.stream()
+							.map(sc -> sc.getDocumentSymbolProvider())
+							.filter(ds -> ds.isPresent())
+							.flatMap(ds -> ds.get().handle(params).stream())
+							.collect(Collectors.toList());
 				}
 				//No applicable subEngine...
 				return Collections.emptyList();
@@ -243,6 +246,23 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 	@Override
 	public Optional<InlayHintHandler> getInlayHintHandler() {
 		return Optional.of(inlayHintHandler);
+	}
+	
+	private static TextDocument getDoc(ApplicationContext appContext, String uri) {
+		
+		TextDocument doc = appContext.getBean(SimpleLanguageServer.class).getTextDocumentService().getLatestSnapshot(uri);
+		
+		if (doc == null) {
+			LanguageComputer languageComputer = appContext.getBean(LanguageComputer.class);
+			if (languageComputer != null) {
+				LanguageId language = languageComputer.computeLanguage(URI.create(uri));
+				if (language != null) {
+					doc = new LazyTextDocument(uri, language);
+				}
+			}
+		}
+		
+		return doc;
 	}
 
 }

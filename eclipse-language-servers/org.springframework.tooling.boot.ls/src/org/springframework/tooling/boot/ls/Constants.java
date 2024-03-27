@@ -46,4 +46,5 @@ public class Constants {
 	public static final String PREF_COMMON_PROPS_METADATA = "boot-java.common.properties-metadata";
 	
 	public static final String PREF_MODULITH = "boot-java.modulith-project-tracking";
+	
 }

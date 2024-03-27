@@ -20,6 +20,7 @@ import {registerClasspathService} from "@pivotal-tools/commons-vscode/lib/classp
 import {registerJavaDataService} from "@pivotal-tools/commons-vscode/lib/java-data";
 import * as setLogLevelUi from './set-log-levels-ui';
 import { startTestJarSupport } from "./test-jar-launch";
+import { startPropertiesConversionSupport } from "./convert-props-yaml";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -157,7 +158,16 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
         liveHoverUi.activate(client, options, context);
         rewrite.activate(client, options, context);
         setLogLevelUi.activate(client, options, context);
+        startPropertiesConversionSupport(context);
 
+        registerMiscCommands(context);
+
+        return new ApiManager(client).api;
+    });
+}
+
+function registerMiscCommands(context: ExtensionContext) {
+    context.subscriptions.push(
         commands.registerCommand('vscode-spring-boot.spring.modulith.metadata.refresh', async () => {
             const modulithProjects = await commands.executeCommand('sts/modulith/projects');
             const projectNames = Object.keys(modulithProjects);
@@ -170,14 +180,12 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
                 );
                 commands.executeCommand('sts/modulith/metadata/refresh', modulithProjects[projectName]);
             }
-        });
+        }),
 
         commands.registerCommand('vscode-spring-boot.open.url', (openUrl) => {
             const openWithExternalBrowser = workspace.getConfiguration("spring.tools").get("openWith") === "external";
             const browserCommand = openWithExternalBrowser ? "vscode.open" : "simpleBrowser.api.open";
             return commands.executeCommand(browserCommand, Uri.parse(openUrl));
-        });
-
-        return new ApiManager(client).api;
-    });
+        }),
+    );
 }

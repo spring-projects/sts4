@@ -24,7 +24,6 @@ import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
-import org.eclipse.ltk.core.refactoring.RefactoringContext;
 
 public class ConvertPropertiesToYamlHandler extends AbstractHandler {
 

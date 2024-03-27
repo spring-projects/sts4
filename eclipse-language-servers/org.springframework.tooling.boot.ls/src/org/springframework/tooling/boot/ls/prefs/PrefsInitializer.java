@@ -61,6 +61,7 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		}));
 		
 		preferenceStore.setDefault(Constants.PREF_MODULITH, true);
+		
 	}
 
 }

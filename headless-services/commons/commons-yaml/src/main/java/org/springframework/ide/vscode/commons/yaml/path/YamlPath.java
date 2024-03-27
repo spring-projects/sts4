@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.commons.yaml.path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.StringTokenizer;
 import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef;
@@ -21,6 +23,8 @@ import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.SeqRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleValueRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.YamlPathSegmentType;
+
+import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Flux;
 
@@ -74,13 +78,48 @@ public class YamlPath extends AbstractYamlTraversal {
 	 * Parse a YamlPath from a dotted property name. The segments are obtained
 	 * by spliting the name at each dot.
 	 */
+//	public static YamlPath fromProperty(String propName) {
+//		ArrayList<YamlPathSegment> segments = new ArrayList<YamlPathSegment>();
+//		for (String s : propName.split("\\.")) {
+//			segments.add(YamlPathSegment.valueAt(s));
+//		}
+//		return new YamlPath(segments);
+//	}
+	/**
+	 * Parse a YamlPath from a dotted property name. The segments are obtained
+	 * by splitting the name at each dot.
+	 */
 	public static YamlPath fromProperty(String propName) {
-		ArrayList<YamlPathSegment> segments = new ArrayList<YamlPathSegment>();
-		for (String s : propName.split("\\.")) {
-			segments.add(YamlPathSegment.valueAt(s));
+		ImmutableList.Builder<YamlPathSegment> segments = ImmutableList.builder();
+		String delim = ".[]";
+		StringTokenizer tokens = new StringTokenizer(propName, delim, true);
+		try {
+			while (tokens.hasMoreTokens()) {
+				String token = tokens.nextToken(delim);
+				if (token.equals(".") || token.equals("]")) {
+					//Skip it silently
+				} else if (token.equals("[")) {
+					String bracketed = tokens.nextToken("]");
+					if (bracketed.equals("]")) {
+						//empty string between []? Makes no sense, so ignore that.
+					} else {
+						try {
+							int index = Integer.parseInt(bracketed);
+							segments.add(YamlPathSegment.valueAt(index));
+						} catch (NumberFormatException e) {
+							segments.add(YamlPathSegment.valueAt(bracketed));
+						}
+					}
+				} else {
+					segments.add(YamlPathSegment.valueAt(token));
+				}
+			}
+		} catch (NoSuchElementException e) {
+			//Ran out of tokens.
 		}
-		return new YamlPath(segments);
+		return new YamlPath(segments.build());
 	}
+
 
 	/**
 	 * Create a YamlPath with a single segment (i.e. like 'fromProperty', but does

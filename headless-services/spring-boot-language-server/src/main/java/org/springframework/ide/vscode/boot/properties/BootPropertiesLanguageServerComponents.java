@@ -105,7 +105,12 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 				});
 			});
 		});
-
+		
+		// Register YAML -> Props conversion command
+		new YamlToPropertiesCommand(server);
+		
+		// Register Props -> YAML conversion command
+		new PropertiesToYamlCommand(server);
 	}
 
 	@Override

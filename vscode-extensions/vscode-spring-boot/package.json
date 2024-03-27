@@ -82,6 +82,16 @@
           "when": "resourceFilename == pom.xml || resourceFilename == build.gradle",
           "command": "vscode-spring-boot.rewrite.list.boot-upgrades",
           "group": "SpringBoot"
+        },
+        {
+          "when": "editorLangId == spring-boot-properties",
+          "command": "vscode-spring-boot.props-to-yaml",
+          "group": "SpringBoot"
+        },
+        {
+          "when": "editorLangId == spring-boot-properties-yaml",
+          "command": "vscode-spring-boot.yaml-to-props",
+          "group": "SpringBoot"
         }
       ],
       "explorer/context": [
@@ -94,6 +104,26 @@
           "when": "(resourceFilename == pom.xml  || resourceFilename == build.gradle) && config.boot-java.rewrite.refactorings.on == true",
           "command": "vscode-spring-boot.rewrite.list.boot-upgrades",
           "group": "SpringBoot"
+        },
+        {
+          "when": "resourceExtname == .properties",
+          "command": "vscode-spring-boot.props-to-yaml",
+          "group": "SpringBoot"
+        },
+        {
+          "when": "resourceExtname == .yml || resourceExtname == .yaml",
+          "command": "vscode-spring-boot.yaml-to-props",
+          "group": "SpringBoot"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "vscode-spring-boot.props-to-yaml",
+          "when": "false"
+        },
+        {
+          "command": "vscode-spring-boot.yaml-to-props",
+          "when": "false"
         }
       ]
     },
@@ -140,6 +170,16 @@
         "title": "Open Boot App Page URL",
         "category": "Spring Boot",
         "enablement": "never"
+      },
+      {
+        "command": "vscode-spring-boot.props-to-yaml",
+        "title": "Convert .properties to .yaml",
+        "category": "Spring Boot"
+      },
+      {
+        "command": "vscode-spring-boot.yaml-to-props",
+        "title": "Convert .yaml to .properties",
+        "category": "Spring Boot"
       }
     ],
     "configuration": [
@@ -244,6 +284,11 @@
             "type": "boolean",
             "default": true,
             "description": "Enable/Disable Spring Boot TestJars launch environment variables"
+          },
+          "spring.tools.properties.replace-converted-file": {
+            "type": "boolean",
+            "default": false,
+            "description": "Replace converted properties file"
           },
           "spring.tools.openWith": {
             "default": "integrated",
