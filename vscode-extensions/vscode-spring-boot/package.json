@@ -35,8 +35,10 @@
   "contributes": {
     "chatParticipants": [
       {
+        "id": "springboot",
         "name": "springboot",
         "description": "Spring boot chat agent",
+        "isSticky": true,
         "commands": [
           {
             "name": "prompt",

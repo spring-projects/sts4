@@ -39,7 +39,7 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
     // registerPipelineGenerator(context);
     let options : commons.ActivatorOptions = {
         DEBUG: false,
-        CONNECT_TO_LS: true,
+        CONNECT_TO_LS: false,
         extensionId: 'vscode-spring-boot',
         preferJdk: true,
         jvmHeap: '1024m',
