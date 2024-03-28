@@ -25,7 +25,7 @@ interface PromptResponse {
 
 const CONVERTER = createConverter(undefined, true, true);
 const LANGUAGE_MODEL_ID = 'copilot-gpt-4';
-const AGENT_NAME = 'springboot';
+const AGENT_ID = 'springboot';
 
 interface SpringBootChatAgentResult extends vscode.ChatResult {
 	metadata: {
@@ -218,7 +218,7 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
 
         // if (request.command == 'prompt') {
             const previousMessages = context.history.filter(h => {
-                return h instanceof vscode.ChatRequestTurn && h.participant.name == AGENT_NAME
+                return h instanceof vscode.ChatRequestTurn && h.participant == AGENT_ID
             }) as vscode.ChatRequestTurn[];
             // console.log(previousMessages);
             const cwd = (await getWorkspaceRoot()).fsPath;
@@ -284,14 +284,14 @@ export function activate(
     context: vscode.ExtensionContext
 ) {
 
-    const agent = vscode.chat.createChatParticipant(AGENT_NAME, async (request, context, progress, token) => {
+    const agent = vscode.chat.createChatParticipant(AGENT_ID, async (request, context, progress, token) => {
 		// if (request.command === 'prompt') {
             return handleAiPrompts(request, context, progress, token);
 		// } else if (request.command === 'new') {
             // return handleCreateProject(request, context, progress, token);
 		// }
     });
-    agent.isSticky = true; 
+    // agent.isSticky = true; 
     agent.iconPath = vscode.Uri.joinPath(context.extensionUri, 'readme-imgs', 'spring-tools-icon.png');
     // agent.description = vscode.l10n.t('Hi! How can I help you with your spring boot project?');
     // agent.commandProvider = {
