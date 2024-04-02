@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2022 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -36,7 +37,6 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 /**
  * @author Martin Lippert
  */
-@SuppressWarnings("restriction")
 public class SpringProcessConnectorLocal {
 
 	private static final Logger log = LoggerFactory.getLogger(SpringProcessConnectorLocal.class);
@@ -52,8 +52,11 @@ public class SpringProcessConnectorLocal {
 	
 	private boolean projectsChanged;
 
+	final private BootJavaConfig config;
+
 	
-	public SpringProcessConnectorLocal(SpringProcessConnectorService processConnector, ProjectObserver projectObserver) {
+	public SpringProcessConnectorLocal(SpringProcessConnectorService processConnector, ProjectObserver projectObserver, BootJavaConfig config) {
+		this.config = config;
 		this.projects = new ConcurrentHashMap<>();
 		this.processes = Collections.synchronizedSet(new HashSet<>());
 		this.statusUpdateThreadPool = Executors.newFixedThreadPool(10);
@@ -91,14 +94,17 @@ public class SpringProcessConnectorLocal {
 	 * checks whether this class can operate normally or not - it is recommended to check this before calling out to this class
 	 * (if the attach to VirtualMachine library is not around, this class cannot really do anything and will throw exceptions)
 	 */
-	public static boolean isAvailable() {
-		try {
-			Class<?> vmClass = VirtualMachine.class;
-			return vmClass != null;
+	public boolean isAvailable() {
+		if (config.isShowingAllJvmProcesses()) {
+			try {
+				Class<?> vmClass = VirtualMachine.class;
+				return vmClass != null;
+			}
+			catch (NoClassDefFoundError e) {
+				return false;
+			}
 		}
-		catch (NoClassDefFoundError e) {
-			return false;
-		}
+		return false;
 	}
 	
 	public boolean isLocalProcess(String processKey) {
@@ -186,7 +192,7 @@ public class SpringProcessConnectorLocal {
 		}
 	}
 	
-	public void connectProcess(SpringProcessDescriptor descriptor) {
+	public CompletableFuture<Void> connectProcess(SpringProcessDescriptor descriptor) {
 		VirtualMachine vm = null;
 		VirtualMachineDescriptor vmDescriptor = descriptor.getVm();
 		
@@ -205,6 +211,7 @@ public class SpringProcessConnectorLocal {
 					jmxAddress = vm.startLocalManagementAgent();
 				} catch (Exception e) {
 					log.error("Error starting local management agent", e);
+					return CompletableFuture.failedFuture(e);
 				}
 			}
 			
@@ -216,11 +223,13 @@ public class SpringProcessConnectorLocal {
 				SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(ProcessType.LOCAL,
 						descriptor.getProcessKey(), jmxAddress, urlScheme, processID, processName, descriptor.getProjectName(), null, null);
 
-				this.processConnectorService.connectProcess(descriptor.getProcessKey(), connector);
+				return this.processConnectorService.connectProcess(descriptor.getProcessKey(), connector);
 			}
+			return CompletableFuture.failedFuture(new Exception("No JMX URL available!"));
 		}
 		catch (Exception e) {
 			log.error("exception while connecting to jvm process", e);
+			return CompletableFuture.failedFuture(e);
 		}
 		finally {
 			if (vm != null) {

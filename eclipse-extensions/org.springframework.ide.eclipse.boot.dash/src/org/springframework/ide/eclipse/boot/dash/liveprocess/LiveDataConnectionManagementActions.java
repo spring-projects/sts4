@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2023 Pivotal Software, Inc.
+ * Copyright (c) 2019, 2024 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -77,13 +77,22 @@ public class LiveDataConnectionManagementActions extends AbstractDisposable impl
 		public ExecuteCommandAction(CommandInfo commandInfo) {
 			super(params);
 			this.commandInfo = commandInfo;
-			String command = commandInfo.command;
-			int lastSlash = command.lastIndexOf("/");
-			String humanReadableCommand = command.substring(lastSlash+1);
-			humanReadableCommand = humanReadableCommand.substring(0, 1).toUpperCase() + humanReadableCommand.substring(1);
-			this.projectName = commandInfo.info.get("projectName");
-			label = humanReadableCommand + " "+commandInfo.info.get("label");
+			this.projectName = (String) commandInfo.info.get("projectName");
+			label = computeLabel(commandInfo);
 			this.setText(label);
+		}
+
+		private String computeLabel(CommandInfo commandInfo) {
+			switch (commandInfo.command) {
+			case "sts/livedata/connect":
+				return "Show Live Data from: %s".formatted(commandInfo.info.get("label"));
+			case "sts/livedata/refresh":
+				return "Refresh Live Data from: %s".formatted(commandInfo.info.get("label"));
+			case "sts/livedata/disconnect":
+				return "Hide Live Data from: %s".formatted(commandInfo.info.get("label"));
+			default:
+			}
+			return (String) commandInfo.info.get("label");
 		}
 
 		public String getProjectName() {
@@ -115,7 +124,7 @@ public class LiveDataConnectionManagementActions extends AbstractDisposable impl
 		}
 
 		public String getProcessId() {
-			return commandInfo.info.get("processId");
+			return (String) commandInfo.info.get("processId");
 		}
 	}
 

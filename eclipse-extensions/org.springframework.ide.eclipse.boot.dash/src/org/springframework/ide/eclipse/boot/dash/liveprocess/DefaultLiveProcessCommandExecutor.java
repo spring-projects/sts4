@@ -57,4 +57,12 @@ public final class DefaultLiveProcessCommandExecutor implements LiveProcessComma
 		))).thenAccept(l -> {}));
 	}
 
+	@Override
+	public Mono<Void> executeCommand(String command, Object... params) {
+		return Mono.fromFuture(BootLsCommandUtils.getLanguageServers(command).collectAll(ls -> ls.getWorkspaceService().executeCommand(new ExecuteCommandParams(
+				command,
+				ImmutableList.of(params)
+		))).thenAccept(l -> {}));
+	}
+
 }

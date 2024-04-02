@@ -96,6 +96,11 @@ public class BootJavaConfig implements InitializingBean {
 		return enabled != null && enabled.booleanValue();
 	}
 	
+	public boolean isShowingAllJvmProcesses() {
+		Boolean isAll = settings.getBoolean("boot-java", "live-information", "all-local-java-processes");
+		return isAll != null && isAll.booleanValue();
+	}
+	
 	public String[] xmlBeansFoldersToScan() {
 		String foldersStr = settings.getString("boot-java", "support-spring-xml-config", "scan-folders");
 		if (foldersStr != null) {

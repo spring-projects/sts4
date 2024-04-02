@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -81,6 +81,7 @@ public class LiveInformationPreferencePage extends FieldEditorPreferencePage imp
 		
 		Composite fieldEditorParent = getFieldEditorParent();
 				
+		addField(new BooleanFieldEditor(Constants.PREF_LIVE_INFORMATION_ALL_JVM_PROCESSES, "Show all local JVM processes when connecting to Live Spring Boot App processes", fieldEditorParent));
 		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO, "Live Information - Max number of retries (before giving up)", fieldEditorParent));
 		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS, "Live Information - Delay between retries in seconds", fieldEditorParent));
 

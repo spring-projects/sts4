@@ -7,17 +7,22 @@ import { debug,
     DebugConfigurationProviderTriggerKind,
     DebugSessionCustomEvent,
     Disposable,
-    ProviderResult
+    workspace,
+    DebugSession
 } from "vscode";
 import * as path from "path";
 import psList from 'ps-list';
 import { ListenablePreferenceSetting } from "@pivotal-tools/commons-vscode/lib/launch-util";
+import { getPortPromise } from "portfinder";
+import { RemoteBootApp } from "./live-hover-connect-ui";
 
-const JMX_VM_ARG = '-Dspring.jmx.enabled='
-const ACTUATOR_JMX_EXPOSURE_ARG = '-Dmanagement.endpoints.jmx.exposure.include='
-const ADMIN_VM_ARG = '-Dspring.application.admin.enabled='
+const JMX_VM_ARG = '-Dspring.jmx.enabled=';
+const ACTUATOR_JMX_EXPOSURE_ARG = '-Dmanagement.endpoints.jmx.exposure.include=';
+const ADMIN_VM_ARG = '-Dspring.application.admin.enabled=';
 const BOOT_PROJECT_ARG = '-Dspring.boot.project.name=';
 const RMI_HOSTNAME = '-Djava.rmi.server.hostname=localhost';
+
+const JMX_PORT_ARG = '-Dcom.sun.management.jmxremote.port=';
 
 export const TEST_RUNNER_MAIN_CLASSES = [
     'org.eclipse.jdt.internal.junit.runner.RemoteTestRunner',
@@ -30,12 +35,13 @@ interface ProcessEvent {
     shellProcessId: number
 }
 
+
 class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
 
-    resolveDebugConfigurationWithSubstitutedVariables(folder: WorkspaceFolder | undefined, debugConfiguration: DebugConfiguration, token?: CancellationToken): ProviderResult<DebugConfiguration> {
+    async resolveDebugConfigurationWithSubstitutedVariables(folder: WorkspaceFolder | undefined, debugConfiguration: DebugConfiguration, token?: CancellationToken) {
         // Running app live hovers support
         if (!TEST_RUNNER_MAIN_CLASSES.includes(debugConfiguration.mainClass) && isActuatorOnClasspath(debugConfiguration)) {
-            if (debugConfiguration.vmArgs) {
+            if (typeof debugConfiguration.vmArgs === 'string') {
                 if (debugConfiguration.vmArgs.indexOf(JMX_VM_ARG) < 0) {
                     debugConfiguration.vmArgs += ` ${JMX_VM_ARG}true`;
                 }
@@ -51,8 +57,15 @@ class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
                 if (debugConfiguration.vmArgs.indexOf(RMI_HOSTNAME) < 0) {
                     debugConfiguration.vmArgs += ` ${RMI_HOSTNAME}`;
                 }
+                if (debugConfiguration.vmArgs.indexOf(JMX_PORT_ARG) < 0) {
+                    debugConfiguration.vmArgs += ` ${JMX_PORT_ARG}${await getPortPromise({
+                        startPort: 10000
+                    })} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false`
+                }
             } else {
-                debugConfiguration.vmArgs = `${JMX_VM_ARG}true ${ACTUATOR_JMX_EXPOSURE_ARG}* ${ADMIN_VM_ARG}true ${BOOT_PROJECT_ARG}${debugConfiguration.projectName} ${RMI_HOSTNAME}`;
+                debugConfiguration.vmArgs = `${JMX_VM_ARG}true ${ACTUATOR_JMX_EXPOSURE_ARG}* ${ADMIN_VM_ARG}true ${BOOT_PROJECT_ARG}${debugConfiguration.projectName} ${RMI_HOSTNAME} ${JMX_PORT_ARG}${await getPortPromise({
+                    startPort: 10000
+                })} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false`;
             }
         }
         return debugConfiguration;
@@ -87,12 +100,13 @@ export function hookListenerToBooleanPreference(setting: string, listenerCreator
 }
 
 export function startDebugSupport(): Disposable {
-    return hookListenerToBooleanPreference(
-        'boot-java.live-information.automatic-connection.on',
-         () => Disposable.from(
-             debug.onDidReceiveDebugSessionCustomEvent(handleCustomDebugEvent),
-             debug.registerDebugConfigurationProvider('java', new SpringBootDebugConfigProvider(), DebugConfigurationProviderTriggerKind.Initial)
-         )
+    return Disposable.from(
+        hookListenerToBooleanPreference(
+            'boot-java.live-information.automatic-connection.on',
+            () => debug.registerDebugConfigurationProvider('java', new SpringBootDebugConfigProvider(), DebugConfigurationProviderTriggerKind.Initial)
+        ),
+        debug.onDidReceiveDebugSessionCustomEvent(handleCustomDebugEvent),
+        debug.onDidTerminateDebugSession(handleTerminateDebugSession)
     );
 }
 
@@ -102,11 +116,32 @@ async function handleCustomDebugEvent(e: DebugSessionCustomEvent): Promise<void>
         if (canConnect(debugConfiguration)) {
             setTimeout(async () => {
                 const pid = await getAppPid(e.body as ProcessEvent);
-                const processKey = pid.toString();
-                commands.executeCommand('sts/livedata/connect', { processKey });
+                const vmArgs = debugConfiguration.vmArgs as string;
+                let idx = vmArgs.indexOf(JMX_PORT_ARG) + JMX_PORT_ARG.length;
+                let jmxPort = "";
+                for (; idx < vmArgs.length && vmArgs.charAt(idx) <= "9" && vmArgs.charAt(idx) >= "0"; idx++) {
+                    jmxPort += vmArgs.charAt(idx);
+                }
+                await commands.executeCommand("vscode-spring-boot.live.activate", {
+                    host: "127.0.0.1",
+                    port: null,
+                    urlScheme: "http",
+                    jmxurl: `service:jmx:rmi:///jndi/rmi://127.0.0.1:${jmxPort}/jmxrmi`,
+                    manualConnect: true,
+                    processId: pid.toString(),
+                    processName: debugConfiguration.mainClass,
+                    projectName: debugConfiguration.projectName
+                } as RemoteBootApp);
+                if (workspace.getConfiguration("boot-java.live-information.automatic-connection").get("on")) {
+                    await commands.executeCommand("vscode-spring-boot.live.show.active");
+                }
             }, 500);
         }
     }
+}
+
+function handleTerminateDebugSession(session: DebugSession) {
+    commands.executeCommand('vscode-spring-boot.live.deactivate');
 }
 
 async function getAppPid(e: ProcessEvent): Promise<number> {
@@ -141,8 +176,9 @@ function isActuatorJarFile(f: string): boolean {
 
 function canConnect(debugConfiguration: DebugConfiguration): boolean {
     if (!TEST_RUNNER_MAIN_CLASSES.includes(debugConfiguration.mainClass) && isActuatorOnClasspath(debugConfiguration)) {
-        return debugConfiguration.vmArgs
+        return typeof debugConfiguration.vmArgs === 'string'
             && debugConfiguration.vmArgs.indexOf(`${JMX_VM_ARG}true`) >= 0
+            && debugConfiguration.vmArgs.indexOf(JMX_PORT_ARG) >= 0
             && debugConfiguration.vmArgs.indexOf(`${ADMIN_VM_ARG}true`) >= 0
     }
     return false;

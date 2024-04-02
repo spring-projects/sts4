@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2022 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -23,6 +22,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -36,14 +36,11 @@ import org.springframework.ide.eclipse.boot.dash.model.BootDashModelContext;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashViewModel;
 import org.springframework.ide.eclipse.boot.dash.model.DefaultBootDashModelContext;
 import org.springframework.ide.eclipse.boot.dash.model.LocalBootDashModel;
-import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.RunTargets;
 import org.springframework.ide.eclipse.boot.dash.util.LaunchConfRunStateTracker;
 import org.springframework.ide.eclipse.boot.dash.util.RunStateTracker.RunStateListener;
 import org.springframework.ide.eclipse.boot.launch.BootLaunchConfigurationDelegate;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
-
-import reactor.core.publisher.Mono;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -195,35 +192,46 @@ public class BootDashActivator extends AbstractUIPlugin {
 
 		@Override
 		public void stateChanged(ILaunchConfiguration owner) {
-			if (BootLaunchConfigurationDelegate.getEnableJmx(owner) && BootLaunchConfigurationDelegate.getAutoConnect(owner)) {
+			if (BootLaunchConfigurationDelegate.getEnableJmx(owner)) {
 				IJavaProject project = JavaCore.create(BootLaunchConfigurationDelegate.getProject(owner));
 				try {
 					if (project != null && Arrays.stream(project.getResolvedClasspath(true)).anyMatch(BootPropertyTester::isActuatorJar)) {
 						LocalBootDashModel localModel = (LocalBootDashModel) getModel().getSectionByTargetId(RunTargets.LOCAL.getId());
 						LaunchConfRunStateTracker tracker = localModel.getLaunchConfRunStateTracker();
-						RunState state = tracker.getState(owner);
-						if (state == RunState.RUNNING || state == RunState.DEBUGGING) {
+						switch (tracker.getState(owner)) {
+						case RUNNING:
+						case DEBUGGING:
 							for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
 								if (l.getLaunchConfiguration() == owner) {
 									for (IProcess p : l.getProcesses()) {
 										String pid = p.getAttribute(IProcess.ATTR_PROCESS_ID);
 										if (pid != null) {
-											CommandInfo cmd = new CommandInfo("sts/livedata/connect",
-													Map.of("processKey", pid));
+											CommandInfo cmd = new CommandInfo("sts/livedata/localAdd", Map.of(
+								                    "host", "127.0.0.1",
+								                    "port", l.getAttribute(BootLaunchConfigurationDelegate.JMX_PORT),
+								                    "urlScheme", "http",
+								                    "jmxurl", "service:jmx:rmi:///jndi/rmi://127.0.0.1:%s/jmxrmi".formatted(l.getAttribute(BootLaunchConfigurationDelegate.JMX_PORT)),
+								                    "manualConnect", !BootLaunchConfigurationDelegate.getAutoConnect(owner),
+								                    "processId", pid,
+								                    "processName", owner.getAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, p.getLabel()),
+								                    "projectName", project.getProject().getName()
+											));
 
-											// The delay seems to be necessary for the moment. Although the process is created VM attach API may not work at early stages of the process run.
-											// "VirtualMachine.list()" call may not list the newly created process which means the process is gone and triggers disconnect.
-											// If lifecycle management is enabled the ready state seem to be a great indicator of a boot process fully started.
-											// TODO: explore health endpoint perhaps instead of ready state under Admin endpoint.
-//											Flux.fromIterable(servers).flatMap(s -> Mono.delay(Duration.ofMillis(500)).then(s.executeCommand(cmd))).subscribe();
-											Mono.delay(Duration.ofMillis(500)).then(LiveProcessCommandsExecutor.getDefault().executeCommand(cmd)).subscribe();
-
+											LiveProcessCommandsExecutor.getDefault().executeCommand(cmd).subscribe();
 										}
 									}
 								}
 							}
+							break;
+						case INACTIVE:
+							for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
+								if (l.getLaunchConfiguration() == owner && l.getAttribute(BootLaunchConfigurationDelegate.JMX_PORT) != null) {
+									String jmxUrl = "service:jmx:rmi:///jndi/rmi://127.0.0.1:%s/jmxrmi".formatted(l.getAttribute(BootLaunchConfigurationDelegate.JMX_PORT));
+									LiveProcessCommandsExecutor.getDefault().executeCommand("sts/livedata/localRemove", jmxUrl).subscribe();
+								}
+							}
+						default:
 						}
-
 					}
 				} catch (Exception e) {
 					getLog().error("Failed to connect to Boot app", e);

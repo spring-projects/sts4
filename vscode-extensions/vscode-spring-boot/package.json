@@ -124,13 +124,42 @@
         {
           "command": "vscode-spring-boot.yaml-to-props",
           "when": "false"
+        },
+        {
+          "command": "vscode-spring-boot.live.show.active",
+          "when": "false"
+        },
+        {
+          "command": "vscode-spring-boot.live.hide.active",
+          "when": "false"
+        },
+        {
+          "command": "vscode-spring-boot.live.refresh.active",
+          "when": "false"
+        }
+      ],
+      "debug/toolBar": [
+        {
+          "when": "inDebugMode && debugType == 'java' && (vscode-spring-boot.active-app-state == 'disconnected' || vscode-spring-boot.active-app-state == 'connecting')",
+          "command": "vscode-spring-boot.live.show.active",
+          "group": "Spring Boot"
+        },
+        {
+          "when": "inDebugMode && debugType == 'java' && vscode-spring-boot.active-app-state == 'connected'",
+          "command": "vscode-spring-boot.live.refresh.active",
+          "group": "Spring Boot"
+        },
+        {
+          "when": "inDebugMode && debugType == 'java' && (vscode-spring-boot.active-app-state == 'connected' || vscode-spring-boot.active-app-state == 'disconnecting')",
+          "command": "vscode-spring-boot.live.hide.active",
+          "group": "Spring Boot"
         }
       ]
     },
     "commands": [
       {
         "command": "vscode-spring-boot.live-hover.connect",
-        "title": "Manage Live Spring Boot Process Connections",
+        "title": "Show/Refresh/Hide Live Data from Spring Boot Processes",
         "category": "Spring Boot"
       },
       {
@@ -180,6 +209,27 @@
         "command": "vscode-spring-boot.yaml-to-props",
         "title": "Convert .yaml to .properties",
         "category": "Spring Boot"
+      },
+      {
+        "command": "vscode-spring-boot.live.show.active",
+        "title": "Show Live Data from launched Spring Boot App",
+        "enablement": "vscode-spring-boot.active-app-state == 'disconnected'",
+        "icon": "./images/light-bulb-off.svg",
+        "category": "Spring Boot"
+      },
+      {
+        "command": "vscode-spring-boot.live.hide.active",
+        "title": "Hide Live Data from launched Spring Boot App",
+        "enablement": "vscode-spring-boot.active-app-state == 'connected'",
+        "icon": "./images/light-bulb-on.svg",
+        "category": "Spring Boot"
+      },
+      {
+        "command": "vscode-spring-boot.live.refresh.active",
+        "title": "Refresh Live Data from launched Spring Boot App",
+        "enablement": "vscode-spring-boot.active-app-state == 'connected'",
+        "icon": "$(refresh)",
+        "category": "Spring Boot"
       }
     ],
     "configuration": [
@@ -197,6 +247,11 @@
             "type": "boolean",
             "default": true,
             "description": "Live Information - Automatic addition of JVM arguments enabling JMX and Process Connection via JMX Enabled"
+          },
+          "boot-java.live-information.all-local-java-processes": {
+            "type": "boolean",
+            "description": "Show all local JVM processes when connecting to Live Spring Boot App processes",
+            "default": false
           },
           "boot-java.live-information.fetch-data.max-retries": {
             "type": "number",
@@ -1099,6 +1154,7 @@
     "vsce-pre-release-package": "vsce package --pre-release"
   },
   "dependencies": {
+    "portfinder": "1.0.32",
     "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.4.tgz",
     "ps-list": "^7.2.0",
     "vscode-languageclient": "^9.0.1"

@@ -192,6 +192,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		liveInformationFetchData.put("retry-delay-in-seconds", preferenceStore.getInt(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS));
 		
 		liveInformation.put("fetch-data", liveInformationFetchData);
+		liveInformation.put("all-local-java-processes", preferenceStore.getBoolean(Constants.PREF_LIVE_INFORMATION_ALL_JVM_PROCESSES));
 		
 		supportXML.put("on", preferenceStore.getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS));
 		supportXML.put("scan-folders", preferenceStore.getString(Constants.PREF_XML_CONFIGS_SCAN_FOLDERS));

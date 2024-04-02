@@ -62,6 +62,8 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		
 		preferenceStore.setDefault(Constants.PREF_MODULITH, true);
 		
+		preferenceStore.setDefault(Constants.PREF_LIVE_INFORMATION_ALL_JVM_PROCESSES, false);
+		
 	}
 
 }

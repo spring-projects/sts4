@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016-2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,21 +19,21 @@ public class ShowMessageException extends RuntimeException {
 	private static final long serialVersionUID = 1L;
 	public final MessageParams message;
 
-    public ShowMessageException(MessageParams message, Exception cause) {
+    public ShowMessageException(MessageParams message, Throwable cause) {
         super(message.getMessage(), cause);
 
         this.message = message;
     }
 
-    public static ShowMessageException error(String message, Exception cause) {
+    public static ShowMessageException error(String message, Throwable cause) {
         return create(MessageType.Error, message, cause);
     }
 
-    public static ShowMessageException warning(String message, Exception cause) {
+    public static ShowMessageException warning(String message, Throwable cause) {
         return create(MessageType.Warning, message, cause);
     }
 
-    private static ShowMessageException create(MessageType warning, String message, Exception cause) {
+    private static ShowMessageException create(MessageType warning, String message, Throwable cause) {
         MessageParams m = new MessageParams();
 
         m.setMessage(message);

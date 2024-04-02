@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2023 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -143,14 +143,15 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		hoverProvider = createHoverHandler(projectFinder, sourceLinks, liveDataProvider);
 		new SpringProcessLiveHoverUpdater(server, hoverProvider, projectFinder, liveDataProvider);
 
+		BootJavaConfig config = appContext.getBean(BootJavaConfig.class);
+
 		// deal with locally running processes and their connections
-		SpringProcessConnectorLocal liveDataLocalProcessConnector = new SpringProcessConnectorLocal(liveDataService, projectObserver);
+		SpringProcessConnectorLocal liveDataLocalProcessConnector = new SpringProcessConnectorLocal(liveDataService, projectObserver, config);
 
 		// create and handle commands
 		new SpringProcessCommandHandler(server, liveDataService, liveDataLocalProcessConnector, appContext.getBeansOfType(SpringProcessConnectorRemote.class).values());
 
 		// track locally running processes and automatically connect to them if configured to do so
-		BootJavaConfig config = appContext.getBean(BootJavaConfig.class);
 		liveProcessTracker = new SpringProcessTracker(liveDataLocalProcessConnector, Duration.ofMillis(config.getLiveInformationAutomaticTrackingDelay()));
 		
 		//

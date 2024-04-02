@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,7 +31,6 @@ public class SpringProcessTracker {
 	private static final Logger log = LoggerFactory.getLogger(SpringProcessTracker.class);
 
 	private final SpringProcessConnectorLocal localProcessConnector;
-	private final boolean isConnectorAvailable;
 
 	private boolean automaticTrackingEnabled;
 	private Duration POLLING_INTERVAL;
@@ -43,9 +42,7 @@ public class SpringProcessTracker {
 		this.localProcessConnector = localProcessConnector;
 		this.POLLING_INTERVAL = pollingInterval != null ? pollingInterval : Duration.ofMillis(BootJavaConfig.LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY_DEFAULT);
 		this.automaticTrackingEnabled = false;
-		this.processesAlreadySeen = new HashSet<>();
-		
-		this.isConnectorAvailable = SpringProcessConnectorLocal.isAvailable();
+		this.processesAlreadySeen = new HashSet<>();		
 	}
 
 	public synchronized void setTrackingEnabled(boolean trackingEnabled) {
@@ -74,8 +71,8 @@ public class SpringProcessTracker {
 	}
 
 	public synchronized void start() {
-		if (!isConnectorAvailable) {
-			log.error("virtual machine connector library not available, no automatic local process tracking possible");
+		if (!localProcessConnector.isAvailable()) {
+			log.error("No automatic local process tracking possible");
 			return;
 		}
 		

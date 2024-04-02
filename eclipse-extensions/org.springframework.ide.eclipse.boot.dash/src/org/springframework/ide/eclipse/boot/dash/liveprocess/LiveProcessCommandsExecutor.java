@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2023 Pivotal Software, Inc.
+ * Copyright (c) 2019, 2024 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ public interface LiveProcessCommandsExecutor {
 
 	Flux<CommandInfo> listCommands();
 	Mono<Void> executeCommand(CommandInfo cmd);
+	Mono<Void> executeCommand(String command, Object... params);
 
 	static LiveProcessCommandsExecutor getDefault() {
 		return new DefaultLiveProcessCommandExecutor();

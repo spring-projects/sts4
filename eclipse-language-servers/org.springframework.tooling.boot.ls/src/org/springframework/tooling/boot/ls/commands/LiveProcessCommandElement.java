@@ -53,13 +53,13 @@ public class LiveProcessCommandElement extends QuickAccessElement {
 	@Override
 	public String getLabel() {
 		if (COMMAND_REFRESH.equals(action)) {
-			return "Refresh Live Data for: " + label;
+			return "Refresh Live Data from: " + label;
 		}
 		else if (COMMAND_CONNECT.equals(action)) {
-			return "Show live data for: " + label;
+			return "Show Live Data from: " + label;
 		}
 		else if (COMMAND_DISCONNECT.equals(action)) {
-			return "Disconnect live data from: " + label;
+			return "Hide Live Data from: " + label;
 		}
 		else {
 			// error case

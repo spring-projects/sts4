@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2023 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
@@ -87,7 +88,7 @@ public class SpringProcessConnectorService {
 		this.retryDelayInSeconds = retryDelayInSeconds;
 	}
 	
-	public void connectProcess(String processKey, SpringProcessConnector connector) {
+	public CompletableFuture<Void> connectProcess(String processKey, SpringProcessConnector connector) {
 		log.info("connect to process: " + processKey);
 
 		this.connectors.put(processKey, connector);
@@ -95,17 +96,12 @@ public class SpringProcessConnectorService {
 		
 		connector.addConnectorChangeListener(connectorListener);
 
-		try {
-			final IndefiniteProgressTask progressTask = getProgressTask(
-					"spring-process-connector-service-connect-" + processKey, "Connect", null);			
-			scheduleConnect(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0);
-		}
-		catch (Exception e) {
-			log.error("error connecting to " + processKey, e);
-		}
+		final IndefiniteProgressTask progressTask = getProgressTask(
+				"spring-process-connector-service-connect-" + processKey, "Connect", null);			
+		return scheduleConnect(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0);
 	}
 	
-	public void refreshProcess(SpringProcessParams springProcessParams) {
+	public CompletableFuture<Void> refreshProcess(SpringProcessParams springProcessParams) {
 		log.info("refresh process: " + springProcessParams.getProcessKey());
 		
 		SpringProcessConnector connector = this.connectors.get(springProcessParams.getProcessKey());
@@ -113,8 +109,9 @@ public class SpringProcessConnectorService {
 			final IndefiniteProgressTask progressTask = getProgressTask(
 					"spring-process-connector-service-refresh-data-" + springProcessParams.getProcessKey(), "Refresh", null);
 
-			scheduleRefresh(progressTask, springProcessParams, connector, 0, TimeUnit.SECONDS, 0);
+			return scheduleRefresh(progressTask, springProcessParams, connector, 0, TimeUnit.SECONDS, 0);
 		}
+		return CompletableFuture.completedFuture(null);
 	}
 
 	public SpringProcessLiveData getLiveData(String processKey) {
@@ -161,35 +158,35 @@ public class SpringProcessConnectorService {
 		return processID;
 	}
 	
-	private void scheduleConnect(IndefiniteProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
+	private CompletableFuture<Void> scheduleConnect(IndefiniteProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
 		String progressMessage = "Connecting to process: " + processKey + " - retry no: " + retryNo;
 		log.info(progressMessage);
 		
-	
-		this.scheduler.schedule(() -> {
+		return CompletableFuture.runAsync(() -> {
 			try {
 				progressTask.progressEvent(progressMessage);
 				connector.connect();
-				progressTask.done();
-				
-				refreshProcess(new SpringProcessParams(processKey, "", "", ""));
+				progressTask.done();				
 			}
 			catch (Exception e) {
-				log.info("problem occured during process connect", e);
-
-				if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
-					scheduleConnect(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
-				} else {
-					progressTask.done();
-					
-					// Send message to client if maximum retries reached on error
-					if (isKnownProcessKey(processKey)) {
-						diagnosticService.diagnosticEvent(ShowMessageException
-									.error("Failed to connect to process " + processKey + " after retries: " + retryNo, e));	
-					}
-				}
+				throw new CompletionException(e);
 			}
-		}, delay, unit);
+		}, CompletableFuture.delayedExecutor(delay, unit, scheduler)).thenCompose(v -> refreshProcess(new SpringProcessParams(processKey, "", "", ""))).exceptionallyCompose(e -> {
+			log.info("problem occured during process connect", e);
+
+			if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
+				return scheduleConnect(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
+			} else {
+				progressTask.done();
+				
+				// Send message to client if maximum retries reached on error
+				if (isKnownProcessKey(processKey)) {
+					diagnosticService.diagnosticEvent(ShowMessageException
+								.error("Failed to connect to process " + processKey + " after retries: " + retryNo, e));	
+				}
+				return CompletableFuture.completedStage(null);
+			}
+		});
 	}
 
 	private void scheduleDisconnect(IndefiniteProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
@@ -220,16 +217,14 @@ public class SpringProcessConnectorService {
 		}, delay, unit);
 	}
 
-	private void scheduleRefresh(IndefiniteProgressTask progressTask, SpringProcessParams springProcessParams, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
+	private CompletableFuture<Void> scheduleRefresh(IndefiniteProgressTask progressTask, SpringProcessParams springProcessParams, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
 		String processKey = springProcessParams.getProcessKey();
 		String endpoint = springProcessParams.getEndpoint();
 		String metricName = springProcessParams.getMetricName();
 	    String progressMessage = "Refreshing data from Spring process: " + processKey + " - retry no: " + retryNo;
 		log.info(progressMessage);
 		
-		
-		this.scheduler.schedule(() -> {
-			
+		return CompletableFuture.runAsync(() -> {
 			try {
 				progressTask.progressEvent(progressMessage);
 				if(METRICS.equals(endpoint) && (MEMORY.equals(metricName))) {
@@ -268,28 +263,32 @@ public class SpringProcessConnectorService {
 				progressTask.done();
 			}
 			catch (Exception e) {
-
-				log.info("problem occured during process live data refresh", e);
+				throw new CompletionException(e);
+			}
+		}, CompletableFuture.delayedExecutor(delay, unit, scheduler)).exceptionallyCompose(e -> {
+			log.info("problem occured during process live data refresh", e);
+			
+			if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
+				return scheduleRefresh(progressTask, springProcessParams, connector, retryDelayInSeconds, TimeUnit.SECONDS,
+						retryNo + 1);
+			}
+			else {
+				progressTask.done();
 				
-				if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
-					scheduleRefresh(progressTask, springProcessParams, connector, retryDelayInSeconds, TimeUnit.SECONDS,
-							retryNo + 1);
-				}
-				else {
-					progressTask.done();
-					
-					// Send message to client if maximum retries reached on error
-					if (isKnownProcessKey(processKey)) {
-						diagnosticService.diagnosticEvent(ShowMessageException
-								.error("Failed to refresh live data from process " + processKey + " after retries: " + retryNo, e));
-	
-						if (!connectedSuccess.containsKey(connector.getProcessKey())) {
-							disconnectProcess(processKey);
-						}
+				// Send message to client if maximum retries reached on error
+				if (isKnownProcessKey(processKey)) {
+					diagnosticService.diagnosticEvent(ShowMessageException
+							.error("Failed to refresh live data from process " + processKey + " after retries: " + retryNo, e));
+
+					if (!connectedSuccess.containsKey(connector.getProcessKey())) {
+						disconnectProcess(processKey);
 					}
 				}
+				return CompletableFuture.completedFuture(null);
 			}
-		}, delay, unit);
+
+		});
+		
 	}
 	
 	private IndefiniteProgressTask getProgressTask(String prefixId, String title, String message) {

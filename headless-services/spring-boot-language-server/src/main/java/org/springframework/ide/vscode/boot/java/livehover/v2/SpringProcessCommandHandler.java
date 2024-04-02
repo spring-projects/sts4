@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2022 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -115,20 +115,19 @@ public class SpringProcessCommandHandler {
 		});
 	}
 
-	private CompletableFuture<Object> connect(ExecuteCommandParams params) {
+	private CompletableFuture<?> connect(ExecuteCommandParams params) {
 		String processKey = getProcessKey(params);
 		if (processKey != null) {
 			
 			// try local processes
-			if (SpringProcessConnectorLocal.isAvailable()) {
+			if (localProcessConnector.isAvailable()) {
 				
 				// Try cached processes.
 				SpringProcessDescriptor[] processes = localProcessConnector
 						.getProcesses(false, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
 				for (SpringProcessDescriptor process : processes) {
 					if (process.getProcessKey().equals(processKey)) {
-						localProcessConnector.connectProcess(process);
-						return CompletableFuture.completedFuture(null);
+						return localProcessConnector.connectProcess(process);
 					}
 				}
 				
@@ -136,8 +135,7 @@ public class SpringProcessCommandHandler {
 						.getProcesses(true, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
 				for (SpringProcessDescriptor process : processes) {
 					if (process.getProcessKey().equals(processKey)) {
-						localProcessConnector.connectProcess(process);
-						return CompletableFuture.completedFuture(null);
+						return localProcessConnector.connectProcess(process);
 					}
 				}
 				
@@ -149,8 +147,7 @@ public class SpringProcessCommandHandler {
 				for (RemoteBootAppData remoteProcess : remoteProcesses) {
 					String key = SpringProcessConnectorRemote.getProcessKey(remoteProcess);
 					if (processKey.equals(key)) {
-						remoteProcessConnector.connectProcess(remoteProcess);
-						return CompletableFuture.completedFuture(null);
+						return remoteProcessConnector.connectProcess(remoteProcess);
 					}
 				}
 			}
@@ -158,26 +155,26 @@ public class SpringProcessCommandHandler {
 
 		return CompletableFuture.completedFuture(null);
 	}
-
-	private CompletableFuture<Object> refresh(ExecuteCommandParams params) {
+	
+	private CompletableFuture<?> refresh(ExecuteCommandParams params) {
 	    SpringProcessParams springProcessParams = new SpringProcessParams();
         springProcessParams.setProcessKey(getProcessKey(params));    
         springProcessParams.setEndpoint(getArgumentByKey(params, "endpoint"));
 		if (springProcessParams.getProcessKey() != null) {
-			connectorService.refreshProcess(springProcessParams);
+			return connectorService.refreshProcess(springProcessParams);
 		}
 
 		return CompletableFuture.completedFuture(null);
 	}
 	
-	private CompletableFuture<Object> refreshMetrics(ExecuteCommandParams params) {
+	private CompletableFuture<?> refreshMetrics(ExecuteCommandParams params) {
 	    SpringProcessParams springProcessParams = new SpringProcessParams();
 	    springProcessParams.setProcessKey(getProcessKey(params));    
 	    springProcessParams.setEndpoint(getArgumentByKey(params, "endpoint"));
 	    springProcessParams.setMetricName(getArgumentByKey(params, "metricName"));
 	    springProcessParams.setTags(getArgumentByKey(params, "tags"));  // Convert tags to a map
 		if (springProcessParams.getProcessKey() != null) {
-			connectorService.refreshProcess(springProcessParams);
+			return connectorService.refreshProcess(springProcessParams);
 		}
 
 		return CompletableFuture.completedFuture(null);
@@ -206,33 +203,54 @@ public class SpringProcessCommandHandler {
 			result.add(new LiveProcessCommand(COMMAND_DISCONNECT, processKey, label, process.getProjectName(), process.getProcessId()));
 			alreadyConnected.add(processKey);
 		}
+
+		
+		// collect available remote process. Some of them might be local processes, make a note of these too
+		List<LiveProcessCommand> remoteProcessCommands = new ArrayList<>();
+		Map<String, LiveProcessCommand> localProcessCommands = new HashMap<>();
+		for (SpringProcessConnectorRemote remoteProcessConnector : remoteProcessConnectors) {
+			RemoteBootAppData[] remoteProcesses = remoteProcessConnector.getProcesses();
+			for (RemoteBootAppData remoteProcess : remoteProcesses) {
+				String processKey = SpringProcessConnectorRemote.getProcessKey(remoteProcess);
+				boolean isLocal = remoteProcess.getProcessID() != null && ("localhost".equals(remoteProcess.getHost()) || "127.0.0.1".equals(remoteProcess.getHost()));
+				if (alreadyConnected.contains(processKey)) {
+					alreadyConnected.add(SpringProcessConnectorService.getProcessKey(remoteProcess.getProcessID(), remoteProcess.getProcessName()));
+				} else {
+					String label = createLabel(remoteProcess.getProcessID(), SpringProcessConnectorRemote.getProcessName(remoteProcess));
+					LiveProcessCommand command = new LiveProcessCommand(COMMAND_CONNECT, processKey, label, remoteProcess.getProjectName(), remoteProcess.getProcessID());
+					if (isLocal) {
+						// Local add these later while checking for local boot processes
+						localProcessCommands.put(remoteProcess.getProcessID(), command);
+					} else {
+						// Keep these to be added at the end
+						remoteProcessCommands.add(command);
+					}
+				}
+			}
+		}
 		
 		// other available local processes
-		if (SpringProcessConnectorLocal.isAvailable()) {
+		if (localProcessConnector.isAvailable()) {
 			SpringProcessDescriptor[] localProcesses = localProcessConnector.getProcesses(true, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
 			for (SpringProcessDescriptor localProcess : localProcesses) {
 				String processKey = localProcess.getProcessKey();
 				if (!alreadyConnected.contains(processKey)) {
-					String label = createLabel(localProcess.getProcessID(), localProcess.getProcessName());
-	
-					LiveProcessCommand command = new LiveProcessCommand(COMMAND_CONNECT, processKey, label, localProcess.getProjectName(), null);
+					LiveProcessCommand command = localProcessCommands.remove(localProcess.getProcessID());
+					if (command == null) {
+						String label = createLabel(localProcess.getProcessID(), localProcess.getProcessName());
+						command = new LiveProcessCommand(COMMAND_CONNECT, processKey, label, localProcess.getProjectName(), null);
+					}
 					result.add(command);
 				}
 			}
 		}
 		
 		// other available remote processes
-		for (SpringProcessConnectorRemote remoteProcessConnector : remoteProcessConnectors) {
-			RemoteBootAppData[] remoteProcesses = remoteProcessConnector.getProcesses();
-			for (RemoteBootAppData remoteProcess : remoteProcesses) {
-				String processKey = SpringProcessConnectorRemote.getProcessKey(remoteProcess);
-				if (!alreadyConnected.contains(processKey)) {
-					String label = createLabel(remoteProcess.getProcessID(), SpringProcessConnectorRemote.getProcessName(remoteProcess));
-					result.add(new LiveProcessCommand(COMMAND_CONNECT, processKey, label, null, remoteProcess.getProcessID()));
-				}
-			}
+		for (LiveProcessCommand command : localProcessCommands.values()) {
+			result.add(command);
 		}
-
+		result.addAll(remoteProcessCommands);
+		
 		log.debug("getProcessCommands => {}", result);
 		return CompletableFuture.completedFuture((Object[]) result.toArray(new Object[result.size()]));
 	}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2022 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ public class SpringProcessConnectorRemote {
 		
 		private String processId;
 		private String processName;
+		private String projectName;
 
 		public String getJmxurl() {
 			return jmxurl;
@@ -100,11 +102,15 @@ public class SpringProcessConnectorRemote {
 			this.processName = processName;
 		}
 		
+		public String getProjectName() {
+			return projectName;
+		}
+
 		@Override
 		public String toString() {
 			return "RemoteBootAppData [jmxurl=" + jmxurl + ", host=" + host + ", urlScheme=" + urlScheme + ", port="
 					+ port + ", manualConnect=" + manualConnect + ", keepChecking=" + keepChecking + ", processId="
-					+ processId + ", processName=" + processName + "]";
+					+ processId + ", processName=" + processName + ". projectName=" + projectName  + "]";
 		}
 
 		public void setManualConnection(boolean manualConnect) {
@@ -117,7 +123,7 @@ public class SpringProcessConnectorRemote {
 
 		@Override
 		public int hashCode() {
-			return Objects.hash(host, jmxurl, keepChecking, manualConnect, port, processId, processName, urlScheme);
+			return Objects.hash(host, jmxurl, keepChecking, manualConnect, port, processId, processName, urlScheme, projectName);
 		}
 
 		@Override
@@ -132,7 +138,8 @@ public class SpringProcessConnectorRemote {
 			return Objects.equals(host, other.host) && Objects.equals(jmxurl, other.jmxurl)
 					&& keepChecking == other.keepChecking && manualConnect == other.manualConnect
 					&& Objects.equals(port, other.port) && Objects.equals(processId, other.processId)
-					&& Objects.equals(processName, other.processName) && Objects.equals(urlScheme, other.urlScheme);
+					&& Objects.equals(processName, other.processName) && Objects.equals(urlScheme, other.urlScheme)
+					&& Objects.equals(projectName, other.getProcessName());
 		}
 		
 	}
@@ -205,10 +212,10 @@ public class SpringProcessConnectorRemote {
 	}
 
 	public static String getProcessKey(RemoteBootAppData appData) {
-		return "remote process - " + appData.getJmxurl();
+		return appData.getJmxurl();
 	}
 
-	public void connectProcess(RemoteBootAppData remoteProcess) {
+	public CompletableFuture<Void> connectProcess(RemoteBootAppData remoteProcess) {
 		String processKey = getProcessKey(remoteProcess);
 		String processID = remoteProcess.getProcessID();
 		String processName = getProcessName(remoteProcess);
@@ -216,14 +223,15 @@ public class SpringProcessConnectorRemote {
 		String host = remoteProcess.getHost();
 		String port = remoteProcess.getPort();
 		String urlScheme = remoteProcess.getUrlScheme();
+		String projectName = remoteProcess.getProjectName();
 //		boolean keepChecking = _appData.isKeepChecking();
 		
 		if (jmxURL.startsWith("http")) {
-			SpringProcessConnectorOverHttp connector = new SpringProcessConnectorOverHttp(ProcessType.REMOTE, processKey, jmxURL, urlScheme, processID, processName, urlScheme, host, port);
-			processConnectorService.connectProcess(processKey, connector);
+			SpringProcessConnectorOverHttp connector = new SpringProcessConnectorOverHttp(ProcessType.REMOTE, processKey, jmxURL, urlScheme, processID, processName, projectName, host, port);
+			return processConnectorService.connectProcess(processKey, connector);
 		} else {
-			SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(ProcessType.REMOTE, processKey, jmxURL, urlScheme, processID, processName, null, host, port);
-			processConnectorService.connectProcess(processKey, connector);
+			SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(ProcessType.REMOTE, processKey, jmxURL, urlScheme, processID, processName, projectName, host, port);
+			return processConnectorService.connectProcess(processKey, connector);
 		}
 	}
 	

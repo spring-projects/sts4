@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2023 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
@@ -196,6 +197,33 @@ public class BootLanguageServerBootApp {
 			}
 			bean.updateApps(all.toArray(new RemoteBootAppData[all.size()]));
 			return CompletableFuture.completedFuture(null);
+		});
+		return bean;
+	}
+	
+	@Bean
+	SpringProcessConnectorRemote localAppsFromCommandsConnector(SimpleLanguageServer server, SpringProcessConnectorService liveDataService) {
+		SpringProcessConnectorRemote bean = new SpringProcessConnectorRemote(server, liveDataService);
+		final Map<String, RemoteBootAppData> localApps = new HashMap<>();
+		final Gson gson = new Gson();
+		server.onCommand("sts/livedata/localAdd", params -> {
+			synchronized(localApps) {
+				RemoteBootAppData[] newAdditions = params.getArguments().stream().map(a -> gson.fromJson((JsonElement) a, RemoteBootAppData.class)).toArray(RemoteBootAppData[]::new);
+				for (RemoteBootAppData app : newAdditions) {
+					localApps.put(app.getJmxurl(), app);
+				}
+				bean.updateApps(localApps.values().toArray(new RemoteBootAppData[localApps.size()]));
+				return CompletableFuture.completedFuture(null);
+			}
+		});
+		server.onCommand("sts/livedata/localRemove", params -> {
+			synchronized(localApps) {
+				List<RemoteBootAppData> removedApps = params.getArguments().stream().map(o -> o instanceof JsonElement ? ((JsonElement) o).getAsString() : (String) o).map(localApps::remove).collect(Collectors.toList());
+				if (!removedApps.isEmpty()) {
+					bean.updateApps(localApps.values().toArray(new RemoteBootAppData[localApps.size()]));
+				}
+				return CompletableFuture.completedFuture(null);
+			}
 		});
 		return bean;
 	}

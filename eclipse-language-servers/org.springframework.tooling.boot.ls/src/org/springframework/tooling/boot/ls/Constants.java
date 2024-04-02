@@ -17,6 +17,7 @@ public class Constants {
 	
 	public static final String PLUGIN_ID = "org.springframework.tooling.boot.ls";
 	
+	public static final String PREF_LIVE_INFORMATION_ALL_JVM_PROCESSES = "boot-java.live-information.all-local-java-processes";
 	public static final String PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO = "boot-java.live-information.fetch-data.max-retries";
 	public static final String PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS = "boot-java.live-information.fetch-data.retry-delay-in-seconds";
 
