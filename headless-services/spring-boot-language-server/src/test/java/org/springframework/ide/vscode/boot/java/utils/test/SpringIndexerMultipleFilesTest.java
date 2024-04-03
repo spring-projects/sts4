@@ -70,6 +70,7 @@ public class SpringIndexerMultipleFilesTest {
 	public void setup() throws Exception {
 		harness.intialize(null);
 		indexer.configureIndexer(SymbolIndexConfig.builder().scanXml(false).build());
+		indexer.getJavaIndexer().setScanChunkSize(2);
 
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 		projectDir = directory.toURI().toString();

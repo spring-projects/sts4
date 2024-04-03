@@ -58,6 +58,7 @@ public class SpringIndexerTest {
 	public void setup() throws Exception {
 		harness.intialize(null);
 		indexer.configureIndexer(SymbolIndexConfig.builder().scanXml(false).build());
+		indexer.getJavaIndexer().setScanChunkSize(2);
 
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 		projectDir = directory.toURI().toString();
@@ -73,7 +74,7 @@ public class SpringIndexerTest {
     void testScanningAllAnnotationsSimpleProjectUpfront() throws Exception {
         List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 
-        assertEquals(7, allSymbols.size());
+        assertEquals(25, allSymbols.size());
 
         String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
         assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -96,13 +97,13 @@ public class SpringIndexerTest {
         indexer.configureIndexer(SymbolIndexConfig.builder().scanTestJavaSources(true).build());
 
         List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
-        assertEquals(8, allSymbols.size());
+        assertEquals(26, allSymbols.size());
         String docUri = directory.toPath().resolve("src/test/java/demo/ApplicationTests.java").toUri().toString();
         assertTrue(containsSymbol(allSymbols, "@SpringBootTest", docUri, 8, 0, 8, 15));
 
         indexer.configureIndexer(SymbolIndexConfig.builder().scanTestJavaSources(false).build());
         allSymbols = indexer.getAllSymbols("");
-        assertEquals(7, allSymbols.size());
+        assertEquals(25, allSymbols.size());
         assertFalse(containsSymbol(allSymbols, "@SpringBootTest", docUri, 8, 0, 8, 15));
     }
 
@@ -131,7 +132,7 @@ public class SpringIndexerTest {
     void testScanningAllAnnotationsMultiModuleProjectUpfront() throws Exception {
         List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 
-        assertEquals(7, allSymbols.size());
+        assertEquals(25, allSymbols.size());
 
         String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
         assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -169,7 +170,7 @@ public class SpringIndexerTest {
 
         // check for updated index in all symbols
         List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
-        assertEquals(7, allSymbols.size());
+        assertEquals(25, allSymbols.size());
 
         String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
         assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -196,7 +197,7 @@ public class SpringIndexerTest {
         assertEquals(0, symbols.size());
 
         List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
-        assertEquals(7, allSymbols.size());
+        assertEquals(25, allSymbols.size());
 
         try {
             // create document and update index
@@ -230,7 +231,7 @@ public class SpringIndexerTest {
 
             // check for updated index in all symbols
             allSymbols = indexer.getAllSymbols("");
-            assertEquals(9, allSymbols.size());
+            assertEquals(27, allSymbols.size());
 
             String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
             assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -269,7 +270,7 @@ public class SpringIndexerTest {
 
         // check for updated index in all symbols
         List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
-        assertEquals(5, allSymbols.size());
+        assertEquals(23, allSymbols.size());
 
         String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
         assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -287,7 +288,7 @@ public class SpringIndexerTest {
     void testFilterSymbolsUsingQueryString() throws Exception {
         List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("mapp");
 
-        assertEquals(6, allSymbols.size());
+        assertEquals(24, allSymbols.size());
 
         String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
         assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
@@ -326,7 +327,7 @@ public class SpringIndexerTest {
     @Test
     void testDeleteProject() throws Exception {
         List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
-        assertEquals(7, allSymbols.size());
+        assertEquals(25, allSymbols.size());
 
         CompletableFuture<Void> deleteProject = indexer.deleteProject(project);
         deleteProject.get(5, TimeUnit.SECONDS);

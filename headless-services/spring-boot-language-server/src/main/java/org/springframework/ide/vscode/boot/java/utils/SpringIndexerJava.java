@@ -59,8 +59,8 @@ import org.springframework.ide.vscode.boot.java.beans.CachedBean;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.reconcilers.CachedDiagnostics;
-import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -108,6 +108,7 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private boolean scanTestJavaSources = false;
 	private JsonObject validationSeveritySettings;
+	private int scanChunkSize = 1000;
 
 	private FileScanListener fileScanListener = null; //used by test code only
 
@@ -362,7 +363,6 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private Set<String> scanFilesInternally(IJavaProject project, DocumentDescriptor[] docs) throws Exception {
 		final boolean ignoreMethodBodies = false;
-		ASTParser parser = createParser(project, ignoreMethodBodies);
 		
 		// this is to keep track of already scanned files to avoid endless loops due to circular dependencies
 		Set<String> scannedTypes = new HashSet<>();
@@ -418,7 +418,11 @@ public class SpringIndexerJava implements SpringIndexer {
 			}
 		};
 
-		parser.createASTs(javaFiles, null, new String[0], requestor, null);
+		List<String[]> chunks = createChunks(javaFiles, this.scanChunkSize);
+		for(int i = 0; i < chunks.size(); i++) {
+			ASTParser parser = createParser(project, ignoreMethodBodies);
+			parser.createASTs(chunks.get(i), null, new String[0], requestor, null);
+		}
 		
 		EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
 		Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
@@ -497,14 +501,18 @@ public class SpringIndexerJava implements SpringIndexer {
 				}
 			};
 			
-			String[] pass2Files = scanFiles(project, javaFiles, generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.ONE);
-			if (pass2Files.length > 0) {
+			List<String[]> chunks = createChunks(javaFiles, this.scanChunkSize);
+			for (int i = 0; i < chunks.size(); i++) {
 
-				log.info("scan java files, AST parse, pass 2 for files: {}", javaFiles.length);
+				log.info("scan java files, AST parse, chunk {} for files: {}", i, javaFiles.length);
+	            String[] pass2Files = scanFiles(project, chunks.get(i), generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.ONE);
 
-				scanFiles(project, pass2Files, generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.TWO);
-			}
-
+	            if (pass2Files.length > 0) {
+					log.info("scan java files, AST parse, pass 2, chunk {} for files: {}", i, javaFiles.length);
+					scanFiles(project, pass2Files, generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.TWO);
+				}
+	        }
+			
 			log.info("scan java files done, number of symbols created: " + generatedSymbols.size());
 
 			this.cache.store(symbolsCacheKey, javaFiles, generatedSymbols, dependencyTracker.getAllDependencies(), CachedSymbol.class);
@@ -542,9 +550,8 @@ public class SpringIndexerJava implements SpringIndexer {
 				javaFiles.length, "Spring Tools: Indexing Java Sources for '" + project.getElementName() + "'");
 
 		try {
-			final boolean ignoreMethodBodies = SCAN_PASS.ONE.equals(pass);
-			ASTParser parser = createParser(project, ignoreMethodBodies);
 			List<String> nextPassFiles = new ArrayList<>();
+			final boolean ignoreMethodBodies = SCAN_PASS.ONE.equals(pass);
 	
 			FileASTRequestor requestor = new FileASTRequestor() {
 
@@ -565,6 +572,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				}
 			};
 	
+			ASTParser parser = createParser(project, ignoreMethodBodies);
 			parser.createASTs(javaFiles, null, new String[0], requestor, null);
 
 			return (String[]) nextPassFiles.toArray(new String[nextPassFiles.size()]);
@@ -830,6 +838,24 @@ public class SpringIndexerJava implements SpringIndexer {
 //		return new IndexCacheKey(project.getElementName(), "java", elementType, DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
 		return new IndexCacheKey(project.getElementName(), "java", elementType, DigestUtils.md5Hex(GENERATION + "-" + validationSeveritySettings.toString() + "-" + classpathIdentifier).toUpperCase());
 	}
+	
+	private List<String[]> createChunks(String[] sourceArray, int chunkSize) {
+
+		int numberOfChunks = (int) Math.ceil((double) sourceArray.length / chunkSize);
+		List<String[]> result = new ArrayList<>();
+
+		for (int i = 0; i < numberOfChunks; i++) {
+			int startIdx = i * chunkSize;
+			int endIdx = Math.min(startIdx + chunkSize, sourceArray.length);
+
+			String[] chunk = new String[endIdx - startIdx];
+			System.arraycopy(sourceArray, startIdx, chunk, 0, endIdx - startIdx);
+			
+			result.add(chunk);
+		}
+		
+		return result;
+	}
 
 	public void setScanTestJavaSources(boolean scanTestJavaSources) {
 		if (this.scanTestJavaSources != scanTestJavaSources) {
@@ -900,10 +926,14 @@ public class SpringIndexerJava implements SpringIndexer {
 		this.fileScanListener = fileScanListener;
 	}
 
+	public void setScanChunkSize(int chunkSize) {
+		this.scanChunkSize = chunkSize;
+	}
+
 	private void fileScannedEvent(String file) {
 		if (fileScanListener != null) {
 			fileScanListener.fileScanned(file);
 		}
 	}
-
+	
 }
