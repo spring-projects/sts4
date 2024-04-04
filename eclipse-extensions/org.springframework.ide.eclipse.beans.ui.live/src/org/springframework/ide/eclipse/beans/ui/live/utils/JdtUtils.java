@@ -41,7 +41,7 @@ public class JdtUtils {
 		if (project.isAccessible()) {
 			try {
 				if (project.hasNature(JavaCore.NATURE_ID)) {
-					return (IJavaProject) project.getNature(JavaCore.NATURE_ID);
+					return JavaCore.create(project);
 				}
 			} catch (CoreException e) {
 				LiveBeansUiPlugin.getDefault().getLog().log(new Status(IStatus.ERROR, LiveBeansUiPlugin.PLUGIN_ID,
