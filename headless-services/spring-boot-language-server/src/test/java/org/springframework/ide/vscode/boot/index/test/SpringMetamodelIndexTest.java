@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.assertj.core.util.Arrays;
 import org.eclipse.lsp4j.Location;
@@ -35,7 +37,7 @@ import com.google.gson.Gson;
 public class SpringMetamodelIndexTest {
 
 	private InjectionPoint[] emptyInjectionPoints = new InjectionPoint[0];
-	private String[] emptySupertypes = new String[0];
+	private Set<String> emptySupertypes = new HashSet<>();
 	private String[] emptyAnnotations = new String[0];
 	
 	private Location locationForDoc1 = new Location("docURI1", new Range(new Position(1, 1), new Position(1, 10)));
@@ -221,7 +223,7 @@ public class SpringMetamodelIndexTest {
 		InjectionPoint point1 = new InjectionPoint("point1", "point1-type", locationForDoc2);
 		InjectionPoint point2 = new InjectionPoint("point2", "point2-type", locationForDoc1);
 
-		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, new InjectionPoint[] {point1, point2}, new String[] {"supertype1", "supertype2"}, emptyAnnotations);
+		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, new InjectionPoint[] {point1, point2}, Set.of("supertype1", "supertype2"), emptyAnnotations);
 		String serialized = bean1.toString();
 		
 		Gson gson = IndexCacheOnDisc.createGson();
@@ -286,8 +288,8 @@ public class SpringMetamodelIndexTest {
 	@Test
 	void testFindMatchingBeansWithOneProject() {
 		SpringMetamodelIndex index = new SpringMetamodelIndex();
-		Bean bean1 = new Bean("beanName1", "beanType1", locationForDoc1, emptyInjectionPoints, new String[] {"supertype1", "supertype2"}, emptyAnnotations);
-		Bean bean2 = new Bean("beanName2", "beanType2", locationForDoc1, emptyInjectionPoints, new String[] {"supertype3", "supertype4", "supertype5"}, emptyAnnotations);
+		Bean bean1 = new Bean("beanName1", "beanType1", locationForDoc1, emptyInjectionPoints, Set.of("supertype1", "supertype2"), emptyAnnotations);
+		Bean bean2 = new Bean("beanName2", "beanType2", locationForDoc1, emptyInjectionPoints, Set.of("supertype3", "supertype4", "supertype5"), emptyAnnotations);
 		
 		index.updateBeans("someProject", new Bean[] {bean1, bean2});
 		
@@ -313,11 +315,11 @@ public class SpringMetamodelIndexTest {
 	@Test
 	void testFindMatchingBeansWithMultipleProjects() {
 		SpringMetamodelIndex index = new SpringMetamodelIndex();
-		Bean bean1 = new Bean("beanName1", "beanType1", locationForDoc1, emptyInjectionPoints, new String[] {"supertype1", "supertype2"}, emptyAnnotations);
-		Bean bean2 = new Bean("beanName2", "beanType2", locationForDoc1, emptyInjectionPoints, new String[] {"supertype3", "supertype4, supertype5"}, emptyAnnotations);
+		Bean bean1 = new Bean("beanName1", "beanType1", locationForDoc1, emptyInjectionPoints, Set.of("supertype1", "supertype2"), emptyAnnotations);
+		Bean bean2 = new Bean("beanName2", "beanType2", locationForDoc1, emptyInjectionPoints, Set.of("supertype3", "supertype4, supertype5"), emptyAnnotations);
 		
-		Bean bean3 = new Bean("beanName3", "beanType1", locationForDoc1, emptyInjectionPoints, new String[] {"supertype1", "supertype2"}, emptyAnnotations);
-		Bean bean4 = new Bean("beanName4", "beanType2", locationForDoc1, emptyInjectionPoints, new String[] {"supertype3", "supertype4, supertype5"}, emptyAnnotations);
+		Bean bean3 = new Bean("beanName3", "beanType1", locationForDoc1, emptyInjectionPoints, Set.of("supertype1", "supertype2"), emptyAnnotations);
+		Bean bean4 = new Bean("beanName4", "beanType2", locationForDoc1, emptyInjectionPoints, Set.of("supertype3", "supertype4, supertype5"), emptyAnnotations);
 
 		index.updateBeans("projectA", new Bean[] {bean1, bean2});
 		index.updateBeans("projectB", new Bean[] {bean3, bean4});

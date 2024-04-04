@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2023 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -451,7 +451,7 @@ public class IndexCacheOnDisc implements IndexCache {
 	}
 
 	/**
-	 * gson adapter to store subtype information for symbol addon informations
+	 * gson adapter to store subtype information for beans
 	 */
 	private static class BeanJsonAdapter implements JsonDeserializer<Bean> {
 
@@ -469,7 +469,7 @@ public class IndexCacheOnDisc implements IndexCache {
 	        InjectionPoint[] injectionPoints = context.deserialize(injectionPointObject, InjectionPoint[].class);
 	        	        
 	        JsonElement supertypesObject = parsedObject.get("supertypes");
-	        String[] supertypes = context.deserialize(supertypesObject, String[].class);
+	        Set<String> supertypes = context.deserialize(supertypesObject, Set.class);
 	        
 	        JsonElement annotationsObject = parsedObject.get("annotations");
 	        String[] annotations = annotationsObject == null? new String[0] : context.deserialize(annotationsObject, String[].class);

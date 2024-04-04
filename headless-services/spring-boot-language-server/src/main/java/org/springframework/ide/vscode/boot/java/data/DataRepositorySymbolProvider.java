@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2023 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -73,7 +73,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 				ASTUtils.findSupertypes(concreteBeanTypeBindung, supertypes);
 
 				String concreteRepoType = concreteBeanTypeBindung.getQualifiedName();
-				Bean beanDefinition = new Bean(beanName, concreteRepoType, location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]), new String[0]);
+				Bean beanDefinition = new Bean(beanName, concreteRepoType, location, injectionPoints, supertypes, new String[0]);
 				
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));

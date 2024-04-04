@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.spring;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.lsp4j.Location;
@@ -27,10 +25,11 @@ public class Bean {
 	private final Set<String> supertypes;
 	private final String[] annotations;
 
-	public Bean(String name, String type, Location location, InjectionPoint[] injectionPoints, String[] supertypes, String[] annotations) {
+	public Bean(String name, String type, Location location, InjectionPoint[] injectionPoints, Set<String> supertypes, String[] annotations) {
 		this.name = name;
 		this.type = type;
 		this.location = location;
+		this.annotations = annotations;
 
 		if (injectionPoints != null && injectionPoints.length == 0) {
 			this.injectionPoints = DefaultValues.EMPTY_INJECTION_POINTS;
@@ -38,9 +37,17 @@ public class Bean {
 		else {
 			this.injectionPoints = injectionPoints;
 		}
+		
+		if (supertypes != null && supertypes.size() == 0) {
+			this.supertypes = DefaultValues.EMPTY_SUPERTYPES;
+		}
+		else if (supertypes != null && supertypes.size() == 1 && supertypes.contains("java.lang.Object")) {
+			this.supertypes = DefaultValues.OBJECT_SUPERTYPE;
+		}
+		else {
+			this.supertypes = supertypes;
+		}
 
-		this.supertypes = new HashSet<>(Arrays.asList(supertypes));
-		this.annotations = annotations;
 	}
 	
 	public String getName() {

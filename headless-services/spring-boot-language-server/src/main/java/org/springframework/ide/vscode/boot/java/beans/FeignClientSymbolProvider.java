@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -94,7 +94,7 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 		
 		String[] annotations = Stream.concat(Stream.of(annotationType), metaAnnotations.stream()).map(t -> t.getQualifiedName()).toArray(String[]::new);
 
-		Bean beanDefinition = new Bean(beanName, beanType == null ? "" : beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]), annotations);
+		Bean beanDefinition = new Bean(beanName, beanType == null ? "" : beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations);
 
 		return Tuple.two(new EnhancedSymbolInformation(symbol, addon), beanDefinition);
 	}
