@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.WorkingCopyOwner;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.eclipse.jdt.internal.compiler.ICompilerRequestor;
 import org.eclipse.jdt.internal.compiler.IErrorHandlingPolicy;
 import org.eclipse.jdt.internal.compiler.IProblemFactory;
@@ -217,6 +218,27 @@ class CUResolver {
 		return null;
 	};
 	
+	private static final Supplier<Method> RESOLVE_SOURCE_FILES_METHOD = () -> {
+		try {
+			Class<?> clazz = COMPILATION_UNIT_RESOLVER_CLASS.get();
+			if (clazz != null) {
+				Method resolveMethod = clazz.getDeclaredMethod("resolve", 
+						String[].class, // sourceCompilationUnits
+						String[].class, // encodings
+						String[].class, //bindingKeys
+						FileASTRequestor.class, // astRequestor
+						int.class, // apiLevel
+						Map.class, // compilerOptions
+						int.class); // flags
+				resolveMethod.setAccessible(true);
+				return resolveMethod;
+			}
+		} catch (NoSuchMethodException | SecurityException e) {
+			log.error("{}", e);
+		}
+		return null;
+	};
+	
 	private static final Supplier<Method> CONVERT_METHOD = () -> {
 		try {
 			Class<?> clazz = COMPILATION_UNIT_RESOLVER_CLASS.get();
@@ -299,6 +321,57 @@ class CUResolver {
 		}
 		return null;
 	}
+	
+	static void resolve(
+			String[] sourceUnits,
+			String[] encodings,
+			String[] bindingKeys,
+			FileASTRequestor requestor,
+			int apiLevel,
+			Map<String, String> options,
+			int flags,
+			INameEnvironmentWithProgress environment) {
+		
+		CancelableProblemFactory problemFactory = null;
+		try {
+			problemFactory = new CancelableProblemFactory(new NullProgressMonitor());
+
+			CompilerOptions compilerOptions = (CompilerOptions) GET_COMPILER_OPTIONS_METHOD.get().invoke(null, options,
+					(flags & ICompilationUnit.ENABLE_STATEMENTS_RECOVERY) != 0);
+			compilerOptions.ignoreMethodBodies = (flags & ICompilationUnit.IGNORE_METHOD_BODIES) != 0;
+
+			Object resolver = COMPILATION_UNIT_RESOLVER_CONSTRUCTOR.get().newInstance(environment,
+					GET_HANDLER_POLICY_METHOD.get().invoke(null), compilerOptions,
+					GET_REQUESTOR_METHOD.get().invoke(null), problemFactory, new NullProgressMonitor(), false);
+
+			//				CompilationUnitResolver resolver =
+			//					new CompilationUnitResolver(
+			//						environment,
+			//						getHandlingPolicy(),
+			//						compilerOptions,
+			//						getRequestor(),
+			//						problemFactory,
+			//						subMonitor,
+			//						false);
+
+			RESOLVE_SOURCE_FILES_METHOD.get().invoke(resolver,
+					sourceUnits, encodings, bindingKeys, requestor, apiLevel, options, flags);
+
+			//				resolver.resolve(sourceUnits, encodings, bindingKeys, requestor, apiLevel, options, flags);
+		}
+		catch (Exception e) {
+			log.error("{}", e);
+		}
+		finally {
+			if (environment != null) {
+				environment.setMonitor(null); // don't hold a reference to this external object
+			}
+			if (problemFactory != null) {
+				problemFactory.monitor = null; // don't hold a reference to this external object
+			}
+		}
+	}
+
 	
 	static CompilationUnitDeclaration parse(org.eclipse.jdt.internal.compiler.env.ICompilationUnit sourceUnit, Map<String, String> options, int flags) {
 		try {

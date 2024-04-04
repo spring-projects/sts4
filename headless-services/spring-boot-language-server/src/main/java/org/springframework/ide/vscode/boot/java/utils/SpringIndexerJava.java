@@ -34,9 +34,6 @@ import java.util.stream.Stream;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -264,7 +261,7 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private void scanFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception {
 		final boolean ignoreMethodBodies = false;
-		ASTParser parser = createParser(project, ignoreMethodBodies);
+		ASTParserCleanupEnabled parser = createParser(project, ignoreMethodBodies);
 		
 		String docURI = updatedDoc.getDocURI();
 		long lastModified = updatedDoc.getLastModified();
@@ -420,8 +417,9 @@ public class SpringIndexerJava implements SpringIndexer {
 
 		List<String[]> chunks = createChunks(javaFiles, this.scanChunkSize);
 		for(int i = 0; i < chunks.size(); i++) {
-			ASTParser parser = createParser(project, ignoreMethodBodies);
+			ASTParserCleanupEnabled parser = createParser(project, ignoreMethodBodies);
 			parser.createASTs(chunks.get(i), null, new String[0], requestor, null);
+			parser.cleanup();
 		}
 		
 		EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
@@ -572,8 +570,9 @@ public class SpringIndexerJava implements SpringIndexer {
 				}
 			};
 	
-			ASTParser parser = createParser(project, ignoreMethodBodies);
+			ASTParserCleanupEnabled parser = createParser(project, ignoreMethodBodies);
 			parser.createASTs(javaFiles, null, new String[0], requestor, null);
+			parser.cleanup();
 
 			return (String[]) nextPassFiles.toArray(new String[nextPassFiles.size()]);
 		}
@@ -768,22 +767,11 @@ public class SpringIndexerJava implements SpringIndexer {
 		return null;
 	}
 
-	public static ASTParser createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
+	public static ASTParserCleanupEnabled createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
 		String[] classpathEntries = getClasspathEntries(project);
 		String[] sourceEntries = getSourceEntries(project);
 		
-		ASTParser parser = ASTParser.newParser(AST.JLS21);
-		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_21, options);
-		parser.setCompilerOptions(options);
-		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		parser.setStatementsRecovery(true);
-		parser.setBindingsRecovery(true);
-		parser.setResolveBindings(true);
-		parser.setIgnoreMethodBodies(ignoreMethodBodies);
-
-		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
-		return parser;
+		return new ASTParserCleanupEnabled(classpathEntries, sourceEntries, ignoreMethodBodies);
 	}
 
 	private static String[] getClasspathEntries(IJavaProject project) throws Exception {
