@@ -75,7 +75,7 @@ interface LiveProcessDataQuery {
 }
 
 interface SimpleQuery extends LiveProcessDataQuery {
-    endpoint: "mappings" | "contextPath" | "port" | "properties";
+    endpoint: "mappings" | "contextPath" | "port" | "properties" | "profiles";
 }
 
 interface BeansQuery extends LiveProcessDataQuery {

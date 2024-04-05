@@ -320,6 +320,9 @@ public class SpringProcessCommandHandler {
 				case "port": {
 					return CompletableFuture.completedFuture(data.getPort());
 				}
+				case "profiles": {
+					return CompletableFuture.completedFuture(data.getActiveProfiles());
+				}
 				default: {}
 			}
 		}
