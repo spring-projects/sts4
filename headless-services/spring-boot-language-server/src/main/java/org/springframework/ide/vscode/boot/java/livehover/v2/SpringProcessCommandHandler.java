@@ -295,7 +295,8 @@ public class SpringProcessCommandHandler {
 		String endpoint = getArgumentByKey(params, "endpoint");
 		if (processKey != null) {
 			SpringProcessLiveData data = connectorService.getLiveData(processKey);
-			switch(endpoint) {
+			if (data != null) {
+				switch(endpoint) {
 				case "properties": {
 					return CompletableFuture.completedFuture(data.getLiveProperties());
 				}
@@ -324,10 +325,13 @@ public class SpringProcessCommandHandler {
 					return CompletableFuture.completedFuture(data.getActiveProfiles());
 				}
 				default: {}
+				}
+			} else {
+				return CompletableFuture.failedFuture(new IllegalStateException("Live Data is not yet available!"));
 			}
 		}
 		
-		return CompletableFuture.completedFuture(null);
+		return CompletableFuture.failedFuture(new IllegalStateException("Live process key is missing from the request parameters!"));
 	}
 	
 	private CompletableFuture<Object> handleLiveMetricsProcessRequest(ExecuteCommandParams params) {

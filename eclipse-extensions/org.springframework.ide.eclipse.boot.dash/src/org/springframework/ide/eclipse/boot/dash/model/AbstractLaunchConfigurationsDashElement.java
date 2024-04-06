@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2023 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -38,9 +39,11 @@ import org.springframework.ide.eclipse.boot.dash.util.CollectionUtils;
 import org.springframework.ide.eclipse.boot.dash.util.LaunchConfRunStateTracker;
 import org.springframework.ide.eclipse.boot.dash.util.RunStateTracker.RunStateListener;
 import org.springframework.ide.eclipse.boot.launch.BootLaunchConfigurationDelegate;
+import org.springframework.ide.eclipse.boot.launch.BootLsCommandUtils;
 import org.springframework.ide.eclipse.boot.launch.cli.CloudCliServiceLaunchConfigurationDelegate;
 import org.springframework.ide.eclipse.boot.launch.util.BootDebugUITools;
 import org.springframework.ide.eclipse.boot.launch.util.BootLaunchUtils;
+import org.springframework.ide.eclipse.boot.launch.util.JMXClient;
 import org.springframework.ide.eclipse.boot.launch.util.SpringApplicationLifeCycleClientManager;
 import org.springframework.ide.eclipse.boot.launch.util.SpringApplicationLifecycleClient;
 import org.springframework.ide.eclipse.boot.util.RetryUtil;
@@ -58,6 +61,7 @@ import org.springsource.ide.eclipse.commons.ui.launch.LaunchUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * Abstracts out the commonalities between {@link BootProjectDashElement} and {@link LaunchConfDashElement}. Each can
@@ -91,6 +95,7 @@ public abstract class AbstractLaunchConfigurationsDashElement<T> extends Wrappin
 	private PollingLiveExp<Failable<ImmutableList<RequestMapping>>> liveRequestMappings;
 	private PollingLiveExp<Failable<LiveBeansModel>> liveBeans;
 	private PollingLiveExp<Failable<LiveEnvModel>> liveEnv;
+	private PollingLiveExp<Failable<ImmutableSet<String>>> liveProfiles;
 
 	public AbstractLaunchConfigurationsDashElement(LocalBootDashModel bootDashModel, T delegate) {
 		super(bootDashModel, delegate);
@@ -591,6 +596,42 @@ public abstract class AbstractLaunchConfigurationsDashElement<T> extends Wrappin
 		}
 	}
 
+	@Override
+	public Failable<ImmutableSet<String>> getLiveProfiles() {
+		synchronized (this) {
+			if (liveProfiles == null) {
+				liveProfiles = PollingLiveExp.create(Failable.<ImmutableSet<String>>error(MissingLiveInfoMessages.NOT_YET_COMPUTED), () -> {
+					try {
+						String localJmxUrl = JMXClient.createLocalJmxUrl(getJmxPort());
+						if (localJmxUrl == null) {
+							return Failable.error(getBootDashModel().getRunTarget().getType().getMissingLiveInfoMessages().getMissingInfoMessage(getName(), "profiles"));
+						}
+						String[] o = BootLsCommandUtils.executeCommand(TypeToken.get(String[].class), "sts/livedata/get", Map.of(
+								"endpoint", "profiles",
+								"processKey", localJmxUrl
+						)).get().orElse(new String[0]);
+						liveProfiles.refreshOnce();
+						return Failable.of(ImmutableSet.copyOf(o));
+					} catch (Exception e) {
+						return Failable.error(getBootDashModel().getRunTarget().getType().getMissingLiveInfoMessages().getMissingInfoMessage(getName(), "profiles"));
+					}
+				});
+				addElementState(liveProfiles);
+				addDisposableChild(liveProfiles);
+				runState.addListener((e, runstate) -> {
+					if (READY_STATES.contains(runstate)) {
+						// After the app is running refresh for 5 sec every 1 sec until active profiles are fetched
+						liveProfiles.sleepBetweenRefreshes(Duration.ofSeconds(1));
+						liveProfiles.refreshFor(Duration.ofSeconds(5));
+					} else {
+						liveProfiles.refreshOnce();
+					}
+				});
+			}
+			return liveProfiles.getValue();
+		}
+	}
+
 	private int getJmxPort() {
 		for (ILaunchConfiguration c : getLaunchConfigs()) {
 			for (ILaunch l : LaunchUtils.getLaunches(c)) {
@@ -682,6 +723,18 @@ public abstract class AbstractLaunchConfigurationsDashElement<T> extends Wrappin
 	@Override
 	public LocalRunTarget getTarget() {
 		return (LocalRunTarget) super.getTarget();
+	}
+
+	@Override
+	public ImmutableSet<String> getActiveProfiles() {
+		ILaunchConfiguration launchConfig = getActiveConfig();
+		if (launchConfig != null) {
+			String profile = BootLaunchConfigurationDelegate.getProfile(launchConfig);
+			if (profile != null) {
+				return ImmutableSet.of(profile);
+			}
+		}
+		return ImmutableSet.of();
 	}
 
 }

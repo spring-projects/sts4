@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2023 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,6 +29,7 @@ public class BootDashColumn {
 	public static final BootDashColumn NAME = new BootDashColumn("NAME");
 	public static final BootDashColumn HOST = new BootDashColumn("HOST");
 	public static final BootDashColumn LIVE_PORT = new BootDashColumn("LIVE_PORT");
+	public static final BootDashColumn ACTIVE_PROFILES = new BootDashColumn("ACTIVE_PROFILES");
 	public static final BootDashColumn DEFAULT_PATH = new BootDashColumn("DEFAULT_PATH");
 	public static final BootDashColumn TAGS = new BootDashColumn("TAGS");
 	public static final BootDashColumn DEVTOOLS = new BootDashColumn("DEVTOOLS");

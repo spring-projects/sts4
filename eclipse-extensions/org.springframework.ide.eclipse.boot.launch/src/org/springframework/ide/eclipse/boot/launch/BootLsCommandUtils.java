@@ -44,7 +44,7 @@ public class BootLsCommandUtils {
 	public static <T> CompletableFuture<Optional<T>> executeCommand(TypeToken<T> resType, String cmd, Object... params) {
 		return getLanguageServers(cmd).computeFirst(ls -> ls.getWorkspaceService().executeCommand(new ExecuteCommandParams(
 				cmd,
-				ImmutableList.of(params)
+				ImmutableList.copyOf(params)
 		))).thenApply(o -> o.map(v -> GSON.fromJson(GSON.toJsonTree(v), resType)));
 	}
 

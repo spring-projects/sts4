@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal Software, Inc.
+ * Copyright (c) 2020, 2024 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.springframework.ide.eclipse.boot.dash.model.remote;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -66,6 +67,7 @@ import org.springframework.ide.eclipse.boot.dash.model.actuator.ActuatorClient;
 import org.springframework.ide.eclipse.boot.dash.model.actuator.JMXActuatorClient;
 import org.springframework.ide.eclipse.boot.dash.model.actuator.RequestMapping;
 import org.springframework.ide.eclipse.boot.dash.model.actuator.env.LiveEnvModel;
+import org.springframework.ide.eclipse.boot.launch.BootLsCommandUtils;
 import org.springsource.ide.eclipse.commons.core.pstore.IPropertyStore;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStoreApi;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStores;
@@ -85,6 +87,7 @@ import org.springsource.ide.eclipse.commons.livexp.util.OldValueDisposer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
+import com.google.gson.reflect.TypeToken;
 
 public class GenericRemoteAppElement extends WrappingBootDashElement<String> implements Deletable, AppContext, Styleable, ElementStateListener, JmxConnectable, LiveDataCapableElement {
 
@@ -457,6 +460,10 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 		return getRunStateExp().getValue();
 	}
 
+	public ImmutableSet<String> getActiveProfiles() {
+		return ImmutableSet.of();
+	}
+
 	private LiveExpression<RunState> getRunStateExp() {
 		return jmxRunStateTracker.augmentedRunState;
 	}
@@ -681,6 +688,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 	private LiveExpression<Failable<ImmutableList<RequestMapping>>> liveRequestMappings;
 	private LiveExpression<Failable<LiveEnvModel>> liveEnv;
 	private LiveExpression<Failable<LiveBeansModel>> liveBeans;
+	private LiveExpression<Failable<ImmutableSet<String>>> liveProfiles;
 
 	@Override
 	public Failable<ImmutableList<RequestMapping>> getLiveRequestMappings() {
@@ -713,6 +721,43 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 			}
 		}
 		return liveRequestMappings.getValue();
+	}
+
+	@Override
+	public Failable<ImmutableSet<String>> getLiveProfiles() {
+		synchronized (this) {
+			if (liveProfiles == null) {
+				final LiveExpression<Set<String>> actuatorUrls = getActuatorUrls();
+				liveProfiles = new AsyncLiveExpression<>(Failable.error(MissingLiveInfoMessages.NOT_YET_COMPUTED), "Fetch active profiles for '"+getStyledName(null).getString()+"'") {
+					@Override
+					protected Failable<ImmutableSet<String>> compute() {
+						Set<String> targets = actuatorUrls.getValue();
+						if (targets!=null && !targets.isEmpty()) {
+							if (targets.size() == 1) {
+								String target = targets.iterator().next();
+								try {
+									String[] o = BootLsCommandUtils.executeCommand(TypeToken.get(String[].class), "sts/livedata/get", Map.of(
+											"endpoint", "profiles",
+											"processKey", target
+									)).get().orElse(new String[0]);
+									return Failable.of(ImmutableSet.copyOf(o));
+								} catch (Exception e) {
+									return Failable.error(getBootDashModel().getRunTarget().getType().getMissingLiveInfoMessages().getMissingInfoMessage(getStyledName(null).getString(), "profiles"));
+								}
+							} else {
+								return Failable.error(buffer -> buffer.p("More than one child can provide live data. Please select one."));
+							}
+						}
+						return Failable.error(getBootDashModel().getRunTarget().getType().getMissingLiveInfoMessages().getMissingInfoMessage(getStyledName(null).getString(), "profiles"));
+					}
+
+				};
+				liveProfiles.dependsOn(actuatorUrls);
+				addElementState(liveProfiles);
+				addDisposableChild(liveProfiles);
+			}
+		}
+		return liveProfiles.getValue();
 	}
 
 	@Override

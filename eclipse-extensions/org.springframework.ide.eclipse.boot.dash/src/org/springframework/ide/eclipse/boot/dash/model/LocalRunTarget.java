@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2023 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,7 @@ public class LocalRunTarget extends AbstractRunTarget<Void> {
 			NAME,
 			DEVTOOLS,
 			LIVE_PORT,
+			ACTIVE_PROFILES,
 			INSTANCES,
 			DEFAULT_PATH,
 			TAGS

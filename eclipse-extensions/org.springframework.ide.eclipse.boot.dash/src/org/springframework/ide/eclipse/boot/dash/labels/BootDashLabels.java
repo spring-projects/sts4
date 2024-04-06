@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2023 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashC
 import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.HOST;
 import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.INSTANCES;
 import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.LIVE_PORT;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.ACTIVE_PROFILES;
 import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.NAME;
 import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.PROGRESS;
 import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.PROJECT;
@@ -40,6 +41,7 @@ import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel;
 import org.springframework.ide.eclipse.boot.dash.model.ButtonModel;
 import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
+import org.springframework.ide.eclipse.boot.dash.model.Failable;
 import org.springframework.ide.eclipse.boot.dash.model.RefreshState;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.TagUtils;
@@ -443,6 +445,36 @@ public class BootDashLabels implements Disposable {
 						Color color = colorGreen();
 						styledLabel = new StyledString(textLabel, stylers.color(color));
 					}
+				}
+			} else if (column == ACTIVE_PROFILES) {
+				RunState runState = element.getRunState();
+				ImmutableSet<String> activeProfiles = ImmutableSet.of();
+				boolean liveProfilesAvailable = false;
+				if (runState == RunState.RUNNING || runState == RunState.DEBUGGING) {
+					Failable<ImmutableSet<String>> liveProfiles = element.getLiveProfiles();
+					if (!liveProfiles.hasFailed()) {
+						activeProfiles = liveProfiles.getValue();
+						liveProfilesAvailable = true;
+					} else {
+						activeProfiles = element.getActiveProfiles();
+					}
+				} else {
+					activeProfiles = element.getActiveProfiles();
+				}
+				String textLabel;
+				if (activeProfiles.isEmpty() || (activeProfiles.size() == 1 && activeProfiles.iterator().next().isBlank())) {
+					textLabel = "";
+				} else {
+					StringBuilder str = new StringBuilder();
+					str.append(activeProfiles.size() == 1 ? "profile: " : "profiles: ");
+					str.append(String.join(",", activeProfiles));
+					textLabel = str.toString();
+				}
+				if (stylers == null) {
+					label = textLabel;
+				} else {
+					Color color = liveProfilesAvailable ? colorGreen() : colorGrey();
+					styledLabel = new StyledString(textLabel, stylers.color(color));
 				}
 			} else if (column==DEFAULT_PATH) {
 				String path = element.getDefaultRequestMappingPath();

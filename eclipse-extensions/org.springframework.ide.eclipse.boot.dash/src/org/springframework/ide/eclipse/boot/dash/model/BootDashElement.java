@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -71,6 +71,11 @@ public interface BootDashElement extends App, Taggable {
 	Failable<LiveEnvModel> getLiveEnv();
 
 	/**
+	 * Get the live profiles from a running process
+	 */
+	Failable<ImmutableSet<String>> getLiveProfiles();
+
+	/**
 	 * Get the 'active' launch configuration. This may be null.
 	 * <p>
 	 * If only one existing configuration is associated with this element then
@@ -109,6 +114,7 @@ public interface BootDashElement extends App, Taggable {
 	ObservableSet<BootDashElement> getChildren();
 	ImmutableSet<ILaunchConfiguration> getLaunchConfigs();
 	ImmutableSet<Integer> getLivePorts();
+	ImmutableSet<String> getActiveProfiles();
 
 	/**
 	 * Fetch the parent of a BDE. If this is a nested BDE then the parent will be

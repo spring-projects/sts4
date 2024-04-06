@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -162,7 +162,7 @@ public class LocalCloudServiceDashElement extends AbstractLaunchConfigurationsDa
 
 	protected LiveExpression<Integer> createPortExpression(final LiveExpression<RunState> runState) {
 		if (CloudCliServiceLaunchConfigurationDelegate.isSingleProcessServiceConfig(getActiveConfig())) {
-			AsyncLiveExpression<Integer> exp = new AsyncLiveExpression<Integer>(-1, "Refreshing port info for "+getName()) {
+			AsyncLiveExpression<Integer> exp = new AsyncLiveExpression<>(-1, "Refreshing port info for "+getName()) {
 				{
 					//Doesn't really depend on runState, but should be recomputed when runState changes.
 					dependsOn(runState);
