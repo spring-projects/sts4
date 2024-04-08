@@ -34,8 +34,8 @@ public class SpringProcessConnectorRemote {
 
 		private String jmxurl;
 		private String host;
-		private String urlScheme = "https";
-		private String port = "443";
+		private String urlScheme;
+		private String port;
 		private boolean manualConnect = false;
 		private boolean keepChecking = true;
 			//keepChecking defaults to true. Boot dash automatic remote apps should override this explicitly.

@@ -208,7 +208,6 @@ public class BootDashActivator extends AbstractUIPlugin {
 										if (pid != null) {
 											CommandInfo cmd = new CommandInfo("sts/livedata/localAdd", Map.of(
 								                    "host", "127.0.0.1",
-								                    "port", l.getAttribute(BootLaunchConfigurationDelegate.JMX_PORT),
 								                    "urlScheme", "http",
 								                    "jmxurl", "service:jmx:rmi:///jndi/rmi://127.0.0.1:%s/jmxrmi".formatted(l.getAttribute(BootLaunchConfigurationDelegate.JMX_PORT)),
 								                    "manualConnect", !BootLaunchConfigurationDelegate.getAutoConnect(owner),
