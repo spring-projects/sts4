@@ -56,6 +56,7 @@ import org.springframework.ide.vscode.boot.java.links.JavaServerElementLocationP
 import org.springframework.ide.vscode.boot.java.links.JdtJavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.livehover.v2.ProcessType;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote.RemoteBootAppData;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
@@ -203,7 +204,7 @@ public class BootLanguageServerBootApp {
 	
 	@Bean
 	SpringProcessConnectorRemote localAppsFromCommandsConnector(SimpleLanguageServer server, SpringProcessConnectorService liveDataService) {
-		SpringProcessConnectorRemote bean = new SpringProcessConnectorRemote(server, liveDataService);
+		SpringProcessConnectorRemote bean = new SpringProcessConnectorRemote(server, liveDataService, ProcessType.LOCAL);
 		final Map<String, RemoteBootAppData> localApps = new HashMap<>();
 		final Gson gson = new Gson();
 		server.onCommand("sts/livedata/localAdd", params -> {

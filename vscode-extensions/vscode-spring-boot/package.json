@@ -1154,8 +1154,8 @@
     "vsce-pre-release-package": "vsce package --pre-release"
   },
   "dependencies": {
-    "portfinder": "1.0.32",
     "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.4.tgz",
+    "portfinder": "1.0.32",
     "ps-list": "^7.2.0",
     "vscode-languageclient": "^9.0.1"
   },

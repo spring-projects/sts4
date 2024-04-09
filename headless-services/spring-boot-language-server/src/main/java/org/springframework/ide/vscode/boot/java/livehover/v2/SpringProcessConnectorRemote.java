@@ -153,10 +153,17 @@ public class SpringProcessConnectorRemote {
 	private final Map<RemoteBootAppData, String> remoteAppInstances;
 	
 	private final SpringProcessConnectorService processConnectorService;
+	
+	private final ProcessType processType;
 
 	public SpringProcessConnectorRemote(SimpleLanguageServer server, SpringProcessConnectorService processConnector) {
+		this(server, processConnector, ProcessType.REMOTE);
+	}
+	
+	public SpringProcessConnectorRemote(SimpleLanguageServer server, SpringProcessConnectorService processConnector, ProcessType processType) {
 		this.processConnectorService = processConnector;
 		this.remoteAppInstances = new HashMap<>();
+		this.processType = processType;
 	}
 	
 	/**
@@ -227,10 +234,10 @@ public class SpringProcessConnectorRemote {
 //		boolean keepChecking = _appData.isKeepChecking();
 		
 		if (jmxURL.startsWith("http")) {
-			SpringProcessConnectorOverHttp connector = new SpringProcessConnectorOverHttp(ProcessType.REMOTE, processKey, jmxURL, urlScheme, processID, processName, projectName, host, port);
+			SpringProcessConnectorOverHttp connector = new SpringProcessConnectorOverHttp(processType, processKey, jmxURL, urlScheme, processID, processName, projectName, host, port);
 			return processConnectorService.connectProcess(processKey, connector);
 		} else {
-			SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(ProcessType.REMOTE, processKey, jmxURL, urlScheme, processID, processName, projectName, host, port);
+			SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(processType, processKey, jmxURL, urlScheme, processID, processName, projectName, host, port);
 			return processConnectorService.connectProcess(processKey, connector);
 		}
 	}
