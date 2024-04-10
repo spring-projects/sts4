@@ -21,6 +21,7 @@ jobs:
       build_type: 'release'
       p2-qualifier: 'RELEASE'
       sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
+      java_version: '17'
     secrets: inherit
 
   e431-distro:
@@ -30,6 +31,7 @@ jobs:
       build_type: 'release'
       p2-qualifier: 'RELEASE'
       sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
+      java_version: '17'
     secrets: inherit
 
   e432-distro:
@@ -39,4 +41,5 @@ jobs:
       build_type: 'release'
       p2-qualifier: 'RELEASE'
       sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
+      java_version: '21'
     secrets: inherit
