@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
@@ -30,4 +31,5 @@ public interface LanguageServerComponents {
 	default Optional<DocumentSymbolHandler> getDocumentSymbolProvider() { return Optional.empty(); }
 	default Optional<CodeLensHandler> getCodeLensHandler() { return Optional.empty(); }
 	default Optional<InlayHintHandler> getInlayHintHandler() { return Optional.empty(); }
+	default Optional<SemanticTokensHandler> getSemanticTokensHandler() { return Optional.empty(); }
 }

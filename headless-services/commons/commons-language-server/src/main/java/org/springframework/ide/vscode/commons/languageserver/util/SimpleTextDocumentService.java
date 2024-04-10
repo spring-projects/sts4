@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2022 VMware Inc.
+ * Copyright (c) 2016, 2024 VMware Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,6 +59,12 @@ import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
+import org.eclipse.lsp4j.SemanticTokens;
+import org.eclipse.lsp4j.SemanticTokensDelta;
+import org.eclipse.lsp4j.SemanticTokensDeltaParams;
+import org.eclipse.lsp4j.SemanticTokensParams;
+import org.eclipse.lsp4j.SemanticTokensRangeParams;
+import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SymbolInformation;
@@ -81,6 +87,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
+import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensHandler;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -122,6 +129,9 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	private CodeLensResolveHandler codeLensResolveHandler;
 	private CodeActionHandler codeActionHandler;
 	private InlayHintHandler inlayHintHandler;
+	private SemanticTokensHandler semanticTokensHandler;
+	
+	TextDocumentClientCapabilities clientCapabilities;
 
 	final private ApplicationContext appContext;
 
@@ -446,6 +456,34 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		}
 	}
 	
+	@Override
+	public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params) {
+		if (semanticTokensHandler == null) {
+			return CompletableFuture.completedFuture(new SemanticTokens());
+		} else {
+			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelChecker -> semanticTokensHandler.semanticTokensFull(params, cancelChecker));
+		}
+	}
+
+	@Override
+	public CompletableFuture<Either<SemanticTokens, SemanticTokensDelta>> semanticTokensFullDelta(
+			SemanticTokensDeltaParams params) {
+		if (semanticTokensHandler == null) {
+			return CompletableFuture.completedFuture(Either.forLeft(new SemanticTokens()));
+		} else {
+			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelChecker -> semanticTokensHandler.semanticTokensFullDelta(params, cancelChecker));
+		}
+	}
+
+	@Override
+	public CompletableFuture<SemanticTokens> semanticTokensRange(SemanticTokensRangeParams params) {
+		if (semanticTokensHandler == null) {
+			return CompletableFuture.completedFuture(new SemanticTokens());
+		} else {
+			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelChecker -> semanticTokensHandler.semanticTokensRange(params, cancelChecker));
+		}
+	}
+
 	private List<Either<Command, CodeAction>> computeCodeActions(CancelChecker cancelToken, CodeActionCapabilities capabilities, TextDocument doc, CodeActionParams params) {
 		Builder<Either<Command,CodeAction>> listBuilder = ImmutableList.builder();
 		CodeActionContext context = params.getContext();
@@ -702,10 +740,19 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public boolean hasCodeLensResolveProvider() {
 		return this.codeLensResolveHandler != null;
 	}
+	
+	final SemanticTokensWithRegistrationOptions getSemanticTokensWithRegistrationOptions() {
+		return semanticTokensHandler == null ? null : semanticTokensHandler.getCapability();
+	}
 
 	public synchronized void onDocumentSymbol(DocumentSymbolHandler h) {
 		Assert.isNull("A DocumentSymbolHandler is already set, multiple handlers not supported yet", documentSymbolHandler);
 		this.documentSymbolHandler = h;
+	}
+	
+	public synchronized void onSemanticTokens(SemanticTokensHandler h) {
+		Assert.isNull("A SemanticTokensHandler is already set, multiple handlers not supported yet", semanticTokensHandler);
+		this.semanticTokensHandler = h;
 	}
 
 	public boolean hasDocumentSymbolHandler() {
@@ -721,7 +768,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		return this.documentHighlightHandler != null;
 	}
 
-	 public synchronized void onCompletion(CompletionHandler h) {
+	public synchronized void onCompletion(CompletionHandler h) {
 		Assert.isNull("A completion handler is already set, multiple handlers not supported yet", completionHandler);
 		this.completionHandler = h;
 	}
@@ -748,5 +795,5 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public boolean hasReferencesHandler() {
 		return this.referencesHandler != null;
 	}
-
+	
 }

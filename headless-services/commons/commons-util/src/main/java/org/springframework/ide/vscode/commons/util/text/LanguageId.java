@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,6 +32,7 @@ public class LanguageId {
 	public static final LanguageId BOOT_PROPERTIES = of("spring-boot-properties");
 	public static final LanguageId BOOT_PROPERTIES_YAML = of("spring-boot-properties-yaml");
 	public static final LanguageId SPRING_FACTORIES = of("spring-factories");
+	public static final LanguageId JPA_QUERY_PROPERTIES = of("jpa-query-properties");
 
 	private final String id;
 

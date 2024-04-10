@@ -43,6 +43,9 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		
 		addField(new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", fieldEditorParent));
 
+		// JPQL Support switch
+		addField(new BooleanFieldEditor(Constants.PREF_JPQL, "JPA Query language support", fieldEditorParent));
+
 		// Experimental Modulith support
 		addField(new BooleanFieldEditor(Constants.PREF_MODULITH, "Spring Boot Modulith automatic project tracking and metadata update", fieldEditorParent));
 		

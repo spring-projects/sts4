@@ -69,6 +69,16 @@
           "*.factories"
         ],
         "configuration": "./properties-support/language-configuration.json"
+      },
+      {
+        "id": "jpa-query-properties",
+        "aliases": [
+          "JPA Query Properties"
+        ],
+        "filenamePatterns": [
+          "jpa-named-queries.properties"
+        ],
+        "configuration": "./properties-support/language-configuration.json"
       }
     ],
     "menus": {
@@ -299,6 +309,11 @@
               "null"
             ],
             "description": "The path to a shared properties metadata JSON file."
+          },
+          "boot-java.jpql": {
+            "type": "boolean",
+            "default": true,
+            "description": "JPA Query language support"
           },
           "boot-java.change-detection.on": {
             "type": "boolean",
@@ -1138,9 +1153,14 @@
         "path": "./properties-support/spring-boot-properties.tmLanguage.json"
       },
       {
+        "language": "jpa-query-properties",
+        "scopeName": "source.jpa-query-properties",
+        "path": "./properties-support/jpa-query-properties.tmLanguage.json"
+      },
+      {
         "language": "spring-factories",
         "scopeName": "source.spring-factories",
-        "path": "./properties-support/spring-boot-properties.tmLanguage.json"
+        "path": "./properties-support/spring-factories.tmLanguage.json"
       }
     ]
   },

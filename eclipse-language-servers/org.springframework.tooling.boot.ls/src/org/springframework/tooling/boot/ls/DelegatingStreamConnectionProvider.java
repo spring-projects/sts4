@@ -206,6 +206,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		validation.put("spel", validationSpelExpressions);
 		validation.put("java", javaValidation);
 
+		bootJavaObj.put("jpql", preferenceStore.getBoolean(Constants.PREF_JPQL));
 		bootJavaObj.put("live-information", liveInformation);
 		bootJavaObj.put("support-spring-xml-config", supportXML);
 		bootJavaObj.put("change-detection", bootChangeDetection);

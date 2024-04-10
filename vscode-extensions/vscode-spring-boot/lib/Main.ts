@@ -27,6 +27,7 @@ const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
 const JAVA_LANGUAGE_ID = "java";
 const XML_LANGUAGE_ID = "xml";
 const FACTORIES_LANGUAGE_ID = "spring-factories";
+const JPA_QUERY_PROPERTIES_LANGUAGE_ID = "jpa-query-properties";
 
 const STOP_ASKING = "Stop Asking";
 
@@ -122,6 +123,10 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
                 {
                     language: FACTORIES_LANGUAGE_ID,
                     scheme: 'file'
+                },
+                {
+                    language: JPA_QUERY_PROPERTIES_LANGUAGE_ID,
+                    pattern: "**/jpa-named-queries.properties"
                 }
             ],
             synchronize: {

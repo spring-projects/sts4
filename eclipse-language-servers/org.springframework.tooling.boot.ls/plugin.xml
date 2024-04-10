@@ -86,6 +86,11 @@
             contentType="org.springframework.boot.ide.pom.xml"
             id="org.eclipse.languageserver.languages.springboot">
       </contentTypeMapping>
+      <contentTypeMapping
+            contentType="org.springframework.boot.ide.boot.jpa-named-queries"
+            id="org.eclipse.languageserver.languages.springboot"
+            languageId="jpa-query-properties">
+      </contentTypeMapping>
       
    </extension>
 
@@ -187,6 +192,18 @@
       <file-association
             content-type="org.springframework.boot.ide.pom.xml"
             file-names="pom.xml">
+      </file-association>
+      <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="UTF-8"
+            file-names="jpa-named-queries.properties"
+            id="org.springframework.boot.ide.boot.jpa-named-queries"
+            name="JPA Named Queries File"
+            priority="high">
+      </content-type>
+      <file-association
+            content-type="org.springframework.boot.ide.boot.jpa-named-queries"
+            file-names="jpa-named-queries.properties">
       </file-association>
    </extension>
    
@@ -401,10 +418,6 @@
                contentTypeId="org.springframework.boot.ide.properties.application.properties"
             /> 
       </editor>
-   </extension>
-   
-   <extension
-         point="org.eclipse.ui.editors">
       <editor
             class="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditor"
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
@@ -412,14 +425,10 @@
             id="SpringBootYMLPropertyEditor"
             name="Generic Editor - Spring YAML Properties"
             symbolicFontName="org.eclipse.jdt.ui.PropertiesFileEditor.textfont">
-            <contentTypeBinding
-               contentTypeId="org.springframework.boot.ide.properties.application.yml"
-            /> 
+         <contentTypeBinding
+               contentTypeId="org.springframework.boot.ide.properties.application.yml">
+         </contentTypeBinding>
       </editor>
-   </extension>
-
-   <extension
-         point="org.eclipse.ui.editors">
       <editor
             class="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
             contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
@@ -427,35 +436,47 @@
             id="SpringFactoriesEditor"
             name="Generic Editor - Spring Factories"
             symbolicFontName="org.eclipse.jdt.ui.PropertiesFileEditor.textfont">
-            <contentTypeBinding
-               contentTypeId="org.springframework.boot.ide.boot.factories"
-            /> 
+         <contentTypeBinding
+               contentTypeId="org.springframework.boot.ide.boot.factories">
+         </contentTypeBinding>
+      </editor>
+      <editor
+            class="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            default="false"
+            icon="icons/spring_obj.gif"
+            id="JpaQueryPropertiesEditor"
+            name="Generic Editor - JPA Named Queries"
+            symbolicFontName="org.eclipse.jdt.ui.PropertiesFileEditor.textfont">
+         <contentTypeBinding
+               contentTypeId="org.springframework.boot.ide.boot.jpa-named-queries">
+         </contentTypeBinding>
       </editor>
    </extension>
    
-   <extension
-         point="org.eclipse.ui.genericeditor.presentationReconcilers">
-      <presentationReconciler
-            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
-            contentType="org.springframework.boot.ide.properties.application.properties">
-      </presentationReconciler>
-   </extension>
 
+   
    <extension
          point="org.eclipse.ui.genericeditor.presentationReconcilers">
       <presentationReconciler
             class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
             contentType="org.springframework.boot.ide.properties.application.yml">
       </presentationReconciler>
-   </extension>
-
-   <extension
-         point="org.eclipse.ui.genericeditor.presentationReconcilers">
+      <presentationReconciler
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
+            contentType="org.springframework.boot.ide.properties.application.properties">
+      </presentationReconciler>
       <presentationReconciler
             class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
             contentType="org.springframework.boot.ide.boot.factories">
       </presentationReconciler>
+      <presentationReconciler
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
+            contentType="org.springframework.boot.ide.boot.jpa-named-queries">
+      </presentationReconciler>
    </extension>
+
+
 
    <extension
          point="org.eclipse.tm4e.registry.grammars">
@@ -479,15 +500,16 @@
             contentTypeId="org.springframework.boot.ide.properties.application.properties"
             scopeName="source.java-properties">
       </scopeNameContentTypeBinding>
-   </extension>
-   
-   <extension
-         point="org.eclipse.tm4e.registry.grammars">
       <scopeNameContentTypeBinding
             contentTypeId="org.springframework.boot.ide.boot.factories"
             scopeName="source.java-properties">
       </scopeNameContentTypeBinding>
+      <scopeNameContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.boot.jpa-named-queries"
+            scopeName="source.java-properties">
+      </scopeNameContentTypeBinding>
    </extension>
+   
    
    <extension
       id="springxml-completion-computer"

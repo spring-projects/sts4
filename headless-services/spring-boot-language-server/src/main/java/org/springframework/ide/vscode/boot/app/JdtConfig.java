@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,9 @@ package org.springframework.ide.vscode.boot.app;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.boot.java.reconcilers.AddConfigurationIfBeansPresentReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationNodeReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AuthorizeHttpRequestsReconciler;
@@ -105,6 +108,10 @@ public class JdtConfig {
 	
 	@Bean EntityIdForRepoReconciler entityIdForRepoReconciler(SimpleLanguageServer server) {
 		return new EntityIdForRepoReconciler();
+	}
+	
+	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens provider, JpqlSupportState supportState) {
+		return new JdtDataQuerySemanticTokensProvider(provider, supportState);
 	}
 
 }

@@ -361,6 +361,9 @@ public class BootLanguageServerBootApp {
 				String fileName = path.getFileName().toString();
 				switch (Files.getFileExtension(fileName)) {
 				case "properties":
+					if (path.endsWith("/META-INF/jpa-named-queries.properties")) {
+						return LanguageId.JPA_QUERY_PROPERTIES;
+					}
 					return LanguageId.BOOT_PROPERTIES;
 				case "yml":
 					return LanguageId.BOOT_PROPERTIES_YAML;

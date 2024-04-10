@@ -1,0 +1,6 @@
+/antlr-4.13.1.jar
+/src/main/java/org/springframework/ide/vscode/jpql/antlr/parser/Jpql.interp
+/src/main/java/org/springframework/ide/vscode/jpql/antlr/parser/Jpql.tokens
+/src/main/java/org/springframework/ide/vscode/jpql/antlr/parser/JpqlLexer.interp
+/src/main/java/org/springframework/ide/vscode/jpql/antlr/parser/JpqlLexer.tokens
+/target

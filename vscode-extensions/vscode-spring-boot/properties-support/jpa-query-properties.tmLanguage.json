@@ -1,0 +1,10 @@
+{
+    "name": "JPA Query Properties",
+    "scopeName": "source.jpa-query-properties",
+    "patterns": [
+      {
+        "comment": "source.java-properties is defined in vscode-java",
+        "include": "source.java-properties"
+      }
+    ]
+  }

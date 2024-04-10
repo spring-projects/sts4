@@ -62,6 +62,7 @@ import org.springframework.ide.vscode.commons.languageserver.composable.Language
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
@@ -111,6 +112,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private BootJavaReconcileEngine reconcileEngine;
 	private BootJavaCodeActionProvider codeActionProvider;
 	private DocumentSymbolHandler docSymbolProvider;
+	private JdtSemanticTokensHandler semanticTokensHandler;
 
 	private SpringProcessTracker liveProcessTracker;
 
@@ -182,6 +184,11 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		reconcileEngine = appContext.getBean(BootJavaReconcileEngine.class);
 		
 		codeActionProvider = appContext.getBean(BootJavaCodeActionProvider.class);
+		
+		Map<String, JdtSemanticTokensProvider> jdtSemanticTokensProviders = appContext.getBeansOfType(JdtSemanticTokensProvider.class);
+		if (!jdtSemanticTokensProviders.isEmpty()) {
+			semanticTokensHandler = new JdtSemanticTokensHandler(cuCache, projectFinder, jdtSemanticTokensProviders.values());
+		}
 		
 		config.addListener(ignore -> {
 			log.info("update live process tracker settings - start");
@@ -351,6 +358,11 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	@Override
 	public Optional<CodeActionHandler> getCodeActionProvider() {
 		return Optional.ofNullable(codeActionProvider);
+	}
+
+	@Override
+	public Optional<SemanticTokensHandler> getSemanticTokensHandler() {
+		return Optional.ofNullable(semanticTokensHandler);
 	}
 
 	

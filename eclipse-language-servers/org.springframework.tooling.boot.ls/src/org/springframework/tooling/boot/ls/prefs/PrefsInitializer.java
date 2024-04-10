@@ -64,6 +64,8 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		
 		preferenceStore.setDefault(Constants.PREF_LIVE_INFORMATION_ALL_JVM_PROCESSES, false);
 		
+		preferenceStore.setDefault(Constants.PREF_JPQL, true);
+		
 	}
 
 }

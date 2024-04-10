@@ -1,4 +1,4 @@
-// Generated from java-escape by ANTLR 4.11.1
+// Generated from JavaProperties.g4 by ANTLR 4.13.1
 package org.springframework.ide.vscode.java.properties.antlr.parser;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue"})
 public class JavaPropertiesParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.11.1", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.13.1", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
@@ -78,7 +78,7 @@ public class JavaPropertiesParser extends Parser {
 	}
 
 	@Override
-	public String getGrammarFileName() { return "java-escape"; }
+	public String getGrammarFileName() { return "JavaProperties.g4"; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }
@@ -127,7 +127,7 @@ public class JavaPropertiesParser extends Parser {
 			setState(25);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (((_la) & ~0x3f) == 0 && ((1L << _la) & 498L) != 0) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 498L) != 0)) {
 				{
 				{
 				setState(22);
@@ -339,7 +339,7 @@ public class JavaPropertiesParser extends Parser {
 			setState(53);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (((_la) & ~0x3f) == 0 && ((1L << _la) & 446L) != 0) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 446L) != 0)) {
 				{
 				{
 				setState(50);
@@ -653,7 +653,7 @@ public class JavaPropertiesParser extends Parser {
 			{
 			setState(80);
 			_la = _input.LA(1);
-			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 140L) != 0) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 140L) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -664,7 +664,7 @@ public class JavaPropertiesParser extends Parser {
 			setState(84);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (((_la) & ~0x3f) == 0 && ((1L << _la) & 446L) != 0) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 446L) != 0)) {
 				{
 				{
 				setState(81);
@@ -820,7 +820,7 @@ public class JavaPropertiesParser extends Parser {
 			{
 			setState(97);
 			_la = _input.LA(1);
-			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 510L) != 0) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 510L) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {

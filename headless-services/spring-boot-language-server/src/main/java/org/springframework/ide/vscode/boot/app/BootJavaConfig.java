@@ -101,6 +101,11 @@ public class BootJavaConfig implements InitializingBean {
 		return isAll != null && isAll.booleanValue();
 	}
 	
+	public boolean isJpqlEnabled() {
+		Boolean isEnabled = settings.getBoolean("boot-java", "jpql");
+		return isEnabled != null && isEnabled.booleanValue();
+	}
+	
 	public String[] xmlBeansFoldersToScan() {
 		String foldersStr = settings.getString("boot-java", "support-spring-xml-config", "scan-folders");
 		if (foldersStr != null) {

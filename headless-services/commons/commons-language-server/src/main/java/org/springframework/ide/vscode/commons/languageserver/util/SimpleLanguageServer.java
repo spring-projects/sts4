@@ -59,6 +59,7 @@ import org.eclipse.lsp4j.ProgressParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
+import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.SetTraceParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -383,7 +384,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 		log.debug("workspaceRoots = "+getWorkspaceService().getWorkspaceRoots());
 		log.debug("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
 		log.debug("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
-
+		
+		getTextDocumentService().clientCapabilities = params.getCapabilities().getTextDocument();
+		
 		InitializeResult result = new InitializeResult();
 
 		if (hasExecuteCommandSupport) {
@@ -541,6 +544,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 		if (hasWorkspaceSymbolHandler()) {
 			c.setWorkspaceSymbolProvider(true);
 		}
+		// TODO: Check if server supports all token types from the legend
+		SemanticTokensWithRegistrationOptions semanticTokensCapability = getTextDocumentService().getSemanticTokensWithRegistrationOptions();
+		c.setSemanticTokensProvider(semanticTokensCapability);
 
 		WorkspaceFoldersOptions workspaceFoldersOptions = new WorkspaceFoldersOptions();
 		workspaceFoldersOptions.setSupported(true);

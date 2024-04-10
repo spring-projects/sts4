@@ -31,6 +31,7 @@
 		<module>commons-gradle</module>
 		<module>commons-rewrite</module>
 		<module>language-server-starter</module>
+		<module>jpql</module>
 	</modules>
 
 	<repositories>
@@ -125,6 +126,8 @@
 		
 		<gradle-tooling.version>8.5</gradle-tooling.version>
 		<gradle-core.version>6.1.1</gradle-core.version>
+		
+		<antlr.version>4.13.1</antlr.version>
 
 		<signing.skip>true</signing.skip>
 		<signing.alias>vmware</signing.alias>

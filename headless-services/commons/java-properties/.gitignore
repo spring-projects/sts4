@@ -2,3 +2,7 @@ target
 .idea
 *.iml
 antlr-*.jar
+/src/main/java/org/springframework/ide/vscode/java/properties/antlr/parser/JavaProperties.interp
+/src/main/java/org/springframework/ide/vscode/java/properties/antlr/parser/JavaProperties.tokens
+/src/main/java/org/springframework/ide/vscode/java/properties/antlr/parser/JavaPropertiesLexer.interp
+/src/main/java/org/springframework/ide/vscode/java/properties/antlr/parser/JavaPropertiesLexer.tokens

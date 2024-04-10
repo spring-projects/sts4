@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,7 +15,7 @@ import java.util.BitSet;
 import java.util.List;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -53,8 +53,8 @@ public class AntlrParser implements Parser {
 		ArrayList<Problem> syntaxErrors = new ArrayList<>();
 		ArrayList<Problem> problems = new ArrayList<>();
 		ArrayList<PropertiesAst.Node> astNodes = new ArrayList<>();
-		
-		JavaPropertiesLexer lexer = new JavaPropertiesLexer(new ANTLRInputStream(text.toCharArray(), text.length()));
+	
+		JavaPropertiesLexer lexer = new JavaPropertiesLexer(CharStreams.fromString(text));
 	    CommonTokenStream tokens = new CommonTokenStream(lexer);
 	    JavaPropertiesParser parser = new JavaPropertiesParser(tokens);
 	    

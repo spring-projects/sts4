@@ -48,4 +48,6 @@ public class Constants {
 	
 	public static final String PREF_MODULITH = "boot-java.modulith-project-tracking";
 	
+	public static final String PREF_JPQL = "boot-java.jpql";
+	
 }
