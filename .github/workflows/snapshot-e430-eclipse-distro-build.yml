@@ -20,4 +20,5 @@ jobs:
     with:
       eclipse_profile: 'e430'
       build_type: 'snapshot'
+      java_version: '17'
     secrets: inherit

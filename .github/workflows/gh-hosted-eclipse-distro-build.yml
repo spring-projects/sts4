@@ -26,6 +26,11 @@ on:
         required: false
         default: 'main'
         type: string
+      java_version:
+        description: JDK version to build the artifacts
+        required: false
+        default: '17'
+        type: string
 
 jobs:
 
@@ -42,7 +47,7 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
         with:
-          java-version: '17'
+          java-version: ${{ inputs.java_version }}
           distribution: 'temurin'
       - name: Enforce https instead of http
         run: ./nohttp.sh
@@ -64,6 +69,7 @@ jobs:
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
         run: |
+          echo $JAVA_HOME
           sts4_ls_version=${{ inputs.sts4-language-servers-version }}
           sts4_ls_version_param=""
           if ! [[ -z ${sts4_ls_version} ]]; then
