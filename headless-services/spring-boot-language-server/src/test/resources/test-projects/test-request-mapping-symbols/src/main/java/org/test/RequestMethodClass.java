@@ -6,7 +6,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod.*;
+import org.springframework.web.bind.annotation.RequestMethod;
+import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
 public class RequestMethodClass {
 	
@@ -31,7 +32,7 @@ public class RequestMethodClass {
 	}
 	
 	@RequestMapping(value="/getHello", method=RequestMethod.GET)
-	public getHello() {
+	public void getHello() {
 	}
 
 	@RequestMapping(path="/postAndPutHello", method= {RequestMethod.POST, PUT})

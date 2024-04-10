@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,7 +20,10 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IAnnotationBinding;
+import org.eclipse.jdt.core.dom.IMemberValuePairBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
@@ -55,12 +58,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 				stream.filter(Objects::nonNull)
 						.flatMap(parent -> (path == null ? Stream.<String>empty() : Arrays.stream(path))
 								.filter(Objects::nonNull).map(p -> {
-									String separator = !parent.endsWith("/") && !p.startsWith("/") ? "/" : "";
-									String resultPath = parent + separator + p;
-									if (resultPath.endsWith("/")) {
-										resultPath = resultPath.substring(0, resultPath.length() - 1);
-									}
-									return resultPath.startsWith("/") ? resultPath : "/" + resultPath;
+									return calculatePath(parent, p);
 								}))
 						.map(p -> RouteUtils.createRouteSymbol(location, p, methods, contentTypes, acceptTypes, null))
 						.forEach((enhancedSymbol) -> context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol)));
@@ -68,6 +66,14 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	private String calculatePath(String parent, String path) {
+		String separator = !parent.endsWith("/") && !path.startsWith("/") && !path.isEmpty() ? "/" : "";
+		String resultPath = parent + separator + path;
+
+		String result = resultPath.startsWith("/") ? resultPath : "/" + resultPath;
+		return result;
 	}
 
 	private String[] getMethod(Annotation node, SpringIndexerJavaContext context) {
@@ -102,11 +108,14 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 			if (parentAnnotation != null) {
 				methods = getMethod(parentAnnotation, context);
 			}
+			else {
+				methods = getAttributeValuesFromSupertypes("method", node, context);
+			}
 		}
 
 		return methods;
 	}
-
+	
 	private String[] getPath(Annotation node, SpringIndexerJavaContext context) {
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
@@ -133,10 +142,43 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 
 	private String[] getParentPath(Annotation node, SpringIndexerJavaContext context) {
 		Annotation parentAnnotation = getParentAnnotation(node);
-		return parentAnnotation == null ? null : getPath(parentAnnotation, context);
+		if (parentAnnotation != null) {
+			return getPath(parentAnnotation, context);
+		}
+		else {
+			return getPathFromSupertypes(node, context);
+		}
 	}
 
+	private String[] getPathFromSupertypes(Annotation node, SpringIndexerJavaContext context) {
+		IAnnotationBinding annotationBinding = getAnnotationFromSupertypes(node, context);
+		IMemberValuePairBinding valuePair = getValuePair(annotationBinding, "value", "path");
+		
+		if (valuePair != null) {
+			Object value = valuePair.getValue();
+			if (value instanceof Object[]) {
+				Object[] values = (Object[]) value;
+				String[] result = new String[values.length];
+				for (int k = 0; k < result.length; k++) {
+					result[k] = values[k].toString();
+				}
+				return result;
+
+			}
+			else if (value instanceof String[]) {
+				return (String[]) value;
+			}
+			else if (value != null) {
+				return new String[] {value.toString()};
+			}
+		}
+		
+		return null;
+	}
+	
 	private Annotation getParentAnnotation(Annotation node) {
+		
+		// lookup class level request mapping annotation
 		ASTNode parent = node.getParent() != null ? node.getParent().getParent() : null;
 		while (parent != null && !(parent instanceof TypeDeclaration)) {
 			parent = parent.getParent();
@@ -158,6 +200,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 				}
 			}
 		}
+		
 		return null;
 	}
 
@@ -196,9 +239,21 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 				}
 			}
 		}
+		
+		// lookup accept types on class level (same class or supertypes)
+		if (node.getParent() instanceof MethodDeclaration) {
+			Annotation parentAnnotation = getParentAnnotation(node);
+			if (parentAnnotation != null) {
+				return getAcceptTypes(parentAnnotation, context);
+			}
+			else {
+				return getAttributeValuesFromSupertypes("consumes", node, context);
+			}
+		}
+
 		return new String[0];
 	}
-
+	
 	private String[] getContentTypes(Annotation node, SpringIndexerJavaContext context) {
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
@@ -215,7 +270,136 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 				}
 			}
 		}
+		
+		// lookup content types on class level (same class or supertypes)
+		if (node.getParent() instanceof MethodDeclaration) {
+			Annotation parentAnnotation = getParentAnnotation(node);
+			if (parentAnnotation != null) {
+				return getContentTypes(parentAnnotation, context);
+			}
+			else {
+				return getAttributeValuesFromSupertypes("produces", node, context);
+			}
+		}
+
 		return new String[0];
 	}
+
+	private String[] getAttributeValuesFromSupertypes(String attributeName, Annotation node, SpringIndexerJavaContext context) {
+		IAnnotationBinding annotationBinding = getAnnotationFromSupertypes(node, context);
+		IMemberValuePairBinding valuePair = getValuePair(annotationBinding, attributeName);
+		
+		if (valuePair != null) {
+			Object value = valuePair.getValue();
+			if (value instanceof Object[]) {
+				Object[] values = (Object[]) value;
+				String[] result = new String[values.length];
+				for (int k = 0; k < result.length; k++) {
+					
+					Object v = values[k];
+					if (v instanceof IVariableBinding) {
+						IVariableBinding varBinding = (IVariableBinding) v;
+						result[k] = varBinding.getName();
+					}
+					else if (v instanceof String) {
+						result[k] = (String) v;
+					}
+				}
+				return result;
+
+			}
+			else if (value instanceof String[]) {
+				return (String[]) value;
+			}
+			else if (value != null) {
+				return new String[] {value.toString()};
+			}
+		}
+		
+		return null;
+	}
+
+	private IMemberValuePairBinding getValuePair(IAnnotationBinding annotationBinding, String... names) {
+		if (annotationBinding != null) {
+			IMemberValuePairBinding[] valuePairs = annotationBinding.getDeclaredMemberValuePairs();
+			
+			if (valuePairs != null ) {
+				
+				for (int j = 0; j < valuePairs.length; j++) {
+					String valueName = valuePairs[j].getName();
+
+					if (valueName != null) {
+						for (int i = 0; i < names.length; i++) {
+							if (names[i] != null && names[i].equals(valueName)) {
+								return valuePairs[j];
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	private IAnnotationBinding getAnnotationFromSupertypes(Annotation node, SpringIndexerJavaContext context) {
+		ASTNode parent = node.getParent() != null ? node.getParent().getParent() : null;
+		while (parent != null && !(parent instanceof TypeDeclaration)) {
+			parent = parent.getParent();
+		}
+		
+		if (parent != null) {
+			TypeDeclaration type = (TypeDeclaration) parent;
+			ITypeBinding typeBinding = type.resolveBinding();
+			if (typeBinding != null) {
+				return findFirstRequestMappingAnnotation(typeBinding);
+			}
+		}
+		
+		return null;
+	}
+	
+	private IAnnotationBinding findFirstRequestMappingAnnotation(ITypeBinding start) {
+		if (start == null) {
+			return null;
+		}
+		
+		IAnnotationBinding found = getRequestMappingAnnotation(start);
+		if (found != null) {
+			return found;
+		}
+		else {
+			// search interfaces first
+			ITypeBinding[] interfaces = start.getInterfaces();
+			if (interfaces != null) {
+				for (int i = 0; i < interfaces.length; i++) {
+					found = findFirstRequestMappingAnnotation(interfaces[i]);
+					if (found != null) {
+						return found;
+					}
+				}
+			}
+			
+			// search superclass second
+			ITypeBinding superclass = start.getSuperclass();
+			if (superclass != null) {
+				return findFirstRequestMappingAnnotation(superclass);
+			}
+			
+			// nothing found
+			return null;
+		}
+	}
+
+	private IAnnotationBinding getRequestMappingAnnotation(ITypeBinding typeBinding) {
+		IAnnotationBinding[] annotations = typeBinding.getAnnotations();
+		for (int i = 0; i < annotations.length; i++) {
+			if (annotations[i].getAnnotationType() != null && Annotations.SPRING_REQUEST_MAPPING.equals(annotations[i].getAnnotationType().getQualifiedName())) {
+				return annotations[i];
+			}
+		}
+		return null;
+	}
+	
+
 
 }

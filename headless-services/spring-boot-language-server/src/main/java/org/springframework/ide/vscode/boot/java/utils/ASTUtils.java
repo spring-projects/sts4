@@ -204,8 +204,6 @@ public class ASTUtils {
 				ITypeBinding klass = varBinding.getDeclaringClass();
 				if (klass!=null) {
 					dependencies.accept(klass);
-					
-					
 				}
 				Object constValue = varBinding.getConstantValue();
 				if (constValue != null) {

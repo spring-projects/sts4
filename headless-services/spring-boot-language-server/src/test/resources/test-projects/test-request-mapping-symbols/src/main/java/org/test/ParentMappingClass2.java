@@ -1,9 +1,12 @@
 package org.test;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod.*;
+import static org.springframework.web.bind.annotation.RequestMethod.DELETE;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
-@RequestMapping(value="parent2", method= {GET,POST,DELETE})
+import org.springframework.web.bind.annotation.RequestMapping;
+
+@RequestMapping(value = "parent2", method = {GET,POST,DELETE})
 public class ParentMappingClass2 {
 
 	@RequestMapping
