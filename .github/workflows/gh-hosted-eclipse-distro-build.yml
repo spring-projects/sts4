@@ -69,7 +69,7 @@ jobs:
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
         run: |
-          echo $JAVA_HOME
+          java -version
           sts4_ls_version=${{ inputs.sts4-language-servers-version }}
           sts4_ls_version_param=""
           if ! [[ -z ${sts4_ls_version} ]]; then
