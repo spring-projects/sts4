@@ -417,6 +417,8 @@ public class SpringIndexerJava implements SpringIndexer {
 
 		List<String[]> chunks = createChunks(javaFiles, this.scanChunkSize);
 		for(int i = 0; i < chunks.size(); i++) {
+			log.info("scan java files, AST parse, chunk {} for files: {}", i, javaFiles.length);
+			
 			ASTParserCleanupEnabled parser = createParser(project, ignoreMethodBodies);
 			parser.createASTs(chunks.get(i), null, new String[0], requestor, null);
 			parser.cleanup();
