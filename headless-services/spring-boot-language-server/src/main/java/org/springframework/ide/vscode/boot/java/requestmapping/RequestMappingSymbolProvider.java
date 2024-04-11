@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -41,6 +42,11 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Martin Lippert
  */
 public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
+	
+	private static final Set<String> ATTRIBUTE_NAME_VALUE_PATH = Set.of("value", "path");
+	private static final Set<String> ATTRIBUTE_NAME_METHOD = Set.of("method");
+	private static final Set<String> ATTRIBUTE_NAME_CONSUMES = Set.of("consumes");
+	private static final Set<String> ATTRIBUTE_NAME_PRODUCES = Set.of("produces");
 
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
@@ -58,7 +64,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 				stream.filter(Objects::nonNull)
 						.flatMap(parent -> (path == null ? Stream.<String>empty() : Arrays.stream(path))
 								.filter(Objects::nonNull).map(p -> {
-									return calculatePath(parent, p);
+									return combinePath(parent, p);
 								}))
 						.map(p -> RouteUtils.createRouteSymbol(location, p, methods, contentTypes, acceptTypes, null))
 						.forEach((enhancedSymbol) -> context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol)));
@@ -68,7 +74,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	private String calculatePath(String parent, String path) {
+	private String combinePath(String parent, String path) {
 		String separator = !parent.endsWith("/") && !path.startsWith("/") && !path.isEmpty() ? "/" : "";
 		String resultPath = parent + separator + path;
 
@@ -76,132 +82,45 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		return result;
 	}
 
-	private String[] getMethod(Annotation node, SpringIndexerJavaContext context) {
-		String[] methods = null;
-
-		// extract from annotation params
-		if (node.isNormalAnnotation()) {
-			NormalAnnotation normNode = (NormalAnnotation) node;
-			List<?> values = normNode.values();
-			for (Iterator<?> iterator = values.iterator(); iterator.hasNext();) {
-				Object object = iterator.next();
-				if (object instanceof MemberValuePair) {
-					MemberValuePair pair = (MemberValuePair) object;
-					String valueName = pair.getName().getIdentifier();
-					if (valueName != null && valueName.equals("method")) {
-						Expression expression = pair.getValue();
-						methods = ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
-						break;
-					}
-				}
-			}
-		}
-		
-		// extract from annotation type
-		if (methods == null) {
-			methods = getRequestMethod(node);
-		}
-
-		// extract from parent annotations
-		if (methods == null && node.getParent() instanceof MethodDeclaration) {
-			Annotation parentAnnotation = getParentAnnotation(node);
-			if (parentAnnotation != null) {
-				methods = getMethod(parentAnnotation, context);
-			}
-			else {
-				methods = getAttributeValuesFromSupertypes("method", node, context);
-			}
-		}
-
-		return methods;
-	}
-	
 	private String[] getPath(Annotation node, SpringIndexerJavaContext context) {
-		if (node.isNormalAnnotation()) {
-			NormalAnnotation normNode = (NormalAnnotation) node;
-			List<?> values = normNode.values();
-			for (Iterator<?> iterator = values.iterator(); iterator.hasNext();) {
-				Object object = iterator.next();
-				if (object instanceof MemberValuePair) {
-					MemberValuePair pair = (MemberValuePair) object;
-					String valueName = pair.getName().getIdentifier();
-					if (valueName != null && (valueName.equals("value") || valueName.equals("path"))) {
-						Expression expression = pair.getValue();
-						return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
-					}
-				}
-			}
-		} else if (node.isSingleMemberAnnotation()) {
+		String[] result = getAttributeValuesFromAnnotation(node, context, ATTRIBUTE_NAME_VALUE_PATH);
+		
+		if (result == null && node.isSingleMemberAnnotation()) {
 			SingleMemberAnnotation singleNode = (SingleMemberAnnotation) node;
 			Expression expression = singleNode.getValue();
-			return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
+			result = ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
 		}
 
-		return new String[] { "" };
+		return result != null ? result : new String[] { "" };
 	}
 
 	private String[] getParentPath(Annotation node, SpringIndexerJavaContext context) {
-		Annotation parentAnnotation = getParentAnnotation(node);
+		Annotation parentAnnotation = getAnnotationFromClassLevel(node);
 		if (parentAnnotation != null) {
 			return getPath(parentAnnotation, context);
 		}
 		else {
-			return getPathFromSupertypes(node, context);
+			return getAttributeValuesFromSupertypes(node, context, ATTRIBUTE_NAME_VALUE_PATH);
 		}
-	}
-
-	private String[] getPathFromSupertypes(Annotation node, SpringIndexerJavaContext context) {
-		IAnnotationBinding annotationBinding = getAnnotationFromSupertypes(node, context);
-		IMemberValuePairBinding valuePair = getValuePair(annotationBinding, "value", "path");
-		
-		if (valuePair != null) {
-			Object value = valuePair.getValue();
-			if (value instanceof Object[]) {
-				Object[] values = (Object[]) value;
-				String[] result = new String[values.length];
-				for (int k = 0; k < result.length; k++) {
-					result[k] = values[k].toString();
-				}
-				return result;
-
-			}
-			else if (value instanceof String[]) {
-				return (String[]) value;
-			}
-			else if (value != null) {
-				return new String[] {value.toString()};
-			}
-		}
-		
-		return null;
 	}
 	
-	private Annotation getParentAnnotation(Annotation node) {
-		
-		// lookup class level request mapping annotation
-		ASTNode parent = node.getParent() != null ? node.getParent().getParent() : null;
-		while (parent != null && !(parent instanceof TypeDeclaration)) {
-			parent = parent.getParent();
-		}
+	private String[] getAcceptTypes(Annotation node, SpringIndexerJavaContext context) {
+		return getAttributeValues(node, context, ATTRIBUTE_NAME_CONSUMES);
+	}
+	
+	private String[] getContentTypes(Annotation node, SpringIndexerJavaContext context) {
+		return getAttributeValues(node, context, ATTRIBUTE_NAME_PRODUCES);
+	}
 
-		if (parent != null) {
-			TypeDeclaration type = (TypeDeclaration) parent;
-			List<?> modifiers = type.modifiers();
-			Iterator<?> iterator = modifiers.iterator();
-			while (iterator.hasNext()) {
-				Object modifier = iterator.next();
-				if (modifier instanceof Annotation) {
-					Annotation annotation = (Annotation) modifier;
-					ITypeBinding resolvedType = annotation.resolveTypeBinding();
-					String annotationType = resolvedType.getQualifiedName();
-					if (annotationType != null && Annotations.SPRING_REQUEST_MAPPING.equals(annotationType)) {
-						return annotation;
-					}
-				}
-			}
+	private String[] getMethod(Annotation node, SpringIndexerJavaContext context) {
+		// extract from annotation type
+		String[] methods = getRequestMethod(node);
+
+		// extract from annotation params
+		if (methods == null) {
+			methods = getAttributeValues(node, context, ATTRIBUTE_NAME_METHOD);
 		}
-		
-		return null;
+		return methods;
 	}
 
 	private String[] getRequestMethod(Annotation annotation) {
@@ -223,38 +142,24 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		return null;
 	}
 
-	private String[] getAcceptTypes(Annotation node, SpringIndexerJavaContext context) {
-		if (node.isNormalAnnotation()) {
-			NormalAnnotation normNode = (NormalAnnotation) node;
-			List<?> values = normNode.values();
-			for (Iterator<?> iterator = values.iterator(); iterator.hasNext();) {
-				Object object = iterator.next();
-				if (object instanceof MemberValuePair) {
-					MemberValuePair pair = (MemberValuePair) object;
-					String valueName = pair.getName().getIdentifier();
-					if (valueName != null && valueName.equals("consumes")) {
-						Expression expression = pair.getValue();
-						return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
-					}
-				}
-			}
-		}
-		
-		// lookup accept types on class level (same class or supertypes)
-		if (node.getParent() instanceof MethodDeclaration) {
-			Annotation parentAnnotation = getParentAnnotation(node);
+	private String[] getAttributeValues(Annotation node, SpringIndexerJavaContext context, Set<String> attributeNames) {
+		String[] result = getAttributeValuesFromAnnotation(node, context, attributeNames);
+
+		// extract from parent annotations
+		if (result == null) {
+			Annotation parentAnnotation = getAnnotationFromClassLevel(node);
 			if (parentAnnotation != null) {
-				return getAcceptTypes(parentAnnotation, context);
+				result = getAttributeValuesFromAnnotation(parentAnnotation, context, attributeNames);
 			}
 			else {
-				return getAttributeValuesFromSupertypes("consumes", node, context);
+				result = getAttributeValuesFromSupertypes(node, context, attributeNames);
 			}
 		}
 
-		return new String[0];
+		return result;
 	}
 	
-	private String[] getContentTypes(Annotation node, SpringIndexerJavaContext context) {
+	private String[] getAttributeValuesFromAnnotation(Annotation node, SpringIndexerJavaContext context, Set<String> attributeNames) {
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
 			List<?> values = normNode.values();
@@ -263,31 +168,19 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 				if (object instanceof MemberValuePair) {
 					MemberValuePair pair = (MemberValuePair) object;
 					String valueName = pair.getName().getIdentifier();
-					if (valueName != null && valueName.equals("produces")) {
+					if (valueName != null && attributeNames.contains(valueName)) {
 						Expression expression = pair.getValue();
 						return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
 					}
 				}
 			}
 		}
-		
-		// lookup content types on class level (same class or supertypes)
-		if (node.getParent() instanceof MethodDeclaration) {
-			Annotation parentAnnotation = getParentAnnotation(node);
-			if (parentAnnotation != null) {
-				return getContentTypes(parentAnnotation, context);
-			}
-			else {
-				return getAttributeValuesFromSupertypes("produces", node, context);
-			}
-		}
-
-		return new String[0];
+		return null;
 	}
 
-	private String[] getAttributeValuesFromSupertypes(String attributeName, Annotation node, SpringIndexerJavaContext context) {
+	private String[] getAttributeValuesFromSupertypes(Annotation node, SpringIndexerJavaContext context, Set<String> attributeNames) {
 		IAnnotationBinding annotationBinding = getAnnotationFromSupertypes(node, context);
-		IMemberValuePairBinding valuePair = getValuePair(annotationBinding, attributeName);
+		IMemberValuePairBinding valuePair = getValuePair(annotationBinding, attributeNames);
 		
 		if (valuePair != null) {
 			Object value = valuePair.getValue();
@@ -319,7 +212,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		return null;
 	}
 
-	private IMemberValuePairBinding getValuePair(IAnnotationBinding annotationBinding, String... names) {
+	private IMemberValuePairBinding getValuePair(IAnnotationBinding annotationBinding, Set<String> names) {
 		if (annotationBinding != null) {
 			IMemberValuePairBinding[] valuePairs = annotationBinding.getDeclaredMemberValuePairs();
 			
@@ -328,12 +221,8 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 				for (int j = 0; j < valuePairs.length; j++) {
 					String valueName = valuePairs[j].getName();
 
-					if (valueName != null) {
-						for (int i = 0; i < names.length; i++) {
-							if (names[i] != null && names[i].equals(valueName)) {
-								return valuePairs[j];
-							}
-						}
+					if (valueName != null && names.contains(valueName)) {
+						return valuePairs[j];
 					}
 				}
 			}
@@ -341,6 +230,33 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		return null;
 	}
 	
+	private Annotation getAnnotationFromClassLevel(Annotation node) {
+		// lookup class level request mapping annotation
+		ASTNode parent = node.getParent() != null ? node.getParent().getParent() : null;
+		while (parent != null && !(parent instanceof TypeDeclaration)) {
+			parent = parent.getParent();
+		}
+
+		if (parent != null) {
+			TypeDeclaration type = (TypeDeclaration) parent;
+			List<?> modifiers = type.modifiers();
+			Iterator<?> iterator = modifiers.iterator();
+			while (iterator.hasNext()) {
+				Object modifier = iterator.next();
+				if (modifier instanceof Annotation) {
+					Annotation annotation = (Annotation) modifier;
+					ITypeBinding resolvedType = annotation.resolveTypeBinding();
+					String annotationType = resolvedType.getQualifiedName();
+					if (annotationType != null && Annotations.SPRING_REQUEST_MAPPING.equals(annotationType)) {
+						return annotation;
+					}
+				}
+			}
+		}
+		
+		return null;
+	}
+
 	private IAnnotationBinding getAnnotationFromSupertypes(Annotation node, SpringIndexerJavaContext context) {
 		ASTNode parent = node.getParent() != null ? node.getParent().getParent() : null;
 		while (parent != null && !(parent instanceof TypeDeclaration)) {
@@ -399,7 +315,5 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		}
 		return null;
 	}
-	
-
 
 }
