@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2023 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,8 +16,8 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.internal.ui.viewsupport.CoreJavaElementLinks;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
-import org.eclipse.jdt.ls.core.internal.javadoc.JavaElementLinks;
 import org.springframework.tooling.jdt.ls.commons.java.JavaData;
 
 public class JavadocHoverLinkHandler implements IDelegateCommandHandler {
@@ -34,7 +34,7 @@ public class JavadocHoverLinkHandler implements IDelegateCommandHandler {
 			if (element != null) {
 				// Bug in JDT server one '(' not encoded while everything else in the query is
 				// encoded
-				return JavaElementLinks.createURI(null, element).replace("(", "%28");
+				return CoreJavaElementLinks.createURI(null, element).replace("(", "%28");
 			}
 		} catch (Exception e) {
 			JdtLsExtensionPlugin.getInstance().getLog().error("Failed to compute java data for " + bindingKey + " in project " + uri, e);
