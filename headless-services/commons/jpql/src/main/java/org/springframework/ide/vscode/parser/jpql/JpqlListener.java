@@ -1,5 +1,5 @@
 // Generated from Jpql.g4 by ANTLR 4.13.1
-package org.springframework.ide.vscode.jpql.antlr.parser;
+package org.springframework.ide.vscode.parser.jpql;
 
 /**
  * JPQL per https://jakarta.ee/specifications/persistence/3.1/jakarta-persistence-spec-3.1.html#bnf

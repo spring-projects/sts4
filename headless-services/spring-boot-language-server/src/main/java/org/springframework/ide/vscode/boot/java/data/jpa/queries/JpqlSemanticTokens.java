@@ -21,14 +21,14 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
-import org.springframework.ide.vscode.jpql.antlr.parser.JpqlBaseListener;
-import org.springframework.ide.vscode.jpql.antlr.parser.JpqlLexer;
-import org.springframework.ide.vscode.jpql.antlr.parser.JpqlParser;
-import org.springframework.ide.vscode.jpql.antlr.parser.JpqlParser.Collection_valued_fieldContext;
-import org.springframework.ide.vscode.jpql.antlr.parser.JpqlParser.Entity_nameContext;
-import org.springframework.ide.vscode.jpql.antlr.parser.JpqlParser.Entity_type_literalContext;
-import org.springframework.ide.vscode.jpql.antlr.parser.JpqlParser.Single_valued_object_fieldContext;
-import org.springframework.ide.vscode.jpql.antlr.parser.JpqlParser.State_fieldContext;
+import org.springframework.ide.vscode.parser.jpql.JpqlBaseListener;
+import org.springframework.ide.vscode.parser.jpql.JpqlLexer;
+import org.springframework.ide.vscode.parser.jpql.JpqlParser;
+import org.springframework.ide.vscode.parser.jpql.JpqlParser.Collection_valued_fieldContext;
+import org.springframework.ide.vscode.parser.jpql.JpqlParser.Entity_nameContext;
+import org.springframework.ide.vscode.parser.jpql.JpqlParser.Entity_type_literalContext;
+import org.springframework.ide.vscode.parser.jpql.JpqlParser.Single_valued_object_fieldContext;
+import org.springframework.ide.vscode.parser.jpql.JpqlParser.State_fieldContext;
 
 public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 
