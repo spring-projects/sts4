@@ -47,43 +47,44 @@ public class JpqlSemanticTokensTest {
 	
 	@Test
 	void query_with_conflicting_groupby() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT g FROM Group g GROUP BY g.name", 0);
-		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
-		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "variable", new String[0]));
-		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0]));
-		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 19, "class", new String[0]));
-		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(20, 21, "variable", new String[0]));
-		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(22, 27, "keyword", new String[0]));
-		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(28, 30, "keyword", new String[0]));
-		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(31, 32, "variable", new String[0]));
-		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(32, 33, "modifier", new String[0]));
-		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(33, 37, "method", new String[0]));
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT g FROM G g GROUP BY g.name", 0);
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "variable", new String[0])); // g
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0])); // FROM
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 15, "class", new String[0])); //G
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(16, 17, "variable", new String[0])); // g
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(18, 23, "keyword", new String[0])); // GROUP
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(24, 26, "keyword", new String[0])); // BY
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(27, 28, "variable", new String[0])); // g
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(28, 29, "operator", new String[0])); // .
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(29, 33, "method", new String[0])); // name
 		
 		assertThat(tokens.size()).isEqualTo(10);
 	}
 	
 	@Test
 	void query_with_parameter() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT DISTINCT owner FROM Owner owner left join  owner.pets WHERE owner.lastName LIKE :lastName%", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT f from Student f LEFT JOIN f.classTbls s WHERE s.ClassName = :className%", 0);
+		
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
-		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 15, "keyword", new String[0])); // DISTINCT
-		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(16, 21, "variable", new String[0])); // owner
-		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(22, 26, "keyword", new String[0])); // FROM
-		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(27, 32, "class", new String[0])); // Owner
-		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(33, 38, "variable", new String[0])); // owner
-		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(39, 43, "keyword", new String[0])); // left
-		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(44, 48, "keyword", new String[0])); // join
-		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(50, 55, "variable", new String[0])); // owner
-		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(55, 56, "modifier", new String[0])); // .
-		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(56, 60, "method", new String[0])); // pets
-		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(61, 66, "keyword", new String[0])); // WHERE
-		assertThat(tokens.get(12)).isEqualTo(new SemanticTokenData(67, 72, "variable", new String[0])); // owner
-		assertThat(tokens.get(13)).isEqualTo(new SemanticTokenData(72, 73, "modifier", new String[0])); // .
-		assertThat(tokens.get(14)).isEqualTo(new SemanticTokenData(73, 81, "method", new String[0])); // lastName
-		assertThat(tokens.get(15)).isEqualTo(new SemanticTokenData(82, 86, "keyword", new String[0])); // LIKE
-		assertThat(tokens.get(16)).isEqualTo(new SemanticTokenData(87, 88, "modifier", new String[0])); // :
-		assertThat(tokens.get(17)).isEqualTo(new SemanticTokenData(88, 96, "variable", new String[0])); // lastName
-		assertThat(tokens.get(18)).isEqualTo(new SemanticTokenData(96, 97, "modifier", new String[0])); // lastName
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "variable", new String[0])); // f
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0])); // from
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 21, "class", new String[0])); // Student
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(22, 23, "variable", new String[0])); // f
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(24, 28, "keyword", new String[0])); // LEFT
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(29, 33, "keyword", new String[0])); // JOIN
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(34, 35, "variable", new String[0])); // f
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(35, 36, "operator", new String[0])); // .
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(36, 45, "method", new String[0])); // classTbls
+		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(46, 47, "variable", new String[0])); // s
+		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(48, 53, "keyword", new String[0])); // WHERE
+		assertThat(tokens.get(12)).isEqualTo(new SemanticTokenData(54, 55, "variable", new String[0])); // s
+		assertThat(tokens.get(13)).isEqualTo(new SemanticTokenData(55, 56, "operator", new String[0])); // .
+		assertThat(tokens.get(14)).isEqualTo(new SemanticTokenData(56, 65, "method", new String[0])); // ClassName
+		assertThat(tokens.get(15)).isEqualTo(new SemanticTokenData(66, 67, "operator", new String[0])); // =
+		assertThat(tokens.get(16)).isEqualTo(new SemanticTokenData(68, 69, "operator", new String[0])); // :
+		assertThat(tokens.get(17)).isEqualTo(new SemanticTokenData(69, 78, "parameter", new String[0])); // className
+		assertThat(tokens.get(18)).isEqualTo(new SemanticTokenData(78, 79, "operator", new String[0])); // %
 		
 		assertThat(tokens.size()).isEqualTo(19);
 	}
@@ -100,15 +101,15 @@ public class JpqlSemanticTokensTest {
 		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(35, 39, "keyword", new String[0])); // join
 		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(40, 45, "keyword", new String[0])); // fetch
 		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(46, 51, "variable", new String[0])); // owner
-		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(51, 52, "modifier", new String[0])); // .
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(51, 52, "operator", new String[0])); // .
 		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(52, 56, "method", new String[0])); // pets
 		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(57, 62, "keyword", new String[0])); // WHERE
 		assertThat(tokens.get(12)).isEqualTo(new SemanticTokenData(63, 68, "variable", new String[0])); // owner
-		assertThat(tokens.get(13)).isEqualTo(new SemanticTokenData(68, 69, "modifier", new String[0])); // .
+		assertThat(tokens.get(13)).isEqualTo(new SemanticTokenData(68, 69, "operator", new String[0])); // .
 		assertThat(tokens.get(14)).isEqualTo(new SemanticTokenData(69, 71, "method", new String[0])); // id
 		assertThat(tokens.get(15)).isEqualTo(new SemanticTokenData(72, 73, "operator", new String[0])); // =
-		assertThat(tokens.get(16)).isEqualTo(new SemanticTokenData(73, 74, "modifier", new String[0])); // :
-		assertThat(tokens.get(17)).isEqualTo(new SemanticTokenData(74, 79, "regexp", new String[0])); // ${id}
+		assertThat(tokens.get(16)).isEqualTo(new SemanticTokenData(73, 74, "operator", new String[0])); // :
+		assertThat(tokens.get(17)).isEqualTo(new SemanticTokenData(74, 79, "regexp", new String[0])); // #{id}
 		
 		assertThat(tokens.size()).isEqualTo(18);
 	}

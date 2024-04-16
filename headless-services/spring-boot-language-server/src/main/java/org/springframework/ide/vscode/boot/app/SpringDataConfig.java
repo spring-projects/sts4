@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.app;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -26,8 +27,13 @@ public class SpringDataConfig {
 	}
 	
 	@Bean
+	HqlSemanticTokens hqlSemanticTokens() {
+		return new HqlSemanticTokens();
+	}
+
+	@Bean
 	JpqlSupportState jpqlSupportState(SimpleLanguageServer server, ProjectObserver projectObserver, BootJavaConfig config) {
 		return new JpqlSupportState(server, projectObserver, config);
 	}
-
+	
 }

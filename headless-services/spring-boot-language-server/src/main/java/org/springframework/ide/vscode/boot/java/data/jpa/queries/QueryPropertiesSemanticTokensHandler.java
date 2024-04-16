@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.DocumentFilter;
 import org.eclipse.lsp4j.SemanticTokens;
@@ -27,6 +29,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
+import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensHandler;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensUtils;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -44,13 +47,16 @@ public class QueryPropertiesSemanticTokensHandler implements SemanticTokensHandl
 
 	private final JavaProjectFinder projectFinder;
 	private final SimpleTextDocumentService documents;
-	private final JpqlSemanticTokens tokensProvider;
+	private final JpqlSemanticTokens jpqlTokensProvider;
+	private final HqlSemanticTokens hqlTokensProvider;
 	private final JpqlSupportState supportState;
 
-	public QueryPropertiesSemanticTokensHandler(SimpleTextDocumentService documents, JavaProjectFinder projectFinder, JpqlSemanticTokens jpqlTokensProvider, JpqlSupportState supportState) {
+
+	public QueryPropertiesSemanticTokensHandler(SimpleTextDocumentService documents, JavaProjectFinder projectFinder, JpqlSemanticTokens jpqlTokensProvider, HqlSemanticTokens hqlTokensProvider, JpqlSupportState supportState) {
 		this.documents = documents;
 		this.projectFinder = projectFinder;
-		this.tokensProvider = jpqlTokensProvider;
+		this.jpqlTokensProvider = jpqlTokensProvider;
+		this.hqlTokensProvider = hqlTokensProvider;
 		this.supportState = supportState;
 	}
 
@@ -61,7 +67,9 @@ public class QueryPropertiesSemanticTokensHandler implements SemanticTokensHandl
 		documentFilter.setLanguage(LanguageId.JPA_QUERY_PROPERTIES.getId());
 		capabilities.setDocumentSelector(List.of(documentFilter));
 		capabilities.setFull(true);
-		capabilities.setLegend(new SemanticTokensLegend(tokensProvider.getTokenTypes(), tokensProvider.getTypeModifiers()));
+		capabilities.setLegend(new SemanticTokensLegend(
+				Stream.concat(jpqlTokensProvider.getTokenTypes().stream(), hqlTokensProvider.getTokenTypes().stream()).distinct().collect(Collectors.toList()),
+				Stream.concat(jpqlTokensProvider.getTypeModifiers().stream(), hqlTokensProvider.getTypeModifiers().stream()).distinct().collect(Collectors.toList())));
 		return capabilities;
 	}
 
@@ -74,6 +82,7 @@ public class QueryPropertiesSemanticTokensHandler implements SemanticTokensHandl
 		if (optProject.isPresent() && SpringProjectUtil.hasDependencyStartingWith(optProject.get(), "spring-data-jpa", null)) {
 			TextDocument doc = documents.getLatestSnapshot(params.getTextDocument().getUri());
 			if (doc != null) {
+				SemanticTokensDataProvider tokensProvider = SpringProjectUtil.hasDependencyStartingWith(optProject.get(), "hibernate-core", null) ? hqlTokensProvider : jpqlTokensProvider;
 				AntlrParser propertiesParser = new AntlrParser();
 				ParseResults result = propertiesParser.parse(doc.get());
 				List<SemanticTokenData> data = new ArrayList<>();

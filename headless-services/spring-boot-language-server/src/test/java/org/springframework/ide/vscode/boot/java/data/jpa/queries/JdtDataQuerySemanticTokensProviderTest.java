@@ -64,7 +64,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         assertThat(cu).isNotNull();
         
-        List<SemanticTokenData> tokens = provider.computeTokens(cu);
+        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(120, 126, "keyword", new String[0]));
@@ -110,7 +110,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         assertThat(cu).isNotNull();
         
-        List<SemanticTokenData> tokens = provider.computeTokens(cu);
+        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(128, 134, "keyword", new String[0]));
@@ -157,7 +157,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         assertThat(cu).isNotNull();
         
-        List<SemanticTokenData> tokens = provider.computeTokens(cu);
+        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(176, 182, "keyword", new String[0]));
@@ -203,7 +203,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         assertThat(cu).isNotNull();
         
-        List<SemanticTokenData> tokens = provider.computeTokens(cu);
+        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
         
         assertThat(tokens.size()).isZero();
         

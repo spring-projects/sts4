@@ -23,8 +23,9 @@ public class JpaQueryPropertiesLanguageServerComponents implements LanguageServe
 	
 	private final QueryPropertiesSemanticTokensHandler semanticTokensHandler;
 
-	public JpaQueryPropertiesLanguageServerComponents(SimpleTextDocumentService documents, JavaProjectFinder projectsFinder, JpqlSemanticTokens jpqlSemanticTokensProvider, JpqlSupportState supportState) {
-		this.semanticTokensHandler = new QueryPropertiesSemanticTokensHandler(documents, projectsFinder, jpqlSemanticTokensProvider, supportState);
+	public JpaQueryPropertiesLanguageServerComponents(SimpleTextDocumentService documents, JavaProjectFinder projectsFinder,
+			JpqlSemanticTokens jpqlSemanticTokensProvider, HqlSemanticTokens hqlSematicTokensProvider, JpqlSupportState supportState) {
+		this.semanticTokensHandler = new QueryPropertiesSemanticTokensHandler(documents, projectsFinder, jpqlSemanticTokensProvider, hqlSematicTokensProvider, supportState);
 	}
 	
 	@Override

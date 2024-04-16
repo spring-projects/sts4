@@ -672,7 +672,9 @@ variable
     ;
 
 parameter
-    : prefix=':' identifier ('%')?
+	: prefix=':' SPEL
+    | prefix=':' identifier ('%')?
+	| prefix='?' SPEL
     | prefix='?' INTEGER_LITERAL?
     ;
 
@@ -1092,3 +1094,4 @@ BINARY_LITERAL              : [xX] '\'' HEX_DIGIT+ '\''
                             ;
 
 IDENTIFICATION_VARIABLE     : ('a' .. 'z' | 'A' .. 'Z' | '\u0080' .. '\ufffe' | '$' | '_') ('a' .. 'z' | 'A' .. 'Z' | '\u0080' .. '\ufffe' | '0' .. '9' | '$' | '_')* ;
+SPEL                        : ('#')('{')(.)*?('}') ;

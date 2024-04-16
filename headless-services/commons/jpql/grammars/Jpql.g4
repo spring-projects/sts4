@@ -74,7 +74,6 @@ range_variable_declaration
 
 join
     : join_spec join_association_path_expression AS? identification_variable (join_condition)?
-    | join_spec join_association_path_expression where_clause
     ;
 
 fetch_join
@@ -601,6 +600,7 @@ identification_variable
     : IDENTIFICATION_VARIABLE
     | f=(COUNT
     | DATE
+    | FROM
     | INNER
     | KEY
     | LEFT

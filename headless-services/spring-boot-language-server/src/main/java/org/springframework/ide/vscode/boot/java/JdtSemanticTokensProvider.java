@@ -21,7 +21,7 @@ public interface JdtSemanticTokensProvider {
 	
 	List<String> getTokenTypes();
 	default List<String> getTokenModifiers() { return Collections.emptyList(); }
-	List<SemanticTokenData> computeTokens(CompilationUnit cu);
+	List<SemanticTokenData> computeTokens(IJavaProject project, CompilationUnit cu);
 	boolean isApplicable(IJavaProject project);
 
 }

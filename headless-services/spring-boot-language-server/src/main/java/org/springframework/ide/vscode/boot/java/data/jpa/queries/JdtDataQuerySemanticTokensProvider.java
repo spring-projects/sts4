@@ -12,6 +12,8 @@ package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -29,28 +31,39 @@ import org.springframework.ide.vscode.boot.java.JdtSemanticTokensProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
+import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
 
 public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProvider {
 	
 	private static final String QUERY = "Query";
 	private static final String FQN_QUERY = "org.springframework.data.jpa.repository." + QUERY;
 
-	private final JpqlSemanticTokens provider;
+	private final JpqlSemanticTokens jpqlProvider;
+	private final HqlSemanticTokens hqlProvider;
 	private final JpqlSupportState supportState;
 	
-	public JdtDataQuerySemanticTokensProvider(JpqlSemanticTokens provider, JpqlSupportState supportState) {
-		this.provider = provider;
+	public JdtDataQuerySemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, JpqlSupportState supportState) {
+		this.jpqlProvider = jpqlProvider;
+		this.hqlProvider = hqlProvider;
 		this.supportState = supportState;
 	}
 
 	@Override
 	public List<String> getTokenTypes() {
-		return provider.getTokenTypes();
+		return Stream.concat(jpqlProvider.getTokenTypes().stream(), hqlProvider.getTokenTypes().stream()).distinct().collect(Collectors.toList());
 	}
 
 	@Override
-	public List<SemanticTokenData> computeTokens(CompilationUnit cu) {
+	public List<String> getTokenModifiers() {
+		return Stream.concat(jpqlProvider.getTypeModifiers().stream(), hqlProvider.getTypeModifiers().stream()).distinct().collect(Collectors.toList());
+	}
+
+	@Override
+	public List<SemanticTokenData> computeTokens(IJavaProject jp, CompilationUnit cu) {
 		List<SemanticTokenData> tokensData = new ArrayList<>();
+		
+		SemanticTokensDataProvider provider = SpringProjectUtil.hasDependencyStartingWith(jp, "hibernate-core", null) ? hqlProvider : jpqlProvider;
+		
 		cu.accept(new ASTVisitor() {
 
 			@Override

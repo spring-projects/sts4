@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.app;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
@@ -110,8 +111,8 @@ public class JdtConfig {
 		return new EntityIdForRepoReconciler();
 	}
 	
-	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens provider, JpqlSupportState supportState) {
-		return new JdtDataQuerySemanticTokensProvider(provider, supportState);
+	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, JpqlSupportState supportState) {
+		return new JdtDataQuerySemanticTokensProvider(jpqlProvider, hqlProvider, supportState);
 	}
 
 }
