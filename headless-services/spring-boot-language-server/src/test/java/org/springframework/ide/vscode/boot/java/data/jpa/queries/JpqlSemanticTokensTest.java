@@ -90,7 +90,7 @@ public class JpqlSemanticTokensTest {
 
 	@Test
 	void query_with_SPEL() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:${id}", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{id}", 0);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 12, "variable", new String[0])); // owner
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 17, "keyword", new String[0])); // FROM
