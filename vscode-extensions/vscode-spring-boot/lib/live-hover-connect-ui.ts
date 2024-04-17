@@ -1,7 +1,6 @@
-import * as VSCode from 'vscode';
 import { LanguageClient } from "vscode-languageclient/node";
 import { ActivatorOptions } from '@pivotal-tools/commons-vscode';
-import { commands, window } from 'vscode';
+import { ExtensionContext, QuickPickItem, commands, window } from 'vscode';
 
 interface ProcessCommandInfo {
     processKey : string;
@@ -22,17 +21,26 @@ export interface RemoteBootApp {
     projectName?: string;
 }
 
+interface BootAppQuickPick extends QuickPickItem {
+    commandInfo: ProcessCommandInfo;
+}
+
 type BootAppState = "none" | "connecting" | "connected" | "disconnecting" | "disconnected";
 
 let activeBootApp: RemoteBootApp | undefined;
 let state: BootAppState
 
 async function liveHoverConnectHandler() {
-    //sts.vscode-spring-boot.codeAction
-    const processData : ProcessCommandInfo[] = await VSCode.commands.executeCommand('sts/livedata/listProcesses');
-    const choiceMap = new Map<string, ProcessCommandInfo>();
-    const choices : string[] = [];
-    processData.forEach(p => {
+    const quickPick = window.createQuickPick<BootAppQuickPick>();
+    quickPick.title = 'Searching for running Spring Boot Apps...';
+    quickPick.canSelectMany = true;
+    quickPick.canSelectMany = false;
+    quickPick.busy = true;
+    quickPick.show();
+
+    const processData : ProcessCommandInfo[] = await commands.executeCommand('sts/livedata/listProcesses');
+
+    const items = processData.map(p => {
         let actionLabel = "";
         switch (p.action) {
             case "sts/livedata/connect":
@@ -46,28 +54,55 @@ async function liveHoverConnectHandler() {
                 break;    
         }
         const choiceLabel = actionLabel + " Live Data from: " + p.label;
-        choiceMap.set(choiceLabel, p);
-        choices.push(choiceLabel);
+        return {
+            commandInfo: p,
+            label: choiceLabel
+        } as BootAppQuickPick;
+
     });
-    if (choices) {
-        const picked = await VSCode.window.showQuickPick(choices);
-        if (picked) {
-            const chosen = choiceMap.get(picked);
-            if (activeBootApp?.jmxurl === chosen.processKey) {
-                switch (chosen.action) {
-                    case "sts/livedata/connect":
-                        await commands.executeCommand('vscode-spring-boot.live.show.active');
-                        break;
-                    case "sts/livedata/disconnect":
-                        await commands.executeCommand('vscode-spring-boot.live.hide.active');
-                        break;
-                    default:
-                        await VSCode.commands.executeCommand(chosen.action, chosen);
-                    }
-            } else {
-                await VSCode.commands.executeCommand(chosen.action, chosen);
+
+    quickPick.busy = false;
+
+    quickPick.title = items.length ? "Select action for running Spring Boot App" : "No running Spring Boot Apps found";
+
+    quickPick.items = items;
+
+    if (!items.length) {
+        quickPick.hide();
+        window.showInformationMessage("No running Spring Boot Apps found");
+        return;
+    }
+
+    return await new Promise((resolve, reject) => {
+        quickPick.onDidChangeSelection(() => quickPick.hide());
+        quickPick.onDidHide(async () => {
+            try {
+                const chosen = quickPick.selectedItems ? quickPick.selectedItems[0] : undefined;
+                if (chosen) {
+                    executeLiveProcessAction(chosen.commandInfo);
+                }
+                resolve(undefined);
+            } catch (error) {
+                reject(error);
             }
-        }
+        })
+    });
+}
+
+async function executeLiveProcessAction(commandInfo: ProcessCommandInfo) {
+    if (activeBootApp?.jmxurl === commandInfo.processKey) {
+        switch (commandInfo.action) {
+            case "sts/livedata/connect":
+                await commands.executeCommand('vscode-spring-boot.live.show.active');
+                break;
+            case "sts/livedata/disconnect":
+                await commands.executeCommand('vscode-spring-boot.live.hide.active');
+                break;
+            default:
+                await commands.executeCommand(commandInfo.action, commandInfo);
+            }
+    } else {
+        await commands.executeCommand(commandInfo.action, commandInfo);
     }
 }
 
@@ -82,7 +117,7 @@ async function updateBootAppState(newState: BootAppState) {
 export function activate(
         client: LanguageClient,
         options: ActivatorOptions,
-        context: VSCode.ExtensionContext
+        context: ExtensionContext
 ) {
     context.subscriptions.push(
 
