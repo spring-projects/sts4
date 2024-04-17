@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -73,6 +76,9 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private final Cache<URI, CompletableFuture<CompilationUnit>> uriToCu;
 	private final Cache<URI, Set<URI>> projectToDocs;
 	private final Cache<URI, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
+	
+	private final ReentrantReadWriteLock environmentCacheLock = new ReentrantReadWriteLock(true);
+	private CompletableFuture<Void> debounceClassFileChanges = CompletableFuture.completedFuture(null);
 	
 	private final Executor createCuExecutorThreadPool = Executors.newCachedThreadPool();
 
@@ -153,7 +159,12 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		}
 		
 		if (server != null) {
-			ServerUtils.listenToClassFileChanges(server.getWorkspaceService().getFileObserver(), projectFinder, this::invalidateProject);
+			ServerUtils.listenToClassFileCreateAndChange(server.getWorkspaceService().getFileObserver(), projectFinder, jp -> {
+				if (!debounceClassFileChanges.isDone()) {
+					debounceClassFileChanges.cancel(false);
+				}
+				debounceClassFileChanges = CompletableFuture.runAsync(() -> invalidateProject(jp), CompletableFuture.delayedExecutor(100, TimeUnit.MILLISECONDS));
+			});
 		}
 		
 	}
@@ -200,45 +211,46 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		logger.info("CU Cache: work item submitted for doc {}", uri.toASCIIString());
 
 		if (project != null) {
-
-			CompilationUnit cu = null;
-
+			ReadLock lock = environmentCacheLock.readLock();
+			lock.lock();
 			try {
-				cu = requestCU(project, uri).get();
-			} catch (UncheckedExecutionException e1) {
-				// ignore errors from rewrite parser. There could be many parser exceptions due to
-				// user incrementally typing code's text
-				return null;
-			} catch (InvalidCacheLoadException | CancellationException e) {
-				// ignore
-			} catch (Exception e) {
-				logger.error("", e);
-				return requestor.apply(null);
-			}
-
-			if (cu != null) {
+				CompilationUnit cu = null;
 				try {
-					projectToDocs.get(project.getLocationUri(), () -> new HashSet<>()).add(uri);
-
-					logger.debug("CU Cache: start work on AST for {}", uri.toString());
-					return requestor.apply(cu);
-				}
-				catch (CancellationException e) {
-					throw e;
-				}
-				catch (Exception e) {
+					cu = requestCU(project, uri).get();
+				} catch (UncheckedExecutionException e1) {
+					// ignore errors from rewrite parser. There could be many parser exceptions due to
+					// user incrementally typing code's text
+					return null;
+				} catch (InvalidCacheLoadException | CancellationException e) {
+					// ignore
+				} catch (Exception e) {
 					logger.error("", e);
+					return requestor.apply(null);
 				}
-				finally {
-					logger.debug("CU Cache: end work on AST for {}", uri.toString());
+	
+				if (cu != null) {
+						projectToDocs.get(project.getLocationUri(), () -> new HashSet<>()).add(uri);
+	
+						logger.debug("CU Cache: start work on AST for {}", uri.toString());
+						return requestor.apply(cu);
 				}
+			}
+			catch (CancellationException e) {
+				throw e;
+			}
+			catch (Exception e) {
+				logger.error("", e);
+			}
+			finally {
+				logger.debug("CU Cache: end work on AST for {}", uri.toString());
+				lock.unlock();
 			}
 		}
 
 		return requestor.apply(null);
 	}
 	
-	private synchronized CompletableFuture<CompilationUnit> requestCU(IJavaProject project, URI uri) throws ExecutionException {
+	private synchronized CompletableFuture<CompilationUnit> requestCU(IJavaProject project, URI uri) {
 		CompletableFuture<CompilationUnit> cuFuture = uriToCu.getIfPresent(uri);
 		if (cuFuture == null) {
 			cuFuture = CompletableFuture.supplyAsync(() -> {
@@ -352,7 +364,13 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			uriToCu.invalidateAll(docUris);
 			projectToDocs.invalidate(project.getLocationUri());
 		}
-		lookupEnvCache.invalidate(project.getLocationUri());
+		WriteLock lock = environmentCacheLock.writeLock();
+		lock.lock();
+		try {
+			lookupEnvCache.invalidate(project.getLocationUri());
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override

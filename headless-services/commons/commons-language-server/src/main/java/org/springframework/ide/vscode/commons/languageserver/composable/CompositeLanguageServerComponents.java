@@ -42,6 +42,8 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -63,7 +65,9 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import com.google.common.collect.ImmutableMap;
 
 public class CompositeLanguageServerComponents implements LanguageServerComponents {
-
+	
+	private static final Logger log = LoggerFactory.getLogger(CompositeLanguageServerComponents.class);
+	
 	public static class Builder {
 		private Map<LanguageId, List<LanguageServerComponents>> componentsByLanguageId = new HashMap<>();
 
@@ -258,10 +262,15 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			
 			private Optional<SemanticTokensHandler> findHandler(TextDocumentIdentifier docId) {
 				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docId.getUri());
-				LanguageId language = doc.getLanguageId();
-				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
-				if (subComponents != null) {
-					return subComponents.stream().filter(sc -> sc.getSemanticTokensHandler().isPresent()).map(sc -> sc.getSemanticTokensHandler().get()).findFirst();
+				// Only opened docs ideally should get requests for semantic token to highlight
+				if (doc != null) {
+					LanguageId language = doc.getLanguageId();
+					List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
+					if (subComponents != null) {
+						return subComponents.stream().filter(sc -> sc.getSemanticTokensHandler().isPresent()).map(sc -> sc.getSemanticTokensHandler().get()).findFirst();
+					}
+				} else {
+					log.error("Received Semantic Tokens request for a non opened document: %s".formatted(docId.getUri()));
 				}
 				return Optional.empty();
 			}
