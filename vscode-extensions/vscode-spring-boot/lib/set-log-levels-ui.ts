@@ -1,9 +1,8 @@
-'use strict';
-
-import * as VSCode from 'vscode';
 import { LanguageClient } from "vscode-languageclient/node";
 import { ActivatorOptions } from '@pivotal-tools/commons-vscode';
-import { LiveProcess, LiveProcessLogLevelUpdatedNotification, LiveProcessUpdatedLogLevel } from './notification';
+import { LiveProcessLogLevelUpdatedNotification, LiveProcessUpdatedLogLevel } from './notification';
+import { BootAppQuickPick, CONNECT_CMD, DISCONNECT_CMD, LIST_CMD } from './live-hover-connect-ui';
+import { ExtensionContext, ProgressLocation, commands, window } from "vscode";
 
 interface ProcessCommandInfo {
     processKey : string;
@@ -39,44 +38,57 @@ export interface LoggerItem {
 }
 
 async function setLogLevelHandler() {
-
-    const processData : ProcessCommandInfo[] = await VSCode.commands.executeCommand('sts/livedata/listProcesses');
-    const choiceMap = new Map<string, ProcessCommandInfo>();
-    const choices : string[] = [];
-    processData.forEach(p => {
-        const slash = p.action.lastIndexOf('/');
-        if (slash>=0) {
-            const choiceLabel = p.label;
-            if (!choiceMap.has(choiceLabel)) {
-                choiceMap.set(choiceLabel, p);
-                choices.push(choiceLabel);
-            }
-        }
-    });
-    if (choices) {
-        const picked = await VSCode.window.showQuickPick(choices);
-        if (picked) {
-            const chosen = choiceMap.get(picked);
-            try {
-                const loggers: ProcessLoggersData = await getLoggers(chosen);
-                await displayLoggers(loggers, chosen.processKey);
-              } catch (error) {
-                VSCode.window.showErrorMessage("Failed to fetch loggers for the process " + chosen.processKey);
-              }
+    const processInfo = await selectRunningProcess();
+    if (processInfo) {
+        try {
+            const loggers: ProcessLoggersData = await getLoggers(processInfo);
+            await displayLoggers(loggers, processInfo.processKey);
+        } catch (error) {
+            window.showErrorMessage("Failed to fetch loggers for the process " + processInfo.processKey);
         }
     }
+}
+
+async function selectRunningProcess(): Promise<ProcessCommandInfo | undefined> {
+    const quickPick = window.createQuickPick<BootAppQuickPick>();
+    quickPick.title = 'Searching for running Spring Boot Apps...';
+    quickPick.canSelectMany = false;
+    quickPick.busy = true;
+    quickPick.show();
+
+    const items = ((await commands.executeCommand(LIST_CMD)) as ProcessCommandInfo[]).filter(cp => CONNECT_CMD === cp.action || DISCONNECT_CMD === cp.action).map(cp => ({
+        label: cp.label,
+        commandInfo: cp
+    } as BootAppQuickPick));
+
+    quickPick.busy = false;
+
+    quickPick.title = items.length ? "Select running Spring Boot App" : "No running Spring Boot Apps found";
+
+    quickPick.items = items;
+
+    if (!items.length) {
+        quickPick.hide();
+        window.showInformationMessage("No running Spring Boot Apps found");
+        return;
+    }
+
+    return new Promise((resolve, reject) => {
+        quickPick.onDidChangeSelection(() => quickPick.hide());
+        quickPick.onDidHide(async () => resolve(Array.isArray(quickPick.selectedItems) ? quickPick.selectedItems[0]?.commandInfo : undefined))
+    });
 }
 
 async function getLoggers(processInfo: ProcessCommandInfo): Promise<ProcessLoggersData> {
 
     return new Promise(async (resolve, reject) => {
-        await VSCode.window.withProgress({
-          location: VSCode.ProgressLocation.Window,
+        await window.withProgress({
+          location: ProgressLocation.Window,
           title: "Fetching Loggers Data for process "+processInfo.processKey,
           cancellable: false
         }, async (progress) => {
           try {
-            const loggers: ProcessLoggersData = await VSCode.commands.executeCommand('sts/livedata/getLoggers', processInfo, {"endpoint": "loggers"}); 
+            const loggers: ProcessLoggersData = await commands.executeCommand('sts/livedata/getLoggers', processInfo, {"endpoint": "loggers"}); 
             progress.report({});
             resolve(loggers);
           } catch (error) {
@@ -102,17 +114,23 @@ async function displayLoggers(processLoggersData: ProcessLoggersData, processKey
         });
     }
     if(items) {
-        const chosenPackage = await VSCode.window.showQuickPick(items);
+        const chosenPackage = await window.showQuickPick(items, {
+            canPickMany: false,
+            title: "Select Logger"
+        });
         if (chosenPackage) {
-            const chosenlogLevel = await VSCode.window.showQuickPick(loggersData.levels);
-            await VSCode.commands.executeCommand('sts/livedata/configure/logLevel', {"processKey": processKey}, chosenPackage, {"configuredLevel":chosenlogLevel});
+            const chosenlogLevel = await window.showQuickPick(loggersData.levels, {
+                canPickMany: false,
+                title: "Select Level"
+            });
+            await commands.executeCommand('sts/livedata/configure/logLevel', {"processKey": processKey}, chosenPackage, {"configuredLevel":chosenlogLevel});
         }
     }
 
 }
 
 async function logLevelUpdated(process: LiveProcessUpdatedLogLevel) {
-    VSCode.window.showInformationMessage("The Log level for " + process.packageName + " has been updated from " + 
+    window.showInformationMessage("The Log level for " + process.packageName + " has been updated from " + 
     process.effectiveLevel + " to " + process.configuredLevel);
 }
 
@@ -120,15 +138,15 @@ async function logLevelUpdated(process: LiveProcessUpdatedLogLevel) {
 export function activate(
         client: LanguageClient,
         options: ActivatorOptions,
-        context: VSCode.ExtensionContext
+        context: ExtensionContext
 ) {
     client.onNotification(LiveProcessLogLevelUpdatedNotification.type, logLevelUpdated)
     context.subscriptions.push(
-        VSCode.commands.registerCommand('vscode-spring-boot.set.log-levels', () => {
+        commands.registerCommand('vscode-spring-boot.set.log-levels', () => {
             if (client.isRunning()) {
                 return setLogLevelHandler();
             } else {
-                VSCode.window.showErrorMessage("No Spring Boot project found. Action is only available for Spring Boot Projects");
+                window.showErrorMessage("No Spring Boot project found. Action is only available for Spring Boot Projects");
             }
         })
     );

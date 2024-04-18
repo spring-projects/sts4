@@ -2,6 +2,11 @@ import { LanguageClient } from "vscode-languageclient/node";
 import { ActivatorOptions } from '@pivotal-tools/commons-vscode';
 import { ExtensionContext, QuickPickItem, commands, window } from 'vscode';
 
+export const CONNECT_CMD = "sts/livedata/connect";
+export const DISCONNECT_CMD = "sts/livedata/disconnect";
+export const REFRESH_CMD = "sts/livedata/refresh";
+export const LIST_CMD = "sts/livedata/listProcesses";
+
 interface ProcessCommandInfo {
     processKey : string;
 	label: string;
@@ -21,7 +26,7 @@ export interface RemoteBootApp {
     projectName?: string;
 }
 
-interface BootAppQuickPick extends QuickPickItem {
+export interface BootAppQuickPick extends QuickPickItem {
     commandInfo: ProcessCommandInfo;
 }
 
@@ -33,23 +38,22 @@ let state: BootAppState
 async function liveHoverConnectHandler() {
     const quickPick = window.createQuickPick<BootAppQuickPick>();
     quickPick.title = 'Searching for running Spring Boot Apps...';
-    quickPick.canSelectMany = true;
     quickPick.canSelectMany = false;
     quickPick.busy = true;
     quickPick.show();
 
-    const processData : ProcessCommandInfo[] = await commands.executeCommand('sts/livedata/listProcesses');
+    const processData : ProcessCommandInfo[] = await commands.executeCommand(LIST_CMD);
 
     const items = processData.map(p => {
         let actionLabel = "";
         switch (p.action) {
-            case "sts/livedata/connect":
+            case CONNECT_CMD:
                 actionLabel = "Show"
                 break;
-            case "sts/livedata/refresh":
+            case REFRESH_CMD:
                 actionLabel = "Refresh";
                 break;
-            case "sts/livedata/disconnect":
+            case DISCONNECT_CMD:
                 actionLabel = "Hide";
                 break;    
         }
@@ -92,10 +96,10 @@ async function liveHoverConnectHandler() {
 async function executeLiveProcessAction(commandInfo: ProcessCommandInfo) {
     if (activeBootApp?.jmxurl === commandInfo.processKey) {
         switch (commandInfo.action) {
-            case "sts/livedata/connect":
+            case CONNECT_CMD:
                 await commands.executeCommand('vscode-spring-boot.live.show.active');
                 break;
-            case "sts/livedata/disconnect":
+            case DISCONNECT_CMD:
                 await commands.executeCommand('vscode-spring-boot.live.hide.active');
                 break;
             default:
@@ -144,7 +148,7 @@ export function activate(
         commands.registerCommand("vscode-spring-boot.live.show.active", async () => {
             try {
                 updateBootAppState("connecting");
-                await commands.executeCommand('sts/livedata/connect', {
+                await commands.executeCommand(CONNECT_CMD, {
                     processKey: activeBootApp.jmxurl
                 });
                 updateBootAppState("connected");
@@ -155,7 +159,7 @@ export function activate(
         }),
 
         commands.registerCommand("vscode-spring-boot.live.refresh.active", async () => {
-            await commands.executeCommand('sts/livedata/refresh', {
+            await commands.executeCommand(REFRESH_CMD, {
                 processKey: activeBootApp.jmxurl
             });
         }),
@@ -163,7 +167,7 @@ export function activate(
         commands.registerCommand("vscode-spring-boot.live.hide.active", async () => {
             try {
                 updateBootAppState("disconnecting");
-                await commands.executeCommand('sts/livedata/disconnect', {
+                await commands.executeCommand(DISCONNECT_CMD, {
                     processKey: activeBootApp.jmxurl
                 });
                 updateBootAppState("disconnected");
