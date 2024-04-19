@@ -57,13 +57,15 @@ public class JavaDefinitionHandler implements DefinitionHandler, LanguageSpecifi
 			URI docUri = URI.create(doc.getUri());
 			return cuCache.withCompilationUnit(project, docUri, cu -> {
 				Builder<LocationLink> builder = ImmutableList.builder();
-				int start = cu.getPosition(definitionParams.getPosition().getLine() + 1, definitionParams.getPosition().getCharacter());
-				ASTNode node = NodeFinder.perform(cu, start, 0);
-				for (IJavaDefinitionProvider provider : providers) {
-					if (cancelToken.isCanceled()) {
-						break;
+				if (cu != null) {
+					int start = cu.getPosition(definitionParams.getPosition().getLine() + 1, definitionParams.getPosition().getCharacter());
+					ASTNode node = NodeFinder.perform(cu, start, 0);
+					for (IJavaDefinitionProvider provider : providers) {
+						if (cancelToken.isCanceled()) {
+							break;
+						}
+						builder.addAll(provider.getDefinitions(cancelToken, project, cu, node));
 					}
-					builder.addAll(provider.getDefinitions(cancelToken, project, cu, node));
 				}
 				return builder.build();
 			});
