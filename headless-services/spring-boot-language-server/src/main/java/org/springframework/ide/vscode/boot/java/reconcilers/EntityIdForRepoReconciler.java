@@ -133,8 +133,6 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 						ITypeBinding repoType = repoTypeChain.get(i);
 						ITypeBinding[] typeParams = repoType.isParameterizedType() ? repoType.getTypeArguments()
 								: repoType.getTypeParameters();
-						boolean domainTypeChanged = false;
-						boolean idTypeChanged = false;
 						if (repoType.isGenericType() || repoType.isParameterizedType()) {
 							if (domainType == null || domainType.isTypeVariable()) {
 								int idx = domainType == null ? -1
@@ -145,7 +143,6 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 									domainTypeIndex = idx;
 									domainType = typeParams[domainTypeIndex];
 								}
-								domainTypeChanged = true;
 							}
 							if (idType == null || idType.isTypeVariable()) {
 								int idx = idType == null ? -1
@@ -156,31 +153,16 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 									idTypeIndex = idx;
 									idType = typeParams[idTypeIndex];
 								}
-								idTypeChanged = true;
 							}
 						} else {
 							if (idType == null || idType.isTypeVariable()) {
 								idType = typeParams[idTypeIndex];
-								idTypeChanged = true;
 							}
 							if (domainType == null || domainType.isTypeVariable()) {
 								domainType = typeParams[domainTypeIndex];
-								domainTypeChanged = true;
 							}
 						}
 
-						// Adjust domainTypeIndex or idTypeIndex if needed as well as remaining expected
-						// number of parameters
-						if (idType != null && idTypeChanged) {
-							if (domainType.isTypeVariable() && domainTypeIndex > idTypeIndex) {
-								domainTypeIndex--;
-							}
-						}
-						if (domainType != null && domainTypeChanged) {
-							if (idType.isTypeVariable() && idTypeIndex > domainTypeIndex) {
-								idTypeIndex--;
-							}
-						}
 					}
 
 					ITypeBinding domainClassType = domainType;

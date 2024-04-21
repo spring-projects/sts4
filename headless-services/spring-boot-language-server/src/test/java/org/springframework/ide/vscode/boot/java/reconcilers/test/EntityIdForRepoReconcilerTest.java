@@ -1152,4 +1152,40 @@ public class EntityIdForRepoReconcilerTest extends BaseReconcilerTest {
 			assertEquals(0, problems.size());
 			
 	}
+	
+	@Test
+	void gh1220() throws Exception {
+		Path roleSource = createFile("BaseEntity.java", """
+			package demo;
+			
+			import jakarta.persistence.Column;
+			import jakarta.persistence.GeneratedValue;
+			import jakarta.persistence.GenerationType;
+			import jakarta.persistence.Id;
+			import jakarta.persistence.MappedSuperclass;
+			
+			@MappedSuperclass
+			public abstract class BaseEntity {
+			
+			  @Id
+			  @Column(name = "id")
+			  @GeneratedValue(strategy = GenerationType.IDENTITY)
+			  private Long id;
+			}
+			""");
+			
+		String source = """
+			package demo;
+			
+			import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
+			
+			public abstract class RdsJpaRepository<T extends BaseEntity, ID> extends SimpleJpaRepository<T, ID> {
+			}
+			""";
+		List<ReconcileProblem> problems = reconcile("CustomerRepository.java", source, false, roleSource);
+			
+		assertEquals(0, problems.size());
+			
+	}
+	
 }
