@@ -44,9 +44,6 @@ public class BootJavaConfig implements InitializingBean {
 
 	private static final Logger log = LoggerFactory.getLogger(BootJavaConfig.class);
 	
-	public static final boolean LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED_DEFAULT = false;
-	public static final int LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY_DEFAULT = 5000;
-	
 	public static final int LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO_DEFAULT = 10;
 	public static final int LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS_DEFAULT = 3;
 	
@@ -59,16 +56,6 @@ public class BootJavaConfig implements InitializingBean {
 
 	BootJavaConfig(SimpleLanguageServer server) {
 		this.workspace = server.getWorkspaceService();
-	}
-
-	public boolean isLiveInformationAutomaticTrackingEnabled() {
-		Boolean enabled = settings.getBoolean("boot-java", "live-information", "automatic-tracking", "on");
-		return enabled != null ? enabled.booleanValue() : LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED_DEFAULT;
-	}
-
-	public int getLiveInformationAutomaticTrackingDelay() {
-		Integer delay = settings.getInt("boot-java", "live-information", "automatic-tracking", "delay");
-		return delay != null ? delay.intValue() : LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY_DEFAULT;
 	}
 
 	public int getLiveInformationFetchDataMaxRetryCount() {

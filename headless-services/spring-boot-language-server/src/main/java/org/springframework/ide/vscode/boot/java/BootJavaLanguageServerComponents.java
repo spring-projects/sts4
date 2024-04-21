@@ -48,7 +48,6 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnec
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveHoverUpdater;
-import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessTracker;
 import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerCodeLensProvider;
@@ -114,8 +113,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private DocumentSymbolHandler docSymbolProvider;
 	private JdtSemanticTokensHandler semanticTokensHandler;
 
-	private SpringProcessTracker liveProcessTracker;
-
 	public BootJavaLanguageServerComponents(ApplicationContext appContext) {
 		this.server = appContext.getBean(SimpleLanguageServer.class);
 		this.serverParams = appContext.getBean(BootLanguageServerParams.class);
@@ -153,13 +150,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		// create and handle commands
 		new SpringProcessCommandHandler(server, liveDataService, liveDataLocalProcessConnector, appContext.getBeansOfType(SpringProcessConnectorRemote.class).values());
 
-		// track locally running processes and automatically connect to them if configured to do so
-		liveProcessTracker = new SpringProcessTracker(liveDataLocalProcessConnector, Duration.ofMillis(config.getLiveInformationAutomaticTrackingDelay()));
-		
-		//
-		//
-		//
-
 		SpringSymbolIndex indexer = appContext.getBean(SpringSymbolIndex.class);
 		
 		docSymbolProvider = params -> indexer.getSymbols(params.getTextDocument().getUri());
@@ -194,9 +184,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			log.info("update live process tracker settings - start");
 			
 			// live information automatic process tracking
-			liveProcessTracker.setDelay(config.getLiveInformationAutomaticTrackingDelay());
-			liveProcessTracker.setTrackingEnabled(config.isLiveInformationAutomaticTrackingEnabled());
-
 			// live information data fetch params
 			liveDataService.setMaxRetryCount(config.getLiveInformationFetchDataMaxRetryCount());
 			liveDataService.setRetryDelayInSeconds(config.getLiveInformationFetchDataRetryDelayInSeconds());
@@ -244,12 +231,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	private void initialized() {
-		this.liveProcessTracker.start();
 		this.liveChangeDetectionWatchdog.start();
 	}
 
 	private void shutdown() {
-		this.liveProcessTracker.stop();
 		this.liveChangeDetectionWatchdog.shutdown();
 		this.cuCache.dispose();
 	}
