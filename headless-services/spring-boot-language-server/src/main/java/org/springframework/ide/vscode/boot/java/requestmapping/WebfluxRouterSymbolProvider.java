@@ -30,6 +30,8 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
@@ -43,6 +45,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Martin Lippert
  */
 public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(WebfluxRouterSymbolProvider.class);
 
 	@Override
 	public void addSymbols(MethodDeclaration methodDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
@@ -115,7 +119,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 
 			} catch (BadLocationException e) {
-				e.printStackTrace();
+				log.error("bad location while extracting mapping symbol for " + doc.getUri(), e);
 			}
 		}
 	}
@@ -158,7 +162,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 				}
 			}
 			catch (BadLocationException e) {
-				// ignore
+				log.error("bad location while extracting mapping symbol for " + doc.getUri(), e);
 			}
 			return null;
 		});
@@ -190,7 +194,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 				}
 			}
 			catch (BadLocationException e) {
-				// ignore
+				log.error("bad location while extracting mapping symbol for " + doc.getUri(), e);
 			}
 
 			return null;
@@ -223,7 +227,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 				}
 			}
 			catch (BadLocationException e) {
-				// ignore
+				log.error("bad location while extracting mapping symbol for " + doc.getUri(), e);
 			}
 
 			return null;
@@ -256,7 +260,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 				}
 			}
 			catch (BadLocationException e) {
-				// ignore
+				log.error("bad location while extracting mapping symbol for " + doc.getUri(), e);
 			}
 
 			return null;

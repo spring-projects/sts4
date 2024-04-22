@@ -31,6 +31,8 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
@@ -47,6 +49,8 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 	private static final Set<String> ATTRIBUTE_NAME_METHOD = Set.of("method");
 	private static final Set<String> ATTRIBUTE_NAME_CONSUMES = Set.of("consumes");
 	private static final Set<String> ATTRIBUTE_NAME_PRODUCES = Set.of("produces");
+	
+	private static final Logger log = LoggerFactory.getLogger(RequestMappingSymbolProvider.class);
 
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
@@ -69,7 +73,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 						.map(p -> RouteUtils.createRouteSymbol(location, p, methods, contentTypes, acceptTypes, null))
 						.forEach((enhancedSymbol) -> context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol)));
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("problem occured while scanning for request mapping symbols from " + doc.getUri(), e);
 			}
 		}
 	}
