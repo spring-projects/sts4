@@ -955,8 +955,6 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 				for (SpringIndexer index : this.indexer) {
 					index.removeFiles(project, docURIs);
 				}
-				
-				server.getClient().indexUpdated();
 
 			} catch (Exception e) {
 				log.error("{}", e);
