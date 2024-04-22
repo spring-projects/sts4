@@ -197,6 +197,12 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 					if (v instanceof IVariableBinding) {
 						IVariableBinding varBinding = (IVariableBinding) v;
 						result[k] = varBinding.getName();
+						
+						ITypeBinding klass = varBinding.getDeclaringClass();
+						if (klass!=null) {
+							context.addDependency(klass);
+						}
+
 					}
 					else if (v instanceof String) {
 						result[k] = (String) v;
