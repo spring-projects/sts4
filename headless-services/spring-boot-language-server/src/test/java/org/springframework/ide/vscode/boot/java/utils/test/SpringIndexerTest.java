@@ -16,6 +16,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -263,7 +264,7 @@ public class SpringIndexerTest {
 
         assertFalse(indexer.getSymbols(deletedDocURI).isEmpty()); //We have symbols before deletion?
         CompletableFuture<Void> deleteFuture = indexer.deleteDocument(deletedDocURI);
-        deleteFuture.get(5, TimeUnit.HOURS);
+        deleteFuture.get(5, TimeUnit.MINUTES);
 
         // check for updated index per document
         Assert.noElements(indexer.getSymbols(deletedDocURI));
@@ -271,6 +272,78 @@ public class SpringIndexerTest {
         // check for updated index in all symbols
         List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
         assertEquals(23, allSymbols.size());
+
+        String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+        assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
+        assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
+        assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
+
+        docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+        assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
+
+        docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
+        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+    }
+
+    @Test
+    void testRemoveSymbolsFromDeletedFolder() throws Exception {
+        // update document and update index
+        String deletedFolderURI = directory.toPath().resolve("src/main/java/org/test/sub").toUri().toString();
+        String fileInFolderDocURI = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+
+        // indexer has symbols for doc in folder
+        List<? extends WorkspaceSymbol> symbolsInDoc = indexer.getSymbols(fileInFolderDocURI);
+        assertEquals(1, symbolsInDoc.size());
+        
+        int symbolCountBeforeDelete = indexer.getAllSymbols("").size();
+
+        // delete folder
+        CompletableFuture<Void> deleteFuture = indexer.deleteDocuments(new String[] {deletedFolderURI});
+        deleteFuture.get(5, TimeUnit.MINUTES);
+
+        // doc symbols are not around anymore
+        List<? extends WorkspaceSymbol> symbolsInDocAfterDelete = indexer.getSymbols(fileInFolderDocURI);
+        assertEquals(0, symbolsInDocAfterDelete.size());
+
+        // check for updated index in all symbols
+        List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
+        assertEquals(symbolCountBeforeDelete - symbolsInDoc.size(), allSymbols.size());
+
+        String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+        assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
+        assertTrue(containsSymbol(allSymbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
+        assertTrue(containsSymbol(allSymbols, "@/foo-root-mapping/embedded-foo-mapping-with-root", docUri, 27, 1, 27, 51));
+
+        docUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+        assertFalse(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
+
+        docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
+        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+    }
+
+    @Test
+    void testAddSymbolsFromCreatedFolder() throws Exception {
+        // update document and update index
+        String deletedFolderURI = directory.toPath().resolve("src/main/java/org/test/sub").toUri().toString();
+        String fileInFolderDocURI = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+
+        int symbolCountBeforeDelete = indexer.getAllSymbols("").size();
+
+        // delete folder first
+        CompletableFuture<Void> deleteFuture = indexer.deleteDocuments(new String[] {deletedFolderURI});
+        deleteFuture.get(5, TimeUnit.SECONDS);
+
+        // add folder back (if it was created)
+        CompletableFuture<Void> createdFuture = indexer.createDocuments(new String[] {deletedFolderURI});
+        createdFuture.get(5, TimeUnit.SECONDS);
+        
+        // check for symbol from doc in created folder
+        List<? extends WorkspaceSymbol> symbolsInDoc = indexer.getSymbols(fileInFolderDocURI);
+        assertEquals(1, symbolsInDoc.size());
+
+        // check for updated index in all symbols
+        List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
+        assertEquals(symbolCountBeforeDelete, allSymbols.size());
 
         String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
         assertTrue(containsSymbol(allSymbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
@@ -334,6 +407,30 @@ public class SpringIndexerTest {
 
         allSymbols = indexer.getAllSymbols("");
         assertEquals(0, allSymbols.size());
+    }
+    
+    @Test
+    void testSimpleUnfoldUris() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/sub").toUri().toString();
+        
+        String[] docs = SpringSymbolIndex.unfold(docUri);
+        assertEquals(1, docs.length);
+        
+        String docToFindUri = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+        assertEquals(docs[0], docToFindUri);
+    }
+
+    @Test
+    void testDeepUnfoldUris() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/subdir").toUri().toString();
+        
+        Set<String> docs = Set.of(SpringSymbolIndex.unfold(docUri));
+        assertEquals(4, docs.size());
+        
+        assertTrue(docs.contains(directory.toPath().resolve("src/main/java/org/test/subdir/subfile-level1.txt").toUri().toString()));
+        assertTrue(docs.contains(directory.toPath().resolve("src/main/java/org/test/subdir/subdir2/subfile-level2.txt").toUri().toString()));
+        assertTrue(docs.contains(directory.toPath().resolve("src/main/java/org/test/subdir/subdir2/subdir3/subdir4/subfile-level4.txt").toUri().toString()));
+        assertTrue(docs.contains(directory.toPath().resolve("src/main/java/org/test/subdir/subdir2/subdir3/subdir4/subfile2-level4.txt").toUri().toString()));
     }
 
 	static boolean containsSymbol(List<? extends WorkspaceSymbol> symbols, String name, String uri) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,13 +11,17 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -144,8 +148,6 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	private SpringIndexerJava springIndexerJava;
 	private SpringFactoriesIndexer factoriesIndexer;
 
-	private String watchXMLDeleteRegistration;
-	private String watchXMLCreatedRegistration;
 	private String watchXMLChangedRegistration;
 	
 	// Futures resolved when project is initialized/indexed
@@ -294,14 +296,18 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		List<String> globPattern = Stream.concat(Arrays.stream(springIndexerJava.getFileWatchPatterns()), Arrays.stream(factoriesIndexer.getFileWatchPatterns()))
 				.collect(Collectors.toList());
 
-		getWorkspaceService().getFileObserver().onFilesDeleted(globPattern, (files) -> {
-			deleteDocuments(files);
-		});
-		getWorkspaceService().getFileObserver().onFilesCreated(globPattern, (files) -> {
-			createDocuments(files);
-		});
 		getWorkspaceService().getFileObserver().onFilesChanged(globPattern, (files) -> {
 			updateDocuments(files, "file changed");
+		});
+
+		// watch for creation of files and folders (basically everything) to catch folder rename events as well
+		getWorkspaceService().getFileObserver().onFilesCreated(List.of("**/*"), (files) -> {
+			createDocuments(files);
+		});
+
+		// watch for deletion of files and folders (basically everything) to catch folder rename events as well
+		getWorkspaceService().getFileObserver().onFilesDeleted(List.of("**/*"), (files) -> {
+			deleteDocuments(files);
 		});
 	}
 
@@ -337,14 +343,6 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	
 	private void addXmlFileListeners(List<String> globPattern) {
 		removeXmlFileListeners();
-		watchXMLDeleteRegistration = getWorkspaceService().getFileObserver().onFilesDeleted(globPattern,
-				(files) -> {
-					deleteDocuments(files);
-				});
-		watchXMLCreatedRegistration = getWorkspaceService().getFileObserver().onFilesCreated(globPattern,
-				(files) -> {
-					createDocuments(files);
-				});
 		watchXMLChangedRegistration = getWorkspaceService().getFileObserver().onFilesChanged(globPattern,
 				(files) -> {
 					updateDocuments(files, "xml changed");
@@ -355,14 +353,6 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		if (watchXMLChangedRegistration != null) {
 			getWorkspaceService().getFileObserver().unsubscribe(watchXMLChangedRegistration);
 			watchXMLChangedRegistration = null;
-		}
-		if (watchXMLCreatedRegistration != null) {
-			getWorkspaceService().getFileObserver().unsubscribe(watchXMLCreatedRegistration);
-			watchXMLCreatedRegistration = null;
-		}
-		if (watchXMLDeleteRegistration != null) {
-			getWorkspaceService().getFileObserver().unsubscribe(watchXMLDeleteRegistration);
-			watchXMLDeleteRegistration = null;
 		}
 	}
 	
@@ -455,35 +445,15 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	}
 
 	public CompletableFuture<Void> createDocument(String docURI) {
-		synchronized(this) {
-			List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-			for (SpringIndexer indexer : this.indexers) {
-				if (indexer.isInterestedIn(docURI)) {
-					Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(docURI));
-
-					if (maybeProject.isPresent()) {
-						try {
-							DocumentDescriptor newDoc = createUpdatedDoc(docURI);
-							futures.add(updateItems(maybeProject.get(), new DocumentDescriptor[] {newDoc}, indexer));
-						}
-						catch (Exception e) {
-							log.error("", e);
-							futures.add(Futures.error(e));
-						}
-					}
-				}
-			}
-
-			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
-			future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
-			return future; 
-		}
+		String[] docURIs = unfold(docURI);
+		return createDocuments(docURIs);
 	}
 
 	public CompletableFuture<Void> createDocuments(String[] docURIs) {
 		synchronized(this) {
 			List<CompletableFuture<Void>> futures = new ArrayList<>();
+			
+			docURIs = unfold(docURIs);
 
 			for (SpringIndexer indexer : this.indexers) {
 				String[] interestingDocs = getDocumentsInterestingForIndexer(indexer, docURIs);
@@ -507,6 +477,32 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
 			return future;
 		}
+	}
+
+	public static String[] unfold(String... docURIs) {
+		Set<String> result = new HashSet<>();
+		
+		for (int i = 0; i < docURIs.length; i++) {
+			File file = UriUtil.toFile(docURIs[i]);
+			Path path = file.toPath();
+			
+			if (Files.isRegularFile(path)) {
+				result.add(docURIs[i]);
+			}
+			else if (Files.isDirectory(path)) {
+				try {
+					Files.walk(path)
+						.filter(Files::isRegularFile)
+						.map(filePath -> filePath.toAbsolutePath().toString())
+						.map(filePath -> UriUtil.toUri(new File(filePath)).toASCIIString())
+						.forEach(docURI -> result.add(docURI));
+				} catch (IOException e) {
+					log.error("error unfolding: " + path.toString(), e);
+				}
+			}
+		}
+		
+		return (String[]) result.toArray(new String[result.size()]);
 	}
 
 	private JavaProjectFinder projectFinder() {
@@ -582,14 +578,53 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		return result;
 	}
 
-	private String[] getDocumentsInterestingForIndexer(SpringIndexer indexer, String[] docURIs) {
-		return Arrays.stream(docURIs).filter(docURI -> indexer.isInterestedIn(docURI)).toArray(String[]::new);
-	}
-
 	private Map<IJavaProject, List<String>> getProjectMapping(Map<String, IJavaProject> docsToProject) {
 		return docsToProject.keySet().stream().collect(Collectors.groupingBy(docURI -> docsToProject.get(docURI)));
 	}
 	
+	private Map<IJavaProject, Set<String>> getDocsPerProjectFromPaths(String[] paths) {
+		Map<IJavaProject, Set<String>> result = new HashMap<>();
+		
+		for (String path : paths) {
+			Optional<IJavaProject> project = projectFinder().find(new TextDocumentIdentifier(path));
+			if (project.isPresent()) {
+				result.putIfAbsent(project.get(), new HashSet<>());
+				
+				Set<String> docs = result.get(project.get());
+				docs.addAll(getDocsFromPath(project.get(), path));
+			}
+		}
+		
+		return result;
+	}
+	
+	private Collection<? extends String> getDocsFromPath(IJavaProject project, String path) {
+		List<EnhancedSymbolInformation> allProjectSymbols = this.symbolsByProject.get(project.getElementName());
+		Set<String> result = new HashSet<>();
+		
+		for (EnhancedSymbolInformation symbol : allProjectSymbols) {
+			Either<Location, WorkspaceSymbolLocation> location = symbol.getSymbol().getLocation();
+
+			String docURI = null;
+			if (location.isLeft()) {
+				docURI = location.getLeft().getUri();
+			}
+			else if (location.isRight()) {
+				docURI = location.getRight().getUri();
+			}
+			
+			if (docURI != null && docURI.startsWith(path)) {
+				result.add(docURI);
+			}
+		}
+		
+		return result;
+	}
+
+	private String[] getDocumentsInterestingForIndexer(SpringIndexer indexer, String[] docURIs) {
+		return Arrays.stream(docURIs).filter(docURI -> indexer.isInterestedIn(docURI)).toArray(String[]::new);
+	}
+
 	private DocumentDescriptor createUpdatedDoc(String docURI) throws RuntimeException {
 		try {
 			File file = new File(new URI(docURI));
@@ -601,36 +636,18 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	}
 
 	public CompletableFuture<Void> deleteDocument(String deletedDocURI) {
-		synchronized(this) {
-			try {
-				Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(deletedDocURI));
-				if (maybeProject.isPresent()) {
-					DeleteItems deleteItem = new DeleteItems(maybeProject.get(), new String[] {deletedDocURI}, this.indexers);
-					CompletableFuture<Void> future = CompletableFuture.runAsync(deleteItem, this.updateQueue);
-
-					this.latestScheduledTaskByProject.put(maybeProject.get().getElementName(), future);
-					return future;
-				}
-			}
-			catch (Exception e) {
-				log.error("", e);
-				return Futures.error(e);
-			}
-		}
-
-		return null;
+		return deleteDocuments(new String[] {deletedDocURI});
 	}
 
-	public CompletableFuture<Void> deleteDocuments(String[] deletedDocURIs) {
+	public CompletableFuture<Void> deleteDocuments(String[] deletedPathURIs) {
 		synchronized(this) {
 			try {
 				List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-				Map<String, IJavaProject> projectsForDocs = getProjectsForDocs(deletedDocURIs);
-				Map<IJavaProject, List<String>> projectMapping = getProjectMapping(projectsForDocs);
+				
+				Map<IJavaProject, Set<String>> projectMapping = getDocsPerProjectFromPaths(deletedPathURIs);
 				
 				for (IJavaProject project : projectMapping.keySet()) {
-					List<String> docURIs = projectMapping.get(project);
+					Set<String> docURIs = projectMapping.get(project);
 
 					DeleteItems deleteItems = new DeleteItems(project, (String[]) docURIs.toArray(new String[docURIs.size()]), this.indexers);
 					CompletableFuture<Void> future = CompletableFuture.runAsync(deleteItems, this.updateQueue);
