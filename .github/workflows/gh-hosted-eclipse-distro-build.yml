@@ -252,7 +252,7 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
           role-session-name: ${{ github.run_id }}
           aws-region: us-east-1
-          role-duration-seconds: 10800
+          role-duration-seconds: 300
           role-skip-session-tagging: true
       - name: Download OSX tar.gz files from S3 for Signing/Notarization
         run: |
@@ -293,6 +293,16 @@ jobs:
             echo "Failed Notarization"
             exit 1
           fi
+      - name: Cloudgate S3 Configuration
+        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
+        with:
+          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
+          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
+          role-session-name: ${{ github.run_id }}_upload
+          aws-region: us-east-1
+          role-duration-seconds: 900
+          role-skip-session-tagging: true
       - name: Update DMG files on S3
         id: update-s3
         run: |
