@@ -252,7 +252,7 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
           role-session-name: ${{ github.run_id }}
           aws-region: us-east-1
-          role-duration-seconds: 300
+          role-duration-seconds: 900
           role-skip-session-tagging: true
       - name: Download OSX tar.gz files from S3 for Signing/Notarization
         run: |
