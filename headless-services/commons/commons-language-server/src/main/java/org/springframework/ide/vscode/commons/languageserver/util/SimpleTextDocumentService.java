@@ -617,6 +617,9 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 	@Override
 	public void didSave(DidSaveTextDocumentParams params) {
+		log.info("doc save event: " + params.getTextDocument().getUri());
+		
+		
 		// Workaround for PT 147263283, where error markers in STS are lost on document save.
 		// STS 3.9.0 does not use the LSP4E editor for edit manifest.yml, which correctly retains error markers after save.
 		// Instead, because the LSP4E editor is missing support for hovers and completions, STS 3.9.0 uses its own manifest editor

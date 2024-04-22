@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -104,12 +105,15 @@ public class SimpleWorkspaceService implements WorkspaceService {
 		
 					switch (type) {
 					case Created:
+						log.info("file created event: " + Arrays.toString(docURIs));
 						fileObserver.notifyFilesCreated(docURIs);
 						break;
 					case Changed:
+						log.info("file changed event: " + Arrays.toString(docURIs));
 						fileObserver.notifyFilesChanged(docURIs);
 						break;
 					case Deleted:
+						log.info("file deleted event: " + Arrays.toString(docURIs));
 						fileObserver.notifyFilesDeleted(docURIs);
 						break;
 					default:
