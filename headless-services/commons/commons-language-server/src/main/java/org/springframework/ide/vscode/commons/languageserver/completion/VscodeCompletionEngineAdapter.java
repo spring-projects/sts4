@@ -48,9 +48,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
 import org.springframework.ide.vscode.commons.protocol.CursorMovement;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderable;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -399,7 +397,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private void resolveMainEdit(TextDocument doc, ICompletionProposal completion, CompletionItem item) {
 		AtomicBoolean usedSnippets = new AtomicBoolean();
-		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit(), usedSnippets, isCommandExecution(item));
+		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit(), usedSnippets);
 		if (mainEdit.isPresent()) {
 			item.setTextEdit(Either.forLeft(mainEdit.get()));
 			if (server.hasCompletionSnippetSupport()) {
@@ -419,7 +417,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				if (!edit.isResolved()) {
 					edit.resolve();
 				}
-				adaptEdits(doc, edit, null, isCommandExecution(item)).ifPresent(extraEdit -> {
+				adaptEdits(doc, edit, null).ifPresent(extraEdit -> {
 					item.setAdditionalTextEdits(ImmutableList.of(extraEdit));
 				});
 			} else {
@@ -435,7 +433,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		return null;
 	}
 
-	private Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits, AtomicBoolean usedSnippets, boolean ignoreClientIndent) {
+	private Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits, AtomicBoolean usedSnippets) {
 		try {
 			TextReplace replaceEdit = edits == null ? null : edits.asReplacement(doc);
 			if (usedSnippets != null && edits != null) {
@@ -448,9 +446,10 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				TextDocument newDoc = doc.copy();
 				edits.apply(newDoc);
 				TextEdit vscodeEdit = new TextEdit();
-				vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
+				vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end - replaceEdit.start));
 				String newText = replaceEdit.newText;
 				IRegion selection = edits.getSelection();
+				
 				if (selection!=null && usedSnippets != null) {
 					//Special handling for the case where cursor is *not* just at the end of the newText
 					int cursor = selection.getOffset() + selection.getLength();
@@ -465,9 +464,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 						usedSnippets.set(true);
 					}
 				}
-//				if (isMagicIndentingClient() && !ignoreClientIndent) {
-//					newText = vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText);
-//				}
+
 				vscodeEdit.setNewText(newText);
 				return Optional.of(vscodeEdit);
 			}
@@ -475,42 +472,6 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			log.error("{}", e);
 			return Optional.empty();
 		}
-	}
-
-	/**
-	 * When this is true, it means the client does 'magic indents' (basically.. that is only on vscode since the magics aren't part of the LSP spec).
-	 */
-//	private boolean isMagicIndentingClient() {
-//		return !Boolean.getBoolean("lsp.completions.indentation.enable");
-//	}
-
-	private static String vscodeIndentFix(TextDocument doc, Position start, String newText) {
-		//Vscode applies some magic indent to a multi-line edit text. We do everything ourself so we have adjust for the magic
-		// and do some kind of 'inverse magic' here.
-		//See here: https://github.com/Microsoft/language-server-protocol/issues/83
-		IndentUtil indenter = new IndentUtil(doc);
-		try {
-			String refIndent = indenter.getReferenceIndent(doc.toOffset(start), doc);
-			if (!refIndent.isEmpty()) {
-				return  StringUtil.stripIndentation(refIndent, newText);
-			}
-		} catch (BadLocationException e) {
-			log.error("{}", e);
-		}
-		return newText;
-	}
-	
-	private static String revertVscodeIndentFix(TextDocument doc, Position start, String newText) {
-		IndentUtil indenter = new IndentUtil(doc);
-		try {
-			String refIndent = indenter.getReferenceIndent(doc.toOffset(start), doc);
-			if (!refIndent.isEmpty()) {
-				return  StringUtil.reverseStripIndentation(refIndent, newText);
-			}
-		} catch (BadLocationException e) {
-			log.error("{}", e);
-		}
-		return newText;
 	}
 
 	@Override
@@ -532,7 +493,4 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	}
 	
-	private boolean isCommandExecution(CompletionItem item) {
-		return RESOLVE_EDIT_COMMAND == item.getLabel();
-	}
 }

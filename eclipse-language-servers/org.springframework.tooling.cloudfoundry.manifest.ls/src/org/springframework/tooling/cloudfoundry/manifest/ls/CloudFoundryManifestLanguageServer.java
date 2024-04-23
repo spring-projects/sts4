@@ -47,7 +47,6 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 				"application.properties",
 				Arrays.asList(
 						"-Dlsp.lazy.completions.disable=true",
-						"-Dlsp.completions.indentation.enable=true",
 						"-XX:TieredStopAtLevel=1"
 				)
 		);

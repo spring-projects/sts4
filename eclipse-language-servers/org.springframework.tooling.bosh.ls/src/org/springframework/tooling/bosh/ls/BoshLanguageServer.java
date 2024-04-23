@@ -31,7 +31,6 @@ public class BoshLanguageServer extends STS4LanguageServerProcessStreamConnector
 				"application.properties",
 				Arrays.asList(
 						"-Dlsp.lazy.completions.disable=true",
-						"-Dlsp.completions.indentation.enable=true",
 						"-XX:TieredStopAtLevel=1"
 				)
 		);

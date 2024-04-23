@@ -15,7 +15,7 @@ else
 fi
 
 cd ${sources}
-xvfb-run ./mvnw clean install -DargLine="-Dlsp.completions.indentation.enable=true -Dlsp.yaml.completions.errors.disable=true"
+xvfb-run ./mvnw clean install -DargLine="-Dlsp.yaml.completions.errors.disable=true"
 
 # Copy fatjars to `out` directory
 timestamp=`date -u +%Y%m%d%H%M`

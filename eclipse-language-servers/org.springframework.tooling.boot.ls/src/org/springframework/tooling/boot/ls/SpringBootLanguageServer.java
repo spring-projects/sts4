@@ -43,7 +43,6 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 		
 //		args.add("-Xdebug");
 //		args.add("-Xrunjdwp:server=y,transport=dt_socket,address=1044,suspend=n");
-		args.add("-Dlsp.completions.indentation.enable=true");
 		args.add("-Xmx1024m");
 		args.add("-XX:TieredStopAtLevel=1");
 		

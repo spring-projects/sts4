@@ -651,68 +651,65 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
         //This test not working in vscode. It is only meant to work in environment that
         // a) don't apply magic indents
         // b) allow completions with no restrictions on the main edit.
-        withSystemProperty("lsp.completions.indentation.enable", "true", () -> {
-            String[] names = {"foo", "nested", "bar"};
-            int levels = 4;
-            generateNestedProperties(levels, names, "");
+    	String[] names = {"foo", "nested", "bar"};
+    	int levels = 4;
+    	generateNestedProperties(levels, names, "");
 
-            //Note: jumpy completions use the snippet '$0' placeholder to move the cursor
-            //Our harness actually does not understand / interpret snippet placeholders.
-            //Thus the examples below expected outcome will have both a '$0' and '<*>'
-            //showing the cursor position. You can think of the second '<*>' as showing
-            //where the cursor will end up when the client doesn't have snippet support capability.
+    	//Note: jumpy completions use the snippet '$0' placeholder to move the cursor
+    	//Our harness actually does not understand / interpret snippet placeholders.
+    	//Thus the examples below expected outcome will have both a '$0' and '<*>'
+    	//showing the cursor position. You can think of the second '<*>' as showing
+    	//where the cursor will end up when the client doesn't have snippet support capability.
 
-            assertCompletion(
-                    "foo:\n" +
-                            "  nested:\n" +
-                            "    bar:\n" +
-                            "      foo:\n" +
-                            "other:\n" +
-                            "foo.nested.bar.b<*>"
-            ,
-                    "foo:\n" +
-                            "  nested:\n" +
-                            "    bar:\n" +
-                            "      foo:\n" +
-                            "      bar: $0\n" +
-                            "other:<*>"
-            );
+    	assertCompletion(
+    			"foo:\n" +
+    					"  nested:\n" +
+    					"    bar:\n" +
+    					"      foo:\n" +
+    					"other:\n" +
+    					"foo.nested.bar.b<*>"
+    					,
+    					"foo:\n" +
+    							"  nested:\n" +
+    							"    bar:\n" +
+    							"      foo:\n" +
+    							"      bar: $0\n" +
+    							"other:<*>"
+    			);
 
-            assertCompletion(
-                    "foo:\n" +
-                            "  nested:\n" +
-                            "    bar:\n" +
-                            "      foo:\n" +
-                            "other:\n" +
-                            "foo.nested.nested.b<*>"
-            ,
-                    "foo:\n" +
-                            "  nested:\n" +
-                            "    bar:\n" +
-                            "      foo:\n" +
-                            "    nested:\n" +
-                            "      bar: $0\n" +
-                            "other:<*>"
-            );
+    	assertCompletion(
+    			"foo:\n" +
+    					"  nested:\n" +
+    					"    bar:\n" +
+    					"      foo:\n" +
+    					"other:\n" +
+    					"foo.nested.nested.b<*>"
+    					,
+    					"foo:\n" +
+    							"  nested:\n" +
+    							"    bar:\n" +
+    							"      foo:\n" +
+    							"    nested:\n" +
+    							"      bar: $0\n" +
+    							"other:<*>"
+    			);
 
-            assertCompletion(
-                    "foo.nested.nested.b<*>\n" +
-                            "foo:\n" +
-                            "  nested:\n" +
-                            "    bar:\n" +
-                            "      foo:\n" +
-                            "other:"
-            ,
-                    "foo:\n" +
-                            "  nested:\n" +
-                            "    bar:\n" +
-                            "      foo:\n" +
-                            "    nested:\n" +
-                            "      bar: <*>\n" +
-                            "other:"
-            );
-            return; // Skip running this test
-        });
+    	assertCompletion(
+    			"foo.nested.nested.b<*>\n" +
+    					"foo:\n" +
+    					"  nested:\n" +
+    					"    bar:\n" +
+    					"      foo:\n" +
+    					"other:"
+    					,
+    					"foo:\n" +
+    							"  nested:\n" +
+    							"    bar:\n" +
+    							"      foo:\n" +
+    							"    nested:\n" +
+    							"      bar: <*>\n" +
+    							"other:"
+    			);
     }
 
     @Test
