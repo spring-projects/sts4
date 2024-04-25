@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableList;
 
 public class GenerationsValidator extends AbstractDiagnosticValidator {
 	
-	private static String SPRING_COMMERCIAL_URL = "https://tanzu.vmware.com/spring-runtime";
+	private static String SPRING_COMMERCIAL_URL = "http://spring.io/support";
 	
 	private SpringProjectsProvider provider;
 
