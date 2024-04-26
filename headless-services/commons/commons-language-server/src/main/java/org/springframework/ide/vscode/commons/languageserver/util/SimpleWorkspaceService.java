@@ -105,15 +105,15 @@ public class SimpleWorkspaceService implements WorkspaceService {
 		
 					switch (type) {
 					case Created:
-						log.info("file created event: " + Arrays.toString(docURIs));
+						log.info("file created event: " + (docURIs.length <= 5 ? Arrays.toString(docURIs) : docURIs.length));
 						fileObserver.notifyFilesCreated(docURIs);
 						break;
 					case Changed:
-						log.info("file changed event: " + Arrays.toString(docURIs));
+						log.info("file changed event: " + (docURIs.length <= 5 ? Arrays.toString(docURIs) : docURIs.length));
 						fileObserver.notifyFilesChanged(docURIs);
 						break;
 					case Deleted:
-						log.info("file deleted event: " + Arrays.toString(docURIs));
+						log.info("file deleted event: " + (docURIs.length <= 5 ? Arrays.toString(docURIs) : docURIs.length));
 						fileObserver.notifyFilesDeleted(docURIs);
 						break;
 					default:
