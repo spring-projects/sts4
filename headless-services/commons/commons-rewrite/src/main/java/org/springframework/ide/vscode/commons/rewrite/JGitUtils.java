@@ -2,10 +2,10 @@ package org.springframework.ide.vscode.commons.rewrite;
 
 import java.nio.charset.StandardCharsets;
 
-import org.openrewrite.shaded.jgit.diff.EditList;
-import org.openrewrite.shaded.jgit.diff.HistogramDiff;
-import org.openrewrite.shaded.jgit.diff.RawText;
-import org.openrewrite.shaded.jgit.diff.RawTextComparator;
+import org.eclipse.jgit.diff.EditList;
+import org.eclipse.jgit.diff.HistogramDiff;
+import org.eclipse.jgit.diff.RawText;
+import org.eclipse.jgit.diff.RawTextComparator;
 
 class JGitUtils {
 
