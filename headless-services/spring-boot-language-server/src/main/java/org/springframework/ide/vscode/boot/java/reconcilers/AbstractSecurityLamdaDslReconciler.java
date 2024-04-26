@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,15 +29,23 @@ public abstract class AbstractSecurityLamdaDslReconciler implements JdtAstReconc
 	
 	private QuickfixRegistry registry;
 
-	AbstractSecurityLamdaDslReconciler(QuickfixRegistry registry) {
+	public AbstractSecurityLamdaDslReconciler(QuickfixRegistry registry) {
 		this.registry = registry;
 	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		if (visitor != null) {
+			cu.accept(visitor);
+		}
+	}
+	
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
 		if (isCompleteAst) {
-			cu.accept(new ASTVisitor() {
+			return new ASTVisitor() {
 
 				@Override
 				public boolean visit(MethodInvocation node) {
@@ -66,28 +74,27 @@ public abstract class AbstractSecurityLamdaDslReconciler implements JdtAstReconc
 					return true;
 				}
 				
-			});
+			};
 			
 		} else {
 			if (ReconcileUtils.isAnyTypeUsed(cu, List.of(getTargetTypeFqName()))) {
 				throw new RequiredCompleteAstException();
 			}
+			else {
+				return null;
+			}
 		}
 	}
 	
+	protected abstract String getFixLabel();
+	protected abstract String getRecipeId();
+	protected abstract String getProblemLabel();
+	abstract protected String getTargetTypeFqName();
+	abstract protected Collection<String> getApplicableMethodNames();
+
 	private static MethodInvocation findTopLevelMethodInvocation(MethodInvocation m) {
 		for (; m.getParent() instanceof MethodInvocation; m = (MethodInvocation) m.getParent()) {}
 		return m;
 	}
 		
-	protected abstract String getFixLabel();
-
-	protected abstract String getRecipeId();
-
-	protected abstract String getProblemLabel();
-
-	abstract protected String getTargetTypeFqName();
-	
-	abstract protected Collection<String> getApplicableMethodNames();
-
 }

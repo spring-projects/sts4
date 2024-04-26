@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,17 +32,11 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 
 	private static final String FQN_HTTP_SECURITY = "org.springframework.security.config.annotation.web.builders.HttpSecurity";
-
 	private static final String AUTHORIZE_REQUESTS = "authorizeRequests";
-
 	private static final String AUTHORIZE_REQUESTS_PROBLEM_LABEL = "HttpSecurity API 'authorizeRequests(...)' is outdated";
-
 	private static final String AUTHORIZE_REQUESTS_FIX_LABEL = "Replace with 'authorizeHttpRequests(...)' and related types";
-
 	private static final String FQN_INTERCEPTOR_URL_CONFIG = "org.springframework.security.config.annotation.web.configurers.AbstractInterceptUrlConfigurer";
-
 	private static final String FQN_EXPR_AUTH_CONFIG = "org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer";
-
 	private static final String FQN_EXPR_INTERCEPT_REG = "org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer.ExpressionInterceptUrlRegistry";
 
 	private QuickfixRegistry registry;
@@ -52,10 +46,29 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
+	public boolean isApplicable(IJavaProject project) {
+		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-security-config");
+		return version != null && version.compareTo(new Version(5, 6, 0, null)) >= 0;
+	}
+
+	@Override
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.HTTP_SECURITY_AUTHORIZE_HTTP_REQUESTS;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		if (visitor != null) {
+			cu.accept(visitor);
+		}
+	}
+
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
 		if (isCompleteAst) {
-			cu.accept(new ASTVisitor() {
+			return new ASTVisitor() {
 
 				@Override
 				public boolean visit(MethodInvocation node) {
@@ -84,7 +97,7 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 					return true;
 				}
 
-			});
+			};
 		} else {
 			boolean needsFullAst = ReconcileUtils.isAnyTypeUsed(cu, List.of(
 					FQN_HTTP_SECURITY,
@@ -92,21 +105,13 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 					FQN_EXPR_AUTH_CONFIG,
 					FQN_EXPR_INTERCEPT_REG
 			));
+
 			if (needsFullAst) {
 				throw new RequiredCompleteAstException();
 			}
+
+			return null;
 		}
-	}
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-security-config");
-		return version != null && version.compareTo(new Version(5, 6, 0, null)) >= 0;
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return Boot2JavaProblemType.HTTP_SECURITY_AUTHORIZE_HTTP_REQUESTS;
 	}
 
 }

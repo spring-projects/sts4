@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2204 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -64,14 +64,34 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler, Applicati
 	private QuickfixRegistry registry;
 	
 	public NotRegisteredBeansReconciler(QuickfixRegistry registry) {
-		this.registry = registry;
-		
+		this.registry = registry;		
 	}
 	
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
-		cu.accept(new ASTVisitor() {
+	public boolean isApplicable(IJavaProject project) {
+		return springBootVersionGreaterOrEqual(3, 0, 0).test(project);
+	}
+
+	@Override
+	public ProblemType getProblemType() {
+		return SpringAotJavaProblemType.JAVA_BEAN_NOT_REGISTERED_IN_AOT;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+	
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		cu.accept(visitor);
+	}
+
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
+		return new ASTVisitor() {
 
 			@Override
 			public boolean visit(TypeDeclaration node) {
@@ -146,24 +166,9 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler, Applicati
 				return super.visit(node);
 			}
 			
-		});
+		};
 	}
 
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return springBootVersionGreaterOrEqual(3, 0, 0).test(project);
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return SpringAotJavaProblemType.JAVA_BEAN_NOT_REGISTERED_IN_AOT;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-	}
-	
 	private static Set<String> allFQTypes(IBinding binding) {
 		ImmutableSet.Builder<String> b = ImmutableSet.builder();
 		if (binding instanceof IMethodBinding) {

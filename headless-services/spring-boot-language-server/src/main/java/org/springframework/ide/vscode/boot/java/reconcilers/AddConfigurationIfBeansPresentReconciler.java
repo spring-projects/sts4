@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -48,21 +48,40 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconciler, ApplicationContextAware {
 
 	private static final String PROBLEM_LABEL = "'@Configuration' is missing on a class defining Spring Beans";
-
 	private static final String FIX_LABEL = "Add missing '@Configuration' annotations over classes";
 
 	private QuickfixRegistry quickfixRegistry;
-
 	private ApplicationContext applicationContext;
 
 	public AddConfigurationIfBeansPresentReconciler(QuickfixRegistry quickfixRegistry) {
 		this.quickfixRegistry = quickfixRegistry;
 	}
+	
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-context");
+		return version != null && version.compareTo(new Version(3, 0, 0, null)) >= 0;
+	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) {
-		cu.accept(new ASTVisitor() {
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.MISSING_CONFIGURATION_ANNOTATION;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		cu.accept(visitor);
+	}
+
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		return new ASTVisitor() {
 
 			@Override
 			public boolean visit(TypeDeclaration classDecl) {
@@ -86,7 +105,7 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 				return true;
 			}
 
-		});
+		};
 	}
 
 	private boolean isApplicableClass(IJavaProject project, CompilationUnit cu, TypeDeclaration classDecl) {
@@ -177,22 +196,6 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-context");
-		return version != null && version.compareTo(new Version(3, 0, 0, null)) >= 0;
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return Boot2JavaProblemType.MISSING_CONFIGURATION_ANNOTATION;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
 	}
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -44,12 +44,27 @@ public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler
 	public BeanPostProcessingIgnoreInAotReconciler(QuickfixRegistry registry) {
 		this.registry = registry;
 	}
+	
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		return springBootVersionGreaterOrEqual(3, 0, 0).test(project);
+	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
-		AtomicBoolean requiresFullAst = new AtomicBoolean(false);
-		cu.accept(new ASTVisitor() {
+	public ProblemType getProblemType() {
+		return SpringAotJavaProblemType.JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		cu.accept(visitor);
+	}
+	
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
+		return new ASTVisitor() {
 
 			@Override
 			public boolean visit(TypeDeclaration typeDecl) {
@@ -77,7 +92,7 @@ public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler
 							});
 							markProblem = returnsTrue.get();
 						} else {
-							requiresFullAst.set(true); 
+							throw new RequiredCompleteAstException();
 						}
 					} else {
 						markProblem = true;
@@ -93,27 +108,14 @@ public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler
 						problemCollector.accept(problem);
 					}
 				}
-				return !requiresFullAst.get();
+				return true;
 			}
 			
-			private boolean isApplicable(ITypeBinding type) {
-				return ReconcileUtils.implementsType(RUNTIME_BEAN_POST_PROCESSOR, type) && ReconcileUtils.implementsType(COMPILE_BEAN_POST_PROCESSOR, type);
-			}
-			
-		});
-		if (requiresFullAst.get()) {
-			throw new RequiredCompleteAstException();
-		}
+		};
 	}
 	
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return springBootVersionGreaterOrEqual(3, 0, 0).test(project);
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return SpringAotJavaProblemType.JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT;
+	private static boolean isApplicable(ITypeBinding type) {
+		return ReconcileUtils.implementsType(RUNTIME_BEAN_POST_PROCESSOR, type) && ReconcileUtils.implementsType(COMPILE_BEAN_POST_PROCESSOR, type);
 	}
 
 }

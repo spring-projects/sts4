@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -45,14 +44,28 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 	
 	public PreciseBeanTypeReconciler(QuickfixRegistry registry) {
 		this.registry = registry;
-		
+	}
+	
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		return springBootVersionGreaterOrEqual(3, 0, 0).test(project);
 	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
-		AtomicBoolean requiresCompleteAst = new AtomicBoolean(false);
-		cu.accept(new ASTVisitor() {
+	public ProblemType getProblemType() {
+		return SpringAotJavaProblemType.JAVA_CONCRETE_BEAN_TYPE;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		cu.accept(visitor);
+	}
+
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
+		return new ASTVisitor() {
 			
 			private MethodDeclaration currentMethod;
 			
@@ -72,7 +85,7 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 								return true;
 							}
 						} else {
-							requiresCompleteAst.set(true);
+							throw new RequiredCompleteAstException();
 						}
 					}
 				}
@@ -124,21 +137,7 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 				return super.visit(node);
 			}
 			
-		});
-		
-		if (requiresCompleteAst.get()) {
-			throw new RequiredCompleteAstException(); 
-		}
-	}
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return springBootVersionGreaterOrEqual(3, 0, 0).test(project);
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return SpringAotJavaProblemType.JAVA_CONCRETE_BEAN_TYPE;
+		};
 	}
 
 }

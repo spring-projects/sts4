@@ -541,6 +541,9 @@ public class SpringIndexerJava implements SpringIndexer {
 			addEmptyDiagnostics(diagnosticsByDoc, javaFiles);
 			symbolHandler.addSymbols(project, enhancedSymbols, allBeans, diagnosticsByDoc);
 		}
+		
+		System.out.println("reconciling stats - counter: " + reconciler.getStatsCounter());
+		System.out.println("reconciling stats - timer: " + reconciler.getStatsTimer());
 	}
 
 	private String[] scanFiles(IJavaProject project, String[] javaFiles, List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans,
@@ -606,6 +609,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				catch (Exception e) {
 					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
 				}
+				
 				return super.visit(node);
 			}
 

@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.reconcilers;
 
-public class RequiredCompleteAstException extends Exception {
+public class RequiredCompleteAstException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 

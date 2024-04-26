@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -61,13 +61,28 @@ public class UnnecessarySpringExtensionReconciler implements JdtAstReconciler {
     
     public UnnecessarySpringExtensionReconciler(QuickfixRegistry registry) {
 		this.registry = registry;
-    	
     }
+
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		return springBootVersionGreaterOrEqual(2, 1, 0).test(project);
+	}
+
+	@Override
+	public Boot2JavaProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_TEST_SPRING_EXTENSION;
+	}
 
     @Override
 	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
 			boolean isCompleteAst) throws RequiredCompleteAstException {
-    	cu.accept(new ASTVisitor() {
+    	ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+    	cu.accept(visitor);
+	}
+
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		return new ASTVisitor() {
 
 			@Override
 			public boolean visit(TypeDeclaration typeDecl) {
@@ -94,50 +109,40 @@ public class UnnecessarySpringExtensionReconciler implements JdtAstReconciler {
 				}
 				return super.visit(typeDecl);
 			}
-			
-			private boolean isApplicableExtendsWith(Annotation a) {
-				if (FQN_EXTEND_WITH.endsWith(a.getTypeName().getFullyQualifiedName())) {
-					IAnnotationBinding annotationBinding = a.resolveAnnotationBinding();
-					if (annotationBinding != null && FQN_EXTEND_WITH.equals(annotationBinding.getAnnotationType().getQualifiedName()) && annotationBinding.getDeclaredMemberValuePairs().length == 1) {
-						IMemberValuePairBinding pair = annotationBinding.getDeclaredMemberValuePairs()[0];
-						if ("value".equals(pair.getName())) {
-							ITypeBinding typeBinding = null;
-							if (pair.getValue() instanceof ITypeBinding) {
-								typeBinding = (ITypeBinding) pair.getValue();
-							} else if (pair.getValue() instanceof Object[]) {
-								Object[] arr = (Object[]) pair.getValue();
-								if (arr.length > 0 && arr[0] instanceof ITypeBinding) {
-									typeBinding = (ITypeBinding) arr[0];
-								}
-							}
-							return typeBinding != null && FQN_SPRING_EXT.equals(typeBinding.getQualifiedName());
+		};
+	}
+	
+	private static boolean isApplicableExtendsWith(Annotation a) {
+		if (FQN_EXTEND_WITH.endsWith(a.getTypeName().getFullyQualifiedName())) {
+			IAnnotationBinding annotationBinding = a.resolveAnnotationBinding();
+			if (annotationBinding != null && FQN_EXTEND_WITH.equals(annotationBinding.getAnnotationType().getQualifiedName()) && annotationBinding.getDeclaredMemberValuePairs().length == 1) {
+				IMemberValuePairBinding pair = annotationBinding.getDeclaredMemberValuePairs()[0];
+				if ("value".equals(pair.getName())) {
+					ITypeBinding typeBinding = null;
+					if (pair.getValue() instanceof ITypeBinding) {
+						typeBinding = (ITypeBinding) pair.getValue();
+					} else if (pair.getValue() instanceof Object[]) {
+						Object[] arr = (Object[]) pair.getValue();
+						if (arr.length > 0 && arr[0] instanceof ITypeBinding) {
+							typeBinding = (ITypeBinding) arr[0];
 						}
 					}
+					return typeBinding != null && FQN_SPRING_EXT.equals(typeBinding.getQualifiedName());
 				}
-				return false;
 			}
-			
-			private boolean isApplicableTestAnnotation(Annotation a) {
-				String annotationTypeFqn = a.getTypeName().getFullyQualifiedName();
-				if (SPRING_BOOT_TEST_ANNOTATIONS.stream().anyMatch(fqn -> fqn.endsWith(annotationTypeFqn))) {
-					IAnnotationBinding annotationBinding = a.resolveAnnotationBinding();
-					if (annotationBinding != null && SPRING_BOOT_TEST_ANNOTATIONS.contains(annotationBinding.getAnnotationType().getQualifiedName())) {
-						return true;
-					}
-				}
-				return false;
+		}
+		return false;
+	}
+	
+	private static boolean isApplicableTestAnnotation(Annotation a) {
+		String annotationTypeFqn = a.getTypeName().getFullyQualifiedName();
+		if (SPRING_BOOT_TEST_ANNOTATIONS.stream().anyMatch(fqn -> fqn.endsWith(annotationTypeFqn))) {
+			IAnnotationBinding annotationBinding = a.resolveAnnotationBinding();
+			if (annotationBinding != null && SPRING_BOOT_TEST_ANNOTATIONS.contains(annotationBinding.getAnnotationType().getQualifiedName())) {
+				return true;
 			}
-		});
-	}
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return springBootVersionGreaterOrEqual(2, 1, 0).test(project);
-	}
-
-	@Override
-	public Boot2JavaProblemType getProblemType() {
-		return Boot2JavaProblemType.JAVA_TEST_SPRING_EXTENSION;
+		}
+		return false;
 	}
 
 }

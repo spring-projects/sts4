@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -35,19 +35,44 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 public class ModulithTypeReferenceViolationReconciler implements JdtAstReconciler, ApplicationContextAware {
 	
 	private ApplicationContext appContext;
+	
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		return ModulithService.isModulithDependentProject(project);
+	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
+	public ProblemType getProblemType() {
+		return Boot3JavaProblemType.MODULITH_TYPE_REF_VIOLATION;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.appContext = applicationContext;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		if (visitor != null) {
+			cu.accept(visitor);
+		}
+	}
+	
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
 		Path sourceFile = Paths.get(docUri);
 		if (IClasspathUtil.getProjectJavaSourceFoldersWithoutTests(project.getClasspath())
 				.anyMatch(f -> sourceFile.startsWith(f.toPath()))) {
+
 			ModulithService modulithService = appContext.getBean(ModulithService.class); 
 			AppModules appModules = modulithService.getModulesData(project);
 
 			if (appModules != null) {
 				final String packageName = cu.getPackage().getName().getFullyQualifiedName();
-				cu.accept(new ASTVisitor() {
+
+				return new ASTVisitor() {
 
 					@Override
 					public boolean visit(QualifiedName node) {
@@ -71,25 +96,11 @@ public class ModulithTypeReferenceViolationReconciler implements JdtAstReconcile
 						}
 					}
 
-				});
-				
+				};
 			}
 		}
-	}
-	
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return ModulithService.isModulithDependentProject(project);
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return Boot3JavaProblemType.MODULITH_TYPE_REF_VIOLATION;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.appContext = applicationContext;
+		
+		return null;
 	}
 
 }

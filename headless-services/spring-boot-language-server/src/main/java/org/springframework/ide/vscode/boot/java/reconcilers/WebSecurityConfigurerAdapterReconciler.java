@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,11 +36,8 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler {
 	
     private static final String WEB_SECURITY_CONFIGURER_ADAPTER = "WebSecurityConfigurerAdapter";
-
 	private static final String FQN_WEB_SECURITY_CONFIGURER_ADAPTER = "org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter";
-
 	private static final String PROBLEM_LABEL = "Class extends 'WebSecurityConfigurerAdapter' which is removed in Spring-Security 6.x";
-
 	private static final String FIX_LABEL = "Refactor class into a Configuration bean not extending 'WebSecurityConfigurerAdapter'";
 
 	private static final String STUB_WEB_SECURITY_CONFIG_ADAPTER = """
@@ -73,13 +70,28 @@ public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler 
 	
 	public WebSecurityConfigurerAdapterReconciler(QuickfixRegistry registry) {
 		this.registry = registry;
-		
 	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
-		cu.accept(new ASTVisitor() {
+	public boolean isApplicable(IJavaProject project) {
+		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-security-config");
+		return version != null && version.compareTo(new Version(5, 7, 0, null)) >= 0 && version.compareTo(new Version(6, 1, 0, null)) < 0;
+	}
+
+	@Override
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.WEB_SECURITY_CONFIGURER_ADAPTER;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		cu.accept(visitor);
+	}
+	
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		return new ASTVisitor() {
 			
 			@Override
 			public boolean visit(TypeDeclaration typeDecl) {
@@ -108,7 +120,7 @@ public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler 
 				return super.visit(typeDecl);
 			}
 			
-		});
+		};
 	}
 	
 	private static boolean isWebSecurityConfigurerAdapter(CompilationUnit cu, Type type) {
@@ -131,17 +143,6 @@ public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler 
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-security-config");
-		return version != null && version.compareTo(new Version(5, 7, 0, null)) >= 0 && version.compareTo(new Version(6, 1, 0, null)) < 0;
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return Boot2JavaProblemType.WEB_SECURITY_CONFIGURER_ADAPTER;
 	}
 
 }
