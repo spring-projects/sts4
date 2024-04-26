@@ -31,7 +31,7 @@ import com.google.common.collect.ImmutableList;
 
 public class GenerationsValidator extends AbstractDiagnosticValidator {
 	
-	private static String SPRING_COMMERCIAL_URL = "https://spring.io/support";
+	private static final String SPRING_COMMERCIAL_URL = "https://spring.io/support";
 	
 	private SpringProjectsProvider provider;
 
@@ -88,7 +88,7 @@ public class GenerationsValidator extends AbstractDiagnosticValidator {
 				if (validCommercialSupport) {
 					message.append(", get commercial support until ");
 					message.append(javaProjectGen.getCommercialSupportEndDate());
-					message.append(" via Tanzu Spring Runtime at https://tanzu.vmware.com/spring-runtime");
+					message.append(" via Tanzu Spring Runtime at " + SPRING_COMMERCIAL_URL);
 				}
 			}
 			Diagnostic d = createDiagnostic(VersionValidationProblemType.UNSUPPORTED_OSS_VERSION, message.toString());
