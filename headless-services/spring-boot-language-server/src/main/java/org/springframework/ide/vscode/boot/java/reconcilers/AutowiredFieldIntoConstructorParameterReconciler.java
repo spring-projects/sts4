@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,7 +18,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -57,14 +56,32 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
+	public boolean isApplicable(IJavaProject project) {
+		return springBootVersionGreaterOrEqual(2, 0, 0).test(project);
+	}
+
+	@Override
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_CONSTRUCTOR_PARAMETER_INJECTION;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		if (visitor != null) {
+			cu.accept(visitor);
+		}
+	}
+	
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
 		Path sourceFile = Paths.get(docUri);
 		// Check if source file belongs to non-test java sources folder
 		if (IClasspathUtil.getProjectJavaSourceFoldersWithoutTests(project.getClasspath())
 				.anyMatch(f -> sourceFile.startsWith(f.toPath()))) {
-			AtomicBoolean completeAstRequired = new AtomicBoolean(false);
-			cu.accept(new ASTVisitor() {
+			
+			return new ASTVisitor() {
 
 				@Override
 				public boolean visit(FieldDeclaration field) {
@@ -84,8 +101,7 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 								problemCollector.accept(createProblem(cu, field, fieldName, docUri));
 							} else if (constructors.size() == 1) {
 								if (!isCompleteAst) {
-									completeAstRequired.set(true);
-									return false;
+									throw new RequiredCompleteAstException();
 								}
 								if (!isAssigningField(constructors.get(0), variableDeclarationFragment.resolveBinding(),
 										fieldName)) {
@@ -98,8 +114,7 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 										.limit(2).collect(Collectors.toList());
 								if (autowiredConstructors.size() == 1) {
 									if (!isCompleteAst) {
-										completeAstRequired.set(true);
-										return false;
+										throw new RequiredCompleteAstException();
 									} else if (!isAssigningField(autowiredConstructors.get(0),
 											variableDeclarationFragment.resolveBinding(), fieldName)) {
 										problemCollector.accept(createProblem(cu, field, fieldName, docUri));
@@ -112,12 +127,11 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 					return true;
 				}
 
-			});
-			if (completeAstRequired.get()) {
-				throw new RequiredCompleteAstException();
-			}
+			};
 		}
-
+		else {
+			return null;
+		}
 	}
 	
 	private ReconcileProblemImpl createProblem(CompilationUnit cu, FieldDeclaration field, String fieldName,
@@ -155,16 +169,6 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return springBootVersionGreaterOrEqual(2, 0, 0).test(project);
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return Boot2JavaProblemType.JAVA_CONSTRUCTOR_PARAMETER_INJECTION;
 	}
 
 }

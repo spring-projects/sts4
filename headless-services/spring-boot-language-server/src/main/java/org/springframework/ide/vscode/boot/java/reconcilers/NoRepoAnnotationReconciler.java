@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -44,10 +44,25 @@ public class NoRepoAnnotationReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
-		cu.accept(new ASTVisitor() {
+	public boolean isApplicable(IJavaProject project) {
+		return springBootVersionGreaterOrEqual(2, 0, 0).test(project);
+	}
 
+	@Override
+	public Boot2JavaProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_REPOSITORY;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		cu.accept(visitor);
+	}
+
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
+		return new ASTVisitor() {
 			
 			@Override
 			public boolean visit(TypeDeclaration typeDecl) {
@@ -80,46 +95,35 @@ public class NoRepoAnnotationReconciler implements JdtAstReconciler {
 				}
 				return super.visit(typeDecl);
 			}
-
-			private boolean isApplicableRepoAnnotation(Annotation a) {
-				if (a instanceof MarkerAnnotation || (a.isNormalAnnotation() && ((NormalAnnotation) a).properties().isEmpty())) {
-					String typeName = a.getTypeName().getFullyQualifiedName();
-					if (Annotations.REPOSITORY.equals(typeName)) {
-						return true;
-					} else if (typeName.endsWith("Repository")) {
-						ITypeBinding type = a.resolveTypeBinding();
-						if (type != null && Annotations.REPOSITORY.equals(type.getQualifiedName())) {
-							return true;
-						}
-					}
-				}
-				return false;
-			}
-			
-			private boolean isRepo(ITypeBinding t) {
-				if (INTERFACE_REPOSITORY.equals(t.getQualifiedName())) {
+		};
+	}
+	
+	private static boolean isApplicableRepoAnnotation(Annotation a) {
+		if (a instanceof MarkerAnnotation || (a.isNormalAnnotation() && ((NormalAnnotation) a).properties().isEmpty())) {
+			String typeName = a.getTypeName().getFullyQualifiedName();
+			if (Annotations.REPOSITORY.equals(typeName)) {
+				return true;
+			} else if (typeName.endsWith("Repository")) {
+				ITypeBinding type = a.resolveTypeBinding();
+				if (type != null && Annotations.REPOSITORY.equals(type.getQualifiedName())) {
 					return true;
-				} else {
-					for (ITypeBinding st : t.getInterfaces()) {
-						if (isRepo(st)) {
-							return true;
-						}
-					}
 				}
-				return false;
 			}
-			
-		});
+		}
+		return false;
 	}
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return springBootVersionGreaterOrEqual(2, 0, 0).test(project);
-	}
-
-	@Override
-	public Boot2JavaProblemType getProblemType() {
-		return Boot2JavaProblemType.JAVA_REPOSITORY;
+	
+	private static boolean isRepo(ITypeBinding t) {
+		if (INTERFACE_REPOSITORY.equals(t.getQualifiedName())) {
+			return true;
+		} else {
+			for (ITypeBinding st : t.getInterfaces()) {
+				if (isRepo(st)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }

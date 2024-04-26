@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2023 VMware, Inc.
+ * Copyright (c) 2022, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -46,14 +46,69 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 		
 	private static final Logger log = LoggerFactory.getLogger(BeanMethodNotPublicReconciler.class);
-	
-    private static final String LABEL = "Remove 'public' from @Bean method";
+	private static final String LABEL = "Remove 'public' from @Bean method";
 
 	private final QuickfixRegistry quickfixRegistry;
     
     public BeanMethodNotPublicReconciler(QuickfixRegistry quickfixRegistry) {
 		this.quickfixRegistry = quickfixRegistry;
     }
+	
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		Version version = SpringProjectUtil.getDependencyVersion(project, SpringProjectUtil.SPRING_BOOT);		
+		return version != null && version.getMajor() >= 2;
+	}
+
+	@Override
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD;
+	}
+	
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		cu.accept(visitor);
+	}
+	
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
+		return new ASTVisitor() {
+
+			@Override
+			public boolean visit(SingleMemberAnnotation node) {
+				try {
+					visitAnnotation(project, cu, docUri, node, problemCollector);
+				} catch (Exception e) {
+				}
+				return super.visit(node);
+			}
+
+			@Override
+			public boolean visit(NormalAnnotation node) {
+				try {
+					visitAnnotation(project, cu, docUri, node, problemCollector);
+				} catch (Exception e) {
+				}
+				return super.visit(node);
+			}
+
+			@Override
+			public boolean visit(MarkerAnnotation node) {
+				try {
+					visitAnnotation(project, cu, docUri, node, problemCollector);
+				} catch (Exception e) {
+				}
+				return super.visit(node);
+			}
+
+		};
+	}
+
+	public static final boolean isNotOverridingPublicMethod(IMethodBinding methodBinding) {
+		return !isOverriding(methodBinding) && (methodBinding.getModifiers() & Modifier.PUBLIC) != 0;
+	}
 	
 	private void visitAnnotation(IJavaProject project, CompilationUnit cu, URI docUri, Annotation node,	IProblemCollector problemCollector) {
 		ITypeBinding typeBinding = node.resolveTypeBinding();
@@ -95,10 +150,6 @@ public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 		return false;
 	}
 	
-	public static final boolean isNotOverridingPublicMethod(IMethodBinding methodBinding) {
-		return !isOverriding(methodBinding) && (methodBinding.getModifiers() & Modifier.PUBLIC) != 0;
-	}
-	
 	private void addQuickFixes(CompilationUnit cu, URI docUri, ReconcileProblemImpl problem, MethodDeclaration method) {
 		if (quickfixRegistry != null) {
 			
@@ -130,49 +181,4 @@ public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 		}
 	}
 
-	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
-		cu.accept(new ASTVisitor() {
-
-			@Override
-			public boolean visit(SingleMemberAnnotation node) {
-				try {
-					visitAnnotation(project, cu, docUri, node, problemCollector);
-				} catch (Exception e) {
-				}
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(NormalAnnotation node) {
-				try {
-					visitAnnotation(project, cu, docUri, node, problemCollector);
-				} catch (Exception e) {
-				}
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(MarkerAnnotation node) {
-				try {
-					visitAnnotation(project, cu, docUri, node, problemCollector);
-				} catch (Exception e) {
-				}
-				return super.visit(node);
-			}
-
-		});
-	}
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		Version version = SpringProjectUtil.getDependencyVersion(project, SpringProjectUtil.SPRING_BOOT);		
-		return version != null && version.getMajor() >= 2;
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD;
-	}
-	
 }

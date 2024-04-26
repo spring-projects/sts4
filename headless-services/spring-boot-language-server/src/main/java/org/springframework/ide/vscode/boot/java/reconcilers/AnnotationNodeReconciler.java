@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -75,11 +75,27 @@ public class AnnotationNodeReconciler implements JdtAstReconciler {
 		};
 		config.addListener(evt -> this.spelExpressionReconciler.setEnabled(config.isSpelExpressionValidationEnabled()));
 	}
+	
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		return true;
+	}
 
+	@Override
+	public ProblemType getProblemType() {
+		return SpelProblemType.JAVA_SPEL_EXPRESSION_SYNTAX;
+	}
 
 	@Override
 	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
-		cu.accept(new ASTVisitor() {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		cu.accept(visitor);
+	}
+
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu,
+			IProblemCollector problemCollector, boolean isCompleteAst) {
+		return new ASTVisitor() {
 			
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
@@ -111,7 +127,7 @@ public class AnnotationNodeReconciler implements JdtAstReconciler {
 				return super.visit(node);
 			}			
 			
-		});
+		};
 	}
 
 	private void visitAnnotation(IJavaProject project, URI docUri, Annotation node, IProblemCollector problemCollector) {
@@ -121,18 +137,6 @@ public class AnnotationNodeReconciler implements JdtAstReconciler {
 				reconcilers[i].visit(project, docUri, node, typeBinding, problemCollector);
 			}
 		}
-	}
-
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return true;
-	}
-
-
-	@Override
-	public ProblemType getProblemType() {
-		return SpelProblemType.JAVA_SPEL_EXPRESSION_SYNTAX;
 	}
 
 }

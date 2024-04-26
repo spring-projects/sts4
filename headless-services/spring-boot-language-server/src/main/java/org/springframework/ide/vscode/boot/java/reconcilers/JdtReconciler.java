@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,13 +50,19 @@ public class JdtReconciler implements JavaReconciler {
 	private final CompilationUnitCache compilationUnitCache;
 	private final JdtAstReconciler[] reconcilers;
 	private BootJavaConfig config;
+	
+	private long stats_timer;
+	private long stats_counter;
 
 	public JdtReconciler(CompilationUnitCache compilationUnitCache, BootJavaConfig config, JdtAstReconciler[] reconcilers) {
 		this.compilationUnitCache = compilationUnitCache;
 		this.config = config;
 		this.reconcilers = reconcilers;
+		
+		this.stats_timer = 0;
+		this.stats_counter = 0;
 	}
-
+	
 	@Override
 	public void reconcile(IJavaProject project, final IDocument doc, final IProblemCollector problemCollector) {
 		if (!config.isJavaSourceReconcileEnabled()) {
@@ -76,20 +83,48 @@ public class JdtReconciler implements JavaReconciler {
 			return null;
 		});
 	}
+
+	public ASTVisitor createCompositeVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		CompositeASTVisitor compositeVisitor = new CompositeASTVisitor();
+		
+		for (JdtAstReconciler reconciler : getApplicableReconcilers(project)) {
+			ASTVisitor visitor = reconciler.createVisitor(project, docURI, cu, problemCollector, isCompleteAst);
+			
+			if (visitor != null) {
+				compositeVisitor.add(visitor);
+			}
+		}
+
+		return compositeVisitor;
+	}
 	
 
 	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		long start = System.currentTimeMillis();
+		
 		if (!config.isJavaSourceReconcileEnabled()) {
 			return;
 		}
-		for (JdtAstReconciler reconciler : getApplicableReconcilers(project)) {
-			try {
-				reconciler.reconcile(project, docUri, cu, problemCollector, isCompleteAst);
-			} catch (RequiredCompleteAstException e) {
-				throw e;
-			} catch (Exception e) {
-				log.error("", e);
-			}
+		
+		try {
+			ASTVisitor compositeVisitor = createCompositeVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+			cu.accept(compositeVisitor);
+		
+//			for (JdtAstReconciler reconciler : getApplicableReconcilers(project)) {
+//				try {
+//					reconciler.reconcile(project, docUri, cu, problemCollector, isCompleteAst);
+//				} catch (RequiredCompleteAstException e) {
+//					throw e;
+//				} catch (Exception e) {
+//					log.error("", e);
+//				}
+//			}
+		}
+		finally {
+			long end = System.currentTimeMillis();
+			
+			stats_counter++;
+			stats_timer += (end - start);
 		}
 	}
 	
@@ -118,6 +153,14 @@ public class JdtReconciler implements JavaReconciler {
 	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
 			Runnable incrementProgress) {
 		return Collections.emptyMap();
+	}
+	
+	public long getStatsTimer() {
+		return stats_timer;
+	}
+	
+	public long getStatsCounter() {
+		return stats_counter;
 	}
 	
 	

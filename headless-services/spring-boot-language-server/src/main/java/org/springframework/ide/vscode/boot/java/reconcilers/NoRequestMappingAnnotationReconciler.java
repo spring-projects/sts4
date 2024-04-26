@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -57,11 +57,27 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 	public NoRequestMappingAnnotationReconciler(QuickfixRegistry registry) {
 		this.registry = registry;
 	}
+	
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		return springBootVersionGreaterOrEqual(2, 0, 0).test(project);
+	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
-		cu.accept(new ASTVisitor() {
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_PRECISE_REQUEST_MAPPING;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		cu.accept(visitor);
+	}
+	
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
+		return new ASTVisitor() {
 
 			@Override
 			public boolean visit(MarkerAnnotation node) {
@@ -109,7 +125,7 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 				}
 			}
 			
-		});
+		};
 	}
 	
 	private static FixDescriptor createFixDescriptor(String uri, Range range, String requestMethod) {
@@ -160,16 +176,6 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 			requestMethod = ((SimpleName) e).getIdentifier();
 		}
 		return SUPPORTED_REQUEST_METHODS.contains(requestMethod) ? requestMethod : UNSUPPORTED_REQUEST_METHOD;
-	}
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return springBootVersionGreaterOrEqual(2, 0, 0).test(project);
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return Boot2JavaProblemType.JAVA_PRECISE_REQUEST_MAPPING;
 	}
 
 }

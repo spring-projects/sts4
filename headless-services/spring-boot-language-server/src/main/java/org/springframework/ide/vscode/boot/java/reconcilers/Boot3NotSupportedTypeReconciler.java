@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,11 +33,26 @@ public class Boot3NotSupportedTypeReconciler implements JdtAstReconciler {
 			"java.lang.SecurityManager",
 			"java.security.AccessControlException"
 	);
+	
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		return springBootVersionGreaterOrEqual(3, 0, 0).test(project);
+	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
-		cu.accept(new ASTVisitor() {
+	public ProblemType getProblemType() {
+		return Boot3JavaProblemType.JAVA_TYPE_NOT_SUPPORTED;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		cu.accept(visitor);
+	}
+	
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		return new ASTVisitor() {
 
 			@Override
 			public boolean visit(ImportDeclaration node) {
@@ -57,10 +72,10 @@ public class Boot3NotSupportedTypeReconciler implements JdtAstReconciler {
 				return super.visit(node);
 			}
 
-		});
+		};
 	}
-	
-	private String processType(CompilationUnit cu, String name) {
+
+	private static String processType(CompilationUnit cu, String name) {
 		if (TYPE_FQNAMES.contains(name)) {
 			return name;
 		} else {
@@ -73,7 +88,7 @@ public class Boot3NotSupportedTypeReconciler implements JdtAstReconciler {
 		return null;
 	}
 	
-	private List<String> createFqNamesFromWildcardImports(CompilationUnit cu, String name) {
+	private static List<String> createFqNamesFromWildcardImports(CompilationUnit cu, String name) {
 		List<String> fqNames = new ArrayList<>();
 		for (Object im : cu.imports()) {
 			ImportDeclaration importDecl = (ImportDeclaration) im;
@@ -82,16 +97,6 @@ public class Boot3NotSupportedTypeReconciler implements JdtAstReconciler {
 			}
 		}
 		return fqNames;
-	}
-	
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return springBootVersionGreaterOrEqual(3, 0, 0).test(project);
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return Boot3JavaProblemType.JAVA_TYPE_NOT_SUPPORTED;
 	}
 	
 	private static String createLabel(String type) {

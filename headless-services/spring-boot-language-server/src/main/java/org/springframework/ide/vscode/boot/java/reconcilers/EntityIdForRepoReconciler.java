@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -55,12 +55,31 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 			Double.class.getName(),
 			Byte.class.getName()
 	);
+	
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		return springBootVersionGreaterOrEqual(2, 0, 0).test(project);
+	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
-			boolean isCompleteAst) throws RequiredCompleteAstException {
-		final boolean considerIdField = project.getClasspath().findBinaryLibrary("spring-data-mongodb-").isPresent();
-		cu.accept(new ASTVisitor() {
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.DOMAIN_ID_FOR_REPOSITORY;
+	}
+
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+		if (visitor != null) {
+			cu.accept(visitor);
+		}
+	}
+	
+	@Override
+	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+
+		return new ASTVisitor() {
+
+			final boolean considerIdField = project.getClasspath().findBinaryLibrary("spring-data-mongodb-").isPresent();
 
 			@Override
 			public boolean visit(TypeDeclaration typeDecl) {
@@ -216,22 +235,6 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 				}
 			}
 
-			private ITypeBinding getTypeFromAnnotationParameter(IAnnotationBinding a, String param) {
-				for (IMemberValuePairBinding pair : a.getDeclaredMemberValuePairs()) {
-					if (pair.getName().equals(param)) {
-						if (pair.getValue() instanceof ITypeBinding) {
-							return (ITypeBinding) pair.getValue();
-						} else if (pair.getValue() instanceof Object[]) {
-							Object[] arr = (Object[]) pair.getValue();
-							if (arr.length > 0 && arr[0] instanceof ITypeBinding) {
-								return (ITypeBinding) arr[0];
-							}
-						}
-					}
-				}
-				return null;
-			}
-
 			private List<ITypeBinding> findIdType(ITypeBinding type) {
 				List<ITypeBinding> idTypes = findAnnotatedIdTypes(type, new HashSet<>());
 				if (idTypes.isEmpty() && considerIdField) {
@@ -243,40 +246,47 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 				return idTypes;
 			}
 
-			private boolean isValidRepoIdType(ITypeBinding repoIdType, ITypeBinding idType) {
-				if (NUMBER_CLASS_NAMES.contains(repoIdType.getQualifiedName()) && NUMBER_CLASS_NAMES.contains(idType.getQualifiedName())) {
-					return true;
+		};
+		
+	}
+
+	private static boolean isValidRepoIdType(ITypeBinding repoIdType, ITypeBinding idType) {
+		if (NUMBER_CLASS_NAMES.contains(repoIdType.getQualifiedName()) && NUMBER_CLASS_NAMES.contains(idType.getQualifiedName())) {
+			return true;
+		}
+		return repoIdType.isCastCompatible(idType) || idType.isCastCompatible(repoIdType);
+	}
+
+	private static ITypeBinding getTypeFromAnnotationParameter(IAnnotationBinding a, String param) {
+		for (IMemberValuePairBinding pair : a.getDeclaredMemberValuePairs()) {
+			if (pair.getName().equals(param)) {
+				if (pair.getValue() instanceof ITypeBinding) {
+					return (ITypeBinding) pair.getValue();
+				} else if (pair.getValue() instanceof Object[]) {
+					Object[] arr = (Object[]) pair.getValue();
+					if (arr.length > 0 && arr[0] instanceof ITypeBinding) {
+						return (ITypeBinding) arr[0];
+					}
 				}
-				return repoIdType.isCastCompatible(idType) || idType.isCastCompatible(repoIdType);
 			}
-
-		});
-	}
-
-	@Override
-	public boolean isApplicable(IJavaProject project) {
-		return springBootVersionGreaterOrEqual(2, 0, 0).test(project);
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return Boot2JavaProblemType.DOMAIN_ID_FOR_REPOSITORY;
-	}
-
-	public static void findSuperTypeBindings(ITypeBinding binding, Set<ITypeBinding> superTypes) {
-		// superclasses
-		ITypeBinding superclass = binding.getSuperclass();
-		if (superclass != null) {
-			superTypes.add(superclass);
-			findSuperTypeBindings(superclass, superTypes);
 		}
-		// interfaces
-		for (ITypeBinding i : binding.getInterfaces()) {
-			superTypes.add(i);
-			findSuperTypeBindings(i, superTypes);
-		}
+		return null;
 	}
 
+//	public static void findSuperTypeBindings(ITypeBinding binding, Set<ITypeBinding> superTypes) {
+//		// superclasses
+//		ITypeBinding superclass = binding.getSuperclass();
+//		if (superclass != null) {
+//			superTypes.add(superclass);
+//			findSuperTypeBindings(superclass, superTypes);
+//		}
+//		// interfaces
+//		for (ITypeBinding i : binding.getInterfaces()) {
+//			superTypes.add(i);
+//			findSuperTypeBindings(i, superTypes);
+//		}
+//	}
+//
 	private static @Nullable List<ITypeBinding> findRepoTypeChain(ITypeBinding type, List<ITypeBinding> visited) {
 		if (visited.stream().anyMatch(b -> b.isEqualTo(type))) {
 			return null;
@@ -404,7 +414,7 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 		return true;
 	}
 
-	private List<ASTNode> findParamTypes(List<?> typeParams, ITypeBinding idType) {
+	private static List<ASTNode> findParamTypes(List<?> typeParams, ITypeBinding idType) {
 		List<ASTNode> matchedParams = new ArrayList<>();
 		for (Object o : typeParams) {
 			if (o instanceof TypeParameter) {
@@ -423,5 +433,6 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 		}
 		return matchedParams;
 	}
+
 
 }
