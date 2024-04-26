@@ -106,6 +106,7 @@
 	<bundle id="org.springframework.tooling.jdt.ls.commons.source"/>
 	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol"/>
 	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol.source"/>
+	<bundle id="org.springframework.tooling.gradle"/>
 	<bundle id="org.springsource.ide.eclipse.commons.core"/>
 	<bundle id="org.springsource.ide.eclipse.commons.core.source"/>
 	<bundle id="org.springsource.ide.eclipse.commons.ui"/>
