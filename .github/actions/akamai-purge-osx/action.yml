@@ -15,6 +15,7 @@ runs:
       shell: bash
       run: |
         echo -e "${EDGERC}" > ~/.edgerc
+        apt-get install golang
         wget -O akamai https://github.com/akamai/cli/releases/download/v1.5.6/akamai-v1.5.6-linuxamd64
         chmod +x akamai
         ./akamai install purge
@@ -59,3 +60,4 @@ runs:
         rm -f ~/.edgerc
         ./akamai uninstall purge
         rm -f ./akamai
+        apt-get remove golang
