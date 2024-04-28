@@ -17,7 +17,7 @@ runs:
         echo -e "${EDGERC}" > ~/.edgerc
         wget -O akamai https://github.com/akamai/cli/releases/download/v1.5.6/akamai-v1.5.6-linuxamd64
         chmod +x akamai
-        akamai install purge
+        ./akamai install purge
     - name: Purge
       shell: bash
       run: |
@@ -35,7 +35,7 @@ runs:
             if [ $new_length -ge $MAX ]; then
               echo "Batch from offset ${offset} of length ${length}"
               batch=${urls:$offset:$length}
-              akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} $batch
+              ./akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} $batch
               offset=$((offset + length))
               length=$((end - offset))
             else
@@ -46,16 +46,16 @@ runs:
             length=$((${#urls} - offset + 1))
             echo "Last Batch from offset ${offset} of length ${length}"
             batch=${urls:$offset:$length}
-            akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} $batch
+            ./akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} $batch
           fi
         else
           echo "Executing single Purge command..."  
-          akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} $urls
+          ./akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} $urls
         fi
     - name: Cleanup
       if: ${{ always() }}
       shell: bash
       run: |
         rm -f ~/.edgerc
-        akamai uninstall purge
-        rm -f akamai-v1.5.6-linuxamd64
+        ./akamai uninstall purge
+        rm -f ./akamai
