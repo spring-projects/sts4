@@ -16,6 +16,7 @@ runs:
       run: |
         echo -e "${EDGERC}" > ~/.edgerc
         wget -O akamai https://github.com/akamai/cli/releases/download/v1.5.6/akamai-v1.5.6-linuxamd64
+        chmod +x akamai
         akamai install purge
     - name: Purge
       shell: bash
