@@ -126,7 +126,7 @@ jobs:
   purge_cache:
     needs: [ eclipse-language-servers-build ]
     if: ${{ inputs.build_type != 'snapshot' }}
-    runs-on: [self-hosted, macOS]
+    runs-on: [self-hosted]
     steps:
       - uses: ./.github/actions/akamai-purge-osx
         name: Invalidate URLs

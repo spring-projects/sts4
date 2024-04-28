@@ -328,7 +328,7 @@ jobs:
   purge_cache:
     needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
     if: ${{ always() && inputs.build_type != 'snapshot' && contains(join(needs.*.result, ','), 'success')}}
-    runs-on: [self-hosted, macOS]
+    runs-on: [self-hosted]
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
