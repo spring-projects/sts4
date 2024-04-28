@@ -18,7 +18,7 @@ on:
 jobs:
 
   clear-cache-s3-dir:
-    runs-on: [self-hosted, macOS]
+    runs-on: [self-hosted]
     steps:
       - name: Cloudgate S3 Configuration
         uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a

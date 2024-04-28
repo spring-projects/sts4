@@ -15,8 +15,7 @@ runs:
       shell: bash
       run: |
         echo -e "${EDGERC}" > ~/.edgerc
-        brew install go
-        brew install akamai
+        wget https://github.com/akamai/cli/releases/download/v1.5.6/akamai-v1.5.6-linuxamd64
         akamai install purge
     - name: Purge
       shell: bash
@@ -58,5 +57,4 @@ runs:
       run: |
         rm -f ~/.edgerc
         akamai uninstall purge
-        brew uninstall akamai
-        brew uninstall go
+        rm -f akamai-v1.5.6-linuxamd64
