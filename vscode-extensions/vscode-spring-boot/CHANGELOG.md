@@ -1,3 +1,38 @@
+## 2024-05-02 (4.22.1 RELEASE, incl. language servers version 1.54.0)
+
+#### important highlights
+
+* _(Spring Boot)_ Support JPQL syntax in Java sources and Named Query properties files
+* _(Spring Boot)_ Spring Symbol indexing has order of magnitude smaller memory footprint allowing for indexing very large Spring Boot projects
+* _(Spring Boot)_ New UI to show/hide/refresh Live Data for running Spring Boot apps
+* _(Spring Boot)_ .properties `<->` .yml conversions available in Eclipse and VSCode
+* _(Spring Boot)_ Show active profiles for running spring boot applications with Boot Dashboard extension
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ Support JPQL syntax [#1114](https://github.com/spring-projects/sts4/issues/1114)
+* _(Spring Boot)_ Indexing runs out of memory for large projects [#1219](https://github.com/spring-projects/sts4/issues/1219)
+* _(Spring Boot)_ .properties `<->` .yml converter [#739](https://github.com/spring-projects/sts4/issues/739)
+* _(Spring Boot)_ change the actions to refresh live information to show application right away [#1204](https://github.com/spring-projects/sts4/issues/1204)
+* _(Spring Boot)_ Running Boot processes from IDE client [#1190](https://github.com/spring-projects/sts4/issues/1190)
+* _(Spring Boot)_ Show active profiles in Boot Dash [#1225](https://github.com/spring-projects/sts4/issues/1225)
+* _(Spring Boot)_ show a nice message when trying to change log levels without a connected running app [#1232](https://github.com/spring-projects/sts4/issues/1232)
+* _(Spring Boot)_ request mapping symbol doesn't take superclass mapping path into account [#12[24](https://github.com/spring-projects/sts4/actions/runs/8881415855/job/24383700045#step:5:25)](https://github.com/spring-projects/sts4/issues/1224)
+* _(Spring Boot)_ Remove `org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessTracker` and its references [#1221](https://github.com/spring-projects/sts4/issues/1221)
+* _(Spring Boot)_ Set the vmArg HeapDumpOnOutOfMemoryError to be optional [#1212](https://github.com/spring-projects/sts4/issues/1212)
+* _(Spring Boot)_ provide preference to open code lens URLs in simple browser [#1207](https://github.com/spring-projects/sts4/issues/1207)
+* _(Spring Boot)_ Refactor Gradle plugin for `StsToolingModel` [#1201](https://github.com/spring-projects/sts4/issues/1201)
+* _(Spring Boot)_ remove logic to handle "magic" client-side indentation [#1154](https://github.com/spring-projects/sts4/issues/1154)
+* _(Spring Boot)_ NPE while updating Spring Boot version [#1241](https://github.com/spring-projects/sts4/issues/1241)
+* _(Spring Boot)_ NPE exception while scanning for symbols [#1239](https://github.com/spring-projects/sts4/issues/1239)
+* _(Spring Boot)_ Activating 'vscode-spring-boot' extension [#1238](https://github.com/spring-projects/sts4/issues/1238)
+* _(Spring Boot)_ CompilationUnitCache: gracefully cleanup the name environment [#1233](https://github.com/spring-projects/sts4/issues/1233)
+* _(Spring Boot)_ renaming of files and packages causes symbols to get out of sync [#1231](https://github.com/spring-projects/sts4/issues/1231)
+* _(Spring Boot)_ java.lang.ClassNotFoundException: org.eclipse.jdt.ls.core.internal.javadoc.JavaElementLinks cannot be found by ... [#1229](https://github.com/spring-projects/sts4/issues/1229)
+* _(Spring Boot)_ SpringToolSuite (x\_86\_64 option) IDE keeps crashing frequently. [#1228](https://github.com/spring-projects/sts4/issues/1228)
+* _(Spring Boot)_ latest snapshot builds have wrong port in live hover request mapping URLs [#12[26](https://github.com/spring-projects/sts4/actions/runs/8881415855/job/24383700045#step:5:27)](https://github.com/spring-projects/sts4/issues/1226)
+* _(Spring Boot)_ JPA Repo Entity ID composite key reports problem [#1220](https://github.com/spring-projects/sts4/issues/1220)
+
 ## 2024-03-13 (4.22.0 RELEASE, incl. language servers version 1.53.0)
 
 #### important highlights
