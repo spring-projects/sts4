@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -19,14 +20,13 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.IAnnotationBinding;
-import org.eclipse.jdt.core.dom.IMemberValuePairBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.jdt.core.dom.TextBlock;
 import org.springframework.ide.vscode.boot.java.JdtSemanticTokensProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -69,44 +69,61 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 			@Override
 			public boolean visit(NormalAnnotation a) {
 				if (isQueryAnnotation(a)) {
-					Expression queryValueNode = ((List<?>) a.values()).stream()
-							.filter(MemberValuePair.class::isInstance)
-							.map(MemberValuePair.class::cast)
-							.filter(p -> "value".equals(p.getName().getIdentifier()))
-							.findFirst().map(p -> p.getValue())
-							.get();
-					if (queryValueNode instanceof StringLiteral) {
-						IAnnotationBinding annotationBinding = a.resolveAnnotationBinding();
-						String query = getJpaQuery(annotationBinding);
-						if (query != null && !query.isBlank()) {
-							int valueOffset = queryValueNode.getStartPosition() + 1;
-							tokensData.addAll(provider.computeTokens(query, valueOffset));
+					List<?> values = a.values();
+					
+					Expression queryExpression = null;
+					boolean isNative = false;
+					for (Object value : values) {
+						if (value instanceof MemberValuePair) {
+							MemberValuePair pair = (MemberValuePair) value;
+							String name = pair.getName().getFullyQualifiedName();
+							if (name != null) {
+								switch (name) {
+								case "value":
+									queryExpression = pair.getValue();
+									break;
+								case "nativeQuery":
+									Expression expression = pair.getValue();
+									if (expression != null) {
+										Object o = expression.resolveConstantExpressionValue();
+										if (o instanceof Boolean b) {
+											isNative = b.booleanValue();
+										}
+									}
+									break;
+								}
+							}
 						}
 					}
+					
+					if (queryExpression != null) {
+						if (isNative) {
+							//TODO: SQL semantic tokens
+						} else {
+							tokensData.addAll(computeTokensForQueryExpression(provider, queryExpression));
+						}
+					}
+					
+					return false;
 				}
 				return false;
 			}
 
 			@Override
 			public boolean visit(SingleMemberAnnotation a) {
-				if (isQueryAnnotation(a) && a.getValue() instanceof StringLiteral) {
-					IAnnotationBinding annotationBinding = a.resolveAnnotationBinding();
-					String query = getJpaQuery(annotationBinding);
-					if (query != null && !query.isBlank()) {
-						int valueOffset = a.getValue().getStartPosition() + 1;
-						tokensData.addAll(provider.computeTokens(query, valueOffset));
-					}
+				if (isQueryAnnotation(a)) {
+					tokensData.addAll(computeTokensForQueryExpression(provider, a.getValue()));
 				}
 				return false;
 			}
 
 			@Override
 			public boolean visit(MethodInvocation node) {
-				if ("createQuery".equals(node.getName().getIdentifier()) && node.arguments().size() <= 2 && node.arguments().get(0) instanceof StringLiteral queryExpr) {
+				if ("createQuery".equals(node.getName().getIdentifier()) && node.arguments().size() <= 2 && node.arguments().get(0) instanceof Expression queryExpr) {
 					IMethodBinding methodBinding = node.resolveMethodBinding();
 					if ("jakarta.persistence.EntityManager".equals(methodBinding.getDeclaringClass().getQualifiedName())) {
 						if (methodBinding.getParameterTypes().length <= 2 && "java.lang.String".equals(methodBinding.getParameterTypes()[0].getQualifiedName())) {
-							tokensData.addAll(provider.computeTokens(queryExpr.getLiteralValue(), queryExpr.getStartPosition() + 1));
+							tokensData.addAll(computeTokensForQueryExpression(provider, queryExpr));
 						}
 					}
 				}
@@ -118,33 +135,31 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 		return tokensData;
 	}
 	
+	private static List<SemanticTokenData> computeTokensForQueryExpression(SemanticTokensDataProvider provider, Expression valueExp) {
+		String query = null;
+		int offset = 0;
+		if (valueExp instanceof StringLiteral sl) {
+			query = sl.getEscapedValue();
+			query = query.substring(1, query.length() - 1);
+			offset = sl.getStartPosition() + 1; // +1 to skip over opening "
+		} else if (valueExp instanceof TextBlock tb) {
+			query = tb.getEscapedValue();
+			query = query.substring(3, query.length() - 3);
+			offset = tb.getStartPosition() + 3; // +3 to skip over opening """ 
+		}
+		
+		if (query != null) {
+			return provider.computeTokens(query, offset);
+		}
+		return Collections.emptyList();
+	}
+
+	
 	private static boolean isQueryAnnotation(Annotation a) {
 		return FQN_QUERY.equals(a.getTypeName().getFullyQualifiedName())
 				|| QUERY.equals(a.getTypeName().getFullyQualifiedName());
 	}
 	
-	private static String getJpaQuery(IAnnotationBinding annotationBinding) {
-		if (annotationBinding != null && annotationBinding.getAnnotationType() != null) {
-			if (FQN_QUERY.equals(annotationBinding.getAnnotationType().getQualifiedName())) {
-				String query = null;
-				boolean isNative = false;
-				for (IMemberValuePairBinding pair : annotationBinding.getAllMemberValuePairs()) {
-					switch (pair.getName()) {
-					case "value":
-						query = (String) pair.getValue();
-						break;
-					case "nativeQuery":
-						isNative = (Boolean) pair.getValue();
-						break;
-					default:
-					}
-				}
-				return isNative ? null : query;
-			}
-		}
-		return null;
-	}
-
 	@Override
 	public boolean isApplicable(IJavaProject project) {
 		return supportState.isEnabled() && SpringProjectUtil.hasDependencyStartingWith(project, "spring-data-jpa", null);

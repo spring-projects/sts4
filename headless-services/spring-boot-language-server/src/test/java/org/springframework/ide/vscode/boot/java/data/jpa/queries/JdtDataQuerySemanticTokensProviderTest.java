@@ -92,6 +92,54 @@ public class JdtDataQuerySemanticTokensProviderTest {
 	}
 
 	@Test
+	void singleMemberAnnotationWithTextBlock() throws Exception {
+		String source = """
+		package my.package
+		
+		import org.springframework.data.jpa.repository.Query;
+		
+		public interface OwnerRepository {
+		
+			@Query(\"""
+				SELECT DISTINCT owner FROM Owner owner
+				\""")
+			void findByLastName();
+		}
+		""";
+        
+        String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/OwnerRepository.java").toUri().toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "OwnerRepository.java", jp);
+        
+        assertThat(cu).isNotNull();
+        
+        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
+        
+        SemanticTokenData token = tokens.get(0);
+        assertThat(token).isEqualTo(new SemanticTokenData(125, 131, "keyword", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        
+        token = tokens.get(1);
+        assertThat(token).isEqualTo(new SemanticTokenData(132, 140, "keyword", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("DISTINCT");
+        
+        token = tokens.get(2);
+        assertThat(token).isEqualTo(new SemanticTokenData(141, 146, "variable", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        
+        token = tokens.get(3);
+        assertThat(token).isEqualTo(new SemanticTokenData(147, 151, "keyword", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+
+        token = tokens.get(4);
+        assertThat(token).isEqualTo(new SemanticTokenData(152, 157, "class", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("Owner");
+
+        token = tokens.get(5);
+        assertThat(token).isEqualTo(new SemanticTokenData(158, 163, "variable", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+	}
+
+	@Test
 	void normalAnnotation() throws Exception {
 		String source = """
 		package my.package
@@ -181,6 +229,55 @@ public class JdtDataQuerySemanticTokensProviderTest {
 
         token = tokens.get(5);
         assertThat(token).isEqualTo(new SemanticTokenData(209, 214, "variable", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+	}
+
+	@Test
+	void createQueryMethodWithTextBlock() throws Exception {
+		String source = """
+		package my.package
+		
+		import jakarta.persistence.EntityManager;
+		
+		public interface OwnerRepository {
+		
+			default void findByLastName(EntityManager manager) {
+				manager.createQuery(\"""
+				SELECT DISTINCT owner FROM Owner owner
+				\""")
+			}
+		}
+		""";
+        
+        String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/OwnerRepository.java").toUri().toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "OwnerRepository.java", jp);
+        
+        assertThat(cu).isNotNull();
+        
+        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
+        
+        SemanticTokenData token = tokens.get(0);
+        assertThat(token).isEqualTo(new SemanticTokenData(181, 187, "keyword", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        
+        token = tokens.get(1);
+        assertThat(token).isEqualTo(new SemanticTokenData(188, 196, "keyword", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("DISTINCT");
+        
+        token = tokens.get(2);
+        assertThat(token).isEqualTo(new SemanticTokenData(197, 202, "variable", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        
+        token = tokens.get(3);
+        assertThat(token).isEqualTo(new SemanticTokenData(203, 207, "keyword", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+
+        token = tokens.get(4);
+        assertThat(token).isEqualTo(new SemanticTokenData(208, 213, "class", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("Owner");
+
+        token = tokens.get(5);
+        assertThat(token).isEqualTo(new SemanticTokenData(214, 219, "variable", new String[0]));
         assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
 	}
 

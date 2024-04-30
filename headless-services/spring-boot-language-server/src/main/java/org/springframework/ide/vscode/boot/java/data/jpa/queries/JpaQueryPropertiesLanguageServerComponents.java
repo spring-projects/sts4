@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -22,10 +23,12 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 public class JpaQueryPropertiesLanguageServerComponents implements LanguageServerComponents {
 	
 	private final QueryPropertiesSemanticTokensHandler semanticTokensHandler;
+	private final NamedQueryPropertiesReconcileEngine reconcileEngine;
 
 	public JpaQueryPropertiesLanguageServerComponents(SimpleTextDocumentService documents, JavaProjectFinder projectsFinder,
 			JpqlSemanticTokens jpqlSemanticTokensProvider, HqlSemanticTokens hqlSematicTokensProvider, JpqlSupportState supportState) {
 		this.semanticTokensHandler = new QueryPropertiesSemanticTokensHandler(documents, projectsFinder, jpqlSemanticTokensProvider, hqlSematicTokensProvider, supportState);
+		this.reconcileEngine = new NamedQueryPropertiesReconcileEngine(projectsFinder);
 	}
 	
 	@Override
@@ -36,6 +39,11 @@ public class JpaQueryPropertiesLanguageServerComponents implements LanguageServe
 	@Override
 	public Optional<SemanticTokensHandler> getSemanticTokensHandler() {
 		return Optional.of(semanticTokensHandler);
+	}
+
+	@Override
+	public Optional<IReconcileEngine> getReconcileEngine() {
+		return Optional.of(reconcileEngine);
 	}
 
 }

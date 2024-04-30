@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -51,6 +52,8 @@ public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 		JpqlParser parser = new JpqlParser(antlrTokens);
 		Map<Token, String> semantics = new HashMap<>();
 
+		parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
+		
 		parser.addParseListener(new JpqlBaseListener() {
 
 			private void processTerminalNode(TerminalNode node) {

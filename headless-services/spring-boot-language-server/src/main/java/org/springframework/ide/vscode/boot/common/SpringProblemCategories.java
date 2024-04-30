@@ -37,5 +37,8 @@ public class SpringProblemCategories {
 	
 	public static final ProblemCategory VERSION_VALIDATION = new ProblemCategory("version-validation", "Versions and Support Ranges",
 			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.java.version-validation"));
+
+	public static final ProblemCategory JPQL = new ProblemCategory("jpql-validation", "JPQL",
+			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.jpql"));;
 	
 }
