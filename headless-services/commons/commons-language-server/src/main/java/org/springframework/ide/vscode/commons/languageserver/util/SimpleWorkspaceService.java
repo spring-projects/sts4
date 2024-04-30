@@ -28,7 +28,9 @@ import org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
+import org.eclipse.lsp4j.SemanticTokensWorkspaceCapabilities;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceClientCapabilities;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.WorkspaceFoldersChangeEvent;
 import org.eclipse.lsp4j.WorkspaceSymbol;
@@ -61,6 +63,7 @@ public class SimpleWorkspaceService implements WorkspaceService {
 	
 	private ListenerList<DidChangeWorkspaceFoldersParams> workspaceFolderListeners = new ListenerList<>();
 
+	WorkspaceClientCapabilities clientCapabilities;
 
 	public SimpleWorkspaceService(SimpleLanguageServer server) {
 		this.fileObserver = new SimpleServerFileObserver(server);
@@ -190,6 +193,16 @@ public class SimpleWorkspaceService implements WorkspaceService {
 		workspaceRoots = new HashSet<>();
 		workspaceRoots.addAll(workspaceFolders);
 		log.debug("workspaceFolders = {}", workspaceFolders);
+	}
+	
+	public boolean supportsSemanticTokensRefresh() {
+		if (clientCapabilities != null) {
+			SemanticTokensWorkspaceCapabilities semanticTokensCapability = clientCapabilities.getSemanticTokens();
+			if (semanticTokensCapability != null) {
+				return semanticTokensCapability.getRefreshSupport() != null && semanticTokensCapability.getRefreshSupport().booleanValue();
+			}
+		}
+		return false;
 	}
 
 }

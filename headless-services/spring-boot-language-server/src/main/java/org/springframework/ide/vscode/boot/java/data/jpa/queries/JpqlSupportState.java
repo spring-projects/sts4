@@ -37,7 +37,9 @@ public final class JpqlSupportState {
 	private synchronized void setEnabled(boolean enabled) {
 		if (this.enabled != enabled) {
 			this.enabled = enabled;
-			server.getAsync().execute(() -> server.getClient().refreshSemanticTokens());
+			if (server.getWorkspaceService().supportsSemanticTokensRefresh()) {
+				server.getAsync().execute(() -> server.getClient().refreshSemanticTokens());
+			}
 		}
 	}
 }

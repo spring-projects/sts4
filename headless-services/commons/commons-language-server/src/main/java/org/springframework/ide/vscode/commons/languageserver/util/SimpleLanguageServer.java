@@ -386,6 +386,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 		log.debug("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
 		
 		getTextDocumentService().clientCapabilities = params.getCapabilities().getTextDocument();
+		getWorkspaceService().clientCapabilities = params.getCapabilities().getWorkspace();
 		
 		InitializeResult result = new InitializeResult();
 
