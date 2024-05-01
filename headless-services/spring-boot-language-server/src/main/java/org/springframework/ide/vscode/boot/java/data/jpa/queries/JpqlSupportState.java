@@ -27,7 +27,11 @@ public final class JpqlSupportState {
 		this.server = server;
 		this.enabled = enabled;
 		config.addListener(v -> setEnabled(config.isJpqlEnabled()));
-		projectObserver.addListener(ProjectObserver.onAny(jp -> server.getAsync().execute(() -> server.getClient().refreshSemanticTokens())));
+		projectObserver.addListener(ProjectObserver.onAny(jp -> {
+			if (enabled && server.getWorkspaceService().supportsSemanticTokensRefresh()) {
+				server.getAsync().execute(() -> server.getClient().refreshSemanticTokens());
+			}
+		}));
 	}
 	
 	public synchronized boolean isEnabled() {

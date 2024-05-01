@@ -28,6 +28,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.lsp4e.LanguageServers;
 import org.eclipse.lsp4e.LanguageServersRegistry;
 import org.eclipse.lsp4e.LanguageServersRegistry.LanguageServerDefinition;
+import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
@@ -86,7 +87,10 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 
 				try {
 					
-					LanguageServers.forProject(project).withPreferredServer(def).computeFirst(ls -> {
+					LanguageServers.forProject(project).withPreferredServer(def).withFilter(c -> {
+						ExecuteCommandOptions commandProvider = c.getExecuteCommandProvider();
+						return commandProvider != null && commandProvider.getCommands().contains(REWRITE_REFACTORINGS_EXEC);
+					}).computeFirst(ls -> {
 							
 							PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
 								RecipeTreeModel recipesModel = new RecipeTreeModel(ls.getWorkspaceService(), recipeFilter.toString());
