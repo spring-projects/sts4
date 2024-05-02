@@ -55,12 +55,6 @@ public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
-		ASTVisitor visitor = createVisitor(project, docUri, cu, problemCollector, isCompleteAst);
-		cu.accept(visitor);
-	}
-
-	@Override
 	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
 
 		return new ASTVisitor() {

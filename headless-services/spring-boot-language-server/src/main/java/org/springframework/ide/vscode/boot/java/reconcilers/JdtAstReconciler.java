@@ -20,8 +20,14 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 
 public interface JdtAstReconciler {
 	
-	void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException;
-	
+	/**
+	 * This checks whether the reconciler is applicable for the given project.
+	 * The implementation can take project and classpath information into account,
+	 * but should not look into source or output folders.
+	 * 
+	 * The result is the implementation might be cached and cache entries will only
+	 * be renewed if the project changes.
+	 */
 	boolean isApplicable(IJavaProject project);
 	
 	ProblemType getProblemType();
