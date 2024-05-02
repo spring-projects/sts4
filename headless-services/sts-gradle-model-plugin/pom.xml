@@ -3,10 +3,15 @@
                              https://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.springframework.ide.vscode</groupId>
+	<parent>
+		<groupId>org.springframework.ide.vscode</groupId>
+		<artifactId>commons-parent</artifactId>
+		<version>1.55.0-SNAPSHOT</version>
+		<relativePath>../commons/pom.xml</relativePath>
+	</parent>
+	
     <artifactId>sts-gradle-model-plugin-wrapper</artifactId>
     <packaging>pom</packaging>
-    <version>1.53.0-SNAPSHOT</version>
     <name>sts-gradle-model-plugin-wrapper</name>
 
     <build>
