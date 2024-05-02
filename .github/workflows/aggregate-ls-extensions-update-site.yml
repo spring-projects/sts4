@@ -54,7 +54,7 @@ jobs:
 
   purge_cache:
     needs: [ update-aggregate-update-sites ]
-    runs-on: [self-hosted, macOS]
+    runs-on: [self-hosted]
     steps:
       - uses: ./.github/actions/akamai-purge-osx
         name: Invalidate URLs
