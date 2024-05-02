@@ -165,10 +165,12 @@ public class JdtReconciler implements JavaReconciler {
 	
 	private List<JdtAstReconciler> computeApplicableReconcilers(IJavaProject project) {
 		List<JdtAstReconciler> applicableReconcilers = new ArrayList<>(reconcilers.length);
+		boolean isBootProject = SpringProjectUtil.isBootProject(project);
+		
 		for (JdtAstReconciler r : reconcilers) {
 			switch (config.getProblemApplicability(r.getProblemType())) {
 			case ON:
-				if (SpringProjectUtil.isBootProject(project)) {
+				if (isBootProject) {
 					applicableReconcilers.add(r);
 				}
 				break;
