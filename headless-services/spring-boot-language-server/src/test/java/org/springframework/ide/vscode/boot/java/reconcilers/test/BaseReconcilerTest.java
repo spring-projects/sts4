@@ -25,8 +25,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
+import org.springframework.ide.vscode.boot.java.reconcilers.CompositeASTVisitor;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
@@ -91,7 +93,17 @@ public abstract class BaseReconcilerTest {
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				try {
-					reconcilerFactory.get().reconcile(project, path.toUri(), cu, problemCollector, isCompleteAst);
+					JdtAstReconciler reconciler = reconcilerFactory.get();
+					ASTVisitor visitor = reconciler.createVisitor(project,  path.toUri(), cu, problemCollector, isCompleteAst);
+					
+					if (visitor != null) {
+						// use a composite visitor here to make sure that the tests will fail if there is anything missing in the composite
+						// visitor for the reconciler AST visitor to work correctly
+						CompositeASTVisitor compositeASTVisitor = new CompositeASTVisitor();
+						compositeASTVisitor.add(visitor);
+
+						cu.accept(compositeASTVisitor);
+					}
 				} catch (RequiredCompleteAstException e) {
 					requiredCompleteAst.set(true);
 				}				
