@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor;
+import org.eclipse.ui.internal.genericeditor.preferences.GenericEditorPreferenceConstants;
 import org.eclipse.ui.texteditor.ChainedPreferenceStore;
 
 /**
@@ -38,8 +38,8 @@ public class YamlGenericEditor extends ExtensionBasedTextEditor {
 
 		List<IPreferenceStore> stores = new ArrayList<>(3);
 		stores.add(LanguageServerCommonsActivator.getInstance().getPreferenceStore());
+		stores.add(GenericEditorPreferenceConstants.getPreferenceStore());
 		stores.add(EditorsUI.getPreferenceStore());
-		stores.add(PlatformUI.getPreferenceStore());
 
 		setPreferenceStore(new ChainedPreferenceStore(stores.toArray(new IPreferenceStore[stores.size()])));
 
