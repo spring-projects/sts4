@@ -542,8 +542,8 @@ public class SpringIndexerJava implements SpringIndexer {
 			symbolHandler.addSymbols(project, enhancedSymbols, allBeans, diagnosticsByDoc);
 		}
 		
-		System.out.println("reconciling stats - counter: " + reconciler.getStatsCounter());
-		System.out.println("reconciling stats - timer: " + reconciler.getStatsTimer());
+		log.info("reconciling stats - counter: " + reconciler.getStatsCounter());
+		log.info("reconciling stats - timer: " + reconciler.getStatsTimer());
 	}
 
 	private String[] scanFiles(IJavaProject project, String[] javaFiles, List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans,
