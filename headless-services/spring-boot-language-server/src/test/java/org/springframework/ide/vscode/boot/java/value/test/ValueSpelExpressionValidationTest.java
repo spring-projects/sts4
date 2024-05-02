@@ -50,6 +50,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.test.MockProjectObserver;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -160,7 +161,7 @@ public class ValueSpelExpressionValidationTest {
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
 				new JdtReconciler(compilationUnitCache, config, new JdtAstReconciler[] {
 						new AnnotationNodeReconciler(config)
-				})
+				}, new MockProjectObserver())
 		});
 	}
 	

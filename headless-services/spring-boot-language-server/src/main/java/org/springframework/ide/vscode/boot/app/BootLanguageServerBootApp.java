@@ -268,8 +268,8 @@ public class BootLanguageServerBootApp {
 		return new CompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
 
-	@Bean JdtReconciler jdtReconciler(CompilationUnitCache cuCache, BootJavaConfig config, SimpleLanguageServer server, JdtAstReconciler[] reconcilers) {
-		return new JdtReconciler(cuCache, config, reconcilers);
+	@Bean JdtReconciler jdtReconciler(CompilationUnitCache cuCache, BootJavaConfig config, SimpleLanguageServer server, JdtAstReconciler[] reconcilers, ProjectObserver projectObserver) {
+		return new JdtReconciler(cuCache, config, reconcilers, projectObserver);
 	}
 	
 	@Bean SpringXMLCompletionEngine xmlCompletionEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, BootJavaConfig config) {
