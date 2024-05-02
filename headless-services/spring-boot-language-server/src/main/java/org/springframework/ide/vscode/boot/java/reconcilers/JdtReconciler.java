@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -25,6 +26,7 @@ import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -51,16 +53,28 @@ public class JdtReconciler implements JavaReconciler {
 	private final JdtAstReconciler[] reconcilers;
 	private BootJavaConfig config;
 	
+	private final ConcurrentHashMap<String, List<JdtAstReconciler>> applicableReconcilersCache;
+	
 	private long stats_timer;
 	private long stats_counter;
 
-	public JdtReconciler(CompilationUnitCache compilationUnitCache, BootJavaConfig config, JdtAstReconciler[] reconcilers) {
+	public JdtReconciler(CompilationUnitCache compilationUnitCache, BootJavaConfig config, JdtAstReconciler[] reconcilers, ProjectObserver projectObserver) {
 		this.compilationUnitCache = compilationUnitCache;
 		this.config = config;
 		this.reconcilers = reconcilers;
 		
 		this.stats_timer = 0;
 		this.stats_counter = 0;
+		
+		this.applicableReconcilersCache = new ConcurrentHashMap<>();
+		
+		projectObserver.addListener(ProjectObserver.onAny(project -> {
+			invalidateApplicableReconcilersCache(project);
+		}));
+		
+		config.addListener(event -> {
+			invalidateApplicableReconcilersCache(null);
+		});
 	}
 	
 	@Override
@@ -128,7 +142,28 @@ public class JdtReconciler implements JavaReconciler {
 		}
 	}
 	
+	@Override
+	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
+			Runnable incrementProgress) {
+		return Collections.emptyMap();
+	}
+	
 	private List<JdtAstReconciler> getApplicableReconcilers(IJavaProject project) {
+		return this.applicableReconcilersCache.computeIfAbsent(project.getElementName(), (name) -> {
+			return computeApplicableReconcilers(project);
+		});
+	}
+
+	private void invalidateApplicableReconcilersCache(IJavaProject project) {
+		if (project != null) {
+			this.applicableReconcilersCache.remove(project.getElementName());
+		}
+		else {
+			this.applicableReconcilersCache.clear();
+		}
+	}
+	
+	private List<JdtAstReconciler> computeApplicableReconcilers(IJavaProject project) {
 		List<JdtAstReconciler> applicableReconcilers = new ArrayList<>(reconcilers.length);
 		for (JdtAstReconciler r : reconcilers) {
 			switch (config.getProblemApplicability(r.getProblemType())) {
@@ -146,13 +181,6 @@ public class JdtReconciler implements JavaReconciler {
 			}
 		}
 		return applicableReconcilers;
-	}
-
-
-	@Override
-	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
-			Runnable incrementProgress) {
-		return Collections.emptyMap();
 	}
 	
 	public long getStatsTimer() {
