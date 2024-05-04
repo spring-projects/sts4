@@ -114,7 +114,7 @@
 		<cloudfoundry-client-version>3.8.0.RELEASE</cloudfoundry-client-version>
 		<reactor-version>3.5.0</reactor-version>
 		<reactor-netty>0.7.15.RELEASE</reactor-netty>
-		<commons-io-version>2.4</commons-io-version>
+		<commons-io-version>2.16.1</commons-io-version>
 		<commons-codec-version>1.13</commons-codec-version>
 		<kotlin.version>1.9.20</kotlin.version>
 
