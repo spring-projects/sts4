@@ -188,11 +188,11 @@
 					<layout>p2</layout>
 					<url>https://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/mylyn/docs/releases/3.0.45/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>wildwebdeveloper</id>
 					<layout>p2</layout>
@@ -288,11 +288,11 @@
 					<layout>p2</layout>
 					<url>https://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/mylyn/docs/releases/3.0.45/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>wildwebdeveloper</id>
 					<layout>p2</layout>
@@ -393,11 +393,11 @@
 					<layout>p2</layout>
 					<url>https://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/mylyn/docs/releases/3.0.45/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>wildwebdeveloper</id>
 					<layout>p2</layout>
