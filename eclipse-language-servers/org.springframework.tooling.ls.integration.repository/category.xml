@@ -42,8 +42,29 @@
       <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
    </feature>
 
-   <feature id="org.eclipse.mylyn.wikitext_feature"/>
+<!--   <feature id="org.eclipse.mylyn.wikitext.feature"/> -->
    <feature id="org.eclipse.tm4e.feature"/>
+
+   <bundle id="org.eclipse.mylyn.wikitext"/>
+   <bundle id="org.eclipse.mylyn.wikitext.ant"/>
+   <bundle id="org.eclipse.mylyn.wikitext.asciidoc"/>
+   <bundle id="org.eclipse.mylyn.wikitext.asciidoc.ui"/>
+   <bundle id="org.eclipse.mylyn.wikitext.confluence"/>
+   <bundle id="org.eclipse.mylyn.wikitext.confluence.ui"/>
+   <bundle id="org.eclipse.mylyn.wikitext.help.ui"/>
+   <bundle id="org.eclipse.mylyn.wikitext.html"/>
+   <bundle id="org.eclipse.mylyn.wikitext.markdown"/>
+   <bundle id="org.eclipse.mylyn.wikitext.markdown.ui"/>
+   <bundle id="org.eclipse.mylyn.wikitext.mediawiki"/>
+   <bundle id="org.eclipse.mylyn.wikitext.mediawiki.ui"/>
+   <bundle id="org.eclipse.mylyn.wikitext.osgi"/>
+   <bundle id="org.eclipse.mylyn.wikitext.textile"/>
+   <bundle id="org.eclipse.mylyn.wikitext.textile.ui"/>
+   <bundle id="org.eclipse.mylyn.wikitext.tracwiki"/>
+   <bundle id="org.eclipse.mylyn.wikitext.tracwiki.ui"/>
+   <bundle id="org.eclipse.mylyn.wikitext.twiki"/>
+   <bundle id="org.eclipse.mylyn.wikitext.twiki.ui"/>
+   <bundle id="org.eclipse.mylyn.wikitext.ui"/>
 
    <bundle id="org.springframework.tooling.ls.eclipse.commons"/>
    <bundle id="org.springframework.tooling.ls.eclipse.commons.source"/>
