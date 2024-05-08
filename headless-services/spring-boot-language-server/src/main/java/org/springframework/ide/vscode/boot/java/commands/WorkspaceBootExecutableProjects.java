@@ -67,7 +67,11 @@ public class WorkspaceBootExecutableProjects {
 							.filter(cpe -> !cpe.isTest() && !cpe.isSystem())
 							.map(cpe -> Classpath.isSource(cpe) ? cpe.getOutputFolder() : cpe.getPath())
 							.collect(Collectors.toSet());
-					return Optional.of(new ExecutableProject(project.getElementName(), project.getLocationUri().toASCIIString(), null, appBean.getType(), classpath));
+					IGav gav = project.getProjectBuild().getGav();
+					String gavStr = "%s:%s:%s".formatted(gav.getGroupId(), gav.getArtifactId(), gav.getVersion());
+					String springBootVersion = SpringProjectUtil.getSpringBootVersion(project).toString();
+					String buildTool = project.getProjectBuild().getType();
+					return Optional.of(new ExecutableProject(project.getElementName(), project.getLocationUri().toASCIIString(), gavStr, appBean.getType(), classpath, buildTool, springBootVersion));
 				} catch (Exception e) {
 					log.error("", e);
 				}
