@@ -35,7 +35,7 @@ import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 
 public class WorkspaceBootExecutableProjects {
 	
-	public record ExecutableProject(String name, String uri, String gav, String mainClass, Collection<String> classpath) {}
+	public record ExecutableProject(String name, String uri, String gav, String mainClass, Collection<String> classpath, String buildTool, String springBootVersion) {}
 	
 	final static String CMD = "sts/spring-boot/executableBootProjects";
 	

@@ -30,7 +30,8 @@
   ],
   "enabledApiProposals": [
     "chatParticipant",
-    "languageModels"
+    "languageModels",
+    "languageModelSystem"
   ],
   "contributes": {
     "chatParticipants": [
