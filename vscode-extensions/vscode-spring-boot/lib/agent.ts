@@ -9,10 +9,11 @@ import path from 'path';
 import fs from "fs";
 import { getTargetGuideMardown, getWorkspaceRoot, getExecutable } from './utils/util';
 import { createConverter } from "vscode-languageclient/lib/common/protocolConverter";
-import { projectCreationPrompt } from './utils/create-spring-boot-project-prompt';
-import { extractCodeBlocks } from './utils/response-handler';
+import { systemPrompt } from './utils/system-ai-prompt';
+import { userPrompt } from './utils/user-ai-prompt';
 
 interface Prompt {
+    projName: string
     systemPrompt: string;
     userPrompt: string;
 }
@@ -21,6 +22,16 @@ interface PromptResponse {
     description: string;
     shortPackageName: string;
     prompt: Prompt;
+}
+
+interface ExecutableBootProject {
+    name: string;
+    uri: string;
+    mainClass: string;
+    classpath: string[];
+    gav: string;
+    buildTool: string;
+    springBootVersion: string;
 }
 
 const CONVERTER = createConverter(undefined, true, true);
@@ -101,15 +112,35 @@ async function fetchJson<T>(title: string, message: string, args: string[], cwd?
     });
 }
 
-function springCliHandleAIPrompt(question: string, cwd: string): Thenable<PromptResponse> {
+function replacePlaceholder(fileContent: string, match: ExecutableBootProject, question: string) {
+    if(match !== null && match !== undefined) {
+        const lastIndex = match.mainClass.lastIndexOf('.')
+        const replacements = {
+            'Spring Project Name': match.name,
+            'Package Name': match.mainClass.substring(0, lastIndex),
+            'Build Tool': match.buildTool,
+            'Spring Boot Version': match.springBootVersion,
+            'Description': question
+        };
+    
+        for (const placeholder in replacements) {
+            fileContent = fileContent.replace(new RegExp(placeholder, 'g'), replacements[placeholder]);
+        }
+    } else {
+        fileContent = fileContent.replace(new RegExp('Description', 'g'), question);
+    }
+    return fileContent;
+}
 
-    const args = [
-        "ai",
-        "prompt",
-        "--description",
-        `"${question}"`
-    ];
-    return fetchJson("Spring cli ai prompt", question, args, cwd);
+function enhancePrompt(question: string, cwd: string, projects: ExecutableBootProject[]): Thenable<Prompt> {
+
+    const match = projects.find(project => project.uri.toString().replace('file:', '') === cwd);
+    const prompt = {} as Prompt;
+
+    prompt.systemPrompt = replacePlaceholder(systemPrompt, match, question);
+    prompt.userPrompt = replacePlaceholder(userPrompt, match, question);
+    prompt.projName = match?.name;
+    return Promise.resolve(prompt);
 }
 
 async function enhanceResponse(uri: Uri, projDescription: string, cwd: string) {
@@ -171,12 +202,11 @@ async function writeResponseToFile(response: string, shortPackageName: string, c
     }
 }
 
-async function chatRequest(enhancedPrompt: PromptResponse, token: vscode.CancellationToken) {
-    // const access = await vscode.lm.requestLanguageModelAccess(LANGUAGE_MODEL_ID);
+async function chatRequest(enhancedPrompt: Prompt, token: vscode.CancellationToken) {
     
     const messages = [
-            new  vscode.LanguageModelChatSystemMessage(enhancedPrompt.prompt.systemPrompt),
-            new vscode.LanguageModelChatUserMessage(enhancedPrompt.prompt.userPrompt)
+            new  vscode.LanguageModelChatSystemMessage(enhancedPrompt.systemPrompt),
+            new vscode.LanguageModelChatUserMessage(enhancedPrompt.userPrompt)
     ];
     let response = '';
     return vscode.window.withProgress({
@@ -216,67 +246,43 @@ async function chatRequest(enhancedPrompt: PromptResponse, token: vscode.Cancell
 
 async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.ChatContext, stream: vscode.ChatResponseStream, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
 
-        // if (request.command == 'prompt') {
-            const previousMessages = context.history.filter(h => {
-                return h instanceof vscode.ChatRequestTurn && h.participant == AGENT_ID
-            }) as vscode.ChatRequestTurn[];
-            // console.log(previousMessages);
-            const cwd = (await getWorkspaceRoot()).fsPath;
-            // get enhanced prompt by calling spring cli `prompt` command
-            const enhancedPrompt = await springCliHandleAIPrompt(request.prompt, cwd);
+    const previousMessages = context.history.filter(h => {
+        return h instanceof vscode.ChatRequestTurn && h.participant == AGENT_ID
+    }) as vscode.ChatRequestTurn[];
+    console.log(previousMessages);
 
-            // chat request to copilot LLM
-            const response = await chatRequest(enhancedPrompt, token);
+    const previousMessagesResp = context.history.filter(h => {
+        return h instanceof vscode.ChatResponseTurn && h.participant == AGENT_ID
+    }) as vscode.ChatResponseTurn[];
+    console.log(previousMessagesResp);
 
-            // write the response to markdown file
-            await writeResponseToFile(response, enhancedPrompt.shortPackageName, cwd);
+    const cwd = (await getWorkspaceRoot()).fsPath;
 
-            const uri = await getTargetGuideMardown();
-            // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
-            await enhanceResponse(uri, enhancedPrompt.shortPackageName, cwd);
+    const projects = await vscode.commands.executeCommand("sts/spring-boot/executableBootProjects") as ExecutableBootProject[];
+    console.log(projects)
+    // get enhanced prompt by getting the spring context from boot ls
+    const enhancedPrompt = await enhancePrompt(request.prompt, cwd, projects);
 
-            // return modified response to chat
-            const documentContent = await vscode.workspace.fs.readFile(uri);
-            const chatResponse = Buffer.from(documentContent).toString();
-            stream.markdown(chatResponse);
-            stream.button({
-                command: 'vscode-spring-boot.agent.apply',
-                title: vscode.l10n.t('Apply Changes!')
-            });
-			return { metadata: { command: 'prompt' }  };
-        // }  
+    // chat request to copilot LLM
+    const response = await chatRequest(enhancedPrompt, token);
+
+    // write the response to markdown file
+    await writeResponseToFile(response, enhancedPrompt.projName, cwd);
+
+    const uri = await getTargetGuideMardown();
+    // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
+    await enhanceResponse(uri, enhancedPrompt.projName, cwd);
+
+    // return modified response to chat
+    const documentContent = await vscode.workspace.fs.readFile(uri);
+    const chatResponse = Buffer.from(documentContent).toString();
+    stream.markdown(chatResponse);
+    stream.button({
+        command: 'vscode-spring-boot.agent.apply',
+        title: vscode.l10n.t('Apply Changes!')
+    });
+    return { metadata: { command: 'prompt' } };
 }
-
-async function handleCreateProject(request: vscode.ChatRequest, context: vscode.ChatContext, stream: vscode.ChatResponseStream, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
-    if (request.command == 'new') {
-        // const access = await vscode.lm.requestLanguageModelAccess(LANGUAGE_MODEL_ID);
-        
-        const systemPrompt = 'Your task is to create Java source code for a comprehensive Spring Boot application from scratch \n'+
-        `# Instructions:
-        \`\`\`
-        ${projectCreationPrompt}\n
-        \`\`\``;
-
-        const messages = [
-            new vscode.LanguageModelChatSystemMessage(systemPrompt),
-            new vscode.LanguageModelChatUserMessage(request.prompt)
-        ];
-        const chatResponse = await vscode.lm.sendChatRequest(LANGUAGE_MODEL_ID, messages, {}, token);
-        let entireResponse = '';
-        for await (const fragment of chatResponse.stream) {
-            entireResponse += fragment;            
-        }
-        const modifiedResponse = modifyResponse(entireResponse);
-        stream.markdown(modifiedResponse);
-        return { metadata: { command: 'new' }  };
-    }
-}
-
-function modifyResponse(response) {
-const { javaCodeBlocks, xmlCodeBlocks } = extractCodeBlocks(response);
-return response;
-}
-
 
 export function activate(
     _client: LanguageClient,
@@ -285,23 +291,9 @@ export function activate(
 ) {
 
     const agent = vscode.chat.createChatParticipant(AGENT_ID, async (request, context, progress, token) => {
-		// if (request.command === 'prompt') {
-            return handleAiPrompts(request, context, progress, token);
-		// } else if (request.command === 'new') {
-            // return handleCreateProject(request, context, progress, token);
-		// }
+        return handleAiPrompts(request, context, progress, token);
     });
-    // agent.isSticky = true; 
     agent.iconPath = vscode.Uri.joinPath(context.extensionUri, 'readme-imgs', 'spring-tools-icon.png');
-    // agent.description = vscode.l10n.t('Hi! How can I help you with your spring boot project?');
-    // agent.commandProvider = {
-    //     provideCommands(token) {
-    //         return [
-    //             { name: 'prompt', description: 'Handle AI Prompts through Spring cli' },
-    //             { name: 'new', description: 'Create a new spring boot project'}
-    //         ];
-    //     }
-    // };
 }
 
 
