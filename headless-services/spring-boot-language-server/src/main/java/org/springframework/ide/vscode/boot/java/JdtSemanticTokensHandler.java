@@ -69,15 +69,16 @@ public class JdtSemanticTokensHandler implements SemanticTokensHandler {
 				return cuCache.withCompilationUnit(jp, URI.create(params.getTextDocument().getUri()), cu -> computeTokens(applicableTokenProviders, jp, cu));
 			}
 		}
-		return new SemanticTokens();
+		return null;
 	}
 
 	private SemanticTokens computeTokens(List<JdtSemanticTokensProvider> applicableTokenProviders, IJavaProject jp, CompilationUnit cu) {
 		if (cu == null) {
-			return new SemanticTokens();
+			return null;
 		}
 		List<SemanticTokenData> tokensData = applicableTokenProviders.stream().map(tp -> tp.computeTokens(jp, cu)).flatMap(t -> t.stream()).collect(Collectors.toList());
-		return new SemanticTokens(SemanticTokensUtils.mapTokensDataToLsp(tokensData, legend, offset -> cu.getLineNumber(offset) - 1, cu::getColumnNumber));
+		List<Integer> toLsp = SemanticTokensUtils.mapTokensDataToLsp(tokensData, legend, offset -> cu.getLineNumber(offset) - 1, cu::getColumnNumber);
+		return toLsp.isEmpty() ? null : new SemanticTokens(toLsp);
 	}
 
 }

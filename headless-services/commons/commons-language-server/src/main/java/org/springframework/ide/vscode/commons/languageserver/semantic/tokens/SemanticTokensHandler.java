@@ -24,15 +24,15 @@ public interface SemanticTokensHandler {
 	SemanticTokensWithRegistrationOptions getCapability();
 	
 	default SemanticTokens semanticTokensFull(SemanticTokensParams params, CancelChecker cancelChecker) {
-		return new SemanticTokens();
+		return null;
 	}
 
 	default Either<SemanticTokens, SemanticTokensDelta> semanticTokensFullDelta(SemanticTokensDeltaParams params, CancelChecker cancelChecker) {
-		return Either.forLeft(new SemanticTokens());
+		return null;
 	}
 
 	default SemanticTokens semanticTokensRange(SemanticTokensRangeParams params, CancelChecker cancelChecker) {
-		return new SemanticTokens();
+		return null;
 	}
 
 }
