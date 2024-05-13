@@ -27,7 +27,7 @@ public class JpaQueryPropertiesLanguageServerComponents implements LanguageServe
 
 	public JpaQueryPropertiesLanguageServerComponents(SimpleTextDocumentService documents, JavaProjectFinder projectsFinder,
 			JpqlSemanticTokens jpqlSemanticTokensProvider, HqlSemanticTokens hqlSematicTokensProvider, JpqlSupportState supportState) {
-		this.semanticTokensHandler = new QueryPropertiesSemanticTokensHandler(documents, projectsFinder, jpqlSemanticTokensProvider, hqlSematicTokensProvider, supportState);
+		this.semanticTokensHandler = new QueryPropertiesSemanticTokensHandler(projectsFinder, jpqlSemanticTokensProvider, hqlSematicTokensProvider, supportState);
 		this.reconcileEngine = new NamedQueryPropertiesReconcileEngine(projectsFinder);
 	}
 	

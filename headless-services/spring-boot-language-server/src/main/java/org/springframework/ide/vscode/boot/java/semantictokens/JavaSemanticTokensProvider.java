@@ -8,22 +8,40 @@
  * Contributors:
  *     Broadcom, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java;
+package org.springframework.ide.vscode.boot.java.semantictokens;
 
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.springframework.ide.vscode.boot.java.JdtSemanticTokensProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.util.Collector;
 
-public interface JdtSemanticTokensProvider {
+public class JavaSemanticTokensProvider implements JdtSemanticTokensProvider {
+
+	@Override
+	public List<String> getTokenTypes() {
+		return Arrays.stream(TokenType.values()).map(TokenType::toString).collect(Collectors.toList());
+	}
 	
-	List<String> getTokenTypes();
-	default List<String> getTokenModifiers() { return Collections.emptyList(); }
-	boolean isApplicable(IJavaProject project);
-	ASTVisitor getTokensComputer(IJavaProject project, CompilationUnit cu, Collector<SemanticTokenData> collector);
+	@Override
+	public List<String> getTokenModifiers() {
+		return Arrays.stream(TokenModifier.values()).map(TokenModifier::toString).collect(Collectors.toList());
+	}
+
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		return true;
+	}
+
+	@Override
+	public ASTVisitor getTokensComputer(IJavaProject project, CompilationUnit cu,
+			Collector<SemanticTokenData> collector) {
+		return new SemanticTokensVisitor(cu, collector);
+	}
 
 }

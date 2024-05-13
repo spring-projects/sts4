@@ -23,9 +23,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
+import org.springframework.ide.vscode.boot.java.reconcilers.CompositeASTVisitor;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
+import org.springframework.ide.vscode.commons.util.Collector;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -43,6 +45,14 @@ public class JdtDataQuerySemanticTokensProviderTest {
 	@BeforeEach
 	public void setup() throws Exception {
 		jp =  projects.mavenProject("spring-modulith-example-full");
+	}
+	
+	private List<SemanticTokenData> computeTokens(CompilationUnit cu) {
+		Collector<SemanticTokenData> collector = new Collector<>();
+		CompositeASTVisitor visitor = new CompositeASTVisitor();
+		visitor.add(provider.getTokensComputer(jp, cu, collector));
+		cu.accept(visitor);
+		return collector.get();
 	}
 
 	@Test
@@ -64,7 +74,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         assertThat(cu).isNotNull();
         
-        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
+        List<SemanticTokenData> tokens = computeTokens(cu);
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(120, 126, "keyword", new String[0]));
@@ -112,7 +122,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         assertThat(cu).isNotNull();
         
-        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
+        List<SemanticTokenData> tokens = computeTokens(cu);
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(125, 131, "keyword", new String[0]));
@@ -158,7 +168,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         assertThat(cu).isNotNull();
         
-        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
+        List<SemanticTokenData> tokens = computeTokens(cu);
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(128, 134, "keyword", new String[0]));
@@ -205,7 +215,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         assertThat(cu).isNotNull();
         
-        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
+        List<SemanticTokenData> tokens = computeTokens(cu);
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(176, 182, "keyword", new String[0]));
@@ -254,7 +264,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         assertThat(cu).isNotNull();
         
-        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
+        List<SemanticTokenData> tokens = computeTokens(cu);
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(181, 187, "keyword", new String[0]));
@@ -300,7 +310,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         assertThat(cu).isNotNull();
         
-        List<SemanticTokenData> tokens = provider.computeTokens(jp, cu);
+        List<SemanticTokenData> tokens = computeTokens(cu);
         
         assertThat(tokens.size()).isZero();
         

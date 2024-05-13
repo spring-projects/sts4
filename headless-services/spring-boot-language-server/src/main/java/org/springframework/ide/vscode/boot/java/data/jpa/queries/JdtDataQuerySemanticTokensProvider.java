@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,6 +31,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
+import org.springframework.ide.vscode.commons.util.Collector;
 
 public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProvider {
 	
@@ -59,13 +59,9 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 	}
 
 	@Override
-	public List<SemanticTokenData> computeTokens(IJavaProject jp, CompilationUnit cu) {
-		List<SemanticTokenData> tokensData = new ArrayList<>();
-		
+	public ASTVisitor getTokensComputer(IJavaProject jp, CompilationUnit cu, Collector<SemanticTokenData> tokensData) {
 		SemanticTokensDataProvider provider = SpringProjectUtil.hasDependencyStartingWith(jp, "hibernate-core", null) ? hqlProvider : jpqlProvider;
-		
-		cu.accept(new ASTVisitor() {
-
+		return new ASTVisitor() {
 			@Override
 			public boolean visit(NormalAnnotation a) {
 				if (isQueryAnnotation(a)) {
@@ -100,7 +96,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 						if (isNative) {
 							//TODO: SQL semantic tokens
 						} else {
-							tokensData.addAll(computeTokensForQueryExpression(provider, queryExpression));
+							computeTokensForQueryExpression(provider, queryExpression).forEach(tokensData::accept);
 						}
 					}
 					
@@ -112,7 +108,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 			@Override
 			public boolean visit(SingleMemberAnnotation a) {
 				if (isQueryAnnotation(a)) {
-					tokensData.addAll(computeTokensForQueryExpression(provider, a.getValue()));
+					computeTokensForQueryExpression(provider, a.getValue()).forEach(tokensData::accept);
 				}
 				return false;
 			}
@@ -123,16 +119,13 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 					IMethodBinding methodBinding = node.resolveMethodBinding();
 					if ("jakarta.persistence.EntityManager".equals(methodBinding.getDeclaringClass().getQualifiedName())) {
 						if (methodBinding.getParameterTypes().length <= 2 && "java.lang.String".equals(methodBinding.getParameterTypes()[0].getQualifiedName())) {
-							tokensData.addAll(computeTokensForQueryExpression(provider, queryExpr));
+							computeTokensForQueryExpression(provider, queryExpr).forEach(tokensData::accept);
 						}
 					}
 				}
 				return super.visit(node);
 			}
-			
-		});
-		
-		return tokensData;
+		};
 	}
 	
 	private static List<SemanticTokenData> computeTokensForQueryExpression(SemanticTokensDataProvider provider, Expression valueExp) {

@@ -32,21 +32,16 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintParams;
-import org.eclipse.lsp4j.SemanticTokens;
-import org.eclipse.lsp4j.SemanticTokensDelta;
-import org.eclipse.lsp4j.SemanticTokensDeltaParams;
-import org.eclipse.lsp4j.SemanticTokensParams;
-import org.eclipse.lsp4j.SemanticTokensRangeParams;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.SemanticTokensLegend;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
@@ -65,9 +60,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import com.google.common.collect.ImmutableMap;
 
 public class CompositeLanguageServerComponents implements LanguageServerComponents {
-	
-	private static final Logger log = LoggerFactory.getLogger(CompositeLanguageServerComponents.class);
-	
+		
 	public static class Builder {
 		private Map<LanguageId, List<LanguageServerComponents>> componentsByLanguageId = new HashMap<>();
 
@@ -219,15 +212,12 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		
 		List<SemanticTokensHandler> semanticTokenHandlers = componentsByLanguageId.values().stream().flatMap(l -> l.stream()).map(c -> c.getSemanticTokensHandler()).filter(o -> o.isPresent()).map(o -> o.get()).collect(Collectors.toList());
 		List<SemanticTokensWithRegistrationOptions> listCapabilities = semanticTokenHandlers.stream().map(sth -> sth.getCapability()).filter(Objects::nonNull).collect(Collectors.toList());
-		for (int i = 1; i < listCapabilities.size(); i++) {
-			SemanticTokensWithRegistrationOptions first = listCapabilities.get(0);
-			SemanticTokensWithRegistrationOptions current = listCapabilities.get(i);
-			if (!Objects.equals(first.getFull(), current.getFull()) 
-					|| !Objects.equals(first.getLegend(), current.getLegend())
-					|| !Objects.equals(first.getRange(), current.getRange())) {
-				throw new IllegalStateException("Incompatible Semantic Token registrations for composite language server components");
-			}
-		}
+		
+		SemanticTokensLegend legend = new SemanticTokensLegend(
+				listCapabilities.stream().flatMap(cap -> cap.getLegend().getTokenTypes().stream()).distinct().collect(Collectors.toList()),
+				listCapabilities.stream().flatMap(cap -> cap.getLegend().getTokenModifiers().stream()).distinct().collect(Collectors.toList())
+		);
+
 		this.semanticTokensHanlder = semanticTokenHandlers.isEmpty() ? null : new SemanticTokensHandler() {
 			
 			@Override
@@ -236,32 +226,24 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 				SemanticTokensWithRegistrationOptions capabilities = new SemanticTokensWithRegistrationOptions();
 				capabilities.setDocumentSelector(listCapabilities.stream().map(c -> c.getDocumentSelector()).flatMap(l -> l.stream()).collect(Collectors.toList()));
 				if (!listCapabilities.isEmpty()) {
-					SemanticTokensWithRegistrationOptions first = listCapabilities.get(0);
-					capabilities.setFull(first.getFull());
-					capabilities.setLegend(first.getLegend());
-					capabilities.setRange(first.getRange());
+					capabilities.setFull(true);
+					capabilities.setLegend(legend);
+					capabilities.setRange(false);
 				}
 				return capabilities;
 			}
 
 			@Override
-			public SemanticTokens semanticTokensFull(SemanticTokensParams params, CancelChecker cancelChecker) {
-				return findHandler(params.getTextDocument()).map(sth -> sth.semanticTokensFull(params, cancelChecker)).orElse(SemanticTokensHandler.super.semanticTokensFull(params, cancelChecker));
+			public List<SemanticTokenData> semanticTokensFull(TextDocument doc, CancelChecker cancelChecker) {
+				return findHandler(doc).map(sth -> sth.semanticTokensFull(doc, cancelChecker)).orElse(SemanticTokensHandler.super.semanticTokensFull(doc, cancelChecker));
 			}
 
 			@Override
-			public Either<SemanticTokens, SemanticTokensDelta> semanticTokensFullDelta(
-					SemanticTokensDeltaParams params, CancelChecker cancelChecker) {
-				return findHandler(params.getTextDocument()).map(sth -> sth.semanticTokensFullDelta(params, cancelChecker)).orElse(SemanticTokensHandler.super.semanticTokensFullDelta(params, cancelChecker));
-			}
-
-			@Override
-			public SemanticTokens semanticTokensRange(SemanticTokensRangeParams params, CancelChecker cancelChecker) {
-				return findHandler(params.getTextDocument()).map(sth -> sth.semanticTokensRange(params, cancelChecker)).orElse(SemanticTokensHandler.super.semanticTokensRange(params, cancelChecker));
+			public List<SemanticTokenData> semanticTokensRange(TextDocument doc, Range range, CancelChecker cancelChecker) {
+				return findHandler(doc).map(sth -> sth.semanticTokensRange(doc, range, cancelChecker)).orElse(SemanticTokensHandler.super.semanticTokensRange(doc, range, cancelChecker));
 			}
 			
-			private Optional<SemanticTokensHandler> findHandler(TextDocumentIdentifier docId) {
-				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docId.getUri());
+			private Optional<SemanticTokensHandler> findHandler(TextDocument doc) {
 				// Only opened docs ideally should get requests for semantic token to highlight
 				if (doc != null) {
 					LanguageId language = doc.getLanguageId();
@@ -269,8 +251,6 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 					if (subComponents != null) {
 						return subComponents.stream().filter(sc -> sc.getSemanticTokensHandler().isPresent()).map(sc -> sc.getSemanticTokensHandler().get()).findFirst();
 					}
-				} else {
-					log.error("Received Semantic Tokens request for a non opened document: %s".formatted(docId.getUri()));
 				}
 				return Optional.empty();
 			}

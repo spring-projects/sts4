@@ -16,8 +16,14 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.eclipse.lsp4j.SemanticTokensLegend;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class SemanticTokensUtils {
+	
+	private static Logger log = LoggerFactory.getLogger(SemanticTokensUtils.class);
 	
 	private static int getSemanticTokenTypeIndex(SemanticTokensLegend legend, String tokenType) {
 		return legend.getTokenTypes().indexOf(tokenType);
@@ -55,6 +61,36 @@ public class SemanticTokensUtils {
 			data.add(SemanticTokensUtils.getSemanticTokenModifiersFlags(legend, tokenData.modifiers()));
 			previousLine = currentLine;
 			previousColumn = currentColumn;
+		}
+		
+		return data;
+	}
+	
+	public static List<Integer> mapTokensDataToLsp(TextDocument doc, SemanticTokensLegend legend,
+			List<SemanticTokenData> tokensData) {
+		
+		// Sort tokens by start offset
+		Collections.sort(tokensData);
+		
+		List<Integer> data = new ArrayList<>(tokensData.size() * 5);
+		
+		// Encode relative positions for tokens
+		int previousLine = 0;
+		int previousColumn = 0;
+		for (SemanticTokenData tokenData : tokensData) {
+			try {
+				int currentLine = doc.getLineOfOffset(tokenData.start());
+				int currentColumn = tokenData.start() - doc.getLineOffset(currentLine);
+				data.add(currentLine - previousLine);
+				data.add(currentLine == previousLine ? currentColumn - previousColumn : currentColumn);
+				data.add(tokenData.end() -  tokenData.start());
+				data.add(SemanticTokensUtils.getSemanticTokenTypeIndex(legend, tokenData.type()));
+				data.add(SemanticTokensUtils.getSemanticTokenModifiersFlags(legend, tokenData.modifiers()));
+				previousLine = currentLine;
+				previousColumn = currentColumn;
+			} catch (BadLocationException e) {
+				log.error("", e);
+			}
 		}
 		
 		return data;

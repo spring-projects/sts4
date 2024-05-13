@@ -13,10 +13,10 @@ package org.springframework.ide.vscode.boot.app;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryJdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryJdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AddConfigurationIfBeansPresentReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationNodeReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AuthorizeHttpRequestsReconciler;
@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.PreciseBeanTypeRecon
 import org.springframework.ide.vscode.boot.java.reconcilers.ServerHttpSecurityLambdaDslReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.UnnecessarySpringExtensionReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.WebSecurityConfigurerAdapterReconciler;
+import org.springframework.ide.vscode.boot.java.semantictokens.JavaSemanticTokensProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 @Configuration(proxyBeanMethods = false)
@@ -110,6 +111,10 @@ public class JdtConfig {
 	
 	@Bean EntityIdForRepoReconciler entityIdForRepoReconciler(SimpleLanguageServer server) {
 		return new EntityIdForRepoReconciler();
+	}
+	
+	@Bean JavaSemanticTokensProvider javaSemanticTokens() {
+		return new JavaSemanticTokensProvider();
 	}
 	
 	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, JpqlSupportState supportState) {

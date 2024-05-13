@@ -60,8 +60,6 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SemanticTokens;
-import org.eclipse.lsp4j.SemanticTokensDelta;
-import org.eclipse.lsp4j.SemanticTokensDeltaParams;
 import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensRangeParams;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
@@ -88,6 +86,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensHandler;
+import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensUtils;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -458,30 +457,34 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	
 	@Override
 	public CompletableFuture<SemanticTokens> semanticTokensFull(SemanticTokensParams params) {
-		if (semanticTokensHandler == null) {
-			return CompletableFuture.completedFuture(new SemanticTokens());
-		} else {
-			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelChecker -> semanticTokensHandler.semanticTokensFull(params, cancelChecker));
+		if (semanticTokensHandler != null) {
+			TextDocument doc = getLatestSnapshot(params.getTextDocument().getUri());
+			if (doc != null) {
+				return CompletableFutures.computeAsync(/*messageWorkerThreadPool,*/ cancelChecker -> semanticTokensHandler.semanticTokensFull(doc, cancelChecker)).thenApply(std -> {
+					if (std != null && !std.isEmpty()) {
+						return new SemanticTokens(SemanticTokensUtils.mapTokensDataToLsp(doc, semanticTokensHandler.getCapability().getLegend(), std));
+					}
+					return null;
+				});
+			}
 		}
+		return CompletableFuture.completedFuture(null);
 	}
-
-	@Override
-	public CompletableFuture<Either<SemanticTokens, SemanticTokensDelta>> semanticTokensFullDelta(
-			SemanticTokensDeltaParams params) {
-		if (semanticTokensHandler == null) {
-			return CompletableFuture.completedFuture(Either.forLeft(new SemanticTokens()));
-		} else {
-			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelChecker -> semanticTokensHandler.semanticTokensFullDelta(params, cancelChecker));
-		}
-	}
-
+	
 	@Override
 	public CompletableFuture<SemanticTokens> semanticTokensRange(SemanticTokensRangeParams params) {
-		if (semanticTokensHandler == null) {
-			return CompletableFuture.completedFuture(new SemanticTokens());
-		} else {
-			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelChecker -> semanticTokensHandler.semanticTokensRange(params, cancelChecker));
+		if (semanticTokensHandler != null) {
+			TextDocument doc = getLatestSnapshot(params.getTextDocument().getUri());
+			if (doc != null) {
+				return CompletableFutures.computeAsync(/*messageWorkerThreadPool,*/ cancelChecker -> semanticTokensHandler.semanticTokensRange(doc, params.getRange(), cancelChecker)).thenApply(std -> {
+					if (std != null && !std.isEmpty()) {
+						return new SemanticTokens(SemanticTokensUtils.mapTokensDataToLsp(doc, semanticTokensHandler.getCapability().getLegend(), std));
+					}
+					return null;
+				});
+			}
 		}
+		return CompletableFuture.completedFuture(null);
 	}
 
 	private List<Either<Command, CodeAction>> computeCodeActions(CancelChecker cancelToken, CodeActionCapabilities capabilities, TextDocument doc, CodeActionParams params) {

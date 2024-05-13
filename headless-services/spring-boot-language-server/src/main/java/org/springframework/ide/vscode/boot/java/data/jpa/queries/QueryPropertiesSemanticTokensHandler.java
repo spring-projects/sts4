@@ -11,29 +11,21 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.DocumentFilter;
-import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensLegend;
-import org.eclipse.lsp4j.SemanticTokensParams;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensHandler;
-import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensUtils;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
@@ -43,17 +35,13 @@ import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Value
 
 public class QueryPropertiesSemanticTokensHandler implements SemanticTokensHandler {
 	
-	private static final Logger log = LoggerFactory.getLogger(QueryPropertiesSemanticTokensHandler.class);
-
 	private final JavaProjectFinder projectFinder;
-	private final SimpleTextDocumentService documents;
 	private final JpqlSemanticTokens jpqlTokensProvider;
 	private final HqlSemanticTokens hqlTokensProvider;
 	private final JpqlSupportState supportState;
 
 
-	public QueryPropertiesSemanticTokensHandler(SimpleTextDocumentService documents, JavaProjectFinder projectFinder, JpqlSemanticTokens jpqlTokensProvider, HqlSemanticTokens hqlTokensProvider, JpqlSupportState supportState) {
-		this.documents = documents;
+	public QueryPropertiesSemanticTokensHandler(JavaProjectFinder projectFinder, JpqlSemanticTokens jpqlTokensProvider, HqlSemanticTokens hqlTokensProvider, JpqlSupportState supportState) {
 		this.projectFinder = projectFinder;
 		this.jpqlTokensProvider = jpqlTokensProvider;
 		this.hqlTokensProvider = hqlTokensProvider;
@@ -74,13 +62,12 @@ public class QueryPropertiesSemanticTokensHandler implements SemanticTokensHandl
 	}
 
 	@Override
-	public SemanticTokens semanticTokensFull(SemanticTokensParams params, CancelChecker cancelChecker) {
+	public List<SemanticTokenData> semanticTokensFull(TextDocument doc, CancelChecker cancelChecker) {
 		if (!supportState.isEnabled()) {
-			return new SemanticTokens();
+			return null;
 		}
-		Optional<IJavaProject> optProject = projectFinder.find(params.getTextDocument());
+		Optional<IJavaProject> optProject = projectFinder.find(doc.getId());
 		if (optProject.isPresent() && SpringProjectUtil.hasDependencyStartingWith(optProject.get(), "spring-data-jpa", null)) {
-			TextDocument doc = documents.getLatestSnapshot(params.getTextDocument().getUri());
 			if (doc != null) {
 				SemanticTokensDataProvider tokensProvider = SpringProjectUtil.hasDependencyStartingWith(optProject.get(), "hibernate-core", null) ? hqlTokensProvider : jpqlTokensProvider;
 				AntlrParser propertiesParser = new AntlrParser();
@@ -92,26 +79,10 @@ public class QueryPropertiesSemanticTokensHandler implements SemanticTokensHandl
 						data.addAll(tokensProvider.computeTokens(value.decode(), value.getOffset()));
 					}
 				}
-				Collections.sort(data);
-				SemanticTokensLegend legend = new SemanticTokensLegend(tokensProvider.getTokenTypes(), tokensProvider.getTypeModifiers());
-				return new SemanticTokens(SemanticTokensUtils.mapTokensDataToLsp(data, legend, t -> {
-					try {
-						return doc.getLineOfOffset(t);
-					} catch (BadLocationException e) {
-						log.error("", e);
-					}
-					return -1;
-				}, o -> {
-					try {
-						return o - doc.getLineOffset(doc.getLineOfOffset(o));
-					} catch (BadLocationException e) {
-						log.error("", e);
-					}
-					return -1;
-				}));
+				return data;
 			}
 		}
-		return SemanticTokensHandler.super.semanticTokensFull(params, cancelChecker);
+		return SemanticTokensHandler.super.semanticTokensFull(doc, cancelChecker);
 	}
 	
 

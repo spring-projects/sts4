@@ -10,28 +10,22 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.semantic.tokens;
 
-import org.eclipse.lsp4j.SemanticTokens;
-import org.eclipse.lsp4j.SemanticTokensDelta;
-import org.eclipse.lsp4j.SemanticTokensDeltaParams;
-import org.eclipse.lsp4j.SemanticTokensParams;
-import org.eclipse.lsp4j.SemanticTokensRangeParams;
+import java.util.List;
+
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public interface SemanticTokensHandler {
 	
 	SemanticTokensWithRegistrationOptions getCapability();
 	
-	default SemanticTokens semanticTokensFull(SemanticTokensParams params, CancelChecker cancelChecker) {
+	default List<SemanticTokenData> semanticTokensFull(TextDocument doc, CancelChecker cancelChecker) {
 		return null;
 	}
 
-	default Either<SemanticTokens, SemanticTokensDelta> semanticTokensFullDelta(SemanticTokensDeltaParams params, CancelChecker cancelChecker) {
-		return null;
-	}
-
-	default SemanticTokens semanticTokensRange(SemanticTokensRangeParams params, CancelChecker cancelChecker) {
+	default List<SemanticTokenData> semanticTokensRange(TextDocument doc, Range range, CancelChecker cancelChecker) {
 		return null;
 	}
 
