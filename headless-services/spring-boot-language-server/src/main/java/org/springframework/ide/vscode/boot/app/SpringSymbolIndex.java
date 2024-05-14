@@ -646,22 +646,28 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		synchronized(this) {
 			try {
 				List<CompletableFuture<Void>> futures = new ArrayList<>();
-				
 				Map<IJavaProject, Set<String>> projectMapping = getDocsPerProjectFromPaths(deletedPathURIs);
 				
 				for (IJavaProject project : projectMapping.keySet()) {
 					Set<String> docURIs = projectMapping.get(project);
-
-					DeleteItems deleteItems = new DeleteItems(project, (String[]) docURIs.toArray(new String[docURIs.size()]), this.indexers);
-					CompletableFuture<Void> future = CompletableFuture.runAsync(deleteItems, this.updateQueue);
-
-					this.latestScheduledTaskByProject.put(project.getElementName(), future);
-					futures.add(future);
+					
+					if (docURIs != null && docURIs.size() > 0) {
+						DeleteItems deleteItems = new DeleteItems(project, (String[]) docURIs.toArray(new String[docURIs.size()]), this.indexers);
+						CompletableFuture<Void> future = CompletableFuture.runAsync(deleteItems, this.updateQueue);
+	
+						this.latestScheduledTaskByProject.put(project.getElementName(), future);
+						futures.add(future);
+					}
 				}
 
-				CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
-				future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
-				return future;
+				if (futures.size() > 0) {
+					CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+					future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
+					return future;
+				}
+				else {
+					return CompletableFuture.completedFuture(null);
+				}
 			}
 			catch (Exception e) {
 				log.error("", e);
