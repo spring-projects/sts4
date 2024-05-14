@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -183,22 +182,11 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		for (Object modifier : modifiers) {
 			if (modifier instanceof Annotation) {
 				ITypeBinding typeBinding = ((Annotation) modifier).resolveTypeBinding();
-				if (isComponentAnnotation(typeBinding)) {
+				if (AnnotationHierarchies.hasTransitiveSuperAnnotationType(typeBinding, Annotations.COMPONENT)) {
 					return true;
 				}
 			}
 		}
-		return false;
-	}
-
-	private boolean isComponentAnnotation(ITypeBinding type) {
-		Set<String> transitiveSuperAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(type);
-		for (String annotationType : transitiveSuperAnnotations) {
-			if (Annotations.COMPONENT.equals(annotationType)) {
-				return true;
-			}
-		}
-
 		return false;
 	}
 

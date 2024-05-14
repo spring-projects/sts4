@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.reconcilers;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
@@ -50,7 +49,7 @@ public class AnnotationParamReconciler implements AnnotationReconciler {
 		if (node instanceof SingleMemberAnnotation) {
 			visitSingleMemberAnnotation((SingleMemberAnnotation) node, typeBinding, problemCollector);
 		} else if (node instanceof NormalAnnotation) {
-			visitNornalAnnotation((NormalAnnotation) node, typeBinding, problemCollector);
+			visitNormalAnnotation((NormalAnnotation) node, typeBinding, problemCollector);
 		}
 	}
 
@@ -59,8 +58,7 @@ public class AnnotationParamReconciler implements AnnotationReconciler {
 			return;
 		}
 		
-		Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(typeBinding);
-		if (!allAnnotations.contains(this.annotationType)) {
+		if (!AnnotationHierarchies.hasTransitiveSuperAnnotationType(typeBinding, this.annotationType)) {
 			return;
 		}
 		
@@ -71,13 +69,12 @@ public class AnnotationParamReconciler implements AnnotationReconciler {
 		}
 	}
 
-	protected void visitNornalAnnotation(NormalAnnotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
+	protected void visitNormalAnnotation(NormalAnnotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
 		if (paramName == null) {
 			return;
 		}
 		
-		Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(typeBinding);
-		if (!allAnnotations.contains(this.annotationType)) {
+		if (!AnnotationHierarchies.hasTransitiveSuperAnnotationType(typeBinding, this.annotationType)) {
 			return;
 		}
 			

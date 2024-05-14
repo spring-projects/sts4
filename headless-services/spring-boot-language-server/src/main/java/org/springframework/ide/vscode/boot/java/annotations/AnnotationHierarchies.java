@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.Annotation;
@@ -43,11 +42,6 @@ public abstract class AnnotationHierarchies {
 	// due to https://bugs.eclipse.org/bugs/show_bug.cgi?id=571247
 	private static final Object lock = new Object();
 
-	protected static boolean ignoreAnnotation(String fqname) {
-		return fqname.startsWith("java."); //mostly intended to capture java.lang.annotation.* types. But really it should be
-		//safe to ignore any type defined by the JRE since it can't possibly be inheriting from a spring annotation.
-	};
-
 	public static Collection<ITypeBinding> getDirectSuperAnnotations(ITypeBinding typeBinding) {
 		synchronized(lock) {
 			try {
@@ -73,37 +67,35 @@ public abstract class AnnotationHierarchies {
 			return ImmutableList.of();
 		}
 	}
-
-	public static Set<String> getTransitiveSuperAnnotations(ITypeBinding typeBinding) {
-		synchronized(lock) {
-			Set<String> seen = new HashSet<>();
-			findTransitiveSupers(typeBinding, seen).collect(Collectors.toList());
-			return seen;
-		}
-	}
-
-	private static Stream<ITypeBinding> findTransitiveSupers(ITypeBinding typeBinding, Set<String> seen) {
-		synchronized(lock) {
-			if (typeBinding != null) {
-				String qname = typeBinding.getQualifiedName();
-				if (seen.add(qname)) {
-					return Stream.concat(
-							Stream.of(typeBinding),
-							getDirectSuperAnnotations(typeBinding).stream().flatMap(superBinding -> findTransitiveSupers(superBinding, seen))
-					);
-				}
-			}
-			return Stream.empty();
-		}
-	}
-
+	
 	public static boolean isSubtypeOf(Annotation annotation, String fqAnnotationTypeName) {
 		synchronized(lock) {
 			ITypeBinding annotationType = annotation.resolveTypeBinding();
-			if (annotationType!=null) {
-				return findTransitiveSupers(annotationType, new HashSet<>())
-						.anyMatch(superType -> superType.getQualifiedName().equals(fqAnnotationTypeName));
+			return hasTransitiveSuperAnnotationType(annotationType, fqAnnotationTypeName);
+
+		}
+	}
+
+	public static boolean hasTransitiveSuperAnnotationType(ITypeBinding typeBinding, String annotationType) {
+		synchronized(lock) {
+			if (typeBinding != null && annotationType != null) {
+				String qname = typeBinding.getQualifiedName();
+				
+//				log.info("CHECK ANNOTATION TYPE: " + qname + " / " + annotationType);
+				
+				if (annotationType.equals(qname)) {
+					return true;
+				}
+				else {
+					Collection<ITypeBinding> directSuperAnnotations = getDirectSuperAnnotations(typeBinding);
+					for (ITypeBinding superAnnotationBinding : directSuperAnnotations) {
+						if (hasTransitiveSuperAnnotationType(superAnnotationBinding, annotationType)) {
+							return true;
+						}
+					}
+				}
 			}
+			
 			return false;
 		}
 	}
@@ -151,13 +143,11 @@ public abstract class AnnotationHierarchies {
 		}
 	}
 	
-	public static Stream<IAnnotationBinding> findTransitiveSuperAnnotationBindings(
-			IAnnotationBinding annotationBinding) {
+	public static Stream<IAnnotationBinding> findTransitiveSuperAnnotationBindings( IAnnotationBinding annotationBinding) {
 		return internalFindTransitiveSuperAnnotationBindings(annotationBinding, new HashSet<>());
 	}
 	
-	public static Stream<IAnnotationBinding> internalFindTransitiveSuperAnnotationBindings(
-			IAnnotationBinding annotationBinding, Set<String> seen) {
+	public static Stream<IAnnotationBinding> internalFindTransitiveSuperAnnotationBindings(IAnnotationBinding annotationBinding, Set<String> seen) {
 		synchronized (lock) {
 			if (annotationBinding.getAnnotationType() != null) {
 				if (seen.add(annotationBinding.getAnnotationType().getQualifiedName())) {
@@ -169,6 +159,25 @@ public abstract class AnnotationHierarchies {
 			return Stream.empty();
 		}
 	}
-
+	
+	protected static boolean ignoreAnnotation(String fqname) {
+		return fqname.startsWith("java."); //mostly intended to capture java.lang.annotation.* types. But really it should be
+		//safe to ignore any type defined by the JRE since it can't possibly be inheriting from a spring annotation.
+	}
+	
+	private static Stream<ITypeBinding> findTransitiveSupers(ITypeBinding typeBinding, Set<String> seen) {
+		synchronized(lock) {
+			if (typeBinding != null) {
+				String qname = typeBinding.getQualifiedName();
+				if (seen.add(qname)) {
+					return Stream.concat(
+							Stream.of(typeBinding),
+							getDirectSuperAnnotations(typeBinding).stream().flatMap(superBinding -> findTransitiveSupers(superBinding, seen))
+					);
+				}
+			}
+			return Stream.empty();
+		}
+	}
 
 }

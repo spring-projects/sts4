@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -43,8 +42,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 			@Override
 			public boolean visit(NormalAnnotation node) {
 				
-				Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(node.resolveTypeBinding());
-				if (!allAnnotations.contains(Annotations.DATA_QUERY)) {
+				if (!AnnotationHierarchies.hasTransitiveSuperAnnotationType(node.resolveTypeBinding(), Annotations.DATA_QUERY)) {
 					return false;
 				}
 				
@@ -88,10 +86,10 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
-				Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(node.resolveTypeBinding());
-				if (!allAnnotations.contains(Annotations.DATA_QUERY)) {
+				if (!AnnotationHierarchies.hasTransitiveSuperAnnotationType(node.resolveTypeBinding(), Annotations.DATA_QUERY)) {
 					return false;
 				}
+
 				reconcileExpression(getQueryReconciler(project), node.getValue(), problemCollector);
 				return false;
 			}
