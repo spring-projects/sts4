@@ -2582,6 +2582,29 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
                 "monday : String", "tuesday : String", "wednesday : String", "thursday : String", "friday : String", "saturday : String", "sunday : String"
         );
     }
+    
+    @Test
+    void testValueCompletionsOnEscapedKey() throws Exception {
+        useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+
+        data("foo.demo", "java.util.Map<java.lang.String,demo.Color>", null, "Map of any string to colors");
+
+        assertCompletions(
+                "foo:\n" +
+                        "  demo:\n" +
+                        "    '[./**/]': <*>",
+                //=>
+                        "foo:\n" +
+                        "  demo:\n" +
+                        "    '[./**/]': blue<*>",
+                        "foo:\n" +
+                        "  demo:\n" +
+                        "    '[./**/]': green<*>",
+                        "foo:\n" +
+                        "  demo:\n" +
+                        "    '[./**/]': red<*>"
+        );
+    }
 
     @Test
     void testEnumMapKeyCompletion() throws Exception {
