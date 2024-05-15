@@ -35,7 +35,7 @@ import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 
 public class WorkspaceBootExecutableProjects {
 	
-	public record ExecutableProject(String name, String uri, String gav, String mainClass, Collection<String> classpath, String buildTool, String springBootVersion) {}
+	public record ExecutableProject(String name, String uri, String gav, String mainClass, Collection<String> classpath, String buildTool, String springBootVersion, String javaVersion) {}
 	
 	final static String CMD = "sts/spring-boot/executableBootProjects";
 	
@@ -71,7 +71,8 @@ public class WorkspaceBootExecutableProjects {
 					String gavStr = "%s:%s:%s".formatted(gav.getGroupId(), gav.getArtifactId(), gav.getVersion());
 					String springBootVersion = SpringProjectUtil.getSpringBootVersion(project).toString();
 					String buildTool = project.getProjectBuild().getType();
-					return Optional.of(new ExecutableProject(project.getElementName(), project.getLocationUri().toASCIIString(), gavStr, appBean.getType(), classpath, buildTool, springBootVersion));
+					String javaVersion = project.getClasspath().getJavaVersion();
+					return Optional.of(new ExecutableProject(project.getElementName(), project.getLocationUri().toASCIIString(), gavStr, appBean.getType(), classpath, buildTool, springBootVersion, javaVersion));
 				} catch (Exception e) {
 					log.error("", e);
 				}
