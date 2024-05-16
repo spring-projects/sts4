@@ -170,7 +170,7 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
 
         registerMiscCommands(context);
 
-        VSCode.commands.registerCommand('vscode-spring-boot.agent.apply', applyLspEdit);
+        commands.registerCommand('vscode-spring-boot.agent.apply', applyLspEdit);
 
         return new ApiManager(client).api;
     });

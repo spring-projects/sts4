@@ -39,17 +39,7 @@
         "id": "springboot",
         "name": "springboot",
         "description": "Spring boot chat agent",
-        "isSticky": true,
-        "commands": [
-          {
-            "name": "prompt",
-            "description": "Handle AI Prompts through Spring cli"
-          },
-          {
-            "name": "new",
-            "description": "create new springboot project"
-          }
-        ]
+        "isSticky": true
       }
     ],
     "javaExtensions": [

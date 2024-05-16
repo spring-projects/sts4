@@ -202,11 +202,12 @@ async function writeResponseToFile(response: string, shortPackageName: string, c
     }
 }
 
-async function chatRequest(enhancedPrompt: Prompt, token: vscode.CancellationToken) {
+async function chatRequest(enhancedPrompt: Prompt, token: vscode.CancellationToken, question: string) {
     
     const messages = [
-            new  vscode.LanguageModelChatSystemMessage(enhancedPrompt.systemPrompt),
-            new vscode.LanguageModelChatUserMessage(enhancedPrompt.userPrompt)
+            new vscode.LanguageModelChatSystemMessage(enhancedPrompt.systemPrompt),
+            new vscode.LanguageModelChatUserMessage(enhancedPrompt.userPrompt),
+            new vscode.LanguageModelChatUserMessage(question)
     ];
     let response = '';
     return vscode.window.withProgress({
@@ -258,13 +259,16 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
 
     const cwd = (await getWorkspaceRoot()).fsPath;
 
+    // const vectorSearch = await vscode.commands.executeCommand("sts/copilot/search", {"question": request.prompt});
+    // console.log(vectorSearch);
+
     const projects = await vscode.commands.executeCommand("sts/spring-boot/executableBootProjects") as ExecutableBootProject[];
     console.log(projects)
     // get enhanced prompt by getting the spring context from boot ls
     const enhancedPrompt = await enhancePrompt(request.prompt, cwd, projects);
 
     // chat request to copilot LLM
-    const response = await chatRequest(enhancedPrompt, token);
+    const response = await chatRequest(enhancedPrompt, token, request.prompt);
 
     // write the response to markdown file
     await writeResponseToFile(response, enhancedPrompt.projName, cwd);

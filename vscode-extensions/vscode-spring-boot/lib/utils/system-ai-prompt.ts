@@ -20,7 +20,7 @@ Ensure that your solution meets the following criteria:
 2. Include build tool dependency management configuration for the project (partial file, not full project dependency configuration).
 3. Include necessary Spring Boot Starter dependencies such as "spring-boot-starter-jpa."
 4. Utilize the Maven artifactId "spring-boot-starter-test" as a dependency for JUnit-related functionality, avoiding the direct addition of a JUnit dependency.
-5. Place all code, including test code, in the in appropriate package. Use the Package name as the root package and place the files accordingly
+5. Place all code, including test code, in the in appropriate package. Use the Package name as the root package and place the files in sub-packages accordingly.
 6. Include architectural layers (Controller, Service, Repository) as appropriate.
 7. If no entity or domain object is specified in the description, use a Person entity with the properties name and phone number.
 8. Generate constructors, property getters, and setters for the entity or domain object (e.g., "getName" and "setName" for the name property).
