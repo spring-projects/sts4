@@ -12,11 +12,15 @@ package org.springframework.ide.vscode.boot.app;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryJdtAstReconciler;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlReconciler;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.reconcilers.AddConfigurationIfBeansPresentReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationNodeReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AuthorizeHttpRequestsReconciler;
@@ -117,12 +121,12 @@ public class JdtConfig {
 		return new JavaSemanticTokensProvider();
 	}
 	
-	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, JpqlSupportState supportState) {
-		return new JdtDataQuerySemanticTokensProvider(jpqlProvider, hqlProvider, supportState);
+	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, SqlSemanticTokens sqlSemanticTokens, JpqlSupportState supportState) {
+		return new JdtDataQuerySemanticTokensProvider(jpqlProvider, hqlProvider, sqlSemanticTokens, supportState);
 	}
 	
-	@Bean QueryJdtAstReconciler dataQueryReconciler() {
-		return new QueryJdtAstReconciler();
+	@Bean QueryJdtAstReconciler dataQueryReconciler(HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler, SqlReconciler sqlReconciler) {
+		return new QueryJdtAstReconciler(hqlReconciler, jpqlReconciler, sqlReconciler);
 	}
 
 }

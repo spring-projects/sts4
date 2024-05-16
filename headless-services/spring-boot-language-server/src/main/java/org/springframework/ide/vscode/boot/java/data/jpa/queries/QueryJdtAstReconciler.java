@@ -34,6 +34,18 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
 public class QueryJdtAstReconciler implements JdtAstReconciler {
+	
+	private final HqlReconciler hqlReconciler;
+	private final JpqlReconciler jpqlReconciler;
+	private final SqlReconciler sqlReconciler;
+
+	
+	public QueryJdtAstReconciler(HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler,
+			SqlReconciler sqlReconciler) {
+		this.hqlReconciler = hqlReconciler;
+		this.jpqlReconciler = jpqlReconciler;
+		this.sqlReconciler = sqlReconciler;
+	}
 
 	@Override
 	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
@@ -75,7 +87,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 				
 				if (queryExpression != null) {
 					if (isNative) {
-						//TODO: SQL syntax validation
+						reconcileExpression(sqlReconciler, queryExpression, problemCollector);
 					} else {
 						reconcileExpression(getQueryReconciler(project), queryExpression, problemCollector);
 					}
@@ -113,8 +125,8 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 	/*
 	 * Gets either HQL or JPQL reconciler
 	 */
-	private static Reconciler getQueryReconciler(IJavaProject project) {
-		return SpringProjectUtil.hasDependencyStartingWith(project, "hibernate-core", null) ? new HqlReconciler() : new JpqlReconciler();
+	private Reconciler getQueryReconciler(IJavaProject project) {
+		return SpringProjectUtil.hasDependencyStartingWith(project, "hibernate-core", null) ? hqlReconciler : jpqlReconciler;
 	}
 	
 	private void reconcileExpression(Reconciler reconciler, Expression valueExp, IProblemCollector problemCollector) {

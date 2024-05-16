@@ -40,11 +40,13 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 
 	private final JpqlSemanticTokens jpqlProvider;
 	private final HqlSemanticTokens hqlProvider;
+	private final SqlSemanticTokens sqlProvider;
 	private final JpqlSupportState supportState;
 	
-	public JdtDataQuerySemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, JpqlSupportState supportState) {
+	public JdtDataQuerySemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, SqlSemanticTokens sqlSemanticTokens, JpqlSupportState supportState) {
 		this.jpqlProvider = jpqlProvider;
 		this.hqlProvider = hqlProvider;
+		this.sqlProvider = sqlSemanticTokens;
 		this.supportState = supportState;
 	}
 
@@ -94,7 +96,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 					
 					if (queryExpression != null) {
 						if (isNative) {
-							//TODO: SQL semantic tokens
+							computeTokensForQueryExpression(sqlProvider, queryExpression).forEach(tokensData::accept);
 						} else {
 							computeTokensForQueryExpression(provider, queryExpression).forEach(tokensData::accept);
 						}

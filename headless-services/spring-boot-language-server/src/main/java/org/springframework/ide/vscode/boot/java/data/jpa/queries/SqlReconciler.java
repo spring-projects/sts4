@@ -25,16 +25,16 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
-import org.springframework.ide.vscode.parser.hql.HqlLexer;
-import org.springframework.ide.vscode.parser.hql.HqlParser;
+import org.springframework.ide.vscode.parser.sql.MySqlLexer;
+import org.springframework.ide.vscode.parser.sql.MySqlParser;
 
-public class HqlReconciler implements Reconciler {
+public class SqlReconciler implements Reconciler {
 
 	@Override
 	public void reconcile(String text, int startPosition, IProblemCollector problemCollector) {
-		HqlLexer lexer = new HqlLexer(CharStreams.fromString(text));
+		MySqlLexer lexer = new MySqlLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
-		HqlParser parser = new HqlParser(antlrTokens);
+		MySqlParser parser = new MySqlParser(antlrTokens);
 		
 		parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		
@@ -50,7 +50,7 @@ public class HqlReconciler implements Reconciler {
 					offset = token.getStartIndex() - token.getCharPositionInLine();
 					length = token.getCharPositionInLine() + 1;
 				}
-				problemCollector.accept(new ReconcileProblemImpl(QueryProblemType.EXPRESSION_SYNTAX, "HQL: " + msg, startPosition + offset, length));
+				problemCollector.accept(new ReconcileProblemImpl(QueryProblemType.EXPRESSION_SYNTAX, "SQL: " + msg, startPosition + offset, length));
 			}
 			
 			@Override
@@ -69,7 +69,8 @@ public class HqlReconciler implements Reconciler {
 			}
 		});
 		
-		parser.ql_statement();
+		parser.sqlStatements();
 		
 	}
+
 }

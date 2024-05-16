@@ -12,9 +12,13 @@ package org.springframework.ide.vscode.boot.app;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlReconciler;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
@@ -29,6 +33,26 @@ public class SpringDataConfig {
 	@Bean
 	HqlSemanticTokens hqlSemanticTokens() {
 		return new HqlSemanticTokens();
+	}
+	
+	@Bean
+	SqlSemanticTokens sqlSemanticTokens() {
+		return new SqlSemanticTokens();
+	}
+	
+	@Bean
+	HqlReconciler hqlReconciler() {
+		return new HqlReconciler();
+	}
+	
+	@Bean
+	JpqlReconciler jpqlReconciler() {
+		return new JpqlReconciler();
+	}
+	
+	@Bean
+	SqlReconciler sqlReconciler() {
+		return new SqlReconciler();
 	}
 
 	@Bean

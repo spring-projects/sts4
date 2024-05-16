@@ -71,7 +71,7 @@ public class QueryReconcilerTest {
 		String docUri = directory.toPath().resolve("src/main/resources/jpa-named-queries.properties").toUri()
 				.toString();
 		Editor editor = harness.newEditor(LanguageId.JPA_QUERY_PROPERTIES, source, docUri);
-		editor.assertProblems("SELECTX|mismatched input 'SELECTX'");
+		editor.assertProblems("SELECTX|HQL: mismatched input 'SELECTX'");
 	}
 	
 	@Test
@@ -99,7 +99,7 @@ public class QueryReconcilerTest {
 		String docUri = directory.toPath().resolve("src/main/resources/jpa-named-queries.properties").toUri()
 				.toString();
 		Editor editor = harness.newEditor(LanguageId.JPA_QUERY_PROPERTIES, source, docUri);
-		editor.assertProblems("WHERE|no viable alternative");
+		editor.assertProblems("WHERE|JPQL: no viable alternative");
 	}
 	
 	@Test
@@ -141,7 +141,7 @@ public class QueryReconcilerTest {
 		String docUri = directory.toPath().resolve("src/main/java/example/demo/OwnerRepository.java").toUri()
 				.toString();
 		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
-		editor.assertProblems("SELECTX|mismatched input 'SELECTX'");
+		editor.assertProblems("SELECTX|HQL: mismatched input 'SELECTX'");
 	}
 
 	@Test
@@ -164,7 +164,7 @@ public class QueryReconcilerTest {
 		String docUri = directory.toPath().resolve("src/main/java/example/demo/OwnerRepository.java").toUri()
 				.toString();
 		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
-		editor.assertProblems("SELECTX|mismatched input 'SELECTX'");
+		editor.assertProblems("SELECTX|HQL: mismatched input 'SELECTX'");
 	}
 	
 	@Test
@@ -185,7 +185,7 @@ public class QueryReconcilerTest {
 		String docUri = directory.toPath().resolve("src/main/java/example/demo/OwnerRepository.java").toUri()
 				.toString();
 		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
-		editor.assertProblems("SELECTX|mismatched input 'SELECTX'");
+		editor.assertProblems("SELECTX|HQL: mismatched input 'SELECTX'");
 	}
 
 	@Test
@@ -206,7 +206,7 @@ public class QueryReconcilerTest {
 		String docUri = directory.toPath().resolve("src/main/java/example/demo/OwnerRepository.java").toUri()
 				.toString();
 		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
-		editor.assertProblems();
+		editor.assertProblems("SELECTX|SQL: mismatched input 'SELECTX' expecting {'ALTER',");
 	}
 	
 	@Test

@@ -25,16 +25,20 @@ import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Value
 public class NamedQueryPropertiesReconcileEngine implements IReconcileEngine {
 	
 	private final JavaProjectFinder projectFinder;
+	private final HqlReconciler hqlReconciler;
+	private final JpqlReconciler jpqlReconciler;
 
-	public NamedQueryPropertiesReconcileEngine(JavaProjectFinder projectFinder) {
+	public NamedQueryPropertiesReconcileEngine(JavaProjectFinder projectFinder, HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler) {
 		this.projectFinder = projectFinder;
+		this.hqlReconciler = hqlReconciler;
+		this.jpqlReconciler = jpqlReconciler;
 	}
 
 	@Override
 	public void reconcile(IDocument doc, IProblemCollector problemCollector) {
 		try {
 			Reconciler reconciler = projectFinder.find(new TextDocumentIdentifier(doc.getUri()))
-					.map(p -> SpringProjectUtil.hasDependencyStartingWith(p, "spring-data-jpa", null) ? new HqlReconciler() : new JpqlReconciler())
+					.map(p -> SpringProjectUtil.hasDependencyStartingWith(p, "spring-data-jpa", null) ? hqlReconciler : jpqlReconciler)
 					.orElse(new JpqlReconciler());
 			
 			AntlrParser parser = new AntlrParser();

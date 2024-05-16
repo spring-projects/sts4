@@ -7,5 +7,6 @@ fi
 workdir=$(pwd)
 cd grammars
 java -jar ${workdir}/antlr-${ANTLR_VERSION}.jar Jpql.g4 -o ${workdir}/src/main/java/org/springframework/ide/vscode/parser/jpql -package org.springframework.ide.vscode.parser.jpql
-java -jar ${workdir}/antlr-${ANTLR_VERSION}.jar Hql.g4 -o ${workdir}/src/main/java/org/springframework/ide/vscode//parser/hql -package org.springframework.ide.vscode.parser.hql
+java -jar ${workdir}/antlr-${ANTLR_VERSION}.jar Hql.g4 -o ${workdir}/src/main/java/org/springframework/ide/vscode/parser/hql -package org.springframework.ide.vscode.parser.hql
+java -jar ${workdir}/antlr-${ANTLR_VERSION}.jar MySqlLexer.g4 MySqlParser.g4 -o ${workdir}/src/main/java/org/springframework/ide/vscode/parser/sql -package org.springframework.ide.vscode.parser.sql
 

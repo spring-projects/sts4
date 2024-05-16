@@ -26,9 +26,10 @@ public class JpaQueryPropertiesLanguageServerComponents implements LanguageServe
 	private final NamedQueryPropertiesReconcileEngine reconcileEngine;
 
 	public JpaQueryPropertiesLanguageServerComponents(SimpleTextDocumentService documents, JavaProjectFinder projectsFinder,
-			JpqlSemanticTokens jpqlSemanticTokensProvider, HqlSemanticTokens hqlSematicTokensProvider, JpqlSupportState supportState) {
+			JpqlSemanticTokens jpqlSemanticTokensProvider, HqlSemanticTokens hqlSematicTokensProvider, JpqlSupportState supportState,
+			HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler) {
 		this.semanticTokensHandler = new QueryPropertiesSemanticTokensHandler(projectsFinder, jpqlSemanticTokensProvider, hqlSematicTokensProvider, supportState);
-		this.reconcileEngine = new NamedQueryPropertiesReconcileEngine(projectsFinder);
+		this.reconcileEngine = new NamedQueryPropertiesReconcileEngine(projectsFinder, hqlReconciler, jpqlReconciler);
 	}
 	
 	@Override

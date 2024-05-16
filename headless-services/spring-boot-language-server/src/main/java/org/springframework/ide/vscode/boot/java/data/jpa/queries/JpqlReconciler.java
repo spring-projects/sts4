@@ -50,7 +50,7 @@ public class JpqlReconciler implements Reconciler {
 					offset = token.getStartIndex() - token.getCharPositionInLine();
 					length = token.getCharPositionInLine() + 1;
 				}
-				problemCollector.accept(new ReconcileProblemImpl(QueryProblemType.EXPRESSION_SYNTAX, msg, startPosition + offset, length));
+				problemCollector.accept(new ReconcileProblemImpl(QueryProblemType.EXPRESSION_SYNTAX, "JPQL: " + msg, startPosition + offset, length));
 			}
 			
 			@Override

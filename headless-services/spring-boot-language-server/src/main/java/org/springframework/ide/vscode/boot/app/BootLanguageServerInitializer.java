@@ -25,8 +25,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.factories.SpringFactoriesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpaQueryPropertiesLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
@@ -128,7 +130,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer, config),
 			new PomLanguageServerComponents(server, projectFinder, params.projectObserver, appContext.getBean(SpringProjectsProvider.class)),
 			new JpaQueryPropertiesLanguageServerComponents(server.getTextDocumentService(), projectFinder, appContext.getBean(JpqlSemanticTokens.class),
-					appContext.getBean(HqlSemanticTokens.class), appContext.getBean(JpqlSupportState.class))
+					appContext.getBean(HqlSemanticTokens.class), appContext.getBean(JpqlSupportState.class), appContext.getBean(HqlReconciler.class), appContext.getBean(JpqlReconciler.class))
 		);
 		
 		for (LanguageServerComponents c : componentsList) {
