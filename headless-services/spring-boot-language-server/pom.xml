@@ -17,6 +17,7 @@
 		<dependencies.version>${project.version}</dependencies.version>
 		<jdt.core.version>3.36.0</jdt.core.version>
 		<lsp4xml.version>0.24.0</lsp4xml.version>
+		<SPRING_AI_VERSION>0.8.0-SNAPSHOT</SPRING_AI_VERSION>
 	</properties>
 
 	<repositories>
@@ -162,6 +163,37 @@
 			<groupId>com.squareup.okhttp3</groupId>
 			<artifactId>okhttp</artifactId>
 		</dependency>
+		
+		<dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-openai</artifactId>
+            <version>${SPRING_AI_VERSION}</version>
+             <exclusions>
+		        <exclusion>
+		            <groupId>org.springframework</groupId>
+		            <artifactId>spring-webflux</artifactId>
+		        </exclusion>
+		    </exclusions>
+        </dependency>
+
+        <dependency>
+		    <groupId>org.springframework.ai</groupId>
+		    <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+		    <version>${SPRING_AI_VERSION}</version>
+		</dependency>
+
+
+       <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-tika-document-reader</artifactId>
+            <version>0.8.0-SNAPSHOT</version>
+             <exclusions>
+		        <exclusion>
+		            <groupId>org.springframework</groupId>
+		            <artifactId>spring-webflux</artifactId>
+		        </exclusion>
+		    </exclusions>
+        </dependency>
 	
 		<!-- Test harness -->
 		<dependency>

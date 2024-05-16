@@ -22,5 +22,9 @@ public class CommandsConfig {
 	@Bean WorkspaceBootExecutableProjects workspaceBootProjects(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex) {
 		return new WorkspaceBootExecutableProjects(server, projectFinder, symbolIndex);
 	}
+	
+//	@Bean VectorStoreHandler vectorStoreHandler(SimpleLanguageServer server) {
+//	    return new VectorStoreHandler(server);
+//    }
 
 }
