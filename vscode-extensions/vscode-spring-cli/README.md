@@ -52,8 +52,8 @@ New/Add/Remove user-defined command (`command new/add/remove` CLI commands). Com
 Execute user-defined command. Allows user to select user-defined command either locally in the workpsace or globally, then the sub-command and then enter the parameters for the selected command and finally execute it. Available via:
 - Command Palette: **Spring CLI: Execute User-Defined Command**
 
-[Add-Functionality]: ./doc-images/Add-Functionality.png
-[Gen-AI-markdown]: ./doc-images/AI-Markdown.png
-[Preview-Changes]: ./doc-images/Preview-Changes.png
+[Add-Functionality]: https://github.com/spring-projects/sts4/blob/main/vscode-extensions/vscode-spring-cli/doc-images/Add-Functionality.png?raw=true
+[Gen-AI-markdown]: https://github.com/spring-projects/sts4/blob/main/vscode-extensions/vscode-spring-cli/doc-images/AI-Markdown.png?raw=true
+[Preview-Changes]: https://github.com/spring-projects/sts4/blob/main/vscode-extensions/vscode-spring-cli/doc-images/Preview-Changes.png?raw=true
 
  

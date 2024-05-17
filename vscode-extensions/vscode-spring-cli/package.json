@@ -1,7 +1,7 @@
 {
   "name": "vscode-spring-cli",
-  "displayName": "Spring CLI Support",
-  "description": "Spring CLI integrated into IDE",
+  "displayName": "Spring CLI",
+  "description": "Spring CLI integrated into VSCode UI",
   "icon": "spring-boot-logo.png",
   "version": "1.0.0",
   "publisher": "vmware",
@@ -164,7 +164,7 @@
   "main": "./out/extension",
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "rm -rf ./out && tsc -p .",
+    "compile": "tsc -p ./",
     "watch": "npm run compile && tsc -watch -p .",
     "clean": "rm -fr node_modules out *.vsix package-lock.json",
     "vsce-package": "vsce package",

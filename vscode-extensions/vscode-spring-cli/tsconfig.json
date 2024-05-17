@@ -9,12 +9,12 @@
 		"declaration": true,
 		"outDir": "out",
 		"sourceMap": true,
-		"rootDir": "./src",
+		"rootDir": ".",
 		"esModuleInterop": true
 	},
 	"include": [
 		"typings/*.d.ts",
-		"./**/*.ts"
+		"src/**/*.ts"
 	],
 	"exclude": [
 		"node_modules",
