@@ -30,13 +30,14 @@
   ],
   "enabledApiProposals": [
     "chatParticipant",
-    "languageModels",
-    "languageModelSystem"
+    "chatVariableResolver",
+    "languageModels"
   ],
   "contributes": {
     "chatParticipants": [
       {
         "id": "springboot",
+        "fullName": "Spring boot",
         "name": "springboot",
         "description": "Spring boot chat agent",
         "isSticky": true

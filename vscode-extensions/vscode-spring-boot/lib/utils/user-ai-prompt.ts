@@ -1,8 +1,9 @@
-export const userPrompt = `Create the Spring Java application with the following placeholder information
+export const userPrompt = `Create the Spring Java application with the following project information
 
 Main Spring project: [Spring Project Name]
 Package name: [Package Name]
 Build tool: [Build Tool]
+Java version: [Java Version]
 
 Ensure the solution meets the following additional criteria
 
