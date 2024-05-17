@@ -31,11 +31,12 @@ interface ExecutableBootProject {
     classpath: string[];
     gav: string;
     buildTool: string;
-    springBootVersion: string;
+    springBootVersion: string;  
+    javaVersion: string;
 }
 
 const CONVERTER = createConverter(undefined, true, true);
-const LANGUAGE_MODEL_ID = 'copilot-gpt-4';
+const MODEL_SELECTOR: vscode.LanguageModelChatSelector = { vendor: 'copilot', family: 'gpt-3.5-turbo' };
 const AGENT_ID = 'springboot';
 
 interface SpringBootChatAgentResult extends vscode.ChatResult {
@@ -120,7 +121,8 @@ function replacePlaceholder(fileContent: string, match: ExecutableBootProject, q
             'Package Name': match.mainClass.substring(0, lastIndex),
             'Build Tool': match.buildTool,
             'Spring Boot Version': match.springBootVersion,
-            'Description': question
+            'Description': question,
+            'Java Version': match.javaVersion,
         };
     
         for (const placeholder in replacements) {
@@ -205,9 +207,9 @@ async function writeResponseToFile(response: string, shortPackageName: string, c
 async function chatRequest(enhancedPrompt: Prompt, token: vscode.CancellationToken, question: string) {
     
     const messages = [
-            new vscode.LanguageModelChatSystemMessage(enhancedPrompt.systemPrompt),
-            new vscode.LanguageModelChatUserMessage(enhancedPrompt.userPrompt),
-            new vscode.LanguageModelChatUserMessage(question)
+            vscode.LanguageModelChatMessage.Assistant(enhancedPrompt.systemPrompt),
+            vscode.LanguageModelChatMessage.User(enhancedPrompt.userPrompt),
+            vscode.LanguageModelChatMessage.User(question)
     ];
     let response = '';
     return vscode.window.withProgress({
@@ -222,7 +224,8 @@ async function chatRequest(enhancedPrompt: Prompt, token: vscode.CancellationTok
             }
             let chatResponse: vscode.LanguageModelChatResponse | undefined;
             try {
-                chatResponse = await vscode.lm.sendChatRequest(LANGUAGE_MODEL_ID, messages, {}, token);
+                const [model] = await vscode.lm.selectChatModels(MODEL_SELECTOR);
+                chatResponse = await model.sendRequest(messages, {}, token);
             } catch (error) {
                 if (error instanceof vscode.LanguageModelError) {
                     console.log(error.message, error.code);
@@ -231,7 +234,7 @@ async function chatRequest(enhancedPrompt: Prompt, token: vscode.CancellationTok
             }
 
             try {
-                for await (const fragment of chatResponse.stream) {
+                for await (const fragment of chatResponse.text) {
                     response += fragment;
                 }
                 resolve(response);
@@ -266,7 +269,7 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
     console.log(projects)
     // get enhanced prompt by getting the spring context from boot ls
     const enhancedPrompt = await enhancePrompt(request.prompt, cwd, projects);
-
+    // console.log(enhancedPrompt);
     // chat request to copilot LLM
     const response = await chatRequest(enhancedPrompt, token, request.prompt);
 

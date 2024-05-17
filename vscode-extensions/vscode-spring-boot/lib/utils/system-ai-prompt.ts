@@ -6,12 +6,13 @@ export const systemPrompt = `This is the system chat message. Your task is to cr
 
 3. Provide links to tutorials for learning more about the generated application. Prefer tutorials from the domains https://spring.io and https://www.baeldung.com/, but include others if they are popular.  Provide a maximum of 5 links.
 
-Use the following placeholders provided in the user message for the solution:
+Use the following project information for the solution:
 
 Main Spring project: [Spring Project Name]
 Package name: [Package Name]
 Build tool: [Build Tool]
 Spring boot version: [Spring Boot Version]
+Java version: [Java Version]
 User prompt: [Description]
 
 Ensure that your solution meets the following criteria:
