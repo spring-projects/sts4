@@ -6,7 +6,7 @@ import { handleProjectAdd, handleProjectRemove } from "./project";
 import { handleCommandAdd, handleCommandExecute, handleCommandNew, handleCommandRemove } from "./command";
 import { ExtensionContext, commands, tasks } from "vscode";
 import { handleAiAdd } from "./ai";
-import { handleGuideApply, handleGuideRun } from "./guide";
+import { handleGuideApplyWorkspaceEdit } from "./guide";
 
 export const CLI = new Cli();
 
@@ -29,8 +29,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     
         commands.registerCommand('vscode-spring-cli.ai.add', handleAiAdd),
     
-        commands.registerCommand('vscode-spring-cli.guide.apply', handleGuideApply),
-        commands.registerCommand('vscode-spring-cli.guide.run', handleGuideRun),
+        commands.registerCommand('vscode-spring-cli.guide.apply', handleGuideApplyWorkspaceEdit),
     
         tasks.registerTaskProvider(SPRING_CLI_TASK_TYPE, new CliTaskProvider(CLI))  
     );

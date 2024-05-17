@@ -10,6 +10,8 @@ import { WorkspaceEdit } from "vscode-languageclient";
 
 export const SPRING_CLI_TASK_TYPE = 'spring-cli';
 
+export const CANCELLED = "Cancelled";
+
 export class Cli {
 
     get executable(): string {
@@ -46,7 +48,7 @@ export class Cli {
             "--file",
             uri.fsPath
         ];
-        return this.fetchJson("Running guide", uri.fsPath, args, cwd || path.dirname(uri.fsPath));
+        return this.fetchJson("Running guide", uri.fsPath, args, cwd || path.dirname(uri.fsPath), true);
     }
 
     aiAdd(question: string, cwd: string): Thenable<Uri> {
@@ -70,23 +72,31 @@ export class Cli {
             
             return new Promise<Uri>(async (resolve, reject) => {
                 if (cancellation.isCancellationRequested) {
-                    reject("Cancelled");
+                    reject(CANCELLED);
                 }
                 const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
                 const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")}`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")}`, processOpts);
                 cancellation.onCancellationRequested(() => process.kill());
                 const errorMessageChunks = [];
                 let guideFileName;
+                let errorMessageInStdOut;
                 process.stdout.on("data", s => {
                     const res = /README-\S+.md/.exec(s);
-                    if (res.length) {
+                    if (res && res.length) {
                         guideFileName = res[0].trim();
+                    } else {
+                        errorMessageInStdOut = s;
                     }
                 });
                 process.stderr.on("data", s => errorMessageChunks.push(s))
                 process.on("exit", (code) => {
                     if (code) {
-                        reject(`Failed to get response from LLM. ${errorMessageChunks.join()}`);
+                        if (cancellation.isCancellationRequested) {
+                            reject(CANCELLED);
+                        } else {
+                            const errorMessage = (errorMessageChunks.length == 0 ? errorMessageInStdOut : errorMessageChunks.join()) || "";
+                            reject(`Failed to get response from LLM. ${errorMessage}`);
+                        }
                     } else {
                         resolve(Uri.file(path.join(cwd, guideFileName)));
                     }
@@ -159,12 +169,20 @@ export class Cli {
         });
     }
 
-    commandNew(cwd: string) {
+    commandNew(cwd: string, commandName?: string, subCommandName?: string) {
         const args = [
             "command",
             "new",
         ];
-        return this.exec("Remove Command", undefined, args, cwd);
+        if (commandName) {
+            args.push("--command-name")
+            args.push(commandName);
+        }
+        if (subCommandName) {
+            args.push("--sub-command-name")
+            args.push(subCommandName);
+        }
+        return this.exec("New Command", undefined, args, cwd);
     }
 
     commandExecute(metadata: CommandExecuteMetadata, cwd: string) {
@@ -309,7 +327,7 @@ export class Cli {
         });
     }
 
-    private async fetchJson<T>(title: string, message: string, args: string[], cwd?: string) : Promise<T> {
+    private async fetchJson<T>(title: string, message: string, args: string[], cwd?: string, omitJsonParam?: boolean) : Promise<T> {
 
         return window.withProgress({
             location: ProgressLocation.Window,
@@ -323,16 +341,20 @@ export class Cli {
 
             return new Promise<T>(async (resolve, reject) => {
                 if (cancellation.isCancellationRequested) {
-                    reject("Cancelled");
+                    reject(CANCELLED);
                 }
                 const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
-                const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")}`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")} --json`, processOpts);
+                const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")}`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")} ${omitJsonParam ? "" : "--json"}`, processOpts);
                 cancellation.onCancellationRequested(() => process.kill());
                 const dataChunks: string[] = [];
                 process.stdout.on("data", s => dataChunks.push(s));
                 process.on("exit", (code) => {
                     if (code) {
-                        reject(`Failed to fetch data: ${dataChunks.join()}`);
+                        if (cancellation.isCancellationRequested) {
+                            reject(CANCELLED);
+                        } else {
+                            reject(`Failed to fetch data: ${dataChunks.join()}`);
+                        }
                     } else {
                         try {
                             resolve(JSON.parse(dataChunks.join()) as T);

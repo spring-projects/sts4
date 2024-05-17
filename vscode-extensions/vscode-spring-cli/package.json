@@ -3,7 +3,7 @@
   "displayName": "Spring CLI Support",
   "description": "Spring CLI integrated into IDE",
   "icon": "spring-boot-logo.png",
-  "version": "1.55.0",
+  "version": "1.0.0",
   "publisher": "vmware",
   "repository": {
     "type": "git",
@@ -33,13 +33,13 @@
           "group": "Spring-CLI"
         },
         {
-          "when": "resourceFilename =~ /README-\\S+.md/",
-          "command": "vscode-spring-cli.guide.apply",
+          "when": "resourceFilename == pom.xml",
+          "command": "vscode-spring-cli.ai.add",
           "group": "Spring-CLI"
         },
         {
           "when": "resourceFilename =~ /README-\\S+.md/",
-          "command": "vscode-spring-cli.guide.run",
+          "command": "vscode-spring-cli.guide.apply",
           "group": "Spring-CLI"
         }
       ],
@@ -50,13 +50,13 @@
           "group": "Spring-CLI"
         },
         {
-          "when": "resourceFilename =~ /README-\\S+.md/",
-          "command": "vscode-spring-cli.guide.apply",
+          "when": "resourceFilename == pom.xml",
+          "command": "vscode-spring-cli.ai.add",
           "group": "Spring-CLI"
         },
         {
           "when": "resourceFilename =~ /README-\\S+.md/",
-          "command": "vscode-spring-cli.guide.run",
+          "command": "vscode-spring-cli.guide.apply",
           "group": "Spring-CLI"
         }
       ]
@@ -94,22 +94,22 @@
       },
       {
         "command": "vscode-spring-cli.command.add",
-        "title": "Add User Defined Command",
+        "title": "Add User-Defined Command",
         "category": "Spring CLI"
       },
       {
         "command": "vscode-spring-cli.command.remove",
-        "title": "Remove User Defined Command",
+        "title": "Remove User-Defined Command",
         "category": "Spring CLI"
       },
       {
         "command": "vscode-spring-cli.command.new",
-        "title": "New User Defined Command",
+        "title": "New User-Defined Command",
         "category": "Spring CLI"
       },
       {
         "command": "vscode-spring-cli.command.execute",
-        "title": "Execute User Defined Command",
+        "title": "Execute User-Defined Command",
         "category": "Spring CLI"
       },
       {
@@ -120,11 +120,6 @@
       {
         "command": "vscode-spring-cli.guide.apply",
         "title": "Apply Guide",
-        "category": "Spring CLI"
-      },
-      {
-        "command": "vscode-spring-cli.guide.run",
-        "title": "Run Guide",
         "category": "Spring CLI"
       }
     ],

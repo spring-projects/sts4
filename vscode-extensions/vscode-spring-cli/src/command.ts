@@ -3,6 +3,7 @@ import { enterText } from "./utils";
 import { CLI } from "./extension";
 import { homedir } from "os";
 import { CommandInfo } from "./cli-types";
+import { CANCELLED } from "./cli";
 
 interface SubCommandQuickPickItem extends QuickPickItem {
     info?: CommandInfo;
@@ -50,22 +51,50 @@ export async function handleCommandAdd(uri?: Uri) {
 }
 
 export async function handleCommandRemove(uri?: Uri) {
-    // Enter CWD for CLI (global vs workspace folder local command)
-    const cwd = await enterCwd(uri);
-    // Select the command
-    const command = await pickCommand(cwd);
-    // Select the subcommand
-    const subcommand = (await pickSubCommand(cwd, command))?.label;
-    return CLI.commandRemove({
-        command,
-        subcommand,
-        cwd
-    });
+    try {
+        // Enter CWD for CLI (global vs workspace folder local command)
+        const cwd = await enterCwd(uri);
+        // Select the command
+        const command = await pickCommand(cwd);
+        if (!command) {
+            return;
+        }
+        // Select the subcommand
+        const subcommand = (await pickSubCommand(cwd, command))?.label;
+        if (!subcommand) {
+            return;
+        }
+        return CLI.commandRemove({
+            command,
+            subcommand,
+            cwd
+        });
+    } catch (error) {
+        if (error !== CANCELLED) {
+            window.showErrorMessage(error);
+        }
+    }
 }
 
 export async function handleCommandNew(uri?: Uri) {
     const cwd = await enterCwd(uri);
-    return CLI.commandNew(cwd);
+    const cmdName = await enterText({
+        prompt: "Enter Command Name",
+        title: "Command Name",
+        defaultValue: "hello"
+    });
+    if (!cmdName) {
+        return;
+    }
+    const subCmdName = await enterText({
+        prompt: "Enter Sub-Command Name",
+        title: "Sub-Command Name",
+        defaultValue: "new"
+    });
+    if (!subCmdName) {
+        return;
+    }
+    return CLI.commandNew(cwd, cmdName, subCmdName);
 }
 
 export async function handleCommandExecute(uri?: Uri) {
@@ -73,39 +102,51 @@ export async function handleCommandExecute(uri?: Uri) {
     const cwd = await enterCwd(uri);
     // Select the command
     const command = await pickCommand(cwd);
+    if (!command) {
+        return;
+    }
     // Select the subcommand
     const subcommand = (await pickSubCommand(cwd, command));
+    if (!subcommand) {
+        return;
+    }
 
     const params = {};
 
-    if (Array.isArray(subcommand?.info?.options)) {
-        for (const o of subcommand.info.options) {
-            let value;
-            if (o.choices) {
-                const quickPickItems = Object.keys(o.choices).map(s => ({
-                    label: s,
-                    value: o.choices[s]
-                }) as ChoiceQuickPickItem);
-                value = (await window.showQuickPick(quickPickItems, { canPickMany: false, ignoreFocusOut: true })).value;
-            } else {
-                value = await enterText({
-                    title: o.paramLabel || o.name,
-                    defaultValue: o.defaultValue,
-                    placeholder: o.defaultValue,
-                    prompt: `Enter ${o.paramLabel || o.name}${o.description ? " - " : ""}${o.description}`
-                });
-            }
-            if (value) {
-                params[o.name] = value;
-            }
-        } 
+    try {
+        if (Array.isArray(subcommand?.info?.options)) {
+            for (const o of subcommand.info.options) {
+                let value;
+                if (o.choices) {
+                    const quickPickItems = Object.keys(o.choices).map(s => ({
+                        label: s,
+                        value: o.choices[s]
+                    }) as ChoiceQuickPickItem);
+                    value = (await window.showQuickPick(quickPickItems, { canPickMany: false, ignoreFocusOut: true })).value;
+                } else {
+                    value = await enterText({
+                        title: o.paramLabel || o.name,
+                        defaultValue: o.defaultValue,
+                        placeholder: o.defaultValue,
+                        prompt: `Enter ${o.paramLabel || o.name}${o.description ? " - " : ""}${o.description}`
+                    });
+                }
+                if (value) {
+                    params[o.name] = value;
+                }
+            } 
+        }
+    
+        return CLI.commandExecute({
+            command,
+            subcommand: subcommand.label,
+            params
+        }, cwd);
+    } catch (error) {
+        if (error !== CANCELLED) {
+            window.showErrorMessage(error);
+        }
     }
-
-    return CLI.commandExecute({
-        command,
-        subcommand: subcommand.label,
-        params
-    }, cwd);
 }
 
 function mapFolderToQuickPickItem(folder: WorkspaceFolder): QuickPickItem {
