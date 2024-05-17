@@ -48,7 +48,7 @@ export class Cli {
             "--file",
             uri.fsPath
         ];
-        return this.fetchJson("Running guide", uri.fsPath, args, cwd || path.dirname(uri.fsPath), true);
+        return this.fetchJson("Applying guide", uri.fsPath, args, cwd || path.dirname(uri.fsPath), true);
     }
 
     aiAdd(question: string, cwd: string): Thenable<Uri> {

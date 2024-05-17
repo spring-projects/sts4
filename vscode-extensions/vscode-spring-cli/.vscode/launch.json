@@ -6,17 +6,17 @@
 	"version": "0.2.0",
     "configurations": [
         {
-            "name": "Extension",
+            "name": "Spring CLI Extension",
             "type": "extensionHost",
             "request": "launch",
             "runtimeExecutable": "${execPath}",
+            "preLaunchTask": "npm: watch",
             "args": [
                 "--extensionDevelopmentPath=${workspaceFolder}"
             ],
             "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
-            ],
-            "preLaunchTask": "npm: watch"
+                "${workspaceFolder}/dist/**/*.js"
+            ]
         }
     ]
 }
