@@ -26,7 +26,7 @@ jobs:
       - name: Build .VSIX file
         id: build-vsix
         env:
-          JAVA_HOME: ${{ env.JAVA_HOME_21 }}
+          JAVA_HOME: ${{ env.JAVA_HOME_17 }}
         run: |
           ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
           ls ./vsix
