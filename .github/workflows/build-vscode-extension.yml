@@ -23,10 +23,6 @@ jobs:
     steps:
       - name: Checkout vscode-extensions code and workflow scripts
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            vscode-extensions
-            .github
       - name: Build .VSIX file
         id: build-vsix
         run: |
