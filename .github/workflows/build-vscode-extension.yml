@@ -24,7 +24,8 @@ jobs:
       - name: Checkout wiki code
         uses: actions/checkout@v4
         with:
-          repository: ${{github.repository}}/vscode-extensions
+          sparse-checkout: |
+            vscode-extensions
       - name: Build .VSIX file
         id: build-vsix
         run: |
