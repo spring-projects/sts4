@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build VSCode Extension '${{ inputs.extension-name }}'
     steps:
-      - name: Checkout wiki code
+      - name: Checkout vscode-extensions code and workflow scripts
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
@@ -32,5 +32,5 @@ jobs:
         run: |
           pwd
           ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
-          ls ./out
+          ls
 
