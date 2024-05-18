@@ -2,7 +2,7 @@ set -e
 extension_id=$1
 dist_type=$2
 workdir=`pwd`
-sources=$workdir/sts4/vscode-extensions/$extension_id
+sources=$workdir/vscode-extensions/$extension_id
 # server_id=${extension_id#vscode-}
 
 cd "$sources"
