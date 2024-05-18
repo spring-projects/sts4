@@ -19,7 +19,7 @@ permissions:
 jobs:
   build-vscode-extension:
     runs-on: ubuntu-latest
-    name: "Build VSCode Extension:" ${inputs.extension-name}
+    name: Build VSCode Extension '${inputs.extension-name}'
     steps:
       - name: Checkout wiki code
         uses: actions/checkout@v4
