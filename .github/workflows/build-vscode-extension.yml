@@ -33,4 +33,5 @@ jobs:
           echo `pwd`
           ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
           ls
+          ls ./out
 
