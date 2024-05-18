@@ -1,0 +1,33 @@
+name: Build VSCode Extension
+
+on:
+  workflow_call:
+    inputs:
+      extension-name:
+        description: name of the extension, e.g. vscode-spring-cli
+        required: true
+        type: string
+      dist:
+        description: release, pre, snapshot
+        required: false
+        type: string
+        default: snapshot
+
+permissions:
+  contents: write
+
+jobs:
+  build-vscode-extension:
+    runs-on: ubuntu-latest
+    name: Changelog for the release
+    steps:
+      - name: Checkout wiki code
+        uses: actions/checkout@v4
+        with:
+          repository: ${{github.repository}}/vscode-extensions
+      - name: Build .VSIX file
+        id: build-vsix
+        run: |
+          ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
+          ls ./out
+
