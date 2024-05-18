@@ -30,8 +30,6 @@ jobs:
       - name: Build .VSIX file
         id: build-vsix
         run: |
-          echo `pwd`
           ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
-          ls
-          ls ./out
+          ls ./vsix
 

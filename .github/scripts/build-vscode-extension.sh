@@ -51,8 +51,8 @@ if [ "$dist_type" == release ]; then
     fi
 fi
 
-mkdir -p $workdir/out
-cp *.vsix $workdir/out
+mkdir -p $workdir/vsix
+cp *.vsix $workdir/vsix
 #server_jar=$workdir/sts4/headless-services/${server_id}-language-server/target/*-exec.jar
 #if [ -f $server_jar ]; then
 #    cp $server_jar $workdir/out/${server_id}-language-server-${base_version}-${timestamp}.jar
