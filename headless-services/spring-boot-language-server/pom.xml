@@ -59,8 +59,8 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
@@ -168,12 +168,12 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-openai</artifactId>
             <version>${SPRING_AI_VERSION}</version>
-             <exclusions>
+             <!--<exclusions>
 		        <exclusion>
 		            <groupId>org.springframework</groupId>
 		            <artifactId>spring-webflux</artifactId>
 		        </exclusion>
-		    </exclusions>
+		    </exclusions>-->
         </dependency>
 
         <dependency>
@@ -186,13 +186,7 @@
        <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-tika-document-reader</artifactId>
-            <version>0.8.0-SNAPSHOT</version>
-             <exclusions>
-		        <exclusion>
-		            <groupId>org.springframework</groupId>
-		            <artifactId>spring-webflux</artifactId>
-		        </exclusion>
-		    </exclusions>
+            <version>0.8.0</version>
         </dependency>
 	
 		<!-- Test harness -->
@@ -234,6 +228,18 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	
+	<!-- <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>0.8.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement> -->
 
 	<profiles>
 		<profile>
