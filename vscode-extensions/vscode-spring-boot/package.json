@@ -38,7 +38,17 @@
         "fullName": "Spring boot",
         "name": "springboot",
         "description": "Spring boot chat agent",
-        "isSticky": true
+        "isSticky": true,
+        "commands": [
+          {
+            "name": "add",
+            "description": "Add a new dependency or module to the exisiting project"
+          },
+          {
+            "name": "generate",
+            "description": "Generate unit test cases for the project"
+          }
+        ]
       }
     ],
     "javaExtensions": [

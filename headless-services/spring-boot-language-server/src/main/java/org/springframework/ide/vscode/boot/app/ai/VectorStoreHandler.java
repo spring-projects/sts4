@@ -26,6 +26,8 @@ public class VectorStoreHandler {
 	private static final String CMD_COPILOT_SEARCH = "sts/copilot/search";
 
 	private static final String CMD_COPILOT_TEST = "sts/copilot/test";
+	
+	private static final Double SIMILARITY_THRESHOLD = 0.7;
 
 	private static final String PROMPT = """
 			You are a helpful assistant, conversing with a user about the subjects contained in a set of documents.
@@ -62,7 +64,8 @@ public class VectorStoreHandler {
 		log.info(params.toString());
 		log.info("Question: " + getArgumentByKey(params, "question"));
 		String question = getArgumentByKey(params, "question");
-		List<Document> similarDocuments = vectorStore.similaritySearch(SearchRequest.query(question).withTopK(2));
+		List<Document> similarDocuments = vectorStore.similaritySearch(SearchRequest.query(question).withTopK(1).withSimilarityThreshold(SIMILARITY_THRESHOLD));
+		// similarDocuments.stream().forEach(d -> log.info(d.getMetadata().toString()));
 		List<String> contentList = similarDocuments.stream().map(Document::getContent).toList();
 
 		log.info("Similar documents: " + contentList);

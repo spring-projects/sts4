@@ -11,6 +11,7 @@ import { getTargetGuideMardown, getWorkspaceRoot, getExecutable } from './utils/
 import { createConverter } from "vscode-languageclient/lib/common/protocolConverter";
 import { systemPrompt } from './utils/system-ai-prompt';
 import { userPrompt } from './utils/user-ai-prompt';
+import { vectorSearchPrompt } from './utils/vectorsearch-ai-prompt';
 
 interface Prompt {
     projName: string
@@ -113,7 +114,7 @@ async function fetchJson<T>(title: string, message: string, args: string[], cwd?
     });
 }
 
-function replacePlaceholder(fileContent: string, match: ExecutableBootProject, question: string) {
+function replacePlaceholder(fileContent: string, question: string, match?: ExecutableBootProject, joinedVectorSearch?: string) {
     if(match !== null && match !== undefined) {
         const lastIndex = match.mainClass.lastIndexOf('.')
         const replacements = {
@@ -123,6 +124,7 @@ function replacePlaceholder(fileContent: string, match: ExecutableBootProject, q
             'Spring Boot Version': match.springBootVersion,
             'Description': question,
             'Java Version': match.javaVersion,
+            'Contents': joinedVectorSearch
         };
     
         for (const placeholder in replacements) {
@@ -131,16 +133,28 @@ function replacePlaceholder(fileContent: string, match: ExecutableBootProject, q
     } else {
         fileContent = fileContent.replace(new RegExp('Description', 'g'), question);
     }
+
+    // if(joinedVectorSearch !== undefined && joinedVectorSearch !== null) {
+    //     fileContent = fileContent.replace(new RegExp('CONTENTS', 'g'), joinedVectorSearch);
+    // }
     return fileContent;
 }
 
-function enhancePrompt(question: string, cwd: string, projects: ExecutableBootProject[]): Thenable<Prompt> {
+async function enhancePrompt(question: string, cwd: string, projects: ExecutableBootProject[]): Promise<Thenable<Prompt>> {
 
     const match = projects.find(project => project.uri.toString().replace('file:', '') === cwd);
     const prompt = {} as Prompt;
-
-    prompt.systemPrompt = replacePlaceholder(systemPrompt, match, question);
-    prompt.userPrompt = replacePlaceholder(userPrompt, match, question);
+    // Number(match.javaVersion) > 17 && 
+    if (match.springBootVersion.startsWith('3') && question.includes('jpa')) {
+        const vectorSearchResults = await vscode.commands.executeCommand("sts/copilot/search", {"question": question}) as string[];
+        console.log(vectorSearchResults[0]);
+        console.log(vectorSearchResults[1]);
+        // const joinedVectorSearchResults = vectorSearchResults.join('\n');
+        prompt.systemPrompt = replacePlaceholder(vectorSearchPrompt, question, match , vectorSearchResults[0]);
+    } else {
+        prompt.systemPrompt = replacePlaceholder(systemPrompt, question, match);
+    } 
+    prompt.userPrompt = replacePlaceholder(userPrompt, question, match);
     prompt.projName = match?.name;
     return Promise.resolve(prompt);
 }
@@ -262,14 +276,17 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
 
     const cwd = (await getWorkspaceRoot()).fsPath;
 
-    // const vectorSearch = await vscode.commands.executeCommand("sts/copilot/search", {"question": request.prompt});
-    // console.log(vectorSearch);
-
     const projects = await vscode.commands.executeCommand("sts/spring-boot/executableBootProjects") as ExecutableBootProject[];
-    console.log(projects)
-    // get enhanced prompt by getting the spring context from boot ls
+    console.log(projects);
+
+    // const vectorSearchResults = await vscode.commands.executeCommand("sts/copilot/search", {"question": request.prompt}) as string[];
+    // console.log(vectorSearchResults[0]);
+    // console.log(vectorSearchResults[1]);
+
+    // get enhanced prompt by getting the spring context from boot ls and adding vector search results
     const enhancedPrompt = await enhancePrompt(request.prompt, cwd, projects);
-    // console.log(enhancedPrompt);
+    console.log(enhancedPrompt.systemPrompt);
+    console.log(enhancedPrompt.userPrompt);
     // chat request to copilot LLM
     const response = await chatRequest(enhancedPrompt, token, request.prompt);
 
@@ -278,7 +295,7 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
 
     const uri = await getTargetGuideMardown();
     // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
-    await enhanceResponse(uri, enhancedPrompt.projName, cwd);
+    // await enhanceResponse(uri, enhancedPrompt.projName, cwd);
 
     // return modified response to chat
     const documentContent = await vscode.workspace.fs.readFile(uri);
@@ -298,6 +315,12 @@ export function activate(
 ) {
 
     const agent = vscode.chat.createChatParticipant(AGENT_ID, async (request, context, progress, token) => {
+
+        if (request.command === 'add') {
+            return handleAiPrompts(request, context, progress, token);
+        } else if (request.command === 'generate') {
+            return handleAiPrompts(request, context, progress, token);
+        }
         return handleAiPrompts(request, context, progress, token);
     });
     agent.iconPath = vscode.Uri.joinPath(context.extensionUri, 'readme-imgs', 'spring-tools-icon.png');
