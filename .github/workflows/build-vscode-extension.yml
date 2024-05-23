@@ -33,11 +33,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo `git version`
-          echo `git status`
-          git fetch --tags
-          git_tag=`git tag | grep ${{ inputs.extension-name }}`
-          echo "Git tag: '${git_tag}'"
           ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
           ls ./vsix
       - name: Cloudgate S3 Configuration
@@ -64,9 +59,9 @@ jobs:
           s3_path=vscode-extensions/${{ inputs.extension-name }}/$base_version/${dist}
           echo "S3 path: ${s3_path}"
           aws s3 rm s3://tools-spring-io/$s3_path/ --recursive
-          aws s3 cp ./vsix/$file s3://tools-spring-io/$s3_path/$file --no-progress
+          aws s3 cp ./vsix/$vsix_file s3://tools-spring-io/$s3_path/$vsix_file --no-progress
           echo "version=$base_version" >> $GITHUB_OUTPUT
-          echo "s3_url=https://cdn.spring.io/spring-tools/$s3_path/$file" >> $GITHUB_OUTPUT
+          echo "s3_url=https://cdn.spring.io/spring-tools/$s3_path/$vsix_file" >> $GITHUB_OUTPUT
       - id: tools-team-slack
         if: ${{ inputs.dist == 'release' }}
         uses: slackapi/slack-github-action@v1.26
