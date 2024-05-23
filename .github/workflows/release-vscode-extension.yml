@@ -1,0 +1,52 @@
+name: Release VSCode Extension
+
+on:
+  workflow_dispatch:
+    inputs:
+      extension-name:
+        description: name of the extension, e.g. vscode-spring-cli
+        required: true
+        type: string
+      postfix:
+        description: For example "RC1"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+
+  tag-vscode-extension:
+    runs-on: ubuntu-latest
+    name: Release VSCode Extension '${{ inputs.extension-name }}'
+    steps:
+      - name: Checkout vscode-extension '${{ inputs.extension-name }}'
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            vscode-extensions/${{ inputs.extension-name }}
+      - name: Record Extension Version
+        id: version
+        run: |
+          base_version=`jq -r .version vscode-extensions/${{ inputs.extension-name }}/package.json`
+          echo "Version: ${base_version}"
+          echo "version=$base_version" >> $GITHUB_OUTPUT
+      - name: Create tag
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ inputs.extension-name }}-${{ steps.version.outputs.version }}-${{ inputs.postfix }}',
+              sha: context.sha
+            })
+
+  release-build-upload:
+    needs: [ tag-vscode-extension ]
+    uses: ./.github/workflows/build-vscode-extension.yml
+    with:
+      extension-name: ${{ inputs.extension-name }}
+      dist: 'release'
+    secrets: inherit
