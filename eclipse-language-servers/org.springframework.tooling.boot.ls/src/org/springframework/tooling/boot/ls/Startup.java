@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.ls;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +45,7 @@ public class Startup implements IStartup {
 				LanguageServiceAccessor.startLanguageServer(serverDefinition);
 				BootLanguageServerPlugin.getDefault().getLog().info("Started Boot LS process");
 				started = true;
-			} catch (IOException e1) {
+			} catch (Throwable e1) {
 				BootLanguageServerPlugin.getDefault().getLog().error("Failed to launch Boot Language Server", e1);
 			}
 
