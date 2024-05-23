@@ -1,4 +1,4 @@
-name: Release VSCode Extension
+name: Publish VSCode Extension
 
 on:
   workflow_dispatch:
@@ -20,7 +20,7 @@ jobs:
 
   publish-release:
     runs-on: ubuntu-latest
-    name: Publsih '${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}'
+    name: Publish '${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix'
     steps:
       - name: Download Release VSIX
         id: download-release
@@ -47,13 +47,13 @@ jobs:
 #          channel-id: "C0188MENU2J"
 #          payload: |
 #            {
-#              "text": "Release published `${{ inputs.extension-name }}-${{ inputs.version }}`",
+#              "text": "Published release `${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix`",
 #              "blocks": [
 #                {
 #                  "type": "section",
 #                  "text": {
 #                    "type": "mrkdwn",
-#                    "text": "Release now available on VSCode Marketplace: <https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
+#                    "text": "Release is now available on VSCode Marketplace: <https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
 #                  }
 #                }
 #              ]
