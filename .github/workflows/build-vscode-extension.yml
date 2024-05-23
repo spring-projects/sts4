@@ -1,7 +1,7 @@
 name: Build VSCode Extension
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       extension-name:
         description: name of the extension, e.g. vscode-spring-cli
@@ -30,6 +30,8 @@ jobs:
           distribution: 'temurin'
       - name: Build .VSIX file
         id: build-vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
           ls ./vsix
