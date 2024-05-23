@@ -42,8 +42,7 @@ fi
 if [ "$dist_type" == release ]; then
     vsix_file=`ls *.vsix`
     git fetch --tags
-#    release_name=`git tag --points-at HEAD | grep ${extension_id}`
-    release_name=`git tag | grep ${extension_id}`
+    release_name=`git tag --points-at HEAD | grep ${extension_id}`
     echo "release_name=$release_name"
     if [ -z "$release_name" ]; then
         echo "Release Candidates must be tagged" >&2
