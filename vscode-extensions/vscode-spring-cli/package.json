@@ -3,7 +3,7 @@
   "displayName": "Spring CLI",
   "description": "Spring CLI integrated into VSCode UI",
   "icon": "spring-boot-logo.png",
-  "version": "1.0.0",
+  "version": "0.9.0",
   "publisher": "vmware",
   "repository": {
     "type": "git",

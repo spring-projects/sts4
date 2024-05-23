@@ -100,6 +100,11 @@ export async function handleCommandNew(uri?: Uri) {
 export async function handleCommandExecute(uri?: Uri) {
     // Enter CWD for CLI (global vs workspace folder local command)
     const cwd = await enterCwd(uri);
+    if (!cwd) {
+        window.showErrorMessage("No folder available for a user-defined command");
+        return;
+    } 
+
     // Select the command
     const command = await pickCommand(cwd);
     if (!command) {
@@ -158,7 +163,7 @@ function mapFolderToQuickPickItem(folder: WorkspaceFolder): QuickPickItem {
 }
 
 async function enterCwd(uri?: Uri): Promise<string> {
-    const commandScopes = [ GLOBAL ];
+    const commandScopes = [ /*GLOBAL*/ ];
     if (uri) {
         const folder = workspace.getWorkspaceFolder(uri);
         if (folder) {
@@ -168,7 +173,9 @@ async function enterCwd(uri?: Uri): Promise<string> {
         commandScopes.push(...workspace.workspaceFolders.map(mapFolderToQuickPickItem));
     }
 
-    return commandScopes.length > 1 ? (await window.showQuickPick(commandScopes, { canPickMany: false, ignoreFocusOut: true }))?.detail : GLOBAL.detail;
+    if (commandScopes.length) {
+        return commandScopes.length > 1 ? (await window.showQuickPick(commandScopes, { canPickMany: false, ignoreFocusOut: true }))?.detail : commandScopes[0].detail;
+    }
 }
 
 async function pickCommand(cwd: string): Promise<string> {
