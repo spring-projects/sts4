@@ -56,7 +56,7 @@ jobs:
           cd $pwd
           vsix_file=`ls ./vsix | head -n 1`
           echo "VSIX file to upload ${vsix_file}"
-          s3_path=vscode-extensions/${{ inputs.extension-name }}/$base_version/${dist}
+          s3_path=vscode-extensions/${{ inputs.extension-name }}/$base_version/${{ inputs.dist }}
           echo "S3 path: ${s3_path}"
           aws s3 rm s3://tools-spring-io/$s3_path/ --recursive
           aws s3 cp ./vsix/$vsix_file s3://tools-spring-io/$s3_path/$vsix_file --no-progress
