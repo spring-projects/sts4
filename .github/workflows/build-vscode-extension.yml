@@ -36,7 +36,6 @@ jobs:
           ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
           ls ./vsix
       - name: Cloudgate S3 Configuration
-        if: always()
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
