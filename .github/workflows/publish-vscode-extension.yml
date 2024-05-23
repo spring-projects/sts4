@@ -32,29 +32,29 @@ jobs:
         run: |
           npm install --global @vscode/vsce
           vsix_file=${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix
-          echo "vsce publish -p ${{ secrets.VSCE_PUBLISH_TOKEN }} --packagePath $vsix_file"
+          vsce publish -p ${{ secrets.VSCE_PUBLISH_TOKEN }} --packagePath $vsix_file
       - name: Publish to Eclipse Open VSX
         id: publish-ovsx
         run: |
           npm install --global ovsx
           vsix_file=${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix
-          echo "ovsx publish -p ${{ secrets.OVSX_PUBLISH_TOKEN }} $vsix_file"
-#      - id: tools-team-slack
-#        uses: slackapi/slack-github-action@v1.26
-#        env:
-#          SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
-#        with:
-#          channel-id: "C0188MENU2J"
-#          payload: |
-#            {
-#              "text": "Published release `${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix`",
-#              "blocks": [
-#                {
-#                  "type": "section",
-#                  "text": {
-#                    "type": "mrkdwn",
-#                    "text": "Release is now available on VSCode Marketplace: <https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
-#                  }
-#                }
-#              ]
-#            }
+          ovsx publish -p ${{ secrets.OVSX_PUBLISH_TOKEN }} $vsix_file
+      - id: tools-team-slack
+        uses: slackapi/slack-github-action@v1.26
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
+        with:
+          channel-id: "C0188MENU2J"
+          payload: |
+            {
+              "text": "Published release `${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix`",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Release is now available on VSCode Marketplace: <https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
+                  }
+                }
+              ]
+            }
