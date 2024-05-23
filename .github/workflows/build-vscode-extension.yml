@@ -33,6 +33,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo `git version`
+          echo `git status`
+          echo `git tag`
           git_tag=`git tag | grep ${{ inputs.extension-name }}`
           echo "Git tag: '${git_tag}'"
           ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
