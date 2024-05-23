@@ -19,7 +19,7 @@ jobs:
 
   tag-vscode-extension:
     runs-on: ubuntu-latest
-    name: Release VSCode Extension '${{ inputs.extension-name }}'
+    name: Tag VSCode Extension '${{ inputs.extension-name }}'
     steps:
       - name: Checkout vscode-extension '${{ inputs.extension-name }}'
         uses: actions/checkout@v4
@@ -46,6 +46,7 @@ jobs:
   release-build-upload:
     needs: [ tag-vscode-extension ]
     uses: ./.github/workflows/build-vscode-extension.yml
+    name: Build and Upload VSCode Extension '${{ inputs.extension-name }}' Release
     with:
       extension-name: ${{ inputs.extension-name }}
       dist: 'release'
