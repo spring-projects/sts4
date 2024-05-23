@@ -35,7 +35,7 @@ jobs:
         run: |
           echo `git version`
           echo `git status`
-          echo `git tag`
+          git fetch --tags
           git_tag=`git tag | grep ${{ inputs.extension-name }}`
           echo "Git tag: '${git_tag}'"
           ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
