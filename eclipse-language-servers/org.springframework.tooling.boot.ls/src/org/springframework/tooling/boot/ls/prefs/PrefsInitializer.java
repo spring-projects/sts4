@@ -55,6 +55,7 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 				"org.openrewrite.java.testing.junit5.JUnit4to5Migration",
 				"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7",
 				"org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2",
+				"org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_3",
 				"org.rewrite.java.security.*",
 				"org.springframework.rewrite.test.*",
 				"rewrite.test.*"

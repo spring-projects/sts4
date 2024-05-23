@@ -126,8 +126,8 @@ public class RewriteRecipeRepositoryTest {
 		assertThat(java17.getRecipeList().size()).isEqualTo(3);
 		
 		assertThat(java17.getRecipeList().get(0).getName()).isEqualTo("org.openrewrite.java.migrate.Java8toJava11");
-		assertThat(java17.getRecipeList().get(1).getName()).isEqualTo("org.openrewrite.java.migrate.JavaVersion17");
-		assertThat(java17.getRecipeList().get(2).getName()).isEqualTo("org.openrewrite.java.migrate.lang.UseTextBlocks");
+		assertThat(java17.getRecipeList().get(1).getName()).isEqualTo("org.openrewrite.java.migrate.UpgradeBuildToJava17");
+		assertThat(java17.getRecipeList().get(2).getName()).isEqualTo("org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors");
 		
 	}
 
