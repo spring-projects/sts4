@@ -453,7 +453,12 @@ public class ASTUtils {
 		
 		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : DefaultValues.EMPTY_INJECTION_POINTS;
 	}
-
-
+	
+	public static ASTNode getNearestAnnotationParent(ASTNode node) {
+		while (node != null && !(node instanceof Annotation)) {
+			node = node.getParent();
+		}
+		return node;
+	}
 
 }

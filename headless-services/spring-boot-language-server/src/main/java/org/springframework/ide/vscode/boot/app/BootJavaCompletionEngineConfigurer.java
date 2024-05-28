@@ -101,8 +101,10 @@ public class BootJavaCompletionEngineConfigurer {
 			@Qualifier("adHocProperties") ProjectBasedPropertyIndexProvider adHocProperties,
 			JavaSnippetManager snippetManager, 
 			CompilationUnitCache cuCache) {
+		
 		SpringPropertyIndexProvider indexProvider = params.indexProvider;
 		JavaProjectFinder javaProjectFinder = params.projectFinder;
+		
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		
 		providers.put(Annotations.SCOPE, new ScopeCompletionProcessor());
