@@ -686,28 +686,17 @@ public class LanguageServerHarness {
 
 	public synchronized Editor newEditor(LanguageId languageId, String contents, String resourceUri) throws Exception {
 		ensureInitialized();
-		TextDocumentInfo doc = docFromResource(contents, resourceUri, languageId);
+		TextDocumentInfo doc = createDocFromContentWithResource(contents, resourceUri, languageId);
 		Editor editor = new Editor(this, doc, contents, languageId);
 		activeEditors.add(editor);
 		return editor;
 	}
 
-	public synchronized TextDocumentInfo docFromResource(String contents, String resourceUri, LanguageId languageId) throws Exception {
+	public synchronized TextDocumentInfo createDocFromContentWithResource(String contents, String resourceUri, LanguageId languageId) throws Exception {
 		TextDocumentItem doc = new TextDocumentItem();
 		doc.setLanguageId(languageId.getId());
 		doc.setText(contents);
 		doc.setUri(resourceUri);
-		doc.setVersion(getFirstVersion());
-		TextDocumentInfo docinfo = new TextDocumentInfo(doc);
-		documents.put(docinfo.getUri(), docinfo);
-		return docinfo;
-	}
-
-	public synchronized TextDocumentInfo createWorkingCopy(String contents, LanguageId languageId, String extension) throws Exception {
-		TextDocumentItem doc = new TextDocumentItem();
-		doc.setLanguageId(languageId.getId());
-		doc.setText(contents);
-		doc.setUri(createTempUri(extension));
 		doc.setVersion(getFirstVersion());
 		TextDocumentInfo docinfo = new TextDocumentInfo(doc);
 		documents.put(docinfo.getUri(), docinfo);

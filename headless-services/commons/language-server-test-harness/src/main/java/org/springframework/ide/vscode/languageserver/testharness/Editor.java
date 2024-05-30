@@ -151,17 +151,24 @@ public class Editor {
 		this.harness = harness;
 		this.languageId = LanguageId.of(languageId.getId()); // So we can catch bugs that use == for langauge id comparison.
 		EditorState state = new EditorState(contents);
-		this.doc = harness.openDocument(harness.createWorkingCopy(state.documentContents, this.languageId, extension));
+		
+		String tempUri = harness.createTempUri(extension);
+		this.doc = harness.openDocument(harness.createDocFromContentWithResource(state.documentContents, tempUri, this.languageId));
+
 		this.selectionStart = state.selectionStart;
 		this.selectionEnd = state.selectionEnd;
 		this.ignoredTypes = new HashSet<>();
 		this.highlightsFuture = harness.getHighlightsFuture(doc);
 	}
+	
 	public Editor(LanguageServerHarness harness, TextDocumentInfo doc, String contents, LanguageId languageId) throws Exception {
 		this.harness = harness;
 		this.languageId = LanguageId.of(languageId.getId()); // So we can catch bugs that use == for langauge id comparison.
 		EditorState state = new EditorState(contents);
-		this.doc = harness.openDocument(doc);
+
+		String tempUri = doc.getUri();
+		this.doc = harness.openDocument(harness.createDocFromContentWithResource(state.documentContents, tempUri, languageId));
+
 		this.selectionStart = state.selectionStart;
 		this.selectionEnd = state.selectionEnd;
 		this.ignoredTypes = new HashSet<>();
