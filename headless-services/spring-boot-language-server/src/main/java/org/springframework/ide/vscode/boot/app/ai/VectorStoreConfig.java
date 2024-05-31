@@ -1,10 +1,7 @@
 package org.springframework.ide.vscode.boot.app.ai;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,8 +16,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import de.danielbechler.util.Collections;
-
 @Configuration
 public class VectorStoreConfig {
 
@@ -28,7 +23,13 @@ public class VectorStoreConfig {
 
 	@Value("${app.vectorstore.path:/tmp/vectorstore.json}")
 	private String vectorStorePath;
-
+	
+	@Value("${app.resource}")
+    String documentResource;
+	
+	@Value("${app.resource.one}")
+    String documentResourceOne;
+	
 //    @Bean
 //    SimpleVectorStore simpleVectorStore(EmbeddingClient embeddingClient) {
 //        SimpleVectorStore simpleVectorStore = new SimpleVectorStore(embeddingClient);
@@ -58,11 +59,15 @@ public class VectorStoreConfig {
 			simpleVectorStore.load(vectorStoreFile);
 		} else { // otherwise load the documents and save the vector store
 			log.info("Read file from resources");
-			TikaDocumentReader documentReader1 = new TikaDocumentReader(
-					"classpath:/Spring_in_Action_Sixth_Edition.pdf");
+//			TikaDocumentReader documentReader1 = new TikaDocumentReader(
+//					"classpath:/Spring_in_Action_Sixth_Edition.pdf");
 			TikaDocumentReader documentReader2 = new TikaDocumentReader("classpath:/spring-boot-3-jpa-example.txt");
-			saveToVectorStore(simpleVectorStore, vectorStoreFile, documentReader1);
+			TikaDocumentReader documentReader3 = new TikaDocumentReader(documentResource);
+			TikaDocumentReader documentReader4 = new TikaDocumentReader(documentResourceOne);
+//			saveToVectorStore(simpleVectorStore, vectorStoreFile, documentReader1);
 			saveToVectorStore(simpleVectorStore, vectorStoreFile, documentReader2);
+			saveToVectorStore(simpleVectorStore, vectorStoreFile, documentReader3);
+			saveToVectorStore(simpleVectorStore, vectorStoreFile, documentReader4);
 		}
 		return simpleVectorStore;
 	}

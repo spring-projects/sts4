@@ -15,13 +15,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -33,25 +36,33 @@ import org.springframework.ide.vscode.commons.protocol.java.ProjectGavParams;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 public class WorkspaceBootExecutableProjects {
 	
 	public record ExecutableProject(String name, String uri, String gav, String mainClass, Collection<String> classpath, String buildTool, String springBootVersion, String javaVersion) {}
 	
 	final static String CMD = "sts/spring-boot/executableBootProjects";
 	
+	final static String BEANS_CMD = "sts/spring-boot/getBeans";
+	
 	private final static Logger log = LoggerFactory.getLogger(WorkspaceBootExecutableProjects.class);
 	
 	final private JavaProjectFinder projectFinder;
 	final private SpringSymbolIndex symbolIndex;
-	final private SimpleLanguageServer server;
+	final private SpringMetamodelIndex springMetamodelIndex;
 
-	public WorkspaceBootExecutableProjects(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex) {
-		this.server = server;
+	public WorkspaceBootExecutableProjects(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, SpringMetamodelIndex springMetamodelIndex) {
 		this.projectFinder = projectFinder;
 		this.symbolIndex = symbolIndex;
+		this.springMetamodelIndex = springMetamodelIndex;
 		server.onCommand(CMD, params -> findExecutableProjects());
+		server.onCommand(BEANS_CMD, (params) -> {
+			return fetchBeans(params);
+		});
 	}
-	
+
 	private CompletableFuture<Optional<ExecutableProject>> mapToExecProject(IJavaProject project) {
 		BeansParams params = new BeansParams();
 		params.setProjectName(project.getElementName());
@@ -106,5 +117,33 @@ public class WorkspaceBootExecutableProjects {
 			 });
 		});
 	}
+	
+	private CompletableFuture<Bean[]> fetchBeans(ExecuteCommandParams params) {
+		String docUri = getArgumentByKey(params, "docUri");
+		log.info("docUri: " , docUri);
+		return CompletableFuture.completedFuture(springMetamodelIndex.getBeansOfDocument(docUri));
+	}
+	
+	private String getArgumentByKey(ExecuteCommandParams params, String name) {
+		List<Object> arguments = params.getArguments();
+		for (Object arg : arguments) {
+			if (arg instanceof Map<?, ?>) {
+				Object value = ((Map<?, ?>) arg).get(name);
+				if (value != null) {
+					return value.toString();
+				}
+			} else if (arg instanceof JsonObject) {
+				JsonElement element = ((JsonObject) arg).get(name);
+				if (element != null && element instanceof JsonObject) {
+					return element.toString();
+				} else if (element != null) {
+					return element.getAsString();
+				}
+			}
+		}
+
+		return null;
+	}
+
 	
 }

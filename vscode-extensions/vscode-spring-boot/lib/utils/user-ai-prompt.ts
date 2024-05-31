@@ -4,6 +4,7 @@ Main Spring project: [Spring Project Name]
 Package name: [Package Name]
 Build tool: [Build Tool]
 Java version: [Java Version]
+Spring boot version: [Spring Boot Version]
 
 Ensure the solution meets the following additional criteria
 
