@@ -198,7 +198,7 @@ jobs:
           echo "Uploading new win zip and self extracting jar files to Akamai..."
           aws s3 mv . s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
-        if: ${{ inputs.build_type == 'snapshot' && always() }}
+        if: ${{ inputs.build_type == 'snapshot' }}
         run: |
           dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           eclipse_profile=${{ inputs.eclipse_profile }}
