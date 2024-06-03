@@ -12,17 +12,13 @@ package org.springframework.ide.vscode.commons.java;
 
 import java.net.URI;
 
-import org.springframework.ide.vscode.commons.protocol.java.Gav;
-
 public interface IProjectBuild {
 	
 	String getType();
 	
 	URI getBuildFile();
 	
-	IGav getGav();
-		
-	static IProjectBuild create(String type, URI buildFile, Gav gav) {
+	static IProjectBuild create(String type, URI buildFile) {
 		return new IProjectBuild() {
 			
 			@Override
@@ -35,9 +31,6 @@ public interface IProjectBuild {
 				return buildFile;
 			}
 			
-			public IGav getGav() {
-				return IGav.create(gav);
-			}
 		};
 	}
 

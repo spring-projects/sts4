@@ -385,7 +385,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	}
 	
 	private static IProjectBuild from(ProjectBuild projectBuild) {
-		return projectBuild == null ? null : IProjectBuild.create(projectBuild.type(), projectBuild.buildFile() == null ? null : URI.create(projectBuild.buildFile()), projectBuild.gav());
+		return projectBuild == null ? null : IProjectBuild.create(projectBuild.type(), projectBuild.buildFile() == null ? null : URI.create(projectBuild.buildFile()));
 	}
 
 }

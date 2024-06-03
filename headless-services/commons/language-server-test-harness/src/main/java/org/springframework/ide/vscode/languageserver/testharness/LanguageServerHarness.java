@@ -36,6 +36,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
@@ -120,11 +121,13 @@ import org.springframework.ide.vscode.commons.protocol.LiveProcessLoggersSummary
 import org.springframework.ide.vscode.commons.protocol.LiveProcessSummary;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.protocol.java.Gav;
 import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData;
 import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
+import org.springframework.ide.vscode.commons.protocol.java.ProjectGavParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
@@ -155,6 +158,8 @@ public class LanguageServerHarness {
 	private final SimpleLanguageServer server;
 
 	private InitializeResult initResult;
+	
+	private Function<File, Gav> gavSupplier;
 
 	private Map<String,TextDocumentInfo> documents = new HashMap<>();
 	private Multimap<String, CompletableFuture<HighlightParams>> highlights = MultimapBuilder.hashKeys().linkedListValues().build();
@@ -262,6 +267,10 @@ public class LanguageServerHarness {
 		if (initResult==null) {
 			intialize(null);
 		}
+	}
+	
+	public void setGavSupplier(Function<File, Gav> s) {
+		this.gavSupplier = s;
 	}
 
 	public InitializeResult intialize(File workspaceRoot) throws Exception {
@@ -447,6 +456,21 @@ public class LanguageServerHarness {
 				@Override
 				public CompletableFuture<ShowDocumentResult> showDocument(ShowDocumentParams params) {
 					return CompletableFuture.completedFuture(new ShowDocumentResult(true));
+				}
+
+				@Override
+				public CompletableFuture<List<Gav>> projectGAV(ProjectGavParams params) {
+					List<Gav> gavs = new ArrayList<>(params.projectUris().size());
+					for (int i = 0; i < params.projectUris().size(); i++) {
+						gavs.add(null);
+					}
+					for (int i = 0; i < params.projectUris().size(); i++) {
+						Path path = Paths.get(URI.create(params.projectUris().get(i)));
+						if (gavSupplier != null) {
+							gavs.set(i,  gavSupplier.apply(path.toFile()));
+						}
+					}
+					return CompletableFuture.completedFuture(gavs);
 				}
 
 			});

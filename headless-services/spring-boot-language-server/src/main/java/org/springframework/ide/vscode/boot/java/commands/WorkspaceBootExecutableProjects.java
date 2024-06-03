@@ -23,12 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.commons.java.IGav;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.java.Gav;
+import org.springframework.ide.vscode.commons.protocol.java.ProjectGavParams;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 
@@ -42,8 +43,10 @@ public class WorkspaceBootExecutableProjects {
 	
 	final private JavaProjectFinder projectFinder;
 	final private SpringSymbolIndex symbolIndex;
+	final private SimpleLanguageServer server;
 
 	public WorkspaceBootExecutableProjects(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex) {
+		this.server = server;
 		this.projectFinder = projectFinder;
 		this.symbolIndex = symbolIndex;
 		server.onCommand(CMD, params -> findExecutableProjects());
@@ -64,9 +67,7 @@ public class WorkspaceBootExecutableProjects {
 							.filter(cpe -> !cpe.isTest() && !cpe.isSystem())
 							.map(cpe -> Classpath.isSource(cpe) ? cpe.getOutputFolder() : cpe.getPath())
 							.collect(Collectors.toSet());
-					IGav gav = project.getProjectBuild().getGav();
-					String gavStr = "%s:%s:%s".formatted(gav.getGroupId(), gav.getArtifactId(), gav.getVersion());
-					return Optional.of(new ExecutableProject(project.getElementName(), project.getLocationUri().toASCIIString(), gavStr, appBean.getType(), classpath));
+					return Optional.of(new ExecutableProject(project.getElementName(), project.getLocationUri().toASCIIString(), null, appBean.getType(), classpath));
 				} catch (Exception e) {
 					log.error("", e);
 				}
@@ -77,13 +78,28 @@ public class WorkspaceBootExecutableProjects {
 	
 	private CompletableFuture<List<ExecutableProject>> findExecutableProjects() {
 		List<CompletableFuture<Optional<ExecutableProject>>> futures = projectFinder.all().stream()
-				.filter(p -> p.getProjectBuild().getGav() != null)
 				.filter(p -> SpringProjectUtil.isBootProject(p))
 				.map(this::mapToExecProject)
 				.collect(Collectors.toList());
 		List<ExecutableProject> executableProjects = Collections.synchronizedList(new ArrayList<>());
 		futures.forEach(f -> f.thenAccept(opt -> opt.ifPresent(executableProjects::add)));
-		return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).thenApply(v -> executableProjects);
+		return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).thenCompose(v -> {
+			 final long start = System.currentTimeMillis();
+			 return server.getClient().projectGAV(new ProjectGavParams(executableProjects.stream().map(p -> p.uri()).toList())).thenApply(gavs -> {
+				 List<ExecutableProject> filteredExecProjects = new ArrayList<>(executableProjects.size());
+				 for (int i = 0; i < executableProjects.size(); i++) {
+					 ExecutableProject ep = executableProjects.get(i);
+					 if (gavs.get(i) != null) {
+						 Gav gav = gavs.get(i);
+						 filteredExecProjects.add(new ExecutableProject(ep.name(), ep.uri(), "%s:%s:%s".formatted(gav.groupId(), gav.artifactId(), gav.version()), ep.mainClass(), ep.classpath()));
+					 } else {
+						 filteredExecProjects.add(ep);
+					 }
+				 }
+				 log.info("GAV for %d projects took: %d".formatted(executableProjects.size(), System.currentTimeMillis() - start));
+				 return filteredExecProjects;
+			 });
+		});
 	}
 	
 }

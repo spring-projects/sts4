@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.commons.maven.java;
 import java.io.File;
 import java.nio.file.Path;
 
-import org.apache.maven.project.MavenProject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
@@ -23,12 +22,8 @@ import org.springframework.ide.vscode.commons.java.IProjectBuild;
 import org.springframework.ide.vscode.commons.java.LegacyJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavadocService;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
-import org.springframework.ide.vscode.commons.protocol.java.Gav;
 import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.ide.vscode.commons.util.FileObserver;
-
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 
 /**
  * Wrapper for Maven Core project
@@ -42,12 +37,9 @@ public class MavenJavaProject extends LegacyJavaProject {
 
 	private final File pom;
 	
-	private Supplier<Gav> gavSupplier;
-
-	private MavenJavaProject(FileObserver fileObserver, Path projectDataCache, IClasspath classpath, File pom, JavadocService javadocService, Supplier<Gav> gavSupplier) {
-		super(fileObserver, pom.getParentFile().toURI(), projectDataCache, classpath, javadocService, IProjectBuild.create(ProjectBuild.MAVEN_PROJECT_TYPE, pom.toURI(), null));
+	private MavenJavaProject(FileObserver fileObserver, Path projectDataCache, IClasspath classpath, File pom, JavadocService javadocService) {
+		super(fileObserver, pom.getParentFile().toURI(), projectDataCache, classpath, javadocService, IProjectBuild.create(ProjectBuild.MAVEN_PROJECT_TYPE, pom.toURI()));
 		this.pom = pom;
-		this.gavSupplier = gavSupplier;
 	}
 
 	public static MavenJavaProject create(FileObserver fileObserver, MavenCore maven, File pom, Path projectDataCache, JavadocService javadocService) {
@@ -59,17 +51,7 @@ public class MavenJavaProject extends LegacyJavaProject {
 				() -> new MavenProjectClasspath(maven, pom),
 				fileBasedCache
 		);
-		
-		
-		return new MavenJavaProject(fileObserver, projectDataCache, classpath, pom, javadocService, Suppliers.memoize(() -> {
-			try {
-				MavenProject p = maven.readProject(pom, false);
-				return new Gav(p.getGroupId(), p.getArtifactId(), p.getVersion());
-			} catch (Exception e) {
-				log.error("", e);
-				return null;
-			}
-		}));
+		return new MavenJavaProject(fileObserver, projectDataCache, classpath, pom, javadocService);
 	}
 
 	public static MavenJavaProject create(FileObserver fileObserver, MavenCore maven, File pom, JavadocService javadocService) {
@@ -104,7 +86,7 @@ public class MavenJavaProject extends LegacyJavaProject {
 
 	@Override
 	public IProjectBuild getProjectBuild() {
-		return IProjectBuild.create(ProjectBuild.MAVEN_PROJECT_TYPE, pom.toURI(), gavSupplier.get());
+		return IProjectBuild.create(ProjectBuild.MAVEN_PROJECT_TYPE, pom.toURI());
 	}
 	
 }

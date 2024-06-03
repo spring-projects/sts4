@@ -10,22 +10,22 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.java;
 
-public record ProjectBuild(String type, String buildFile, Gav gav)  {
+public record ProjectBuild(String type, String buildFile)  {
 	
 	public static final String MAVEN_PROJECT_TYPE = "maven";
 	public static final String GRADLE_PROJECT_TYPE = "gradle";
 	
-	public static ProjectBuild createMavenBuild(String buildFile, Gav gav) {
-		return new ProjectBuild(MAVEN_PROJECT_TYPE, buildFile, gav);
+	public static ProjectBuild createMavenBuild(String buildFile) {
+		return new ProjectBuild(MAVEN_PROJECT_TYPE, buildFile);
 	}
 	
-	public static ProjectBuild createGradleBuild(String buildFile, Gav gav) {
-		return new ProjectBuild(GRADLE_PROJECT_TYPE, buildFile, gav);
+	public static ProjectBuild createGradleBuild(String buildFile) {
+		return new ProjectBuild(GRADLE_PROJECT_TYPE, buildFile);
 	}
 	
 	@Override
 	public String toString() {
-		return "ProjectBuild [type=" + type + ", buildFile=" + buildFile + "gav=" + gav + "]";
+		return "ProjectBuild [type=" + type + ", buildFile=" + buildFile + "]";
 	}
 	
 	

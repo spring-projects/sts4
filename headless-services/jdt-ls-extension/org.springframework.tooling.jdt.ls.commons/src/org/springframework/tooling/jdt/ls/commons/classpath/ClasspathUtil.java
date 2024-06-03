@@ -38,11 +38,9 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.m2e.core.MavenPlugin;
-import org.eclipse.m2e.core.embedder.ArtifactKey;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
-import org.springframework.ide.vscode.commons.protocol.java.Gav;
 import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
@@ -232,23 +230,17 @@ public class ClasspathUtil {
 			final Path home = System.getProperty("user.home") == null ? null : new File(System.getProperty("user.home")).toPath();
 			if (MavenPlugin.isMavenProject(jp.getProject())) {
 				IMavenProjectFacade facade = MavenPlugin.getMavenProjectRegistry().getProject(jp.getProject());
-				ArtifactKey artifact = facade.getArtifactKey();
-				return ProjectBuild.createMavenBuild(facade.getPom().getLocationURI().toASCIIString(), new Gav(artifact.groupId(), artifact.artifactId(), artifact.version()));
+				if (facade != null) {
+					return ProjectBuild.createMavenBuild(facade.getPom().getLocationURI().toASCIIString());
+				} else {
+					return ProjectBuild.createMavenBuild(jp.getProject().getFile("pom.xml").getLocationURI().toASCIIString());
+				}
 			} else if (GradleProjectNature.isPresentOn(jp.getProject())) {
 				IFile g = jp.getProject().getFile("build.gradle");
 				if (!g.exists()) {
 					g = jp.getProject().getFile("build.gradle.kts");
 				}
-				// TODO: TestJars support requires GAV of a project. To be added properly later as it needs optimizations 
-//				Optional<Gav> optGav = GradleCore.getWorkspace().getBuild(jp.getProject()).flatMap(build -> {
-//					try {
-//						return Optional.of(build.withConnection(conn -> StsGradleToolingModelBuilder.getModelBuilder(conn, jp.getProject().getLocation().toFile(), null).get(), new NullProgressMonitor()));
-//					} catch (Exception e) {
-//						logger.log(e);
-//						return Optional.empty();
-//					}
-//				}).map(m -> new Gav(m.group(), m.artifact(), m.version()));
-				return ProjectBuild.createGradleBuild(g.exists() ? g.getLocationURI().toASCIIString() : null, /*optGav.orElse(null)*/null);
+				return ProjectBuild.createGradleBuild(g.exists() ? g.getLocationURI().toASCIIString() : null);
 			} else {
 				try {
 					for (IClasspathEntry e : jp.getRawClasspath()) {
@@ -268,7 +260,7 @@ public class ClasspathUtil {
 			if (likelyMaven) {
 				IFile f = jp.getProject().getFile("pom.xml");
 				if (f.exists()) {
-					return ProjectBuild.createMavenBuild(f.getLocationURI().toASCIIString(), null);
+					return ProjectBuild.createMavenBuild(f.getLocationURI().toASCIIString());
 				}
 			} else if (likelyGradle) {
 				IFile g = jp.getProject().getFile("build.gradle");
@@ -276,12 +268,12 @@ public class ClasspathUtil {
 					g = jp.getProject().getFile("build.gradle.kts");
 				}
 				if (g.exists()) {
-					return ProjectBuild.createGradleBuild(g.getLocationURI().toASCIIString(), null);
+					return ProjectBuild.createGradleBuild(g.getLocationURI().toASCIIString());
 				}
 			}
 //		} catch (JavaModelException e) {
 //			// ignore
 //		}
-		return new ProjectBuild(null, null, null);
+		return new ProjectBuild(null, null);
 	}
 }

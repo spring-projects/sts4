@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,8 +34,21 @@ public final class ResourceUtils {
 	 * @throws Exception if unable to resolve Java project from given resource URI
 	 */
 	public static IJavaProject getJavaProject(URI resourceUri) throws Exception {
+		IProject project = getProject(resourceUri);
+		if (project.isAccessible() && project.hasNature(JavaCore.NATURE_ID)) {
+			return JavaCore.create(project);
+		}
+		throw new Exception("Resolve classpath: unable to resolve a Java project from : " + resourceUri);
+	}
+	
+	/**
+	 * Resolves a Java project given the resource URI. The resource URI could be any resource contained in the project.
+	 * @param resourceUri
+	 * @return Java project
+	 * @throws Exception if unable to resolve Java project from given resource URI
+	 */
+	public static IProject getProject(URI resourceUri) throws Exception {
 		IContainer[] containers = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(resourceUri);
-//		log("containers=" + containers);
 		if (containers.length > 0) {
 //			log("containers.length=" + containers.length);
 			Optional<IContainer> shortest = Arrays.stream(containers)
@@ -45,19 +58,12 @@ public final class ResourceUtils {
 			if (shortest.isPresent()) {
 //				log("shortest.fullpath=" + shortest.get().getFullPath());
 
-				IProject project = shortest.get().getProject();
+				return shortest.get().getProject();
 //				log("project=" + project.getName());
 
-				if (project.isAccessible() && project.hasNature(JavaCore.NATURE_ID)) {
-					IJavaProject javaProject = JavaCore.create(project);
-//					log("javaProject=" + javaProject.getElementName());
-
-					return javaProject;
-				}
 			}
 		}
-
-		throw new Exception("Resolve classpath: unable to resolve a Java project from : " + resourceUri);
+		throw new Exception("Resolve classpath: unable to resolve a project from : " + resourceUri);
 	}
 	
 	public static Collection<IJavaProject> allJavaProjects() {

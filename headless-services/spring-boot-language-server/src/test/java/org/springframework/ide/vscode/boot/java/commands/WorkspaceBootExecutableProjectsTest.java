@@ -50,6 +50,7 @@ public class WorkspaceBootExecutableProjectsTest {
 	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
+		harness.setGavSupplier(ProjectsHarness.GAV_SUPPLIER);
 	}
 	
 	@SuppressWarnings("unchecked")

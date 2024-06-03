@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2022 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.function.Function;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
@@ -26,6 +27,7 @@ import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
+import org.springframework.ide.vscode.commons.protocol.java.Gav;
 import org.springframework.ide.vscode.commons.util.BasicFileObserver;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.IOUtil;
@@ -50,6 +52,18 @@ public class ProjectsHarness {
 	public Cache<Object, IJavaProject> cache = CacheBuilder.newBuilder().concurrencyLevel(1).build();
 
 	private final FileObserver fileObserver;
+	
+	public static final Function<File, Gav> GAV_SUPPLIER = f -> {
+		if ("pom.xml".equals(f.getName())) {
+			return MavenCore.getDefault().computeGav(f);
+		} else if (f.isDirectory()) {
+			File pom = new File(f, "pom.xml");
+			if (pom.exists()) {
+				return MavenCore.getDefault().computeGav(pom);
+			}
+		}
+		return null;
+	};
 
 	/**
 	 * A callback that is given a chance to make changes to test project contents before the test project

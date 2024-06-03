@@ -63,6 +63,12 @@
                id="sts.java.code.completions">
          </command>
       </delegateCommandHandler>
+      <delegateCommandHandler
+            class="org.springframework.tooling.jdt.ls.extension.ProjectGavHandler">
+         <command
+               id="sts.project.gav">
+         </command>
+      </delegateCommandHandler>
    </extension>
 </plugin>
  

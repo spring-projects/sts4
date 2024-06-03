@@ -28,7 +28,7 @@ class TestJarDebugConfigProvider implements DebugConfigurationProvider {
             }
             const projectsWithErrors: ExecutableBootProject[] = [];
             // Create all project classparth data files and add env vars for workspace projects
-            await Promise.all(projects.map(async p => {
+            await Promise.all(projects.filter(p => p.gav).map(async p => {
                 const envName = this.createEnvVarName(p);
                 if (!env[envName]) {
                     try {

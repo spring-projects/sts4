@@ -29,6 +29,7 @@ cd ${workdir}/../../headless-services/jdt-ls-extension
 find . -name "*-sources.jar" -delete
 cp org.springframework.tooling.jdt.ls.extension/target/*.jar ${workdir}/jars/jdt-ls-extension.jar
 cp org.springframework.tooling.jdt.ls.commons/target/*.jar ${workdir}/jars/jdt-ls-commons.jar
+cp org.springframework.tooling.gradle/target/*.jar ${workdir}/jars/sts-gradle-tooling.jar
 
 # Copy Reactor dependency bundles
 cp org.springframework.tooling.jdt.ls.commons/target/dependencies/io.projectreactor.reactor-core.jar ${workdir}/jars/

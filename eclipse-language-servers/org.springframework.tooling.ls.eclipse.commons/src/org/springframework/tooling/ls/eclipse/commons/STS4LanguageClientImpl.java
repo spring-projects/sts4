@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
@@ -72,15 +76,18 @@ import org.springframework.ide.vscode.commons.protocol.LiveProcessLoggersSummary
 import org.springframework.ide.vscode.commons.protocol.LiveProcessSummary;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.protocol.java.Gav;
 import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData;
 import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
+import org.springframework.ide.vscode.commons.protocol.java.ProjectGavParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
+import org.springframework.tooling.jdt.ls.commons.java.BuildInfo;
 import org.springframework.tooling.jdt.ls.commons.java.JavaCodeCompletion;
 import org.springframework.tooling.jdt.ls.commons.java.JavaData;
 import org.springframework.tooling.jdt.ls.commons.java.JavaFluxSearch;
@@ -95,6 +102,8 @@ import com.google.common.collect.ImmutableMap;
 
 @SuppressWarnings("restriction")
 public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4LanguageClient {
+
+	private final Executor executor;
 
 	public static final ReusableClasspathListenerHandler CLASSPATH_SERVICE = new ReusableClasspathListenerHandler (
 			Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance),
@@ -413,6 +422,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 
 	public STS4LanguageClientImpl() {
+		this.executor = new ThreadPoolExecutor(1, 5, 10, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 		CLASSPATH_SERVICE.addNotificationsSentCallback(projectNames -> {
 			List<IProject> projects = projectNames.stream().map(projectName -> ResourcesPlugin.getWorkspace().getRoot().getProject(projectName)).filter(Objects::nonNull).collect(Collectors.toList());
 			for (IWorkbenchWindow ww : PlatformUI.getWorkbench().getWorkbenchWindows()) {
@@ -629,6 +639,11 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	@Override
 	public void liveProcessLogLevelUpdated(LiveProcessLoggersSummary summary) {
 		// Nothing to do for now
+	}
+
+	@Override
+	public CompletableFuture<List<Gav>> projectGAV(ProjectGavParams params) {
+		return BuildInfo.projectGAV(params, executor, Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
 	}
 
 }

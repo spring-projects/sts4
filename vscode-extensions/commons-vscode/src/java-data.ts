@@ -48,6 +48,11 @@ export function registerJavaDataService(client : LanguageClient) : void {
     client.onRequest(javaCodeCompletion, async (params: JavaCodeCompleteParams) =>
         <any> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.code.completions", params)
     );
+
+    const projectGav = new RequestType<ProjectGavParams, any, void>("sts/project/gav");
+    client.onRequest(projectGav, async (params: ProjectGavParams) =>
+        <any> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.project.gav", params)
+    );
 }
 
 interface JavaDataParams {
@@ -76,4 +81,8 @@ interface JavaCodeCompleteParams {
     prefix: string;
     includeTypes: boolean;
     includePackages: boolean;
+}
+
+interface ProjectGavParams {
+    projectUris: string[];
 }

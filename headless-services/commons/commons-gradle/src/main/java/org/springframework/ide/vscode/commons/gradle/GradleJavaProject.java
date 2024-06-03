@@ -35,7 +35,7 @@ public class GradleJavaProject extends LegacyJavaProject {
 	private static final Logger log = LoggerFactory.getLogger(GradleJavaProject.class);
 
 	private GradleJavaProject(FileObserver fileObserver, Path projectDataCache, IClasspath classpath, File gradleFile, JavadocService javadocService) {
-		super(fileObserver, gradleFile.getParentFile().toURI(), projectDataCache, classpath, javadocService, IProjectBuild.create(ProjectBuild.GRADLE_PROJECT_TYPE, gradleFile.toURI(), null));
+		super(fileObserver, gradleFile.getParentFile().toURI(), projectDataCache, classpath, javadocService, IProjectBuild.create(ProjectBuild.GRADLE_PROJECT_TYPE, gradleFile.toURI()));
 	}
 
 	public static GradleJavaProject create(FileObserver fileObserver, GradleCore gradle, File gradleFile, Path projectDataCache, JavadocService javadocService) {

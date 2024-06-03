@@ -148,10 +148,10 @@ class TestJarLaunchListener implements ILaunchesListener2 {
 
 	private CompletableFuture<Map<String, String>> getTestJarArtifactsMap() {
 		try {
-			Optional<?> opt = BootLsCommandUtils.executeCommand(TypeToken.getParameterized(List.class, ExecutableProject.class), "sts/spring-boot/executableBootProjects").get(3, TimeUnit.SECONDS);
+			Optional<?> opt = BootLsCommandUtils.executeCommand(TypeToken.getParameterized(List.class, ExecutableProject.class), "sts/spring-boot/executableBootProjects").get(20, TimeUnit.SECONDS);
 			if (opt.isPresent() && opt.get() instanceof List<?> projects) {
 				Map<String, String> gavToFile = new ConcurrentHashMap<>();
-				CompletableFuture<?>[] futures = projects.stream().map(ExecutableProject.class::cast).map(p -> CompletableFuture.runAsync(() -> {
+				CompletableFuture<?>[] futures = projects.stream().map(ExecutableProject.class::cast).filter(p -> p.gav() != null).map(p -> CompletableFuture.runAsync(() -> {
 					try {
 						Path file = Files.createTempFile("%s_".formatted(p.gav().replace(":", "_")), UUID.randomUUID().toString());
 						Files.write(file, List.of(
