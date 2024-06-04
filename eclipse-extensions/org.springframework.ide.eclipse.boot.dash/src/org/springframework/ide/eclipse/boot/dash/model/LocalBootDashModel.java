@@ -154,7 +154,9 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 					if (event.getBundle() == bundle && event.getType() == BundleEvent.STARTED) {
 						try {
 							updateElementsFromWorkspace();
-							applications.getValue().stream().forEach(e -> e.refreshHasMainMethod());
+							if (applications != null && applications.getValue() != null) {
+								applications.getValue().stream().forEach(e -> e.refreshHasMainMethod());
+							}
 						} catch (Throwable t) {
 							Log.log(t);
 						} finally {
@@ -297,10 +299,10 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 				doUpdateElementsFromWorkspace();
 				return Status.OK_STATUS;
 			}
-			
+
 		}.schedule();
 	}
-	
+
 	private void doUpdateElementsFromWorkspace() {
 		LiveSetVariable<BootProjectDashElement> apps = this.applications;
 		if (apps!=null) {
