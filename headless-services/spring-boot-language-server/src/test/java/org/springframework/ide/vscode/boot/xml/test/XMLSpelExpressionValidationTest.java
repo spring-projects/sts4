@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2023 Pivotal, Inc.
+ * Copyright (c) 2020, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp;
 import org.springframework.ide.vscode.boot.bootiful.XmlBeansTestConf;
+import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.boot.xml.SpringXMLReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -67,6 +69,7 @@ public class XMLSpelExpressionValidationTest {
 	@Autowired private SimpleLanguageServer server;
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private BootJavaConfig config;
+	@Autowired private SpelReconciler spelReconciler;
 	
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	private MavenJavaProject project;
@@ -97,7 +100,7 @@ public class XMLSpelExpressionValidationTest {
 		docUri = directory.toPath().resolve("src/main/webapp/WEB-INF/spring/root-context.xml").toUri().toASCIIString();
 
 		problemCollector = new TestProblemCollector();
-		reconcileEngine = new SpringXMLReconcileEngine(projectFinder, config);
+		reconcileEngine = new SpringXMLReconcileEngine(projectFinder, config, spelReconciler);
 	}
 	
 	@AfterEach
@@ -142,7 +145,7 @@ public class XMLSpelExpressionValidationTest {
     }
 		
 	private TextDocument prepareDocument(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
-		String content = IOUtils.toString(new URI(docUri));
+		String content = IOUtils.toString(new URI(docUri), StandardCharsets.UTF_8);
 
 		TextDocumentItem docItem = new TextDocumentItem(docUri, LanguageId.XML.toString(), 0, content);
 		DidOpenTextDocumentParams openParams = new DidOpenTextDocumentParams(docItem);

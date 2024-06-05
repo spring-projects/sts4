@@ -23,7 +23,7 @@ import org.eclipse.lemminx.dom.DOMNode;
 import org.eclipse.lemminx.dom.DOMParser;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
-import org.springframework.ide.vscode.boot.java.handlers.SpelExpressionReconciler;
+import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -36,15 +36,15 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public class SpringXMLReconcileEngine implements IReconcileEngine {
 
 	private final JavaProjectFinder projectFinder;
-	private final SpelExpressionReconciler spelExpressionReconciler;
+	private final SpelReconciler spelExpressionReconciler;
 	private final XMLElementReconciler[] reconcilers;
 	private final BootJavaConfig config;
 
-	public SpringXMLReconcileEngine(JavaProjectFinder projectFinder, BootJavaConfig config) {
+	public SpringXMLReconcileEngine(JavaProjectFinder projectFinder, BootJavaConfig config, SpelReconciler spelReconciler) {
 		this.projectFinder = projectFinder;
 		this.config = config;
 		
-		this.spelExpressionReconciler = new SpelExpressionReconciler();
+		this.spelExpressionReconciler = spelReconciler;
 
 		this.reconcilers = new XMLElementReconciler[] {
 

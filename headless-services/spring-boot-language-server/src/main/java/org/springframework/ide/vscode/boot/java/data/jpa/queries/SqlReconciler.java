@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.BitSet;
+import java.util.Optional;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -22,13 +23,23 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
+import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.parser.sql.MySqlLexer;
 import org.springframework.ide.vscode.parser.sql.MySqlParser;
+import org.springframework.ide.vscode.parser.sql.MySqlParserBaseListener;
 
 public class SqlReconciler implements Reconciler {
+
+	private final Optional<SpelReconciler> spelReconciler;
+
+	public SqlReconciler(Optional<SpelReconciler> spelReconciler) {
+		this.spelReconciler = spelReconciler;
+	}
 
 	@Override
 	public void reconcile(String text, int startPosition, IProblemCollector problemCollector) {
@@ -36,6 +47,7 @@ public class SqlReconciler implements Reconciler {
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		MySqlParser parser = new MySqlParser(antlrTokens);
 		
+		lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		
 		parser.addErrorListener(new ANTLRErrorListener() {
@@ -68,6 +80,28 @@ public class SqlReconciler implements Reconciler {
 					BitSet ambigAlts, ATNConfigSet configs) {
 			}
 		});
+		
+		// Reconcile embedded SPEL
+		parser.addParseListener(new MySqlParserBaseListener() {
+			
+			private void processTerminal(TerminalNode node) {
+				if (node.getSymbol().getType() == MySqlParser.SPEL) {
+					spelReconciler.ifPresent(r -> JpqlReconciler.reconcileEmbeddedSpelNode(node, startPosition, r, problemCollector));
+				}
+			}
+
+			@Override
+			public void visitTerminal(TerminalNode node) {
+				processTerminal(node);
+			}
+
+			@Override
+			public void visitErrorNode(ErrorNode node) {
+				processTerminal(node);
+			}
+			
+		});
+
 		
 		parser.sqlStatements();
 		

@@ -10,18 +10,28 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
+import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
 import org.springframework.ide.vscode.parser.sql.MySqlLexer;
@@ -33,11 +43,23 @@ public class SqlSemanticTokens implements SemanticTokensDataProvider {
 	private static List<String> TOKEN_TYPES = List.of("keyword", "type", "string", "number", "operator",
 			"variable", "regexp", "comment");
 
-	@Override
-	public List<String> getTokenTypes() {
-		return TOKEN_TYPES;
+	private Optional<SpelSemanticTokens> optSpelTokens;
+	
+	public SqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens) {
+		this.optSpelTokens = optSpelTokens;
 	}
 
+	@Override
+	public List<String> getTokenTypes() {
+		LinkedHashSet<String> tokenTypes = new LinkedHashSet<>(TOKEN_TYPES);
+		tokenTypes.addAll(optSpelTokens.map(s -> s.getTokenTypes()).orElse(Collections.emptyList()));
+		return tokenTypes.stream().toList();
+	}
+
+	@Override
+	public List<String> getTypeModifiers() {
+		return optSpelTokens.map(s -> s.getTypeModifiers()).orElse(Collections.emptyList());
+	}
 
 	@Override
 	public List<SemanticTokenData> computeTokens(String text, int initialOffset) {
@@ -47,6 +69,9 @@ public class SqlSemanticTokens implements SemanticTokensDataProvider {
 		
 		Map<Token, String> semantics = new HashMap<>();
 		
+		List<SemanticTokenData> tokens = new ArrayList<>();
+		
+		lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		
 		parser.addParseListener(new MySqlParserBaseListener() {
@@ -55,7 +80,7 @@ public class SqlSemanticTokens implements SemanticTokensDataProvider {
 				int type = node.getSymbol().getType();
 				switch (type) {
 				case MySqlParser.SPEL:
-					semantics.put(node.getSymbol(), "regexp");
+					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, initialOffset, optSpelTokens));
 					break;
 				case MySqlParser.ID:
 					semantics.put(node.getSymbol(), "variable");
@@ -162,13 +187,44 @@ public class SqlSemanticTokens implements SemanticTokensDataProvider {
 			
 		});
 		
+		parser.addErrorListener(new ANTLRErrorListener() {
+			
+			@Override
+			public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
+					String msg, RecognitionException e) {
+				// TODO Auto-generated method stub
+				msg.length();
+			}
+			
+			@Override
+			public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction,
+					ATNConfigSet configs) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex,
+					BitSet conflictingAlts, ATNConfigSet configs) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact,
+					BitSet ambigAlts, ATNConfigSet configs) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
 		parser.sqlStatements();
 		
-		List<SemanticTokenData> tokens = semantics.entrySet().stream()
+		semantics.entrySet().stream()
 				.map(e -> new SemanticTokenData(e.getKey().getStartIndex() + initialOffset,
 						e.getKey().getStartIndex() + e.getKey().getText().length() + initialOffset, e.getValue(),
 						new String[0]))
-				.collect(Collectors.toList());
+				.forEach(tokens::add);
 		
 		Collections.sort(tokens);
 		

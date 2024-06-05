@@ -2544,7 +2544,8 @@ predicate
 
 // Add in ASTVisitor nullNotnull in constant
 expressionAtom
-    : constant                                                  # constantExpressionAtom
+    : (QUESTION_SYMB | COLON_SYMB) SPEL                         # spelExpressionAtom
+    | constant                                                  # constantExpressionAtom
     | fullColumnName                                            # fullColumnNameExpressionAtom
     | functionCall                                              # functionCallExpressionAtom
     | expressionAtom COLLATE collationName                      # collateExpressionAtom
@@ -2552,7 +2553,6 @@ expressionAtom
     | unaryOperator expressionAtom                              # unaryExpressionAtom
     | BINARY expressionAtom                                     # binaryExpressionAtom
     | LOCAL_ID VAR_ASSIGN expressionAtom                        # variableAssignExpressionAtom
-    | SPEL                                                      # spelExpressionAtom
     | '(' expression (',' expression)* ')'                      # nestedExpressionAtom
     | ROW '(' expression (',' expression)+ ')'                  # nestedRowExpressionAtom
     | EXISTS '(' selectStatement ')'                            # existsExpressionAtom

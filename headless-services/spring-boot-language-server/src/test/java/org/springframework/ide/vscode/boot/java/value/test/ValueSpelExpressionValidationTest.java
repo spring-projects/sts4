@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2023 Pivotal, Inc.
+ * Copyright (c) 2020, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,10 +46,10 @@ import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
-import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationNodeReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
+import org.springframework.ide.vscode.boot.java.spel.JdtSpelReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.test.MockProjectObserver;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
@@ -79,11 +80,11 @@ import com.google.gson.JsonElement;
 public class ValueSpelExpressionValidationTest {
 
 	@Autowired private BootLanguageServerHarness harness;
-	@Autowired private IJavaProject testProject;
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private CompilationUnitCache compilationUnitCache;
 	@Autowired private SimpleLanguageServer server;
 	@Autowired private BootJavaConfig config;
+	@Autowired private JdtSpelReconciler jdtSpelReconciler;
 
 	private File directory;
 	private String docUri;
@@ -149,8 +150,20 @@ public class ValueSpelExpressionValidationTest {
 	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
-		
-		String changedSettings = "{\"boot-java\": {\"validation\": {\"java\": { \"reconcilers\": true}}}}";
+		String changedSettings = """
+		{
+			"boot-java": {
+				"validation": {
+					"java": {
+						"reconcilers": true
+					},
+					"spel": {
+						"on": "ON"
+					}
+				}
+			}
+		}	
+		""";
 		JsonElement settingsAsJson = new Gson().fromJson(changedSettings, JsonElement.class);
 		harness.changeConfiguration(new Settings(settingsAsJson));
 		
@@ -160,7 +173,7 @@ public class ValueSpelExpressionValidationTest {
 		problemCollector = new TestProblemCollector();
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
 				new JdtReconciler(compilationUnitCache, config, new JdtAstReconciler[] {
-						new AnnotationNodeReconciler(config)
+						jdtSpelReconciler
 				}, new MockProjectObserver())
 		});
 	}
@@ -328,7 +341,7 @@ public class ValueSpelExpressionValidationTest {
     }
 	
 	private TextDocument prepareDocument(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
-		String content = IOUtils.toString(new URI(docUri));
+		String content = IOUtils.toString(new URI(docUri), StandardCharsets.UTF_8);
 
 		TextDocumentItem docItem = new TextDocumentItem(docUri, LanguageId.JAVA.toString(), 0, content);
 		DidOpenTextDocumentParams openParams = new DidOpenTextDocumentParams(docItem);

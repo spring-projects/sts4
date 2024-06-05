@@ -39,7 +39,7 @@ public class NamedQueryPropertiesReconcileEngine implements IReconcileEngine {
 		try {
 			Reconciler reconciler = projectFinder.find(new TextDocumentIdentifier(doc.getUri()))
 					.map(p -> SpringProjectUtil.hasDependencyStartingWith(p, "spring-data-jpa", null) ? hqlReconciler : jpqlReconciler)
-					.orElse(new JpqlReconciler());
+					.orElse(jpqlReconciler);
 			
 			AntlrParser parser = new AntlrParser();
 			ParseResults parseResults = parser.parse(doc.get());

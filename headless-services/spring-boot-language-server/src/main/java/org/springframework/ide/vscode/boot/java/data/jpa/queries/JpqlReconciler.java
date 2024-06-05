@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.BitSet;
+import java.util.Optional;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -22,20 +23,31 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
+import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
+import org.springframework.ide.vscode.parser.jpql.JpqlBaseListener;
 import org.springframework.ide.vscode.parser.jpql.JpqlLexer;
 import org.springframework.ide.vscode.parser.jpql.JpqlParser;
 
 public class JpqlReconciler implements Reconciler {
 	
+	private final Optional<SpelReconciler> spelReconciler;
+
+	public JpqlReconciler(Optional<SpelReconciler> spelReconciler) {
+		this.spelReconciler = spelReconciler;
+	}
+
 	@Override
 	public void reconcile(String text, int startPosition, IProblemCollector problemCollector) {
 		JpqlLexer lexer = new JpqlLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		JpqlParser parser = new JpqlParser(antlrTokens);
 		
+		lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		
 		parser.addErrorListener(new ANTLRErrorListener() {
@@ -69,8 +81,36 @@ public class JpqlReconciler implements Reconciler {
 			}
 		});
 		
+		// Reconcile embedded SPEL
+		parser.addParseListener(new JpqlBaseListener() {
+			
+			private void processTerminal(TerminalNode node) {
+				if (node.getSymbol().getType() == JpqlParser.SPEL) {
+					spelReconciler.ifPresent(r -> reconcileEmbeddedSpelNode(node, startPosition, r, problemCollector));
+				}
+			}
+
+			@Override
+			public void visitTerminal(TerminalNode node) {
+				processTerminal(node);
+			}
+
+			@Override
+			public void visitErrorNode(ErrorNode node) {
+				processTerminal(node);
+			}
+			
+		});
+		
 		parser.ql_statement();
 		
 	}
+	
+	static void reconcileEmbeddedSpelNode(TerminalNode node, int initialOffset, SpelReconciler spelReconciler, IProblemCollector problemCollector) {
+		int startPosition = initialOffset + node.getSymbol().getStartIndex();
+		String spelContent = node.getSymbol().getText().substring(2, node.getSymbol().getText().length() - 1);
+		spelReconciler.reconcile(spelContent, startPosition, problemCollector);
+	}
+
 
 }

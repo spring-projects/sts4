@@ -11,4 +11,8 @@
 /src/main/java/org/springframework/ide/vscode/parser/sql/MySqlParser.tokens
 /src/main/java/org/springframework/ide/vscode/parser/sql/MySqlLexer.interp
 /src/main/java/org/springframework/ide/vscode/parser/sql/MySqlLexer.tokens
+/src/main/java/org/springframework/ide/vscode/parser/spel/SpelParser.interp
+/src/main/java/org/springframework/ide/vscode/parser/spel/SpelParser.tokens
+/src/main/java/org/springframework/ide/vscode/parser/spel/SpelLexer.interp
+/src/main/java/org/springframework/ide/vscode/parser/spel/SpelLexer.tokens
 /target

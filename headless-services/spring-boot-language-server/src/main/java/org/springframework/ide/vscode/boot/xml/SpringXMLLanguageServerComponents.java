@@ -16,6 +16,7 @@ import java.util.Set;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -41,7 +42,8 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 			SimpleLanguageServer server,
 			SpringSymbolIndex springIndexer,
 			BootLanguageServerParams serverParams,
-			BootJavaConfig config) {
+			BootJavaConfig config,
+			SpelReconciler spelReconciler) {
 
 		this.projectFinder = serverParams.projectFinder;
 		this.docSymbolProvider = params -> springIndexer.getSymbols(params.getTextDocument().getUri());
@@ -49,12 +51,7 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);
 
-		this.reconcileEngine = new SpringXMLReconcileEngine(projectFinder, config);
-		
-		config.addListener(ignore -> {
-			reconcileEngine.setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled() && config.isSpringXMLSupportEnabled());
-		});
-
+		this.reconcileEngine = new SpringXMLReconcileEngine(projectFinder, config, spelReconciler);
 	}
 
 	@Override

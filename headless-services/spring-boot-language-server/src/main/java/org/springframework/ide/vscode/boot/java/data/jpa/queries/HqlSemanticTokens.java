@@ -10,11 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -22,6 +24,7 @@ import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
 import org.springframework.ide.vscode.parser.hql.HqlBaseListener;
@@ -35,21 +38,36 @@ import org.springframework.ide.vscode.parser.hql.HqlParser.SimplePathElementCont
 public class HqlSemanticTokens implements SemanticTokensDataProvider {
 
 	private static List<String> TOKEN_TYPES = List.of("keyword", "type", "class", "string", "number", "operator",
-			"variable", "method", "parameter", "regexp");
+			"variable", "method", "parameter");
+	
+	private Optional<SpelSemanticTokens> optSpelTokens;
+	
+	public HqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens) {
+		this.optSpelTokens = optSpelTokens;
+		
+	}
 
 	@Override
 	public List<String> getTokenTypes() {
-		return TOKEN_TYPES;
+		LinkedHashSet<String> tokenTypes = new LinkedHashSet<>(TOKEN_TYPES);
+		tokenTypes.addAll(optSpelTokens.map(s -> s.getTokenTypes()).orElse(Collections.emptyList()));
+		return tokenTypes.stream().toList();
+	}
+
+	@Override
+	public List<String> getTypeModifiers() {
+		return optSpelTokens.map(s -> s.getTypeModifiers()).orElse(Collections.emptyList());
 	}
 
 	@Override
 	public List<SemanticTokenData> computeTokens(String text, int initialOffset) {
 		HqlLexer lexer = new HqlLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
-		HqlParser parser = new HqlParser(antlrTokens);
-		
+		HqlParser parser = new HqlParser(antlrTokens);		
 		Map<Token, String> semantics = new HashMap<>();
+		List<SemanticTokenData> tokens = new ArrayList<>();
 		
+		lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		
 		parser.addParseListener(new HqlBaseListener() {
@@ -76,7 +94,7 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 				case HqlParser.WS:
 					break;
 				case HqlParser.SPEL:
-					semantics.put(node.getSymbol(), "regexp");
+					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, initialOffset, optSpelTokens));
 					break;
 				default:
 					if (HqlParser.WS < type && type <= HqlParser.YEAR) {
@@ -120,11 +138,11 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 		
 		parser.ql_statement();
 		
-		List<SemanticTokenData> tokens = semantics.entrySet().stream()
+		semantics.entrySet().stream()
 				.map(e -> new SemanticTokenData(e.getKey().getStartIndex() + initialOffset,
 						e.getKey().getStartIndex() + e.getKey().getText().length() + initialOffset, e.getValue(),
 						new String[0]))
-				.collect(Collectors.toList());
+				.forEach(tokens::add);
 		
 		Collections.sort(tokens);
 		

@@ -183,7 +183,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> bootChangeDetection = new HashMap<>();
 		Map<String, Object> scanTestJavaSources = new HashMap<>();
 		Map<String, Object> validation = new HashMap<>();
-		Map<String, Object> validationSpelExpressions = new HashMap<>();
 		Map<String, Object> javaValidation = new HashMap<>();
 
 		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
@@ -202,8 +201,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		scanTestJavaSources.put("on", preferenceStore.getBoolean(Constants.PREF_SCAN_JAVA_TEST_SOURCES));
 
 		javaValidation.put("reconcilers", preferenceStore.getBoolean(Constants.PREF_JAVA_RECONCILE));
-		validationSpelExpressions.put("on", preferenceStore.getBoolean(Constants.PREF_VALIDATION_SPEL_EXPRESSIONS));
-		validation.put("spel", validationSpelExpressions);
 		validation.put("java", javaValidation);
 
 		bootJavaObj.put("jpql", preferenceStore.getBoolean(Constants.PREF_JPQL));

@@ -38,8 +38,6 @@ channels {
     ERRORCHANNEL
 }
 
-SPEL               : ('#')('{')(.)*?('}') ;
-
 // SKIP
 
 SPACE              : [ \t\r\n]+     -> channel(HIDDEN);
@@ -1251,6 +1249,8 @@ DOUBLE_QUOTE_SYMB  : '"';
 REVERSE_QUOTE_SYMB : '`';
 COLON_SYMB         : ':';
 
+QUESTION_SYMB       : '?';
+
 fragment QUOTE_SYMB: SINGLE_QUOTE_SYMB | DOUBLE_QUOTE_SYMB | REVERSE_QUOTE_SYMB;
 
 // Charsets
@@ -1292,6 +1292,8 @@ REVERSE_QUOTE_ID : BQUOTA_STRING;
 HOST_IP_ADDRESS  : (AT_SIGN IP_ADDRESS);
 LOCAL_ID         : AT_SIGN ( STRING_LITERAL | [A-Z0-9._$\u0080-\uFFFF]+);
 GLOBAL_ID        : AT_SIGN AT_SIGN ( [A-Z0-9._$\u0080-\uFFFF]+ | BQUOTA_STRING);
+
+SPEL               : ('#')('{')(.)*?('}') ;
 
 // Fragments for Literal primitives
 

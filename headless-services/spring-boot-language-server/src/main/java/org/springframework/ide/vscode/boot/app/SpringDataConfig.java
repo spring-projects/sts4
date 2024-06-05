@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import java.util.Optional;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlReconciler;
@@ -19,6 +21,8 @@ import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTok
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlSemanticTokens;
+import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
+import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
@@ -26,33 +30,33 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 public class SpringDataConfig {
 	
 	@Bean
-	JpqlSemanticTokens jpqlSemanticTokens() {
-		return new JpqlSemanticTokens();
+	JpqlSemanticTokens jpqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokensProvider) {
+		return new JpqlSemanticTokens(optSpelTokensProvider);
 	}
 	
 	@Bean
-	HqlSemanticTokens hqlSemanticTokens() {
-		return new HqlSemanticTokens();
+	HqlSemanticTokens hqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokensProvider) {
+		return new HqlSemanticTokens(optSpelTokensProvider);
 	}
 	
 	@Bean
-	SqlSemanticTokens sqlSemanticTokens() {
-		return new SqlSemanticTokens();
+	SqlSemanticTokens sqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokensProvider) {
+		return new SqlSemanticTokens(optSpelTokensProvider);
 	}
 	
 	@Bean
-	HqlReconciler hqlReconciler() {
-		return new HqlReconciler();
+	HqlReconciler hqlReconciler(Optional<SpelReconciler> spelReconciler) {
+		return new HqlReconciler(spelReconciler);
 	}
 	
 	@Bean
-	JpqlReconciler jpqlReconciler() {
-		return new JpqlReconciler();
+	JpqlReconciler jpqlReconciler(Optional<SpelReconciler> spelReconciler) {
+		return new JpqlReconciler(spelReconciler);
 	}
 	
 	@Bean
-	SqlReconciler sqlReconciler() {
-		return new SqlReconciler();
+	SqlReconciler sqlReconciler(Optional<SpelReconciler> spelReconciler) {
+		return new SqlReconciler(spelReconciler);
 	}
 
 	@Bean

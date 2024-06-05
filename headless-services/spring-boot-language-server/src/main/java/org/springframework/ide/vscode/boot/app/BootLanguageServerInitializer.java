@@ -34,6 +34,7 @@ import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportStat
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
+import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.maven.PomLanguageServerComponents;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
@@ -126,7 +127,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		List<LanguageServerComponents> componentsList = List.of(
 			new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks),
 			new BootJavaLanguageServerComponents(appContext),
-			new SpringXMLLanguageServerComponents(server, springIndexer, params, config),
+			new SpringXMLLanguageServerComponents(server, springIndexer, params, config, appContext.getBean(SpelReconciler.class)),
 			new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer, config),
 			new PomLanguageServerComponents(server, projectFinder, params.projectObserver, appContext.getBean(SpringProjectsProvider.class)),
 			new JpaQueryPropertiesLanguageServerComponents(server.getTextDocumentService(), projectFinder, appContext.getBean(JpqlSemanticTokens.class),

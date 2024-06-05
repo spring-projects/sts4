@@ -22,7 +22,6 @@ import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryJdtAstReco
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.reconcilers.AddConfigurationIfBeansPresentReconciler;
-import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationNodeReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AuthorizeHttpRequestsReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AutowiredFieldIntoConstructorParameterReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.BeanMethodNotPublicReconciler;
@@ -41,14 +40,14 @@ import org.springframework.ide.vscode.boot.java.reconcilers.UnnecessarySpringExt
 import org.springframework.ide.vscode.boot.java.reconcilers.WebSecurityConfigurerAdapterReconciler;
 import org.springframework.ide.vscode.boot.java.semantictokens.EmbeddedLanguagesSemanticTokensSupport;
 import org.springframework.ide.vscode.boot.java.semantictokens.JavaSemanticTokensProvider;
+import org.springframework.ide.vscode.boot.java.spel.JdtSpelReconciler;
+import org.springframework.ide.vscode.boot.java.spel.JdtSpelSemanticTokensProvider;
+import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
+import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 @Configuration(proxyBeanMethods = false)
 public class JdtConfig {
-	
-	@Bean AnnotationNodeReconciler annotationNodeReconciler(BootJavaConfig config) {
-		return new AnnotationNodeReconciler(config);
-	}
 	
 	@Bean BeanMethodNotPublicReconciler beanMethodNotPublicReconciler(SimpleLanguageServer server) {
 		return new BeanMethodNotPublicReconciler(server.getQuickfixRegistry());
@@ -129,9 +128,17 @@ public class JdtConfig {
 	@Bean QueryJdtAstReconciler dataQueryReconciler(HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler, SqlReconciler sqlReconciler) {
 		return new QueryJdtAstReconciler(hqlReconciler, jpqlReconciler, sqlReconciler);
 	}
-	
+
 	@Bean EmbeddedLanguagesSemanticTokensSupport embbededLanguagesSyntaxHighlighting(SimpleLanguageServer server, BootJavaConfig config) {
 		return new EmbeddedLanguagesSemanticTokensSupport(server, config);
+	}
+
+	@Bean JdtSpelSemanticTokensProvider jdtSpelSemanticTokensProvider(SpelSemanticTokens spelSemanticTokens) {
+		return new JdtSpelSemanticTokensProvider(spelSemanticTokens);
+	}
+	
+	@Bean JdtSpelReconciler jdtSpelReconciler(SpelReconciler spelReconciler) {
+		return new JdtSpelReconciler(spelReconciler);
 	}
 
 }

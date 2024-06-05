@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -354,4 +355,78 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
 	}
 
+	@Test
+	@Disabled("Needs proper SPEL support in SQL grammar")
+	void nativeQueryWithSpel() throws Exception {
+		String source = """
+		package my.package
+		
+		import org.springframework.data.jpa.repository.Query;
+		
+		public interface OwnerRepository {
+		
+			@Query(value = "SELECT * FROM USERS u WHERE u.status = ?#{status}", nativeQuery = true)
+			void findByLastName();
+		}
+		""";
+        
+        String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/OwnerRepository.java").toUri().toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "OwnerRepository.java", jp);
+        
+        assertThat(cu).isNotNull();
+        
+        List<SemanticTokenData> tokens = computeTokens(cu);
+        
+        SemanticTokenData token = tokens.get(0);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        assertThat(token).isEqualTo(new SemanticTokenData(128, 134, "keyword", new String[0]));
+        
+        token = tokens.get(1);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("*");
+        assertThat(token).isEqualTo(new SemanticTokenData(135, 136, "operator", new String[0]));
+        
+        token = tokens.get(2);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+        assertThat(token).isEqualTo(new SemanticTokenData(137, 141, "keyword", new String[0]));
+        
+        token = tokens.get(3);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("USERS");
+        assertThat(token).isEqualTo(new SemanticTokenData(142, 147, "variable", new String[0]));
+        
+        token = tokens.get(4);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("u");
+        assertThat(token).isEqualTo(new SemanticTokenData(148, 149, "variable", new String[0]));
+        
+        token = tokens.get(5);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("WHERE");
+        assertThat(token).isEqualTo(new SemanticTokenData(150, 155, "keyword", new String[0]));
+        
+        token = tokens.get(6);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("u");
+        assertThat(token).isEqualTo(new SemanticTokenData(156, 157, "variable", new String[0]));
+        
+        token = tokens.get(7);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo(".status");
+        assertThat(token).isEqualTo(new SemanticTokenData(157, 164, "variable", new String[0]));
+
+        token = tokens.get(8);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("=");
+        assertThat(token).isEqualTo(new SemanticTokenData(165, 166, "operator", new String[0]));
+
+        token = tokens.get(9);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("?");
+        assertThat(token).isEqualTo(new SemanticTokenData(167, 168, "operator", new String[0]));
+        token = tokens.get(9);
+        
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("#{");
+        assertThat(token).isEqualTo(new SemanticTokenData(168, 170, "operator", new String[0]));
+        
+        token = tokens.get(10);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("status");
+        assertThat(token).isEqualTo(new SemanticTokenData(170, 176, "variable", new String[0]));
+
+        token = tokens.get(11);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("}");
+        assertThat(token).isEqualTo(new SemanticTokenData(176, 177, "operator", new String[0]));
+	}
 }
