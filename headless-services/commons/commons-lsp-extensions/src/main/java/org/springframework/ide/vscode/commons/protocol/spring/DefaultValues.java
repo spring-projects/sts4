@@ -17,7 +17,6 @@ public class DefaultValues {
 
 	public static final Set<String> EMPTY_SUPERTYPES = new HashSet<>();
 	public static final Set<String> OBJECT_SUPERTYPE = Set.of("java.lang.Object");
-	
+	public static final AnnotationMetadata[] EMPTY_ANNOTATIONS = new AnnotationMetadata[0];
 	public static final InjectionPoint[] EMPTY_INJECTION_POINTS = new InjectionPoint[0];
-
 }

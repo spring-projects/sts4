@@ -165,7 +165,7 @@ public class DependsOnCompletionProviderTest {
 		assertCompletions("@DependsOn({\"bean1\",<*>\"bean2\"})", 1, "@DependsOn({\"bean1\",\"bean3\",<*>\"bean2\"})");
 	}
 
-	private void assertCompletions(String completionLine, int noOfExcpectedCompletions, String expectedCompletedLine) throws Exception {
+	private void assertCompletions(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine) throws Exception {
 		String editorContent = """
 				package org.test;
 
@@ -182,9 +182,9 @@ public class DependsOnCompletionProviderTest {
 		Editor editor = harness.newEditor(LanguageId.JAVA, editorContent, tempJavaDocUri);
 
         List<CompletionItem> completions = editor.getCompletions();
-        assertEquals(noOfExcpectedCompletions, completions.size());
+        assertEquals(noOfExpectedCompletions, completions.size());
         
-        if (noOfExcpectedCompletions > 0) {
+        if (noOfExpectedCompletions > 0) {
 	        editor.apply(completions.get(0));
 	        assertEquals("""
 					package org.test;

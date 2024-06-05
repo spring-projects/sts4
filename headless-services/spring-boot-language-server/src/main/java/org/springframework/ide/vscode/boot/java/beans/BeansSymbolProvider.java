@@ -32,7 +32,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
@@ -40,6 +39,7 @@ import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -95,9 +95,16 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 				Set<String> supertypes = new HashSet<>();
 				ASTUtils.findSupertypes(beanType, supertypes);
 				
-				String[] annotations = AnnotationHierarchies
-						.findTransitiveSuperAnnotationBindings(node.resolveAnnotationBinding())
-						.map(t -> t.getAnnotationType().getQualifiedName()).toArray(String[]::new);
+				Collection<Annotation> annotationsOnMethod = ASTUtils.getAnnotations(method);
+				AnnotationMetadata[] annotations = annotationsOnMethod.stream()
+					.map(an -> an.resolveAnnotationBinding())
+					.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, ASTUtils.getAttributes(t)))
+					.toArray(AnnotationMetadata[]::new);
+				
+//				AnnotationMetadata[] annotations = AnnotationHierarchies
+//						.findTransitiveSuperAnnotationBindings(node.resolveAnnotationBinding())
+//						.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, getAttributes(t)))
+//						.toArray(AnnotationMetadata[]::new);
 
 				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations);
 

@@ -13,7 +13,9 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -26,7 +28,9 @@ import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
+import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.IMemberValuePairBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
@@ -47,6 +51,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.jdt.imports.ImportRewrite;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -256,8 +261,15 @@ public class ASTUtils {
 	}
 
 
-	public static Collection<Annotation> getAnnotations(TypeDeclaration declaringType) {
-		Object modifiersObj = declaringType.getStructuralProperty(TypeDeclaration.MODIFIERS2_PROPERTY);
+	public static Collection<Annotation> getAnnotations(TypeDeclaration typeDeclaration) {
+		return getAnnotationsFromModifiers(typeDeclaration.getStructuralProperty(TypeDeclaration.MODIFIERS2_PROPERTY));
+	}
+	
+	public static Collection<Annotation> getAnnotations(MethodDeclaration methodDeclaration) {
+		return getAnnotationsFromModifiers(methodDeclaration.getStructuralProperty(MethodDeclaration.MODIFIERS2_PROPERTY));
+	}
+	
+	private static Collection<Annotation> getAnnotationsFromModifiers(Object modifiersObj) {
 		if (modifiersObj instanceof List) {
 			ImmutableList.Builder<Annotation> annotations = ImmutableList.builder();
 			for (Object node : (List<?>)modifiersObj) {
@@ -335,13 +347,17 @@ public class ASTUtils {
 			if (object instanceof VariableDeclaration) {
 				VariableDeclaration variable = (VariableDeclaration) object;
 				String name = variable.getName().toString();
-				String type = variable.resolveBinding().getType().getQualifiedName();
+				
+				IVariableBinding variableBinding = variable.resolveBinding();
+				String type = variableBinding.getType().getQualifiedName();
 				
 				DocumentRegion region = ASTUtils.nodeRegion(doc, variable.getName());
 				Range range = doc.toRange(region);
 				
 				Location location = new Location(doc.getUri(), range);
-				result.add(new InjectionPoint(name, type, location));
+				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(variableBinding.getAnnotations());
+				
+				result.add(new InjectionPoint(name, type, location, annotations));
 			}
 		}
 		return result;
@@ -392,13 +408,17 @@ public class ASTUtils {
 			if (object instanceof VariableDeclaration) {
 				VariableDeclaration variable = (VariableDeclaration) object;
 				String name = variable.getName().toString();
-				String type = variable.resolveBinding().getType().getQualifiedName();
+
+				IVariableBinding variableBinding = variable.resolveBinding();
+				String type = variableBinding.getType().getQualifiedName();
 				
 				DocumentRegion region = ASTUtils.nodeRegion(doc, variable.getName());
 				Range range = doc.toRange(region);
 				
 				Location location = new Location(doc.getUri(), range);
-				result.add(new InjectionPoint(name, type, location));
+				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(variableBinding.getAnnotations());
+				
+				result.add(new InjectionPoint(name, type, location, annotations));
 			}
 		}
 
@@ -419,11 +439,14 @@ public class ASTUtils {
 		for (FieldDeclaration field : fields) {
 
 			boolean autowiredField = false;
+			
+			List<Annotation> fieldAnnotations = new ArrayList<>();
 
 			List<?> modifiers = field.modifiers();
 			for (Object modifier : modifiers) {
 				if (modifier instanceof Annotation) {
 					Annotation annotation = (Annotation) modifier;
+					fieldAnnotations.add(annotation);
 
 					String qualifiedName = annotation.resolveTypeBinding().getQualifiedName();
 					if (Annotations.AUTOWIRED.equals(qualifiedName)) {
@@ -445,7 +468,12 @@ public class ASTUtils {
 
 						String fieldType = field.getType().resolveBinding().getQualifiedName();
 
-						result.add(new InjectionPoint(fieldName, fieldType, fieldLocation));
+						AnnotationMetadata[] annotationsMetadata = fieldAnnotations.stream()
+								.map(an -> an.resolveAnnotationBinding())
+								.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, ASTUtils.getAttributes(t)))
+								.toArray(AnnotationMetadata[]::new);
+						
+						result.add(new InjectionPoint(fieldName, fieldType, fieldLocation, annotationsMetadata));
 					}
 				}
 			}
@@ -454,11 +482,82 @@ public class ASTUtils {
 		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : DefaultValues.EMPTY_INJECTION_POINTS;
 	}
 	
+	private static AnnotationMetadata[] getAnnotationsMetadata(IAnnotationBinding[] annotations) {
+		return Arrays.stream(annotations)
+			.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, getAttributes(t)))
+			.toArray(AnnotationMetadata[]::new);
+	}
+	
+	public static Map<String, String[]> getAttributes(IAnnotationBinding t) {
+		Map<String, String[]> result = new LinkedHashMap<>();
+
+		IMemberValuePairBinding[] pairs = t.getDeclaredMemberValuePairs();
+		for (IMemberValuePairBinding pair : pairs) {
+			MemberValuePairAndType values = ASTUtils.getValuesFromValuePair(pair);
+			if (values != null) {
+				result.put(pair.getName(), values.values);
+			}
+		}
+		
+		return result;
+	}
+	
 	public static ASTNode getNearestAnnotationParent(ASTNode node) {
 		while (node != null && !(node instanceof Annotation)) {
 			node = node.getParent();
 		}
 		return node;
+	}
+	
+	public static MemberValuePairAndType getValuesFromValuePair(IMemberValuePairBinding valuePair) {
+		if (valuePair != null) {
+			Object value = valuePair.getValue();
+			
+			MemberValuePairAndType result = new MemberValuePairAndType();
+
+			if (value instanceof Object[]) {
+				Object[] values = (Object[]) value;
+				result.values = new String[values.length];
+				for (int k = 0; k < values.length; k++) {
+					
+					Object v = values[k];
+					if (v instanceof IVariableBinding) {
+						IVariableBinding varBinding = (IVariableBinding) v;
+						result.values[k] = varBinding.getName();
+						
+						ITypeBinding klass = varBinding.getDeclaringClass();
+						if (klass != null) {
+							result.dereferencedType= klass;
+						}
+
+					}
+					else if (v instanceof String) {
+						result.values[k] = (String) v;
+					}
+					else if (v instanceof ITypeBinding) {
+						result.values[k] = ((ITypeBinding) v).getQualifiedName();
+					}
+					else if (v != null) {
+						result.values[k] = v.toString();
+					}
+				}
+				return result;
+			}
+			else if (value instanceof String[]) {
+				result.values = (String[]) value;
+				return result;
+			}
+			else if (value != null) {
+				result.values = new String[] {value.toString()};
+				return result;
+			}
+		}
+		return null;
+	}
+	
+	public static class MemberValuePairAndType {
+		public String[] values;
+		public ITypeBinding dereferencedType;
 	}
 
 }

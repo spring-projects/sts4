@@ -35,7 +35,9 @@ import org.eclipse.lsp4j.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
@@ -351,6 +353,7 @@ public class IndexCacheOnDisc implements IndexCache {
 		return new GsonBuilder()
 				.registerTypeAdapter(SymbolAddOnInformation.class, new SymbolAddOnInformationAdapter())
 				.registerTypeAdapter(Bean.class, new BeanJsonAdapter())
+				.registerTypeAdapter(InjectionPoint.class, new InjectionPointJsonAdapter())
 				.registerTypeAdapter(IndexCacheStore.class, new IndexCacheStoreAdapter())
 				.create();
 	}
@@ -472,9 +475,28 @@ public class IndexCacheOnDisc implements IndexCache {
 	        Set<String> supertypes = context.deserialize(supertypesObject, Set.class);
 	        
 	        JsonElement annotationsObject = parsedObject.get("annotations");
-	        String[] annotations = annotationsObject == null? new String[0] : context.deserialize(annotationsObject, String[].class);
+	        AnnotationMetadata[] annotations = annotationsObject == null ? DefaultValues.EMPTY_ANNOTATIONS : context.deserialize(annotationsObject, AnnotationMetadata[].class);
 
 	        return new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations);
+	    }
+	}
+	
+	private static class InjectionPointJsonAdapter implements JsonDeserializer<InjectionPoint> {
+		
+	    @Override
+	    public InjectionPoint deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
+	        JsonObject parsedObject = json.getAsJsonObject();
+	        
+	        String injectionPointName = parsedObject.get("name").getAsString();
+	        String injectionPointType = parsedObject.get("type").getAsString();
+
+	        JsonElement locationObject = parsedObject.get("location");
+	        Location location = context.deserialize(locationObject, Location.class);
+
+	        JsonElement annotationsObject = parsedObject.get("annotations");
+	        AnnotationMetadata[] annotations = annotationsObject == null ? DefaultValues.EMPTY_ANNOTATIONS : context.deserialize(annotationsObject, AnnotationMetadata[].class);
+
+	        return new InjectionPoint(injectionPointName, injectionPointType, location, annotations);
 	    }
 	}
 	

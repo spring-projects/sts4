@@ -24,7 +24,6 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.IMemberValuePairBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
@@ -186,40 +185,17 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		IAnnotationBinding annotationBinding = getAnnotationFromSupertypes(node, context);
 		IMemberValuePairBinding valuePair = getValuePair(annotationBinding, attributeNames);
 		
-		if (valuePair != null) {
-			Object value = valuePair.getValue();
-			if (value instanceof Object[]) {
-				Object[] values = (Object[]) value;
-				String[] result = new String[values.length];
-				for (int k = 0; k < result.length; k++) {
-					
-					Object v = values[k];
-					if (v instanceof IVariableBinding) {
-						IVariableBinding varBinding = (IVariableBinding) v;
-						result[k] = varBinding.getName();
-						
-						ITypeBinding klass = varBinding.getDeclaringClass();
-						if (klass!=null) {
-							context.addDependency(klass);
-						}
+		ASTUtils.MemberValuePairAndType result = ASTUtils.getValuesFromValuePair(valuePair);
 
-					}
-					else if (v instanceof String) {
-						result[k] = (String) v;
-					}
-				}
-				return result;
-
+		if (result != null) {
+			if (result.dereferencedType != null) {
+				context.addDependency(result.dereferencedType);
 			}
-			else if (value instanceof String[]) {
-				return (String[]) value;
-			}
-			else if (value != null) {
-				return new String[] {value.toString()};
-			}
+			return result.values;
 		}
-		
-		return null;
+		else {
+			return null;
+		}
 	}
 
 	private IMemberValuePairBinding getValuePair(IAnnotationBinding annotationBinding, Set<String> names) {

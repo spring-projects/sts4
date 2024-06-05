@@ -40,6 +40,7 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -67,8 +68,7 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	private Two<EnhancedSymbolInformation, Bean> createSymbol(Annotation node, ITypeBinding annotationType,
-			Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
+	private Two<EnhancedSymbolInformation, Bean> createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
 		String annotationTypeName = annotationType.getName();
 		Collection<String> metaAnnotationNames = metaAnnotations.stream()
 				.map(ITypeBinding::getName)
@@ -92,8 +92,17 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 		Set<String> supertypes = new HashSet<>();
 		ASTUtils.findSupertypes(beanType, supertypes);
 		
-		String[] annotations = Stream.concat(Stream.of(annotationType), metaAnnotations.stream()).map(t -> t.getQualifiedName()).toArray(String[]::new);
-
+		Collection<Annotation> annotationsOnType = ASTUtils.getAnnotations(type);
+		
+		AnnotationMetadata[] annotations = Stream.concat(
+				annotationsOnType.stream()
+				.map(an -> an.resolveAnnotationBinding())
+				.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, ASTUtils.getAttributes(t)))
+				,
+				metaAnnotations.stream()
+				.map(an -> new AnnotationMetadata(an.getQualifiedName(), true, null)))
+				.toArray(AnnotationMetadata[]::new);
+		
 		Bean beanDefinition = new Bean(beanName, beanType == null ? "" : beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations);
 
 		return Tuple.two(new EnhancedSymbolInformation(symbol, addon), beanDefinition);

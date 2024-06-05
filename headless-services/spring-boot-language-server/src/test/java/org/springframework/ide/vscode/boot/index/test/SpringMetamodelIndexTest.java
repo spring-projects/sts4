@@ -18,7 +18,9 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.assertj.core.util.Arrays;
@@ -28,6 +30,7 @@ import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDisc;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
@@ -38,7 +41,9 @@ public class SpringMetamodelIndexTest {
 
 	private InjectionPoint[] emptyInjectionPoints = new InjectionPoint[0];
 	private Set<String> emptySupertypes = new HashSet<>();
-	private String[] emptyAnnotations = new String[0];
+	private AnnotationMetadata[] emptyAnnotations = new AnnotationMetadata[0];
+	private AnnotationMetadata[] emptyInjectionAnnotations = new AnnotationMetadata[0];
+	private Map<String, String[]> emptyAnnotationAttributes = new LinkedHashMap<>();
 	
 	private Location locationForDoc1 = new Location("docURI1", new Range(new Position(1, 1), new Position(1, 10)));
 	private Location locationForDoc2 = new Location("docURI2", new Range(new Position(2, 1), new Position(2, 10)));
@@ -220,8 +225,10 @@ public class SpringMetamodelIndexTest {
 	
 	@Test
 	void testOverallSerializeDeserializeBeans() {
-		InjectionPoint point1 = new InjectionPoint("point1", "point1-type", locationForDoc2);
-		InjectionPoint point2 = new InjectionPoint("point2", "point2-type", locationForDoc1);
+		InjectionPoint point1 = new InjectionPoint("point1", "point1-type", locationForDoc2, new AnnotationMetadata[]
+				{new AnnotationMetadata("anno1", false, emptyAnnotationAttributes),new AnnotationMetadata("anno2", false, emptyAnnotationAttributes)});
+
+		InjectionPoint point2 = new InjectionPoint("point2", "point2-type", locationForDoc1, null);
 
 		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, new InjectionPoint[] {point1, point2}, Set.of("supertype1", "supertype2"), emptyAnnotations);
 		String serialized = bean1.toString();
@@ -247,6 +254,12 @@ public class SpringMetamodelIndexTest {
 		assertTrue(deserializedBean.isTypeCompatibleWith("supertype1"));
 		assertTrue(deserializedBean.isTypeCompatibleWith("supertype2"));
 		assertFalse(deserializedBean.isTypeCompatibleWith("java.lang.String"));
+		
+		assertEquals(2, points[0].getAnnotations().length);
+		assertEquals("anno1", points[0].getAnnotations()[0].getAnnotationType());
+		assertEquals("anno2", points[0].getAnnotations()[1].getAnnotationType());
+		
+		assertEquals(0, points[1].getAnnotations().length);
 	}
 	
 	@Test
@@ -268,6 +281,12 @@ public class SpringMetamodelIndexTest {
 	void testEmptyInjectionPointsOptimization() {
 		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes, emptyAnnotations);
 		assertSame(DefaultValues.EMPTY_INJECTION_POINTS, bean1.getInjectionPoints());
+	}
+	
+	@Test
+	void testEmptyAnnotationOptimization() {
+		InjectionPoint point = new InjectionPoint("pointName", "pointType", locationForDoc1, emptyInjectionAnnotations);
+		assertSame(DefaultValues.EMPTY_ANNOTATIONS, point.getAnnotations());
 	}
 	
 	@Test

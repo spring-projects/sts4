@@ -10,9 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
@@ -30,6 +32,7 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -73,7 +76,14 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 				ASTUtils.findSupertypes(concreteBeanTypeBindung, supertypes);
 
 				String concreteRepoType = concreteBeanTypeBindung.getQualifiedName();
-				Bean beanDefinition = new Bean(beanName, concreteRepoType, location, injectionPoints, supertypes, new String[0]);
+				
+				Collection<Annotation> annotationsOnMethod = ASTUtils.getAnnotations(typeDeclaration);
+				AnnotationMetadata[] annotations = annotationsOnMethod.stream()
+					.map(an -> an.resolveAnnotationBinding())
+					.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, ASTUtils.getAttributes(t)))
+					.toArray(AnnotationMetadata[]::new);
+				
+				Bean beanDefinition = new Bean(beanName, concreteRepoType, location, injectionPoints, supertypes, annotations);
 				
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));

@@ -23,14 +23,13 @@ public class Bean {
 	private final Location location;
 	private final InjectionPoint[] injectionPoints;
 	private final Set<String> supertypes;
-	private final String[] annotations;
+	private final AnnotationMetadata[] annotations;
 
-	public Bean(String name, String type, Location location, InjectionPoint[] injectionPoints, Set<String> supertypes, String[] annotations) {
+	public Bean(String name, String type, Location location, InjectionPoint[] injectionPoints, Set<String> supertypes, AnnotationMetadata[] annotations) {
 		this.name = name;
 		this.type = type;
 		this.location = location;
-		this.annotations = annotations;
-
+		
 		if (injectionPoints != null && injectionPoints.length == 0) {
 			this.injectionPoints = DefaultValues.EMPTY_INJECTION_POINTS;
 		}
@@ -48,6 +47,12 @@ public class Bean {
 			this.supertypes = supertypes;
 		}
 
+		if (annotations != null && annotations.length == 0) {
+			this.annotations = DefaultValues.EMPTY_ANNOTATIONS;
+		}
+		else {
+			this.annotations = annotations;
+		}
 	}
 	
 	public String getName() {
@@ -70,7 +75,7 @@ public class Bean {
 		return type != null && ((this.type != null && this.type.equals(type)) || (supertypes.contains(type)));
 	}
 	
-	public String[] getAnnotations() {
+	public AnnotationMetadata[] getAnnotations() {
 		return annotations;
 	}
 	
