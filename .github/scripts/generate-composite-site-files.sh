@@ -1,5 +1,6 @@
 val=$1
 url=$2
+justj21=$3
 
 rm -f ./compositeArtifacts.xml
 rm -f ./compositeContent.xml
@@ -12,9 +13,16 @@ echo "    type='org.eclipse.equinox.internal.p2.artifact.repository.CompositeArt
 echo "  <properties size='1'>" >> compositeArtifacts.xml
 echo "    <property name='p2.timestamp' value='${val}'/>" >> compositeArtifacts.xml
 echo "  </properties>" >> compositeArtifacts.xml
-echo "  <children size='1'>" >> compositeArtifacts.xml
-echo "    <child location='${url}'/>" >> compositeArtifacts.xml
-echo "  </children>" >> compositeArtifacts.xml
+if [ "${jusstj21}" = true ] ; then
+  echo "  <children size='2'>" >> compositeArtifacts.xml
+  echo "    <child location='${url}'/>" >> compositeArtifacts.xml
+  echo "    <child location='https://download.eclipse.org/justj/jres/21/updates/release/latest/'/>" >> compositeArtifacts.xml
+  echo "  </children>" >> compositeArtifacts.xml
+else
+  echo "  <children size='1'>" >> compositeArtifacts.xml
+  echo "    <child location='${url}'/>" >> compositeArtifacts.xml
+  echo "  </children>" >> compositeArtifacts.xml
+fi
 echo "</repository>" >> compositeArtifacts.xml
 
 echo "<?xml version='1.0' encoding='UTF-8'?>" >> compositeContent.xml
@@ -24,9 +32,16 @@ echo "    type='org.eclipse.equinox.internal.p2.metadata.repository.CompositeMet
 echo "  <properties size='1'>" >> compositeContent.xml
 echo "    <property name='p2.timestamp' value='${val}'/>" >> compositeContent.xml
 echo "  </properties>" >> compositeContent.xml
-echo "  <children size='1'>" >> compositeContent.xml
-echo "    <child location='${url}'/>" >> compositeContent.xml
-echo "  </children>" >> compositeContent.xml
+if [ "${jusstj21}" = true ] ; then
+  echo "  <children size='2'>" >> compositeContent.xml
+  echo "    <child location='${url}'/>" >> compositeContent.xml
+  echo "    <child location='https://download.eclipse.org/justj/jres/21/updates/release/latest/'/>" >> compositeContent.xml
+  echo "  </children>" >> compositeContent.xml
+else
+  echo "  <children size='1'>" >> compositeContent.xml
+  echo "    <child location='${url}'/>" >> compositeContent.xml
+  echo "  </children>" >> compositeContent.xml
+fi
 echo "</repository>" >> compositeContent.xml
 
 echo "version=1" >> p2.index
