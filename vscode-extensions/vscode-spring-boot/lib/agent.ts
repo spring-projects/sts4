@@ -9,7 +9,7 @@ import path from 'path';
 import fs from "fs";
 import { getTargetGuideMardown, getWorkspaceRoot, getExecutable } from './utils/util';
 import { createConverter } from "vscode-languageclient/lib/common/protocolConverter";
-import { systemPrompt } from './utils/system-ai-prompt';
+import { systemBoot2Prompt, systemBoot3Prompt, systemPrompt } from './utils/system-ai-prompt';
 import { userPrompt } from './utils/user-ai-prompt';
 
 interface Prompt {
@@ -144,6 +144,11 @@ async function enhancePrompt(question: string, cwd: string, projects: Executable
     const match = projects.find(project => project.uri.toString().replace('file:', '') === cwd);
     const prompt = {} as Prompt;
     prompt.systemPrompt = replacePlaceholder(systemPrompt, question, match); 
+    if(match !== null && match !== undefined && match.springBootVersion.startsWith('3')) {
+        prompt.systemPrompt = prompt.systemPrompt + '\n' + systemBoot3Prompt;
+    } else {
+        prompt.systemPrompt = prompt.systemPrompt + '\n' + systemBoot2Prompt;
+    }
     prompt.userPrompt = replacePlaceholder(userPrompt, question, match);
     prompt.projName = match?.name;
     return Promise.resolve(prompt);
