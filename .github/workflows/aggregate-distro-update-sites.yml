@@ -44,6 +44,7 @@ jobs:
         run: |
           echo "Akamai S3 Aggregate Update Sites Creation..."
           dirs=`aws s3 ls s3://tools-spring-io/release/TOOLS/sts4/update/${{ inputs.version }}/`
+          echo "${dirs}"
           pattern='^e[0-9]+.[0-9]+/$'
           invalid_urls=""
           for dir in $dirs

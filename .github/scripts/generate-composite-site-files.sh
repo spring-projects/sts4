@@ -2,6 +2,8 @@ val=$1
 url=$2
 justj21=$3
 
+echo "Include JustJ bit: ${justj21}"
+
 rm -f ./compositeArtifacts.xml
 rm -f ./compositeContent.xml
 rm -f ./p2.index
@@ -13,7 +15,7 @@ echo "    type='org.eclipse.equinox.internal.p2.artifact.repository.CompositeArt
 echo "  <properties size='1'>" >> compositeArtifacts.xml
 echo "    <property name='p2.timestamp' value='${val}'/>" >> compositeArtifacts.xml
 echo "  </properties>" >> compositeArtifacts.xml
-if [ "${jusstj21}" = true ] ; then
+if [ "${justj21}" = true ] ; then
   echo "  <children size='2'>" >> compositeArtifacts.xml
   echo "    <child location='${url}'/>" >> compositeArtifacts.xml
   echo "    <child location='https://download.eclipse.org/justj/jres/21/updates/release/latest/'/>" >> compositeArtifacts.xml
@@ -32,7 +34,7 @@ echo "    type='org.eclipse.equinox.internal.p2.metadata.repository.CompositeMet
 echo "  <properties size='1'>" >> compositeContent.xml
 echo "    <property name='p2.timestamp' value='${val}'/>" >> compositeContent.xml
 echo "  </properties>" >> compositeContent.xml
-if [ "${jusstj21}" = true ] ; then
+if [ "${justj21}" = true ] ; then
   echo "  <children size='2'>" >> compositeContent.xml
   echo "    <child location='${url}'/>" >> compositeContent.xml
   echo "    <child location='https://download.eclipse.org/justj/jres/21/updates/release/latest/'/>" >> compositeContent.xml
