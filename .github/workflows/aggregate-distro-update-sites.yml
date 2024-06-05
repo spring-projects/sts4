@@ -1,7 +1,7 @@
 name: Aggregate Distro Update Sites
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       version:
         description: Version suffix in S3 (i.e. 4.19.1.RELEASE)
@@ -60,8 +60,24 @@ jobs:
               fi
               cat ./compositeArtifacts.xml
               cat ./compositeContent.xml
+              if [[ ${dir_name} == ${{ inputs.latest }} ]]; then
+                aws s3 cp ./compositeArtifacts.xml s3://tools-spring-io/release/TOOLS/sts4/update/latest/
+                invalid_urls+="https://cdn.spring.io/spring-tools/release/TOOLS/sts4/update/latest/compositeArtifacts.xml "
+                aws s3 cp ./compositeContent.xml s3://tools-spring-io/release/TOOLS/sts4/update/latest/
+                invalid_urls+="https://cdn.spring.io/spring-tools/release/TOOLS/sts4/update/latest/compositeContent.xml "
+                aws s3 cp ./p2.index s3://tools-spring-io/release/TOOLS/sts4/update/latest/
+                invalid_urls+="https://cdn.spring.io/spring-tools/release/TOOLS/sts4/update/latest/p2.index "
+                echo "TODO: Purge Cache"
+              fi
+              aws s3 mv ./compositeArtifacts.xml s3://tools-spring-io/release/TOOLS/sts4/update/${dir}
+              invalid_urls+="https://cdn.spring.io/spring-tools/release/TOOLS/sts4/update/${dir_name}/compositeArtifacts.xml "
+              aws s3 mv ./compositeContent.xml s3://tools-spring-io/release/TOOLS/sts4/update/${dir}
+              invalid_urls+="https://cdn.spring.io/spring-tools/release/TOOLS/sts4/update/${dir_name}/compositeContent.xml "
+              aws s3 mv ./p2.index s3://tools-spring-io/release/TOOLS/sts4/update/${dir}
+              invalid_urls+="https://cdn.spring.io/spring-tools/release/TOOLS/sts4/update/${dir_name}/p2.index "
             fi
           done
+          echo "invalid_urls=$invalid_urls" >> $GITHUB_OUTPUT
 
   purge_cache:
     needs: [ update-aggregate-update-sites ]
