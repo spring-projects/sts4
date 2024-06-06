@@ -54,7 +54,7 @@ public class JdtSemanticTokensHandler implements SemanticTokensHandler {
 				tokenProvidersList.add(tp);
 			}
 		}
-		this.tokenProviders = tokenProviders;
+		this.tokenProviders = tokenProvidersList;
 		this.legend = new SemanticTokensLegend(
 				tokenProviders.stream().flatMap(tp -> tp.getTokenTypes().stream()).distinct().collect(Collectors.toList()),
 				tokenProviders.stream().flatMap(tp -> tp.getTokenModifiers().stream()).distinct().collect(Collectors.toList())
@@ -117,7 +117,7 @@ public class JdtSemanticTokensHandler implements SemanticTokensHandler {
 			// If there are tokens computed then also run JDT LS tokens provider not to lose JDT LS semantic highlights
 			cu.accept(jdtLsProvider.getTokensComputer(jp, cu, collector));
 		}
-		return collector.get();
+		return collector.isEmpty() ? null : collector.get();
 	}
 
 }
