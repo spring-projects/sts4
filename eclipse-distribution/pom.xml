@@ -347,11 +347,6 @@
 					<url>https://download.eclipse.org/staging/2024-06/</url>
 				</repository>
 				<repository>
-					<id>2024-06-i-builds</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/eclipse/updates/4.32-I-builds/</url>
-				</repository>
-				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/simrel/orbit-aggregation/2024-06</url>
