@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
 import org.springframework.ide.vscode.commons.util.Collector;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProvider {
 	
@@ -61,7 +62,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 	}
 
 	@Override
-	public ASTVisitor getTokensComputer(IJavaProject jp, CompilationUnit cu, Collector<SemanticTokenData> tokensData) {
+	public ASTVisitor getTokensComputer(IJavaProject jp, TextDocument doc, CompilationUnit cu, Collector<SemanticTokenData> tokensData) {
 		SemanticTokensDataProvider provider = SpringProjectUtil.hasDependencyStartingWith(jp, "hibernate-core", null) ? hqlProvider : jpqlProvider;
 		return new ASTVisitor() {
 			@Override

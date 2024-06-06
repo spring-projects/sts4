@@ -20,6 +20,7 @@ import org.springframework.ide.vscode.boot.java.JdtSemanticTokensProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.util.Collector;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class JavaSemanticTokensProvider implements JdtSemanticTokensProvider {
 
@@ -39,9 +40,9 @@ public class JavaSemanticTokensProvider implements JdtSemanticTokensProvider {
 	}
 
 	@Override
-	public ASTVisitor getTokensComputer(IJavaProject project, CompilationUnit cu,
+	public ASTVisitor getTokensComputer(IJavaProject project, TextDocument doc, CompilationUnit cu,
 			Collector<SemanticTokenData> collector) {
-		return new SemanticTokensVisitor(cu, collector);
+		return new SemanticTokensVisitor(project, doc, cu, collector);
 	}
 
 }

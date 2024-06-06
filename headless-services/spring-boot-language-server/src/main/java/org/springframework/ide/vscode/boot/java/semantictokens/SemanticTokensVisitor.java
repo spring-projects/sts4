@@ -17,10 +17,7 @@ package org.springframework.ide.vscode.boot.java.semantictokens;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.compiler.IScanner;
 import org.eclipse.jdt.core.compiler.ITerminalSymbols;
@@ -57,18 +54,20 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.TypeLiteral;
 import org.eclipse.jdt.internal.core.dom.util.DOMASTUtil;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.util.Collector;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class SemanticTokensVisitor extends ASTVisitor {
 	private CompilationUnit cu;
 	private final IScanner scanner;
 	private Collector<SemanticTokenData> collector;
 
-	public SemanticTokensVisitor(CompilationUnit cu, Collector<SemanticTokenData> collector) {
+	public SemanticTokensVisitor(IJavaProject project, TextDocument doc, CompilationUnit cu, Collector<SemanticTokenData> collector) {
 		super(true);
 		this.cu = cu;
-		this.scanner = createScanner(cu);
+		this.scanner = createScanner(project, doc, cu);
 		this.collector = collector;
 	}
 
@@ -421,7 +420,11 @@ public class SemanticTokensVisitor extends ASTVisitor {
 					break; // "class" or "interface" keyword tokens
 				case ITerminalSymbols.TokenNameextends:
 					addToken(tokenOffset, tokenLength, TokenType.MODIFIER, 0);
-					acceptNode(node.getSuperclassType());
+					if (node.isInterface()) {
+						acceptNodeList(node.superInterfaceTypes());
+					} else {
+						acceptNode(node.getSuperclassType());
+					}
 					break; // "extends" keyword token
 				case ITerminalSymbols.TokenNameimplements:
 					addToken(tokenOffset, tokenLength, TokenType.MODIFIER, 0);
@@ -443,32 +446,27 @@ public class SemanticTokensVisitor extends ASTVisitor {
 
 	/**
 	 * Tries to create an {@link IScanner} for the source of the given compilation unit.
+	 * @param doc 
+	 * @param javaProject 
 	 *
 	 * @param cu the compilation unit
 	 * @return the scanner, or {@code null} if not available
 	 */
-	private IScanner createScanner(CompilationUnit cu) {
-		final ITypeRoot typeRoot = cu.getTypeRoot();
-		if (typeRoot == null) {
+	private IScanner createScanner(IJavaProject javaProject, TextDocument doc, CompilationUnit cu) {
+		if (doc == null) {
 			return null;
 		}
-		final IJavaProject javaProject = typeRoot.getJavaProject();
 		if (javaProject == null) {
 			return null;
 		}
-		final String source;
-		try {
-			source = typeRoot.getSource();
-		} catch (JavaModelException e) {
-			return null;
-		}
+		final String source = doc.get();
 		if (source == null) {
 			return null;
 		}
 
-		final String sourceLevel = javaProject.getOption(JavaCore.COMPILER_SOURCE, true);
-		final String complianceLevel = javaProject.getOption(JavaCore.COMPILER_COMPLIANCE, true);
-		final boolean enablePreview = JavaCore.ENABLED.equals(javaProject.getOption(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, true));
+		final String sourceLevel = JavaCore.VERSION_21;/*javaProject.getOption(JavaCore.COMPILER_SOURCE, true);*/
+		final String complianceLevel = JavaCore.VERSION_21; /*javaProject.getOption(JavaCore.COMPILER_COMPLIANCE, true);*/
+		final boolean enablePreview = false; /*JavaCore.ENABLED.equals(javaProject.getOption(JavaCore.COMPILER_PB_ENABLE_PREVIEW_FEATURES, true));*/
 
 		final IScanner scanner = ToolFactory.createScanner(false, false, false, sourceLevel, complianceLevel, enablePreview);
 		scanner.setSource(source.toCharArray());

@@ -18,12 +18,13 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.util.Collector;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public interface JdtSemanticTokensProvider {
 	
 	List<String> getTokenTypes();
 	default List<String> getTokenModifiers() { return Collections.emptyList(); }
 	boolean isApplicable(IJavaProject project);
-	ASTVisitor getTokensComputer(IJavaProject project, CompilationUnit cu, Collector<SemanticTokenData> collector);
+	ASTVisitor getTokensComputer(IJavaProject project, TextDocument doc, CompilationUnit cu, Collector<SemanticTokenData> collector);
 
 }

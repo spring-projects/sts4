@@ -50,7 +50,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
 	private List<SemanticTokenData> computeTokens(CompilationUnit cu) {
 		Collector<SemanticTokenData> collector = new Collector<>();
 		CompositeASTVisitor visitor = new CompositeASTVisitor();
-		visitor.add(provider.getTokensComputer(jp, cu, collector));
+		visitor.add(provider.getTokensComputer(jp, null, cu, collector));
 		cu.accept(visitor);
 		return collector.get();
 	}
