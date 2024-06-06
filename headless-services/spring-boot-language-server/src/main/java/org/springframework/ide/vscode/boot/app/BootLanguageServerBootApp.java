@@ -37,6 +37,8 @@ import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAut
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
@@ -122,6 +124,7 @@ import reactor.core.publisher.Hooks;
 	PropertyPlaceholderAutoConfiguration.class
 })
 @EnableConfigurationProperties(BootLsConfigProperties.class)
+@ComponentScan
 //@SpringBootApplication
 public class BootLanguageServerBootApp {
 	
