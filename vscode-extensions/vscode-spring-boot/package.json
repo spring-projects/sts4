@@ -249,6 +249,11 @@
         "title": "Features",
         "order": 100,
         "properties": {
+          "boot-java.embedded-syntax-highlighting": {
+            "type": "boolean",
+            "default": true,
+            "description": "Syntax Hyghlighting for Languages embedded into Java source code"
+          },
           "boot-java.validation.java.reconcilers": {
             "type": "boolean",
             "default": true,

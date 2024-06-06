@@ -59,6 +59,7 @@ import org.eclipse.lsp4j.ProgressParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
+import org.eclipse.lsp4j.SemanticTokensCapabilities;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.SetTraceParams;
@@ -546,8 +547,12 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 			c.setWorkspaceSymbolProvider(true);
 		}
 		// TODO: Check if server supports all token types from the legend
-		SemanticTokensWithRegistrationOptions semanticTokensCapability = getTextDocumentService().getSemanticTokensWithRegistrationOptions();
-		c.setSemanticTokensProvider(semanticTokensCapability);
+		// Eclipse LSP4E client gives `null` semantic tokens client capability yet it works up to dynamic registration
+		SemanticTokensCapabilities clientSemanticTokensCapability = getTextDocumentService().clientCapabilities.getSemanticTokens();
+		if (clientSemanticTokensCapability == null || clientSemanticTokensCapability.getDynamicRegistration() == null || !clientSemanticTokensCapability.getDynamicRegistration().booleanValue()) {
+			SemanticTokensWithRegistrationOptions semanticTokensCapability = getTextDocumentService().getSemanticTokensWithRegistrationOptions();
+			c.setSemanticTokensProvider(semanticTokensCapability);
+		}
 
 		WorkspaceFoldersOptions workspaceFoldersOptions = new WorkspaceFoldersOptions();
 		workspaceFoldersOptions.setSupported(true);

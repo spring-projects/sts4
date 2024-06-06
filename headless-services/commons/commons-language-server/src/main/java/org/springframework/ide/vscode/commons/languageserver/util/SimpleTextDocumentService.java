@@ -747,7 +747,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		return this.codeLensResolveHandler != null;
 	}
 	
-	final SemanticTokensWithRegistrationOptions getSemanticTokensWithRegistrationOptions() {
+	public final SemanticTokensWithRegistrationOptions getSemanticTokensWithRegistrationOptions() {
 		return semanticTokensHandler == null ? null : semanticTokensHandler.getCapability();
 	}
 

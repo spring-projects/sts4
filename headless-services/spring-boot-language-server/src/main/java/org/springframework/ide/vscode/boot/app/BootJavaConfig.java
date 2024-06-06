@@ -93,6 +93,11 @@ public class BootJavaConfig implements InitializingBean {
 		return isEnabled != null && isEnabled.booleanValue();
 	}
 	
+	public boolean isJavaEmbeddedLanguagesSyntaxHighlighting() {
+		Boolean isEnabled = settings.getBoolean("boot-java", "embedded-syntax-highlighting");
+		return isEnabled != null && isEnabled.booleanValue();
+	}
+	
 	public String[] xmlBeansFoldersToScan() {
 		String foldersStr = settings.getString("boot-java", "support-spring-xml-config", "scan-folders");
 		if (foldersStr != null) {

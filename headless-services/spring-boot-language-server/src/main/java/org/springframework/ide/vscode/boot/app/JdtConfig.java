@@ -39,6 +39,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.PreciseBeanTypeRecon
 import org.springframework.ide.vscode.boot.java.reconcilers.ServerHttpSecurityLambdaDslReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.UnnecessarySpringExtensionReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.WebSecurityConfigurerAdapterReconciler;
+import org.springframework.ide.vscode.boot.java.semantictokens.EmbeddedLanguagesSemanticTokensSupport;
 import org.springframework.ide.vscode.boot.java.semantictokens.JavaSemanticTokensProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
@@ -127,6 +128,10 @@ public class JdtConfig {
 	
 	@Bean QueryJdtAstReconciler dataQueryReconciler(HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler, SqlReconciler sqlReconciler) {
 		return new QueryJdtAstReconciler(hqlReconciler, jpqlReconciler, sqlReconciler);
+	}
+	
+	@Bean EmbeddedLanguagesSemanticTokensSupport embbededLanguagesSyntaxHighlighting(SimpleLanguageServer server, BootJavaConfig config) {
+		return new EmbeddedLanguagesSemanticTokensSupport(server, config);
 	}
 
 }
