@@ -42,11 +42,7 @@
         "commands": [
           {
             "name": "add",
-            "description": "Add a new dependency or module to the exisiting project"
-          },
-          {
-            "name": "generate",
-            "description": "Generate unit test cases for the project"
+            "description": "Add a new spring module to the exisiting project"
           }
         ]
       }

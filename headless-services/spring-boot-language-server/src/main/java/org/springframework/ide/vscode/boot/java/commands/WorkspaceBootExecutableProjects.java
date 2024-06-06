@@ -15,16 +15,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
-import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -36,33 +33,25 @@ import org.springframework.ide.vscode.commons.protocol.java.ProjectGavParams;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-
 public class WorkspaceBootExecutableProjects {
 	
 	public record ExecutableProject(String name, String uri, String gav, String mainClass, Collection<String> classpath, String buildTool, String springBootVersion, String javaVersion) {}
 	
 	final static String CMD = "sts/spring-boot/executableBootProjects";
 	
-	final static String BEANS_CMD = "sts/spring-boot/getBeans";
-	
 	private final static Logger log = LoggerFactory.getLogger(WorkspaceBootExecutableProjects.class);
 	
 	final private JavaProjectFinder projectFinder;
 	final private SpringSymbolIndex symbolIndex;
-	final private SpringMetamodelIndex springMetamodelIndex;
+	final private SimpleLanguageServer server;
 
-	public WorkspaceBootExecutableProjects(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, SpringMetamodelIndex springMetamodelIndex) {
+	public WorkspaceBootExecutableProjects(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex) {
+		this.server = server;
 		this.projectFinder = projectFinder;
 		this.symbolIndex = symbolIndex;
-		this.springMetamodelIndex = springMetamodelIndex;
 		server.onCommand(CMD, params -> findExecutableProjects());
-		server.onCommand(BEANS_CMD, (params) -> {
-			return fetchBeans(params);
-		});
 	}
-
+	
 	private CompletableFuture<Optional<ExecutableProject>> mapToExecProject(IJavaProject project) {
 		BeansParams params = new BeansParams();
 		params.setProjectName(project.getElementName());
@@ -78,12 +67,10 @@ public class WorkspaceBootExecutableProjects {
 							.filter(cpe -> !cpe.isTest() && !cpe.isSystem())
 							.map(cpe -> Classpath.isSource(cpe) ? cpe.getOutputFolder() : cpe.getPath())
 							.collect(Collectors.toSet());
-					IGav gav = project.getProjectBuild().getGav();
-					String gavStr = "%s:%s:%s".formatted(gav.getGroupId(), gav.getArtifactId(), gav.getVersion());
 					String springBootVersion = SpringProjectUtil.getSpringBootVersion(project).toString();
 					String buildTool = project.getProjectBuild().getType();
 					String javaVersion = project.getClasspath().getJavaVersion();
-					return Optional.of(new ExecutableProject(project.getElementName(), project.getLocationUri().toASCIIString(), gavStr, appBean.getType(), classpath, buildTool, springBootVersion, javaVersion));
+					return Optional.of(new ExecutableProject(project.getElementName(), project.getLocationUri().toASCIIString(), null, appBean.getType(), classpath, buildTool, springBootVersion, javaVersion));
 				} catch (Exception e) {
 					log.error("", e);
 				}
@@ -107,7 +94,7 @@ public class WorkspaceBootExecutableProjects {
 					 ExecutableProject ep = executableProjects.get(i);
 					 if (gavs.get(i) != null) {
 						 Gav gav = gavs.get(i);
-						 filteredExecProjects.add(new ExecutableProject(ep.name(), ep.uri(), "%s:%s:%s".formatted(gav.groupId(), gav.artifactId(), gav.version()), ep.mainClass(), ep.classpath()));
+						 filteredExecProjects.add(new ExecutableProject(ep.name(), ep.uri(), "%s:%s:%s".formatted(gav.groupId(), gav.artifactId(), gav.version()), ep.mainClass(), ep.classpath(), ep.buildTool, ep.springBootVersion, ep.javaVersion));
 					 } else {
 						 filteredExecProjects.add(ep);
 					 }
@@ -117,33 +104,5 @@ public class WorkspaceBootExecutableProjects {
 			 });
 		});
 	}
-	
-	private CompletableFuture<Bean[]> fetchBeans(ExecuteCommandParams params) {
-		String docUri = getArgumentByKey(params, "docUri");
-		log.info("docUri: " , docUri);
-		return CompletableFuture.completedFuture(springMetamodelIndex.getBeansOfDocument(docUri));
-	}
-	
-	private String getArgumentByKey(ExecuteCommandParams params, String name) {
-		List<Object> arguments = params.getArguments();
-		for (Object arg : arguments) {
-			if (arg instanceof Map<?, ?>) {
-				Object value = ((Map<?, ?>) arg).get(name);
-				if (value != null) {
-					return value.toString();
-				}
-			} else if (arg instanceof JsonObject) {
-				JsonElement element = ((JsonObject) arg).get(name);
-				if (element != null && element instanceof JsonObject) {
-					return element.toString();
-				} else if (element != null) {
-					return element.getAsString();
-				}
-			}
-		}
-
-		return null;
-	}
-
 	
 }

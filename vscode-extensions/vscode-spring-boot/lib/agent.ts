@@ -264,10 +264,12 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
 
     const cwd = (await getWorkspaceRoot()).fsPath;
 
+    console.log(cwd)
+
     const projects = await vscode.commands.executeCommand("sts/spring-boot/executableBootProjects") as ExecutableBootProject[];
     console.log(projects);
 
-    // get enhanced prompt by getting the spring context from boot ls and adding vector search results
+    // get enhanced prompt by adding the spring context from boot ls
     const enhancedPrompt = await enhancePrompt(request.prompt, cwd, projects);
     console.log(enhancedPrompt.systemPrompt);
     console.log(enhancedPrompt.userPrompt);
@@ -280,7 +282,7 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
 
     const uri = await getTargetGuideMardown();
     // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
-    // await enhanceResponse(uri, enhancedPrompt.shortPackageName, cwd);
+    await enhanceResponse(uri, enhancedPrompt.projName, cwd);
 
     // return modified response to chat
     const documentContent = await vscode.workspace.fs.readFile(uri);
