@@ -1,3 +1,23 @@
+## 2024-06-12 (4.23.0 RELEASE, incl. language servers version 1.55.0)
+
+#### important highlights
+
+* _(Spring Boot)_ Syntax validation for JPQL, SQL, HQL embedded in Java code
+* _(Spring Boot)_ Syntax highlighting for SQL embedded into Spring Data query annotations
+* _(Spring Boot)_ Navigation to beans from `@DependsOn`
+* _(Spring Boot)_ Upgrade to Spring Boot 3.3 is available via OpenRewrite recipes.
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ verify upgrade support to Spring Boot 3.3.0 [#1255](https://github.com/spring-projects/sts4/issues/1255)
+* _(Spring Boot)_ vscode `@DependsOn` navigation not linked [#1254](https://github.com/spring-projects/sts4/issues/1254)
+* _(Spring Boot)_ add parser-based validation for JPQL, SQL, HQL snippets [#1236](https://github.com/spring-projects/sts4/issues/1236)
+* _(Spring Boot)_ inlay hint in pom.xml file to upgrade to latest Spring Boot version [#1211](https://github.com/spring-projects/sts4/issues/1211)
+* _(Spring Boot)_ VSCode Spring Boot extension causes semantic token loss upon loading [#1260](https://github.com/spring-projects/sts4/issues/1260)
+* _(Spring Boot)_ Occasional NPE when opening / importing / creating Maven projects [#1257](https://github.com/spring-projects/sts4/issues/1257)
+* _(Spring Boot)_ `Map<K,V>` with escaped key not works properly in `application.yml` [#1243](https://github.com/spring-projects/sts4/issues/1243)
+* _(Spring Boot)_ Variable assignment/reference syntax highlighting lost between v1.53.0 and v1.54.0 [#1249](https://github.com/spring-projects/sts4/issues/1249)
+
 ## 2024-05-02 (4.22.1 RELEASE, incl. language servers version 1.54.0)
 
 #### important highlights

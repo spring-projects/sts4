@@ -1,3 +1,7 @@
+## 2024-06-12 (4.23.0 RELEASE, incl. language servers version 1.55.0)
+
+* no major changes
+
 ## 2024-05-02 (4.22.1 RELEASE, incl. language servers version 1.54.0)
 
 * no major changes
