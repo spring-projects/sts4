@@ -11,6 +11,7 @@ import { getTargetGuideMardown, getWorkspaceRoot, getExecutable } from './utils/
 import { createConverter } from "vscode-languageclient/lib/common/protocolConverter";
 import { systemBoot2Prompt, systemBoot3Prompt, systemPrompt } from './utils/system-ai-prompt';
 import { userPrompt } from './utils/user-ai-prompt';
+import { SPRINGCLI } from './Main';
 
 interface Prompt {
     projName: string
@@ -18,18 +19,10 @@ interface Prompt {
     userPrompt: string;
 }
 
-interface PromptResponse {
-    description: string;
-    shortPackageName: string;
-    prompt: Prompt;
-}
-
-interface ExecutableBootProject {
+interface BootProjectInfo {
     name: string;
     uri: string;
     mainClass: string;
-    classpath: string[];
-    gav: string;
     buildTool: string;
     springBootVersion: string;  
     javaVersion: string;
@@ -45,75 +38,7 @@ interface SpringBootChatAgentResult extends vscode.ChatResult {
     }
 }
 
-async function executeCommand(args: string[], cwd?: string): Promise<string> {
-    const processOpts = { cwd: cwd || (await getWorkspaceRoot())?.fsPath || homedir() };
-    const executable = getExecutable();
-    const process = executable.endsWith(".jar") ? await cp.exec(`java -jar ${executable} ${args.join(" ")}`, processOpts) : await cp.exec(`${executable} ${args.join(" ")}`, processOpts);
-    const dataChunks: string[] = [];
-    process.stdout.on("data", s => dataChunks.push(s));
-    return new Promise<string>((resolve, reject) => {
-        process.on("exit", (code) => {
-            if (code) {
-                reject(`Failed to execute command: ${dataChunks.join()}`);
-            } else {
-                resolve(dataChunks.join());
-            }
-        });
-    });
-}
-
-async function exec<T>(title: string, message: string, args: string[], cwd?: string): Promise<T> {
-    return vscode.window.withProgress({
-        location: vscode.ProgressLocation.Window,
-        cancellable: true,
-        title,
-    }, async (progress, cancellation) => {
-
-        if (message) {
-            progress.report({message});
-        }
-        
-        return new Promise<T>(async (resolve, reject) => {
-            if (cancellation.isCancellationRequested) {
-                reject("Cancelled");
-            }
-            try {
-                const output: string = await executeCommand(args, cwd);
-                resolve(output as T);
-            } catch (error) {
-                console.error(`Error: ${error}`);
-                reject(error);
-            }
-        });
-    });
-}
-
-async function fetchJson<T>(title: string, message: string, args: string[], cwd?: string): Promise<T> {
-    return window.withProgress({
-        location: vscode.ProgressLocation.Window,
-        cancellable: true,
-        title
-    }, async (progress, cancellation) => {
-        
-        if (message) {
-            progress.report({message});
-        }
-        return new Promise<T>(async (resolve, reject) => {
-            if (cancellation.isCancellationRequested) {
-                reject("Cancelled");
-            }
-            try {
-                const output = await executeCommand(args, cwd);
-                const extractJson = output.substring(output.indexOf('{'));
-                resolve(JSON.parse(extractJson) as T);
-            } catch (error) {
-                reject(error);
-            }
-        });
-    });
-}
-
-function replacePlaceholder(fileContent: string, question: string, match?: ExecutableBootProject, joinedVectorSearch?: string) {
+function replacePlaceholder(fileContent: string, question: string, match?: BootProjectInfo, joinedVectorSearch?: string) {
     if(match !== null && match !== undefined) {
         const lastIndex = match.mainClass.lastIndexOf('.')
         const replacements = {
@@ -132,16 +57,14 @@ function replacePlaceholder(fileContent: string, question: string, match?: Execu
     } else {
         fileContent = fileContent.replace(new RegExp('Description', 'g'), question);
     }
-
-    // if(joinedVectorSearch !== undefined && joinedVectorSearch !== null) {
-    //     fileContent = fileContent.replace(new RegExp('CONTENTS', 'g'), joinedVectorSearch);
-    // }
     return fileContent;
 }
 
-async function enhancePrompt(question: string, cwd: string, projects: ExecutableBootProject[]): Promise<Thenable<Prompt>> {
-
-    const match = projects.find(project => project.uri.toString().replace('file:', '') === cwd);
+async function enhancePrompt(question: string, cwd: string, projects: BootProjectInfo[]): Promise<Thenable<Prompt>> {
+    let match;
+    if(projects !== null || projects === undefined) {
+        match = projects.find(project => project.uri.toString().replace('file:', '') === cwd);
+    }
     const prompt = {} as Prompt;
     prompt.systemPrompt = replacePlaceholder(systemPrompt, question, match); 
     if(match !== null && match !== undefined && match.springBootVersion.startsWith('3')) {
@@ -154,34 +77,11 @@ async function enhancePrompt(question: string, cwd: string, projects: Executable
     return Promise.resolve(prompt);
 }
 
-async function enhanceResponse(uri: Uri, projDescription: string, cwd: string) {
-    const args = [
-        "ai",
-        "enhance-response",
-        "--file",
-        uri.fsPath
-    ];
-    const enhancedResponse: string = await exec("Spring cli ai", "Enhance response", args, cwd);
-    writeResponseToFile(enhancedResponse, projDescription, cwd);
-}
-
-
-function fetchLspEdit(uri: Uri, cwd?: string): Promise<WorkspaceEdit> {
-    const args = [
-        "guide",
-        "apply",
-        "--lsp-edit",
-        "--file",
-        uri.fsPath
-    ];
-    return fetchJson("Spring cli ai", "Apply lsp edit", args, cwd || path.dirname(uri.fsPath));
-}
-
 export async function applyLspEdit(uri: Uri) {
     if (!uri) {
         uri = await getTargetGuideMardown();
     }
-    const lspEdit = await fetchLspEdit(uri);
+    const lspEdit = await SPRINGCLI.guideLspEdit(uri);
     const workspaceEdit = await CONVERTER.asWorkspaceEdit(lspEdit);
 
     await Promise.all(workspaceEdit.entries().map(async ([uri, edits]) => {
@@ -266,7 +166,8 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
 
     console.log(cwd)
 
-    const projects = await vscode.commands.executeCommand("sts/spring-boot/executableBootProjects") as ExecutableBootProject[];
+    const projects = await vscode.commands.executeCommand("sts/spring-boot/bootProjectInfo", {projectUri: cwd}) as BootProjectInfo[];
+    // const projects = await vscode.commands.executeCommand("sts/spring-boot/executableBootProjects") as ExecutableBootProject[];
     console.log(projects);
 
     // get enhanced prompt by adding the spring context from boot ls
@@ -282,7 +183,8 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
 
     const uri = await getTargetGuideMardown();
     // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
-    await enhanceResponse(uri, enhancedPrompt.projName, cwd);
+    const enhancedResponse = await SPRINGCLI.enhanceResponse(uri, enhancedPrompt.projName, cwd);
+    writeResponseToFile(enhancedResponse, enhancedPrompt.projName, cwd);
 
     // return modified response to chat
     const documentContent = await vscode.workspace.fs.readFile(uri);

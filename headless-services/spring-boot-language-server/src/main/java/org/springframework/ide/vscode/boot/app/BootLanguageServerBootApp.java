@@ -123,8 +123,8 @@ import reactor.core.publisher.Hooks;
 	ConfigurationPropertiesAutoConfiguration.class, 
 	PropertyPlaceholderAutoConfiguration.class
 })
-@EnableConfigurationProperties(BootLsConfigProperties.class)
 @ComponentScan
+@EnableConfigurationProperties(BootLsConfigProperties.class)
 //@SpringBootApplication
 public class BootLanguageServerBootApp {
 	

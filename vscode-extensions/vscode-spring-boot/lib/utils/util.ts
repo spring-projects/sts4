@@ -18,6 +18,12 @@ export async function getWorkspaceRoot(): Promise<Uri | undefined> {
     }
 }
 
+export function getWorkspaceRootPath(): Uri | undefined {
+    if (workspace.workspaceFolders && workspace.workspaceFolders.length) {
+        return workspace.workspaceFolders[0].uri
+    }
+}
+
 function getRelativePathToWorkspaceFolder(file: Uri): string {
     if (file) {
         const wf: WorkspaceFolder = workspace.getWorkspaceFolder(file);

@@ -23,6 +23,7 @@ import * as setLogLevelUi from './set-log-levels-ui';
 import { startTestJarSupport } from "./test-jar-launch";
 import { startPropertiesConversionSupport } from "./convert-props-yaml";
 import * as agent from './agent';
+import { SpringCli } from './spring-cli';
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -33,6 +34,7 @@ const JPA_QUERY_PROPERTIES_LANGUAGE_ID = "jpa-query-properties";
 
 const STOP_ASKING = "Stop Asking";
 
+export const SPRINGCLI = new SpringCli();
 /** Called when extension is activated */
 export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
 
