@@ -16,7 +16,9 @@
   },
   "categories": [
     "Programming Languages",
-    "Linters"
+    "Linters",
+    "AI",
+    "Chat"
   ],
   "keywords": [
     "java-properties",
@@ -1278,7 +1280,6 @@
     "typescript": "^4.8.0"
   },
   "extensionDependencies": [
-    "redhat.java",
-    "github.copilot-chat"
+    "redhat.java"
   ]
 }
