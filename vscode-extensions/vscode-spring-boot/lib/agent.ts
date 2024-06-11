@@ -116,7 +116,7 @@ async function writeResponseToFile(response: string, shortPackageName: string, c
 async function chatRequest(enhancedPrompt: Prompt, token: vscode.CancellationToken, question: string) {
     
     const messages = [
-            vscode.LanguageModelChatMessage.Assistant(enhancedPrompt.systemPrompt),
+            vscode.LanguageModelChatMessage.User(enhancedPrompt.systemPrompt),
             vscode.LanguageModelChatMessage.User(enhancedPrompt.userPrompt),
             vscode.LanguageModelChatMessage.User(question)
     ];
@@ -131,28 +131,22 @@ async function chatRequest(enhancedPrompt: Prompt, token: vscode.CancellationTok
             if (cancellation.isCancellationRequested) {
                 console.log("Chat request cancelled");
             }
-            let chatResponse: vscode.LanguageModelChatResponse | undefined;
             try {
                 const [model] = await vscode.lm.selectChatModels(MODEL_SELECTOR);
-                console.log(model)
-                if(model) {
-                    chatResponse = await model.sendRequest(messages, {}, token);
-                }      
-            } catch (error) {
-                if (error instanceof vscode.LanguageModelError) {
-                    console.log(error.message, error.code);
+                if (!model) {
+                    reject("Chat Request failed: Language model not found");
                 }
-                reject(error);
-            }
+                const chatResponse = await model.sendRequest(messages, {}, token);
 
-            try {
                 for await (const fragment of chatResponse.text) {
                     response += fragment;
                 }
                 resolve(response);
             } catch (error) {
                 if (error instanceof vscode.LanguageModelError) {
-                    console.log(error.message, error.code)
+                    console.log(error.message, error.code, error.stack)
+                } else {
+                    throw error;
                 }
                 reject(error);
             }
@@ -170,6 +164,9 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
     // const projects = await vscode.commands.executeCommand("sts/spring-boot/executableBootProjects") as ExecutableBootProject[];
     console.log(projects);
 
+    // const execProj = await vscode.commands.executeCommand("sts/spring-boot/executableBootProjects") as BootProjectInfo[];
+    // console.log(execProj);
+
     // get enhanced prompt by adding the spring context from boot ls
     const enhancedPrompt = await enhancePrompt(request.prompt, cwd, projects);
     console.log(enhancedPrompt.systemPrompt);
@@ -182,12 +179,19 @@ async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.Chat
     await writeResponseToFile(response, enhancedPrompt.projName, cwd);
 
     const uri = await getTargetGuideMardown();
-    // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
-    const enhancedResponse = await SPRINGCLI.enhanceResponse(uri, enhancedPrompt.projName, cwd);
-    writeResponseToFile(enhancedResponse, enhancedPrompt.projName, cwd);
+    let documentContent;
 
-    // return modified response to chat
-    const documentContent = await vscode.workspace.fs.readFile(uri);
+    if(uri !== null && uri !== undefined) {
+
+        // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
+        const enhancedResponse = await SPRINGCLI.enhanceResponse(uri, enhancedPrompt.projName, cwd);
+        writeResponseToFile(enhancedResponse, enhancedPrompt.projName, cwd);
+        // return modified response to chat
+        documentContent = await vscode.workspace.fs.readFile(uri);
+    } else {
+        documentContent = response;
+    }
+    
     const chatResponse = Buffer.from(documentContent).toString();
     stream.markdown(chatResponse);
     stream.button({
