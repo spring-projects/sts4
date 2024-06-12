@@ -272,6 +272,7 @@ jobs:
             ${{ github.workspace }}/.github/scripts/sign-osx-distro-file.sh $file ${{ github.workspace }}/.github/assets/entitlements.plist ${{ github.workspace }}/.github/assets/sts4.icns
           done
       - name: Notarize DMG files
+        if: ${{ inputs.build_type != 'snapshot' }}
         env:
           NOTARIZE_PROFILE: notarize-app-dmg-profile
         run: |
