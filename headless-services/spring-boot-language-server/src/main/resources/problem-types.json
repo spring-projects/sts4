@@ -388,5 +388,39 @@
         "defaultSeverity": "WARNING"
       }
     ]
+  },
+  {
+    "id": "data-query",
+    "label": "Data Query",
+    "toggle": {
+      "label": "Enablement",
+      "values": [
+        "OFF",
+        "ON"
+      ],
+      "preferenceKey": "boot-java.validation.data-query",
+      "defaultValue": "ON"
+    },
+    "order": 8,
+    "problemTypes": [
+      {
+        "code": "JPQL_SYNTAX",
+        "label": "JPQL Query Syntax",
+        "description": "Syntax",
+        "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "HQL_SYNTAX",
+        "label": "HQL Query Syntax",
+        "description": "Syntax",
+        "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "SQL_SYNTAX",
+        "label": "SQL Query Syntax",
+        "description": "Syntax",
+        "defaultSeverity": "ERROR"
+      }
+    ]
   }
 ]
