@@ -78,25 +78,7 @@ public abstract class AnnotationHierarchies {
 
 	public static boolean hasTransitiveSuperAnnotationType(ITypeBinding typeBinding, String annotationType) {
 		synchronized(lock) {
-			if (typeBinding != null && annotationType != null) {
-				String qname = typeBinding.getQualifiedName();
-				
-//				log.info("CHECK ANNOTATION TYPE: " + qname + " / " + annotationType);
-				
-				if (annotationType.equals(qname)) {
-					return true;
-				}
-				else {
-					Collection<ITypeBinding> directSuperAnnotations = getDirectSuperAnnotations(typeBinding);
-					for (ITypeBinding superAnnotationBinding : directSuperAnnotations) {
-						if (hasTransitiveSuperAnnotationType(superAnnotationBinding, annotationType)) {
-							return true;
-						}
-					}
-				}
-			}
-			
-			return false;
+			return isMetaAnnotation(typeBinding, annotationType::equals);
 		}
 	}
 
