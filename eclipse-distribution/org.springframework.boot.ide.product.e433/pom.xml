@@ -15,7 +15,7 @@
 	<packaging>eclipse-repository</packaging>
 
 	<properties>
-		<justj.repository>https://download.eclipse.org/justj/jres/17/updates/release/latest/</justj.repository>
+		<justj.repository>https://download.eclipse.org/justj/jres/21/updates/release/latest/</justj.repository>
 	</properties>
 
 	<build>

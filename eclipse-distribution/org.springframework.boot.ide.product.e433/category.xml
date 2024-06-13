@@ -125,7 +125,7 @@
 	<bundle id="org.reactivestreams.reactive-streams"/>
 <!--	<bundle id="org.reactivestreams.reactive-streams.source"/> -->
 
-	<feature id="org.eclipse.mylyn.wikitext_feature"/>
+	<feature id="org.eclipse.mylyn.wikitext.feature"/>
 	<feature id="org.eclipse.tm4e.feature"/>
 
 	<bundle id="javassist"/>

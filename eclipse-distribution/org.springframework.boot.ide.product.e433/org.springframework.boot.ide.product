@@ -65,7 +65,7 @@
       <feature id="org.eclipse.jgit" installMode="root"/>
       <feature id="org.eclipse.jgit.lfs" installMode="root"/>
 
-      <feature id="org.eclipse.mylyn.wikitext.editors_feature" installMode="root"/>
+      <feature id="org.eclipse.mylyn.wikitext.feature" installMode="root"/>
 
       <feature id="org.eclipse.m2e.feature" installMode="root"/>
       <feature id="org.eclipse.m2e.lemminx.feature" installMode="root"/>
