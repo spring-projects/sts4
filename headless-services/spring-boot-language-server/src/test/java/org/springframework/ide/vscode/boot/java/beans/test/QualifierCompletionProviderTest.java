@@ -98,79 +98,51 @@ public class QualifierCompletionProviderTest {
 		assertCompletions("@Qualifier(<*>)", 4, new String[] {"quali1", "quali2", "bean1", "bean2"}, 0, "@Qualifier(\"quali1\"<*>)");
 	}
 
-//	@Test
-//	public void testDependsOnCompletionWithoutQuotesWithPrefix() throws Exception {
-//		assertCompletions("@DependsOn(be<*>)", 2, "@DependsOn(\"bean1\"<*>)");
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionWithoutQuotesWithAttributeName() throws Exception {
-//		assertCompletions("@DependsOn(value=<*>)", 2, "@DependsOn(value=\"bean1\"<*>)");
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionInsideOfQuotesWithoutPrefix() throws Exception {
-//		assertCompletions("@DependsOn(\"<*>\")", 2, "@DependsOn(\"bean1<*>\")");
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionWithoutQuotesWithoutPrefixInsideArray() throws Exception {
-//		assertCompletions("@DependsOn({<*>})", 2, "@DependsOn({\"bean1\"<*>})");
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionInsideOfQuotesWithoutPrefixInsideArray() throws Exception {
-//		assertCompletions("@DependsOn({\"<*>\"})", 2, "@DependsOn({\"bean1<*>\"})");
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionInsideOfQuotesWithPrefix() throws Exception {
-//		assertCompletions("@DependsOn(\"be<*>\")", 2, "@DependsOn(\"bean1<*>\")");
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionInsideOfQuotesAndArrayWithPrefix() throws Exception {
-//		assertCompletions("@DependsOn({\"be<*>\"})", 2, "@DependsOn({\"bean1<*>\"})");
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionInsideOfQuotesWithPrefixButWithoutMatches() throws Exception {
-//		assertCompletions("@DependsOn(\"XXX<*>\")", 0, null);
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionOutsideOfAnnotation1() throws Exception {
-//		assertCompletions("@DependsOn(\"XXX\")<*>", 0, null);
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionOutsideOfAnnotation2() throws Exception {
-//		assertCompletions("@DependsOn<*>(\"XXX\")", 0, null);
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionInsideOfQuotesWithPrefixAndReplacedPostfix() throws Exception {
-//		assertCompletions("@DependsOn(\"be<*>xxx\")", 2, "@DependsOn(\"bean1<*>xxx\")");
-//	}
-//	
-//	@Test
-//	public void testDependsOnCompletionInsideOfArrayBehindExistingElement() throws Exception {
-//		assertCompletions("@DependsOn({\"bean1\",<*>})", 1, "@DependsOn({\"bean1\",\"bean2\"<*>})");
-//	}
-//
-//	@Test
-//	public void testDependsOnCompletionInsideOfArrayInFrontOfExistingElement() throws Exception {
-//		assertCompletions("@DependsOn({<*>\"bean1\"})", 1, "@DependsOn({\"bean2\",<*>\"bean1\"})");
-//	}
-//	
-//	@Test
-//	public void testDependsOnCompletionInsideOfArrayBetweenExistingElements() throws Exception {
-//		Bean bean3 = new Bean("bean3", "type3", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);
-//		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, bean3});
-//		
-//		assertCompletions("@DependsOn({\"bean1\",<*>\"bean2\"})", 1, "@DependsOn({\"bean1\",\"bean3\",<*>\"bean2\"})");
-//	}
+	@Test
+	public void testQualifierCompletionWithoutQuotesWithPrefix() throws Exception {
+		assertCompletions("@Qualifier(be<*>)", 2, "@Qualifier(\"bean1\"<*>)");
+	}
 
+	@Test
+	public void testQualifierCompletionWithoutQuotesWithPrefixFromExistingQualifier() throws Exception {
+		assertCompletions("@Qualifier(qu<*>)", 2, new String[] {"quali1", "quali2"}, 0, "@Qualifier(\"quali1\"<*>)");
+	}
+
+	@Test
+	public void testQualifierCompletionWithoutQuotesWithAttributeName() throws Exception {
+		assertCompletions("@Qualifier(value=<*>)", 4, "@Qualifier(value=\"quali1\"<*>)");
+	}
+
+	@Test
+	public void testQualifierCompletionInsideOfQuotesWithoutPrefix() throws Exception {
+		assertCompletions("@Qualifier(\"<*>\")", 4, "@Qualifier(\"quali1<*>\")");
+	}
+
+	@Test
+	public void testQualifierCompletionInsideOfQuotesWithPrefix() throws Exception {
+		assertCompletions("@Qualifier(\"be<*>\")", 2, "@Qualifier(\"bean1<*>\")");
+	}
+
+	@Test
+	public void testQualifierCompletionInsideOfQuotesWithPrefixButWithoutMatches() throws Exception {
+		assertCompletions("@Qualifier(\"XXX<*>\")", 0, null);
+	}
+
+	@Test
+	public void testQualifierCompletionOutsideOfAnnotation1() throws Exception {
+		assertCompletions("@Qualifier(\"XXX\")<*>", 0, null);
+	}
+
+	@Test
+	public void testQualifierCompletionOutsideOfAnnotation2() throws Exception {
+		assertCompletions("@Qualifier<*>(\"XXX\")", 0, null);
+	}
+
+	@Test
+	public void testQualifierCompletionInsideOfQuotesWithPrefixAndReplacedPostfix() throws Exception {
+		assertCompletions("@Qualifier(\"be<*>xxx\")", 2, "@Qualifier(\"bean1<*>xxx\")");
+	}
+	
 	private void assertCompletions(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine) throws Exception {
 		assertCompletions(completionLine, noOfExpectedCompletions, null, 0, expectedCompletedLine);
 	}
