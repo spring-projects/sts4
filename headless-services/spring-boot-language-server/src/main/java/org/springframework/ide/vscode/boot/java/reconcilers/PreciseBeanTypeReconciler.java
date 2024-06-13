@@ -20,6 +20,7 @@ import java.util.ListIterator;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -116,7 +117,16 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 
 			@Override
 			public boolean visit(ReturnStatement node) {
-				ITypeBinding type = node.getExpression().resolveTypeBinding();
+				Expression expression = node.getExpression();
+				if (expression == null) {
+					return super.visit(node);
+				}
+				
+				ITypeBinding type = expression.resolveTypeBinding();
+				if (type == null) {
+					return super.visit(node);
+				}
+				
 				if (currentReturnTypes.isEmpty()) {
 					currentReturnTypes.add(type);
 				} else {
