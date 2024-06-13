@@ -1,4 +1,4 @@
-name: Snapshot - 4.30 Eclipse STS Distribution Build
+name: Snapshot - 4.33 Eclipse STS Distribution Build
 
 concurrency:
   group: e430-snapshot
@@ -18,7 +18,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
-      eclipse_profile: 'e430'
+      eclipse_profile: 'e433'
       build_type: 'snapshot'
       java_version: '17'
     secrets: inherit

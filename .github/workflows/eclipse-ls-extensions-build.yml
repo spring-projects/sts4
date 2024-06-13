@@ -14,7 +14,7 @@ on:
       eclipse_profile:
         description: Eclipse profile 'e429' etc
         required: false
-        default: 'e430'
+        default: 'e431'
         type: string
       skip_tests:
         description: skip ls tests execution
@@ -113,14 +113,14 @@ jobs:
         run: |
           invalid_urls=`aws s3 ls s3://tools-spring-io/${{ steps.upload-p2-to-akamai.outputs.p2_path }}/ --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
           echo "invalid_urls=$invalid_urls" >> $GITHUB_OUTPUT
-      - name: Verify Eclipse LS Extensions on e432
+      - name: Verify Eclipse LS Extensions on e433
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
           cd eclipse-language-servers
           if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean package -Pe432 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            xvfb-run ./mvnw --batch-mode clean package -Pe433 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           else
-            ./mvnw --batch-mode clean package -Pe432 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            ./mvnw --batch-mode clean package -Pe433 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           fi
 
   purge_cache:
