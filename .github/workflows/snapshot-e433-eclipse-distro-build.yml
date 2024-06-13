@@ -14,11 +14,11 @@ on:
       - "main"
 
 jobs:
-  e430-distro:
+  e433-distro:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e433'
       build_type: 'snapshot'
-      java_version: '17'
+      java_version: '21'
     secrets: inherit

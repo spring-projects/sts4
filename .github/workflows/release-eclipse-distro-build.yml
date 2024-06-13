@@ -14,7 +14,7 @@ on:
 
 jobs:
 
-  e430-distro:
+  e431-distro:
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e431'
@@ -24,7 +24,7 @@ jobs:
       java_version: '17'
     secrets: inherit
 
-  e431-distro:
+  e432-distro:
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e432'
@@ -34,7 +34,7 @@ jobs:
       java_version: '21'
     secrets: inherit
 
-  e432-distro:
+  e433-distro:
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e433'
