@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.ExecuteCommandParams;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -35,7 +36,6 @@ import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 
 public class WorkspaceBootExecutableProjects {
 	
@@ -79,9 +79,6 @@ public class WorkspaceBootExecutableProjects {
 							.filter(cpe -> !cpe.isTest() && !cpe.isSystem())
 							.map(cpe -> Classpath.isSource(cpe) ? cpe.getOutputFolder() : cpe.getPath())
 							.collect(Collectors.toSet());
-					String springBootVersion = SpringProjectUtil.getSpringBootVersion(project).toString();
-					String buildTool = project.getProjectBuild().getType();
-					String javaVersion = project.getClasspath().getJavaVersion();
 					return Optional.of(new ExecutableProject(project.getElementName(), project.getLocationUri().toASCIIString(), null, appBean.getType(), classpath));
 				} catch (Exception e) {
 					log.error("", e);
@@ -142,27 +139,10 @@ public class WorkspaceBootExecutableProjects {
 	}
 
 	private CompletableFuture<BootProjectInfo> getBootProjectInfo(ExecuteCommandParams params) {
-		List<Object> arguments = params.getArguments();
-		String projectUri = arguments.stream()
-				.filter(arg -> arg instanceof JsonObject && ((JsonObject) arg).has("projectUri")).map(arg -> {
-					JsonElement element = ((JsonObject) arg).get("projectUri");
-					return element.isJsonObject() ? element.toString() : element.getAsString();
-				})
-				.findFirst().orElse(null);
+		String projectUri = ((JsonElement) params.getArguments().get(0)).getAsString();
+		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(projectUri)).orElse(null);
 
-		projectFinder.all().stream().filter(p -> SpringProjectUtil.isBootProject(p))
-				.forEach(p -> log.info(p.toString()));
-
-		CompletableFuture<Optional<BootProjectInfo>> bootProjectInfo = projectFinder.all().stream()
-				.filter(p -> SpringProjectUtil.isBootProject(p))
-				.filter(p -> p.getLocationUri().toString().replace("file:", "").equals(projectUri))
-				.map(this::mapToBootProjectInfo)
-				.findFirst().orElse(null);
-
-		if (bootProjectInfo == null) {
-			return CompletableFuture.completedFuture(null);
-		}
-		return bootProjectInfo.thenApply(opt -> opt.orElse(null));
+		return mapToBootProjectInfo(project).thenApply(opt -> opt.orElse(null));
 	}
 	
 }
