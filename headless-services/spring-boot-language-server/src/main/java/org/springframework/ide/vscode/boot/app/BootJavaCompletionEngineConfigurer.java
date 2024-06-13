@@ -139,7 +139,7 @@ public class BootJavaCompletionEngineConfigurer {
 					if (annotations != null) {
 						for (int i = 0; i < annotations.length; i++) {
 							ITypeBinding annotationType = annotations[i].getAnnotationType();
-							if (AnnotationHierarchies.isMetaAnnotation(annotationType, (name) -> requiredAnnotation.equals(name))) {
+							if (AnnotationHierarchies.hasTransitiveSuperAnnotationType(annotationType, requiredAnnotation)) {
 								return true;
 							}
 						}

@@ -12,6 +12,9 @@ package org.springframework.ide.vscode.boot.java.annotations;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -78,8 +81,48 @@ public abstract class AnnotationHierarchies {
 
 	public static boolean hasTransitiveSuperAnnotationType(ITypeBinding typeBinding, String annotationType) {
 		synchronized(lock) {
-			return isMetaAnnotation(typeBinding, annotationType::equals);
+			if (typeBinding != null && annotationType != null) {
+				for (Iterator<ITypeBinding> itr = metaHierarchy(typeBinding); itr.hasNext();) {
+					ITypeBinding t = itr.next();
+					if (annotationType.equals(t.getQualifiedName())) {
+						return true;
+					}
+				}
+			}
+			return false;
 		}
+	}
+	
+	public static Iterator<ITypeBinding> metaHierarchy(ITypeBinding actualAnnotation) {
+		return new Iterator<>() {
+			
+			private HashSet<String> seen = new HashSet<>();
+			private Queue<ITypeBinding> queue = new LinkedList<>();
+
+			{
+				seen.add(actualAnnotation.getQualifiedName());
+				queue.add(actualAnnotation);
+			}
+
+			@Override
+			public boolean hasNext() {
+				return !queue.isEmpty();
+			}
+
+			@Override
+			public ITypeBinding next() {
+				ITypeBinding next = queue.poll();
+				for (ITypeBinding a : getDirectSuperAnnotations(next)) {
+					String qName = a.getQualifiedName();
+					if (!seen.contains(qName)) {
+						seen.add(qName);
+						queue.add(a);
+					}
+				}
+				return next;
+			}
+			
+		};
 	}
 
 	public static Collection<ITypeBinding> getMetaAnnotations(ITypeBinding actualAnnotation, Predicate<String> isKeyAnnotationName) {
