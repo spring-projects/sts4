@@ -265,7 +265,8 @@
       {
         "command": "vscode-spring-boot.agent.apply",
         "title": "Apply Changes",
-        "category": "Spring Boot Agent"
+        "category": "Spring Boot Agent",
+        "enablement": "false"
       }
     ],
     "configuration": [

@@ -2,14 +2,11 @@ import { ActivatorOptions } from '@pivotal-tools/commons-vscode';
 import * as vscode from 'vscode';
 import { LanguageClient } from 'vscode-languageclient/node';
 import { Uri, window } from 'vscode';
-import cp from "child_process";
-import { homedir } from 'os';
-import { WorkspaceEdit } from "vscode-languageclient";
 import path from 'path';
 import fs from "fs";
-import { getTargetGuideMardown, getWorkspaceRoot, getExecutable } from './utils/util';
+import { getTargetGuideMardown, getWorkspaceRoot } from './utils/util';
 import { createConverter } from "vscode-languageclient/lib/common/protocolConverter";
-import { systemBoot2Prompt, systemBoot3Prompt, systemPrompt } from './utils/system-ai-prompt';
+import { systemPrompt } from './utils/system-ai-prompt';
 import { userPrompt } from './utils/user-ai-prompt';
 import { SPRINGCLI } from './Main';
 
@@ -60,20 +57,21 @@ function replacePlaceholder(fileContent: string, question: string, match?: BootP
     return fileContent;
 }
 
-async function enhancePrompt(question: string, cwd: string, projects: BootProjectInfo[]): Promise<Thenable<Prompt>> {
-    let match;
-    if(projects !== null || projects === undefined) {
-        match = projects.find(project => project.uri.toString().replace('file:', '') === cwd);
-    }
+async function enhancePrompt(question: string, projectInfo: BootProjectInfo): Promise<Thenable<Prompt>> {
     const prompt = {} as Prompt;
-    prompt.systemPrompt = replacePlaceholder(systemPrompt, question, match); 
-    if(match !== null && match !== undefined && match.springBootVersion.startsWith('3')) {
-        prompt.systemPrompt = prompt.systemPrompt + '\n' + systemBoot3Prompt;
+    if(projectInfo !== null || projectInfo === undefined) {
+        prompt.systemPrompt = replacePlaceholder(systemPrompt, question, projectInfo); 
+        // if(projectInfo.springBootVersion.startsWith('3')) {
+        //     prompt.systemPrompt = prompt.systemPrompt + '\n' + systemBoot3Prompt;
+        // } else {
+        //     prompt.systemPrompt = prompt.systemPrompt + '\n' + systemBoot2Prompt;
+        // }
+        prompt.userPrompt = replacePlaceholder(userPrompt, question, projectInfo);
     } else {
-        prompt.systemPrompt = prompt.systemPrompt + '\n' + systemBoot2Prompt;
+        prompt.systemPrompt = systemPrompt;
+        prompt.userPrompt = userPrompt;
     }
-    prompt.userPrompt = replacePlaceholder(userPrompt, question, match);
-    prompt.projName = match?.name;
+    prompt.projName = projectInfo?.name;
     return Promise.resolve(prompt);
 }
 
@@ -96,8 +94,8 @@ export async function applyLspEdit(uri: Uri) {
     });
 }
 
-async function writeResponseToFile(response: string, shortPackageName: string, cwd: string) {
-    const readmeFilePath =  path.resolve(cwd, `README-ai-${shortPackageName}.md`);
+async function writeResponseToFile(response: string, shortPackageName: string, selectedProject: string) {
+    const readmeFilePath =  path.resolve(selectedProject, `README-ai-${shortPackageName}.md`);
     if (fs.existsSync(readmeFilePath)) {
         try {
             fs.unlinkSync(readmeFilePath);
@@ -108,6 +106,7 @@ async function writeResponseToFile(response: string, shortPackageName: string, c
     
     try {
         fs.writeFileSync(readmeFilePath, response);
+        return vscode.Uri.file(readmeFilePath);
     } catch (ex) {
         throw new Error(`Could not write readme file: ${readmeFilePath}, ${ex}`);
     }
@@ -156,47 +155,41 @@ async function chatRequest(enhancedPrompt: Prompt, token: vscode.CancellationTok
 
 async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.ChatContext, stream: vscode.ChatResponseStream, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
 
-    const cwd = (await getWorkspaceRoot()).fsPath;
-
-    console.log(cwd)
-
-    const projects = await vscode.commands.executeCommand("sts/spring-boot/bootProjectInfo", {projectUri: cwd}) as BootProjectInfo[];
-    // const projects = await vscode.commands.executeCommand("sts/spring-boot/executableBootProjects") as ExecutableBootProject[];
-    console.log(projects);
-
-    // const execProj = await vscode.commands.executeCommand("sts/spring-boot/executableBootProjects") as BootProjectInfo[];
-    // console.log(execProj);
+    const selectedProject = (await getWorkspaceRoot()).fsPath;
+    const projectUri = vscode.Uri.file(selectedProject).toString()
+    stream.progress('Generating code.  This will take a few minutes');
+    const projectInfo = await vscode.commands.executeCommand("sts/spring-boot/bootProjectInfo", projectUri) as BootProjectInfo;
 
     // get enhanced prompt by adding the spring context from boot ls
-    const enhancedPrompt = await enhancePrompt(request.prompt, cwd, projects);
-    console.log(enhancedPrompt.systemPrompt);
-    console.log(enhancedPrompt.userPrompt);
+    const enhancedPrompt = await enhancePrompt(request.prompt, projectInfo);
 
     // chat request to copilot LLM
     const response = await chatRequest(enhancedPrompt, token, request.prompt);
 
     // write the response to markdown file
-    await writeResponseToFile(response, enhancedPrompt.projName, cwd);
+    const targetMarkdownUri = await writeResponseToFile(response, enhancedPrompt.projName, selectedProject);
+    // const targetMarkdownUri = await getTargetGuideMardown();
 
-    const uri = await getTargetGuideMardown();
     let documentContent;
 
-    if(uri !== null && uri !== undefined) {
+    if(targetMarkdownUri !== null && targetMarkdownUri !== undefined) {
 
         // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
-        const enhancedResponse = await SPRINGCLI.enhanceResponse(uri, enhancedPrompt.projName, cwd);
-        writeResponseToFile(enhancedResponse, enhancedPrompt.projName, cwd);
+        if(projectInfo.springBootVersion.startsWith('3')) {
+            const enhancedResponse = await SPRINGCLI.enhanceResponse(targetMarkdownUri, enhancedPrompt.projName, selectedProject);
+            writeResponseToFile(enhancedResponse, enhancedPrompt.projName, selectedProject);
+        }
         // return modified response to chat
-        documentContent = await vscode.workspace.fs.readFile(uri);
+        documentContent = await vscode.workspace.fs.readFile(targetMarkdownUri);
     } else {
-        documentContent = response;
+        documentContent = 'Note: The code provided is just an example and may not be suitable for production use. \n '+response;
     }
     
     const chatResponse = Buffer.from(documentContent).toString();
     stream.markdown(chatResponse);
     stream.button({
         command: 'vscode-spring-boot.agent.apply',
-        title: vscode.l10n.t('Apply Changes!')
+        title: vscode.l10n.t('Preview Changes!')
     });
     return { metadata: { command: 'prompt' } };
 }

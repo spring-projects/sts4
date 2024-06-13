@@ -16,7 +16,7 @@ Ensure that your solution meets the following criteria:
 
 1. Provide steps for adding code to an existing project, rather than creating a new project.
 2. Include build tool dependency management configuration for the project (partial file, not full project dependency configuration).
-3. Please generate a pom.xml snippet that includes the necessary Spring Boot Starter dependencies such as "spring-boot-starter-jpa".
+3. Generate a pom.xml snippet that includes the necessary Spring Boot Starter dependencies such as "spring-boot-starter-jpa".
 4. Utilize the Maven artifactId "spring-boot-starter-test" as a dependency for JUnit-related functionality, avoiding the direct addition of a JUnit dependency.
 5. Place all code, including test code, in the in appropriate package. Use the Package name as the root package and place the files in sub-packages accordingly.
 6. Include architectural layers (Controller, Service, Repository, Entity) as appropriate.
