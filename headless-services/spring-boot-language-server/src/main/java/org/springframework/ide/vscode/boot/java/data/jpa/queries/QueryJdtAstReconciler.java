@@ -154,7 +154,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 
 	@Override
 	public ProblemType getProblemType() {
-		return QueryProblemType.EXPRESSION_SYNTAX;
+		return QueryProblemType.JPQL_SYNTAX;
 	}
 
 }

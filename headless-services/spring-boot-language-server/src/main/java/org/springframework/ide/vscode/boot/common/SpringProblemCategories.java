@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2023 VMware, Inc.
+ * Copyright (c) 2022, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,7 +38,7 @@ public class SpringProblemCategories {
 	public static final ProblemCategory VERSION_VALIDATION = new ProblemCategory("version-validation", "Versions and Support Ranges",
 			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.java.version-validation"));
 
-	public static final ProblemCategory JPQL = new ProblemCategory("jpql-validation", "JPQL",
-			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.jpql"));;
+	public static final ProblemCategory DATA_QUERY = new ProblemCategory("data-query", "Data Query",
+			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.data-query"));
 	
 }

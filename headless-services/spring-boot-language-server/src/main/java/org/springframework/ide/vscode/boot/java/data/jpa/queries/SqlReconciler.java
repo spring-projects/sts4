@@ -62,7 +62,7 @@ public class SqlReconciler implements Reconciler {
 					offset = token.getStartIndex() - token.getCharPositionInLine();
 					length = token.getCharPositionInLine() + 1;
 				}
-				problemCollector.accept(new ReconcileProblemImpl(QueryProblemType.EXPRESSION_SYNTAX, "SQL: " + msg, startPosition + offset, length));
+				problemCollector.accept(new ReconcileProblemImpl(QueryProblemType.SQL_SYNTAX, "SQL: " + msg, startPosition + offset, length));
 			}
 			
 			@Override

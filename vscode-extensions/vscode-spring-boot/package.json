@@ -1146,6 +1146,58 @@
             ]
           }
         }
+      },
+      {
+        "id": "data-query",
+        "title": "Data Query",
+        "order": 408,
+        "properties": {
+          "boot-java.validation.data-query": {
+            "type": "string",
+            "default": "ON",
+            "description": "Enablement",
+            "enum": [
+              "OFF",
+              "ON"
+            ]
+          },
+          "spring-boot.ls.problem.data-query.JPQL_SYNTAX": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Syntax",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.data-query.HQL_SYNTAX": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Syntax",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.data-query.SQL_SYNTAX": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Syntax",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          }
+        }
       }
     ],
     "grammars": [

@@ -19,7 +19,9 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 
 public enum QueryProblemType implements ProblemType {
 	
-	EXPRESSION_SYNTAX(ERROR, "Syntax", "Query Expression Syntax");
+	JPQL_SYNTAX(ERROR, "Syntax", "JPQL Query Syntax"),
+	HQL_SYNTAX(ERROR, "Syntax", "HQL Query Syntax"),
+	SQL_SYNTAX(ERROR, "Syntax", "SQL Query Syntax");
 
 	private final ProblemSeverity defaultSeverity;
 	private String description;
@@ -64,7 +66,7 @@ public enum QueryProblemType implements ProblemType {
 
 	@Override
 	public ProblemCategory getCategory() {
-		return SpringProblemCategories.JPQL;
+		return SpringProblemCategories.DATA_QUERY;
 	}
 }
 

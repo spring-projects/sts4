@@ -63,7 +63,7 @@ public class HqlReconciler implements Reconciler {
 					offset = token.getStartIndex() - token.getCharPositionInLine();
 					length = token.getCharPositionInLine() + 1;
 				}
-				problemCollector.accept(new ReconcileProblemImpl(QueryProblemType.EXPRESSION_SYNTAX, "HQL: " + msg, startPosition + offset, length));
+				problemCollector.accept(new ReconcileProblemImpl(QueryProblemType.HQL_SYNTAX, "HQL: " + msg, startPosition + offset, length));
 			}
 			
 			@Override
