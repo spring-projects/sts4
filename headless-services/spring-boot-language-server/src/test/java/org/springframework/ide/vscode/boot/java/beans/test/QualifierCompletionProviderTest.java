@@ -95,7 +95,7 @@ public class QualifierCompletionProviderTest {
 	
 	@Test
 	public void testQualifierCompletionWithoutQuotesWithoutPrefix() throws Exception {
-		assertCompletions("@Qualifier(<*>)", 4, new String[] {"bean1", "bean2", "quali1", "quali2"}, 0, "@Qualifier(\"bean1\"<*>)");
+		assertCompletions("@Qualifier(<*>)", 4, new String[] {"quali1", "quali2", "bean1", "bean2"}, 0, "@Qualifier(\"quali1\"<*>)");
 	}
 
 //	@Test

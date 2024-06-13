@@ -12,22 +12,23 @@ package org.springframework.ide.vscode.boot.java.beans;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
 /**
  * @author Martin Lippert
  */
-public class QualifierCompletionProposal implements ICompletionProposal {
+public class QualifierCompletionProposal extends ScoreableProposal {
 
 	private static final String EMPTY_DETAIL = "";
 
-	private DocumentEdits edits;
-	private String label;
-	private String detail;
-	private Renderable documentation;
+	private final DocumentEdits edits;
+	private final String label;
+	private final String detail;
+	private final Renderable documentation;
+	private final double score;
 
-	public QualifierCompletionProposal(DocumentEdits edits, String label, String detail, Renderable documentation) {
+	public QualifierCompletionProposal(DocumentEdits edits, String label, String detail, Renderable documentation, double score) {
 		this.edits = edits;
 		this.label = label;
 		// PT  161489998 - Detail for proposal must not be null. For some clients like Eclipse,
@@ -35,6 +36,7 @@ public class QualifierCompletionProposal implements ICompletionProposal {
 		// in odd behaviour like insertion of an extra new line.
 		this.detail = detail == null ? EMPTY_DETAIL : detail;
 		this.documentation = documentation;
+		this.score = score;
 	}
 
 	@Override
@@ -60,6 +62,11 @@ public class QualifierCompletionProposal implements ICompletionProposal {
 	@Override
 	public Renderable getDocumentation() {
 		return this.documentation;
+	}
+
+	@Override
+	public double getBaseScore() {
+		return this.score;
 	}
 
 }

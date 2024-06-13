@@ -13,10 +13,13 @@ package org.springframework.ide.vscode.boot.java.beans;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -26,6 +29,7 @@ import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -33,7 +37,6 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -63,20 +66,8 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 			
 			// case: @Qualifier(<*>)
 			if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
-				Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
+				createCompletionProposals(project, doc, node, completions, offset, offset, "", (beanName) -> "\"" + beanName + "\"");
 				
-				for (Bean bean : beans) {
-
-					DocumentEdits edits = new DocumentEdits(doc, false);
-					edits.replace(offset, offset, "\"" + bean.getName() + "\"");
-
-					// PT-160455522: create a proposal with `PlainText` format type, because for vscode (but not Eclipse), if you send it as a snippet
-					// and it is "place holder" as such `"${debug}"`, vscode may treat it as a snippet place holder, and insert an empty string
-					// if it cannot resolve it. If sending this as plain text, then insertion happens correctly
-					QualifierCompletionProposal proposal = new QualifierCompletionProposal(edits, bean.getName(), bean.getName(), null);
-
-					completions.add(proposal);
-				}
 			}
 			// case: @Qualifier(prefix<*>)
 			else if (node instanceof SimpleName && node.getParent() instanceof Annotation) {
@@ -115,7 +106,7 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 		}
 	}
 
-	private void computeProposalsForSimpleName(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, IDocument doc) {
+	private void computeProposalsForSimpleName(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) {
 		String prefix = identifyPropertyPrefix(node.toString(), offset - node.getStartPosition());
 
 		int startOffset = node.getStartPosition();
@@ -123,80 +114,22 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 
 		String proposalPrefix = "\"";
 		String proposalPostfix = "\"";
-		
-		Set<String> mentionedBeans = alreadyMentionedBeans(node);
-		
-		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
-		List<Bean> matchingBeans = Arrays.stream(beans)
-			.filter(bean -> bean.getName().toLowerCase().startsWith(prefix.toLowerCase()))
-			.filter(bean -> !mentionedBeans.contains(bean.getName()))
-			.collect(Collectors.toList());
 
-		for (Bean bean : matchingBeans) {
-
-			DocumentEdits edits = new DocumentEdits(doc, false);
-			edits.replace(startOffset, endOffset, proposalPrefix + bean.getName() + proposalPostfix);
-
-			// PT-160455522: create a proposal with `PlainText` format type, because for vscode (but not Eclipse), if you send it as a snippet
-			// and it is "place holder" as such `"${debug}"`, vscode may treat it as a snippet place holder, and insert an empty string
-			// if it cannot resolve it. If sending this as plain text, then insertion happens correctly
-			QualifierCompletionProposal proposal = new QualifierCompletionProposal(edits, bean.getName(), bean.getName(), null);
-
-			completions.add(proposal);
-		}
+		createCompletionProposals(project, doc, node, completions, startOffset, endOffset, prefix, (beanName) -> proposalPrefix + beanName + proposalPostfix);
 	}
 
-	private void computeProposalsForStringLiteral(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, IDocument doc) throws BadLocationException {
+	private void computeProposalsForStringLiteral(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) throws BadLocationException {
 		int length = offset - (node.getStartPosition() + 1);
 
 		String prefix = identifyPropertyPrefix(doc.get(node.getStartPosition() + 1, length), length);
 		int startOffset = offset - prefix.length();
 		int endOffset = offset;
-		
-		Set<String> mentionedBeans = alreadyMentionedBeans(node);
 
-		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
-
-		final String filterPrefix = prefix;
-		List<Bean> matchingBeans = Arrays.stream(beans)
-			.filter(bean -> bean.getName().toLowerCase().startsWith(filterPrefix.toLowerCase()))
-			.filter(bean -> !mentionedBeans.contains(bean.getName()))
-			.collect(Collectors.toList());
-
-		for (Bean bean : matchingBeans) {
-
-			DocumentEdits edits = new DocumentEdits(doc, false);
-			edits.replace(startOffset, endOffset, bean.getName());
-
-			// PT-160455522: create a proposal with `PlainText` format type, because for vscode (but not Eclipse), if you send it as a snippet
-			// and it is "place holder" as such `"${debug}"`, vscode may treat it as a snippet place holder, and insert an empty string
-			// if it cannot resolve it. If sending this as plain text, then insertion happens correctly
-			QualifierCompletionProposal proposal = new QualifierCompletionProposal(edits, bean.getName(), bean.getName(), null);
-
-			completions.add(proposal);
-		}
+		createCompletionProposals(project, doc, node, completions, startOffset, endOffset, prefix, (beanName) -> beanName);
 	}
 	
-	private void computeProposalsForArrayInitializr(IJavaProject project, ArrayInitializer node, Collection<ICompletionProposal> completions, int offset, IDocument doc) {
-		Set<String> mentionedBeans = alreadyMentionedBeans(node);
-
-		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
-		List<Bean> filteredBeans = Arrays.stream(beans)
-			.filter(bean -> !mentionedBeans.contains(bean.getName()))
-			.collect(Collectors.toList());
-		
-		for (Bean bean : filteredBeans) {
-
-			DocumentEdits edits = new DocumentEdits(doc, false);
-			edits.replace(offset, offset, "\"" + bean.getName() + "\"");
-
-			// PT-160455522: create a proposal with `PlainText` format type, because for vscode (but not Eclipse), if you send it as a snippet
-			// and it is "place holder" as such `"${debug}"`, vscode may treat it as a snippet place holder, and insert an empty string
-			// if it cannot resolve it. If sending this as plain text, then insertion happens correctly
-			QualifierCompletionProposal proposal = new QualifierCompletionProposal(edits, bean.getName(), bean.getName(), null);
-
-			completions.add(proposal);
-		}
+	private void computeProposalsForArrayInitializr(IJavaProject project, ArrayInitializer node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) {
+		createCompletionProposals(project, doc, node, completions, offset, offset, "", (beanName) -> "\"" + beanName + "\"");
 	}
 	
 	private void computeProposalsForInsideArrayInitializer(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) throws BadLocationException {
@@ -205,25 +138,39 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 			computeProposalsForStringLiteral(project, node, completions, offset, doc);
 		}
 		else {
-			Set<String> mentionedBeans = alreadyMentionedBeans(node);
+			createCompletionProposals(project, doc, node, completions, offset, offset, "", (beanName) -> "\"" + beanName + "\",");
+		}
+	}
 
-			Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
-			List<Bean> filteredBeans = Arrays.stream(beans)
-				.filter(bean -> !mentionedBeans.contains(bean.getName()))
-				.collect(Collectors.toList());
-			
-			for (Bean bean : filteredBeans) {
+	private void createCompletionProposals(IJavaProject project, TextDocument doc, ASTNode node, Collection<ICompletionProposal> completions, int startOffset, int endOffset,
+			String filterPrefix, Function<String, String> createReplacementText) {
 
-				DocumentEdits edits = new DocumentEdits(doc, false);
-				edits.replace(offset, offset, "\"" + bean.getName() + "\",");
+		Set<String> mentionedQualifiers = alreadyMentionedValues(node);
 
-				// PT-160455522: create a proposal with `PlainText` format type, because for vscode (but not Eclipse), if you send it as a snippet
-				// and it is "place holder" as such `"${debug}"`, vscode may treat it as a snippet place holder, and insert an empty string
-				// if it cannot resolve it. If sending this as plain text, then insertion happens correctly
-				QualifierCompletionProposal proposal = new QualifierCompletionProposal(edits, bean.getName(), bean.getName(), null);
+		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
+		Set<String> candidates = Stream.concat(
+				findAllQualifiers(beans),
+				Arrays.stream(beans).map(bean -> bean.getName()))
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 
-				completions.add(proposal);
-			}
+		List<String> filteredCandidates = candidates.stream()
+			.filter(candidate -> candidate.toLowerCase().startsWith(filterPrefix.toLowerCase()))
+			.filter(candidate -> !mentionedQualifiers.contains(candidate))
+			.collect(Collectors.toList());
+		
+
+		double score = filteredCandidates.size();
+		for (String candidate : filteredCandidates) {
+
+			DocumentEdits edits = new DocumentEdits(doc, false);
+			edits.replace(startOffset, endOffset, createReplacementText.apply(candidate));
+
+			// PT-160455522: create a proposal with `PlainText` format type, because for vscode (but not Eclipse), if you send it as a snippet
+			// and it is "place holder" as such `"${debug}"`, vscode may treat it as a snippet place holder, and insert an empty string
+			// if it cannot resolve it. If sending this as plain text, then insertion happens correctly
+			QualifierCompletionProposal proposal = new QualifierCompletionProposal(edits, candidate, candidate, null, score--);
+
+			completions.add(proposal);
 		}
 	}
 	
@@ -243,7 +190,7 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 		return result;
 	}
 	
-	private Set<String> alreadyMentionedBeans(ASTNode node) {
+	private Set<String> alreadyMentionedValues(ASTNode node) {
 		Set<String> result = new HashSet<>();
 		
 		ArrayInitializer arrayNode = null;
@@ -268,6 +215,29 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 		}
 		
 		return result;
+	}
+	
+	private Stream<String> findAllQualifiers(Bean[] beans) {
+
+		Stream<String> qualifiersFromBeans = Arrays.stream(beans)
+				// annotations from beans themselves
+				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
+				.filter(annotation -> Annotations.QUALIFIER.equals(annotation.getAnnotationType()))
+				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value") && annotation.getAttributes().get("value").length == 1)
+				.map(annotation -> annotation.getAttributes().get("value")[0]);
+		
+		Stream<String> qualifiersFromInjectionPoints = Arrays.stream(beans)
+				// annotations from beans themselves
+				.filter(bean -> bean.getInjectionPoints() != null)
+				.flatMap(bean -> Arrays.stream(bean.getInjectionPoints()))
+				.filter(injectionPoint -> injectionPoint.getAnnotations() != null)
+				.flatMap(injectionPoint -> Arrays.stream(injectionPoint.getAnnotations()))
+				.filter(annotation -> Annotations.QUALIFIER.equals(annotation.getAnnotationType()))
+				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value") && annotation.getAttributes().get("value").length == 1)
+				.map(annotation -> annotation.getAttributes().get("value")[0]);
+		
+		return Stream.concat(qualifiersFromBeans, qualifiersFromInjectionPoints);
+		
 	}
 
 
