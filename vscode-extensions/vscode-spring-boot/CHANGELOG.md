@@ -1,3 +1,18 @@
+## 2024-06-17 (4.23.1 RELEASE, incl. language servers version 1.55.1)
+
+#### important highlights
+
+* _(Spring Boot)_ SQL query syntax validation is off by default. Settings to toggle JPQL, HQL, SQL query validation enablement
+* _(Spring Boot)_ Fixed `StackOverflowException` coming from `AnnotationHierarchies`
+
+## all fixes and improvements in detail
+
+* _(Spring Boot)_ Ability to switch on/off Query syntax validation and problem severities for query syntax problems [#1275](https://github.com/spring-projects/sts4/issues/1275)
+* _(Spring Boot)_ Unable to view beans for multiple modules in version v1.55 [#1271](https://github.com/spring-projects/sts4/issues/1271)
+* _(Spring Boot)_ navigation to bean class of live bean in dashboard is broken [#1269](https://github.com/spring-projects/sts4/issues/1269)
+* _(Spring Boot)_ navigation to class of wired bean is broken [#1268](https://github.com/spring-projects/sts4/issues/1268)
+* _(Spring Boot)_ Opening Spring Boot project in VSCode leads to StackOverflowError [#1166](https://github.com/spring-projects/sts4/issues/1166)
+
 ## 2024-06-12 (4.23.0 RELEASE, incl. language servers version 1.55.0)
 
 #### important highlights
