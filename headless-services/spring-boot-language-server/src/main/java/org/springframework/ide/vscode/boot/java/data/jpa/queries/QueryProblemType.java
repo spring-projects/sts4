@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
+import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.IGNORE;
 
 import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
@@ -21,7 +22,7 @@ public enum QueryProblemType implements ProblemType {
 	
 	JPQL_SYNTAX(ERROR, "Syntax", "JPQL Query Syntax"),
 	HQL_SYNTAX(ERROR, "Syntax", "HQL Query Syntax"),
-	SQL_SYNTAX(ERROR, "Syntax", "SQL Query Syntax");
+	SQL_SYNTAX(IGNORE, "Syntax", "SQL Query Syntax");
 
 	private final ProblemSeverity defaultSeverity;
 	private String description;
