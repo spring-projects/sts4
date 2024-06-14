@@ -21,11 +21,6 @@ on:
         description: p2 qualifier to override
         required: false
         type: string
-      ref:
-        description: Git branch, tag, commit hash
-        required: false
-        default: 'main'
-        type: string
       java_version:
         description: JDK version to build the artifacts
         required: false
@@ -39,7 +34,6 @@ jobs:
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
-          ref: ${{ inputs.ref }}
           sparse-checkout: |
             .github
             eclipse-distribution

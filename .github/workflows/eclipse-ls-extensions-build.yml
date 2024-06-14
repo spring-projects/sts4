@@ -25,11 +25,6 @@ on:
         description: version of sts4 ls extensions
         required: false
         type: string
-      ref:
-        description: Git branch, tag, commit hash
-        required: false
-        default: 'main'
-        type: string
 
 jobs:
 
