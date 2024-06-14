@@ -269,7 +269,7 @@ jobs:
         env:
           NOTARIZE_PROFILE: notarize-app-dmg-profile
         run: |
-          xcrun notarytool store-credentials $NOTARIZE_PROFILE --apple-id ${{ secrets.AB_AC_USERNAME }} --team-id ${{ secrets.APPLE_TEAM_ID }} --password ${{ secrets.AB_AC_PASSWORD }}
+          xcrun notarytool store-credentials $NOTARIZE_PROFILE --apple-id ${{ secrets.AB_AC_USERNAME }} --team-id ${{ secrets.AB_APPLE_TEAM_ID }} --password ${{ secrets.AB_AC_PASSWORD }}
           dmg_files=`ls spring-tool-suite-4*macosx*.dmg`
           for dmg_file in $dmg_files
           do
