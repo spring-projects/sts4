@@ -419,7 +419,7 @@
         "code": "SQL_SYNTAX",
         "label": "SQL Query Syntax",
         "description": "Syntax",
-        "defaultSeverity": "ERROR"
+        "defaultSeverity": "IGNORE"
       }
     ]
   }
