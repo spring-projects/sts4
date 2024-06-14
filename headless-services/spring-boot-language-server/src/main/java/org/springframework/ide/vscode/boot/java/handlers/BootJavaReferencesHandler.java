@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -117,12 +117,13 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 	private List<? extends Location> provideReferencesForAnnotation(CancelChecker cancelToken, ASTNode node, int offset, TextDocument doc) {
 		Annotation annotation = null;
 
-		while (node != null && !(node instanceof Annotation)) {
-			node = node.getParent();
+		ASTNode annotationNode = node;
+		while (annotationNode != null && !(annotationNode instanceof Annotation)) {
+			annotationNode = annotationNode.getParent();
 		}
 
-		if (node != null) {
-			annotation = (Annotation) node;
+		if (annotationNode != null) {
+			annotation = (Annotation) annotationNode;
 			ITypeBinding type = annotation.resolveTypeBinding();
 			if (type != null) {
 

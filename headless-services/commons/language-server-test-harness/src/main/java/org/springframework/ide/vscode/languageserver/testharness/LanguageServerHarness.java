@@ -84,6 +84,7 @@ import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.RenameFile;
 import org.eclipse.lsp4j.ResourceOperation;
@@ -647,6 +648,15 @@ public class LanguageServerHarness {
 		} else /* sompletions.isRight() */ {
 			return completions.getRight();
 		}
+	}
+
+	public List<? extends Location> getReferences(TextDocumentInfo doc, Position cursor) throws Exception {
+		ReferenceParams params = new ReferenceParams();
+		params.setPosition(cursor);
+		params.setTextDocument(doc.getId());
+		waitForReconcile();
+		List<? extends Location> references = getServer().getTextDocumentService().references(params).get();
+		return references;
 	}
 
 	private void waitForReconcile() throws Exception {

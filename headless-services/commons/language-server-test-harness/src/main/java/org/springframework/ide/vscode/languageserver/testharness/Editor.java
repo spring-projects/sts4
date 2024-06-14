@@ -43,6 +43,7 @@ import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InsertReplaceEdit;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.MarkupContent;
@@ -570,6 +571,11 @@ public class Editor {
 			}
 		});
 		return items;
+	}
+	
+	public List<? extends Location> getReferences() throws Exception {
+		List<? extends Location> references = harness.getReferences(this.doc, this.getCursor());
+		return references;
 	}
 
 	public CompletionItem getFirstCompletion() throws Exception {
