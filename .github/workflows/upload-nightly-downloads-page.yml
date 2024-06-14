@@ -15,7 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
-          ref: ${{ inputs.ref }}
           sparse-checkout: |
             .github
             eclipse-distribution/common/html

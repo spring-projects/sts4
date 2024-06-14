@@ -11,11 +11,6 @@ on:
         description: Last segments of an s3 path for p2 Repo for eclipse ls extensions
         required: true
         type: string
-      ref:
-        description: Git branch, tag, commit hash
-        required: false
-        default: 'main'
-        type: string
 
 jobs:
 
@@ -26,7 +21,6 @@ jobs:
       build_type: 'release'
       p2-qualifier: 'RELEASE'
       sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
-      ref: ${{ inputs.ref }}
       java_version: '17'
     secrets: inherit
 
@@ -37,7 +31,6 @@ jobs:
       build_type: 'release'
       p2-qualifier: 'RELEASE'
       sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
-      ref: ${{ inputs.ref }}
       java_version: '21'
     secrets: inherit
 
@@ -48,6 +41,5 @@ jobs:
       build_type: 'release'
       p2-qualifier: 'RELEASE'
       sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
-      ref: ${{ inputs.ref }}
       java_version: '21'
     secrets: inherit

@@ -11,11 +11,6 @@ on:
         description: For example "RC1"
         required: true
         type: string
-      ref:
-        description: Git branch, tag, commit hash
-        required: false
-        default: 'main'
-        type: string
 
 permissions:
   contents: write
@@ -29,7 +24,6 @@ jobs:
       - name: Checkout vscode-extension '${{ inputs.extension-name }}'
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
           sparse-checkout: |
             vscode-extensions/${{ inputs.extension-name }}
       - name: Record Extension Version
@@ -56,5 +50,4 @@ jobs:
     with:
       extension-name: ${{ inputs.extension-name }}
       dist: 'release'
-      ref: ${{ inputs.ref }}
     secrets: inherit
