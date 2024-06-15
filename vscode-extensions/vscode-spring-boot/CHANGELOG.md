@@ -5,7 +5,7 @@
 * _(Spring Boot)_ SQL query syntax validation is off by default. Settings to toggle JPQL, HQL, SQL query validation enablement
 * _(Spring Boot)_ Fixed `StackOverflowException` coming from `AnnotationHierarchies`
 
-## all fixes and improvements in detail
+#### all fixes and improvements in detail
 
 * _(Spring Boot)_ Ability to switch on/off Query syntax validation and problem severities for query syntax problems [#1275](https://github.com/spring-projects/sts4/issues/1275)
 * _(Spring Boot)_ Unable to view beans for multiple modules in version v1.55 [#1271](https://github.com/spring-projects/sts4/issues/1271)
