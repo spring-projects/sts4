@@ -609,6 +609,18 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.boot2.WEB_ANNOTATION_NAMES": {
+            "type": "string",
+            "default": "HINT",
+            "description": "Remove Unnecessary Path Annotation Name",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },
