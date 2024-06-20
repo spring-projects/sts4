@@ -30,9 +30,6 @@ public class DependsOnCompletionProposal implements ICompletionProposal {
 	public DependsOnCompletionProposal(DocumentEdits edits, String label, String detail, Renderable documentation) {
 		this.edits = edits;
 		this.label = label;
-		// PT  161489998 - Detail for proposal must not be null. For some clients like Eclipse,
-		// a null detail results in an NPE at JDT level when inserting the proposal in the editor, and results
-		// in odd behaviour like insertion of an extra new line.
 		this.detail = detail == null ? EMPTY_DETAIL : detail;
 		this.documentation = documentation;
 	}

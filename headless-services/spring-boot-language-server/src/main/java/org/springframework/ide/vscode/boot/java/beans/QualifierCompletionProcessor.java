@@ -165,11 +165,7 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 			DocumentEdits edits = new DocumentEdits(doc, false);
 			edits.replace(startOffset, endOffset, createReplacementText.apply(candidate));
 
-			// PT-160455522: create a proposal with `PlainText` format type, because for vscode (but not Eclipse), if you send it as a snippet
-			// and it is "place holder" as such `"${debug}"`, vscode may treat it as a snippet place holder, and insert an empty string
-			// if it cannot resolve it. If sending this as plain text, then insertion happens correctly
 			QualifierCompletionProposal proposal = new QualifierCompletionProposal(edits, candidate, candidate, null, score--);
-
 			completions.add(proposal);
 		}
 	}
