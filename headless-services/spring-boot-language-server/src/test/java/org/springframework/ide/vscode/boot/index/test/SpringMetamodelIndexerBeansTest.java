@@ -365,7 +365,7 @@ public class SpringMetamodelIndexerBeansTest {
 		
 		Map<String, String[]> runtimeHintsAttributes = runtimeHintsAnnotation.getAttributes();
 		assertEquals(1, runtimeHintsAttributes.size());
-		assertArrayEquals(new String[] {"org.test.MainClass"}, runtimeHintsAttributes.get("value"));
+		assertArrayEquals(new String[] {"org.test.injections.DummyRuntimeHintsRegistrar"}, runtimeHintsAttributes.get("value"));
 	}
 	
 	@Test

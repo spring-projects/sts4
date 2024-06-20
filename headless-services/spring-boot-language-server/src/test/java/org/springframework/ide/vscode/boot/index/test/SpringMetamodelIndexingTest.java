@@ -74,7 +74,7 @@ public class SpringMetamodelIndexingTest {
     @Test
     void testDeleteProject() throws Exception {
     	Bean[] beans = springIndex.getBeansOfProject("test-spring-indexing");
-    	assertEquals(11, beans.length);
+    	assertEquals(14, beans.length);
 
     	CompletableFuture<Void> deleteProject = indexer.deleteProject(project);
         deleteProject.get(5, TimeUnit.SECONDS);
@@ -91,13 +91,13 @@ public class SpringMetamodelIndexingTest {
         String deletedDocURI = directory.toPath().resolve("src/main/java/org/test/injections/ConstructorInjectionService.java").toUri().toString();
 
         Bean[] allBeansOfProject = springIndex.getBeansOfProject("test-spring-indexing");
-        assertEquals(11, allBeansOfProject.length);
+        assertEquals(14, allBeansOfProject.length);
 
         Bean[] beans = springIndex.getBeansOfDocument(deletedDocURI);
         assertEquals(1, beans.length);
         
         CompletableFuture<Void> deleteFuture = indexer.deleteDocument(deletedDocURI);
-        deleteFuture.get(5, TimeUnit.HOURS);
+        deleteFuture.get(5, TimeUnit.SECONDS);
 
         // check for updated index per document
         Bean[] noBeansAnymore = springIndex.getBeansOfDocument(deletedDocURI);
@@ -105,7 +105,7 @@ public class SpringMetamodelIndexingTest {
 
         // check for updated index in all symbols
         Bean[] lessBeansOfProject = springIndex.getBeansOfProject("test-spring-indexing");
-        assertEquals(10, lessBeansOfProject.length);
+        assertEquals(allBeansOfProject.length - 1, lessBeansOfProject.length);
         
 		assertEquals(2, harness.getIndexUpdatedCount()); // 1x project created, 1x document deleted
     }
