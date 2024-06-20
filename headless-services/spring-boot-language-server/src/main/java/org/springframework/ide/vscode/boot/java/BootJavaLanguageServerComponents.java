@@ -121,25 +121,26 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		projectFinder = serverParams.projectFinder;
 		projectObserver = serverParams.projectObserver;
-		this.cuCache = appContext.getBean(CompilationUnitCache.class);
 
 		propertyIndexProvider = serverParams.indexProvider;
 
 		SimpleWorkspaceService workspaceService = server.getWorkspaceService();
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 
+		this.cuCache = appContext.getBean(CompilationUnitCache.class);
 		SpringSymbolIndex springSymbolIndex = appContext.getBean(SpringSymbolIndex.class);
 		SpringMetamodelIndex springIndex = appContext.getBean(SpringMetamodelIndex.class);
 		BootJavaConfig config = appContext.getBean(BootJavaConfig.class);
 		SourceLinks sourceLinks = appContext.getBean(SourceLinks.class);
-		liveDataService = appContext.getBean(SpringProcessConnectorService.class);
+
+		this.liveDataService = appContext.getBean(SpringProcessConnectorService.class);
 		SpringProcessLiveDataProvider liveDataProvider = appContext.getBean(SpringProcessLiveDataProvider.class);
 		
-		reconcileEngine = appContext.getBean(BootJavaReconcileEngine.class);
-		codeActionProvider = appContext.getBean(BootJavaCodeActionProvider.class);
+		this.reconcileEngine = appContext.getBean(BootJavaReconcileEngine.class);
+		this.codeActionProvider = appContext.getBean(BootJavaCodeActionProvider.class);
 
 
-		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder, springIndex, springSymbolIndex);
+		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder, springIndex, springSymbolIndex, cuCache);
 		documents.onReferences(referencesHandler);
 		
 		//
@@ -291,12 +292,12 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder,
-			SpringMetamodelIndex index, SpringSymbolIndex symbolIndex) {
+			SpringMetamodelIndex index, SpringSymbolIndex symbolIndex, CompilationUnitCache cuCache) {
 		Map<String, ReferenceProvider> providers = new HashMap<>();
 		providers.put(Annotations.VALUE, new ValuePropertyReferencesProvider(server));
 		providers.put(Annotations.QUALIFIER, new QualifierReferencesProvider(index, symbolIndex));
 
-		return new BootJavaReferencesHandler(this, projectFinder, providers);
+		return new BootJavaReferencesHandler(this, cuCache, projectFinder, providers);
 	}
 
 	protected BootJavaCodeLensEngine createCodeLensEngine(SpringSymbolIndex index) {

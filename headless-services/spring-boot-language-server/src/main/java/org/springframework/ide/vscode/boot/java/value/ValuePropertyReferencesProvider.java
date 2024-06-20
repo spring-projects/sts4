@@ -15,6 +15,7 @@ import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,8 +72,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	}
 
 	@Override
-	public List<? extends Location> provideReferences(CancelChecker cancelToken, IJavaProject project, ASTNode node, Annotation annotation,
-			ITypeBinding type, int offset, TextDocument doc) {
+	public List<? extends Location> provideReferences(CancelChecker cancelToken, IJavaProject project, ASTNode node, Annotation annotation, ITypeBinding type, int offset) {
 		
 		cancelToken.checkCanceled();
 
@@ -80,14 +80,14 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 			// case: @Value("prefix<*>")
 			if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(node.toString(), offset - node.getStartPosition(), node.getStartPosition(), doc);
+					return provideReferences(node.toString(), offset - node.getStartPosition(), node.getStartPosition());
 				}
 			}
 			// case: @Value(value="prefix<*>")
 			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(node.toString(), offset - node.getStartPosition(), node.getStartPosition(), doc);
+					return provideReferences(node.toString(), offset - node.getStartPosition(), node.getStartPosition());
 				}
 			}
 		}
@@ -98,7 +98,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 
-	private List<? extends Location> provideReferences(String value, int offset, int nodeStartOffset, TextDocument doc) {
+	private List<? extends Location> provideReferences(String value, int offset, int nodeStartOffset) {
 
 		try {
 			LocalRange range = getPropertyRange(value, offset);
@@ -194,7 +194,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		List<Location> foundLocations = new ArrayList<>();
 
 		try {
-			String fileContent = FileUtils.readFileToString(file);
+			String fileContent = FileUtils.readFileToString(file, Charset.defaultCharset());
 
 			YamlASTProvider parser = new YamlParser();
 
@@ -279,7 +279,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	static List<Location> findReferencesInPropertiesFile(File file, String propertyKey, BiFunction<KeyValuePair, TextDocument, Optional<Location>> processor) {
 		List<Location> foundLocations = new ArrayList<>();
 		try {
-			String fileContent = FileUtils.readFileToString(file);
+			String fileContent = FileUtils.readFileToString(file, Charset.defaultCharset());
 	
 			Parser parser = new AntlrParser();
 			ParseResults parseResults = parser.parse(fileContent);

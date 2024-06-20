@@ -18,7 +18,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
@@ -26,6 +25,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public interface ReferenceProvider {
 
 	List<? extends Location> provideReferences(CancelChecker cancelToken, IJavaProject project, ASTNode node, Annotation annotation,
-			ITypeBinding type, int offset, TextDocument doc);
+			ITypeBinding type, int offset);
 
 }

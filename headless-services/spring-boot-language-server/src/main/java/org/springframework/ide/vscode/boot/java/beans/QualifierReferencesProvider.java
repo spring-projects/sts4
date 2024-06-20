@@ -27,7 +27,6 @@ import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
@@ -43,7 +42,7 @@ public class QualifierReferencesProvider implements ReferenceProvider {
 	}
 
 	@Override
-	public List<? extends Location> provideReferences(CancelChecker cancelToken, IJavaProject project, ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc) {
+	public List<? extends Location> provideReferences(CancelChecker cancelToken, IJavaProject project, ASTNode node, Annotation annotation, ITypeBinding type, int offset) {
 
 		cancelToken.checkCanceled();
 

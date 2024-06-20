@@ -10,19 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
-import java.io.File;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
-import java.util.stream.Stream;
 
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.lsp4j.Location;
@@ -30,13 +25,11 @@ import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IClasspathUtil;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -44,12 +37,14 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class BootJavaReferencesHandler implements ReferencesHandler {
 
-	private JavaProjectFinder projectFinder;
-	private BootJavaLanguageServerComponents server;
-	private Map<String, ReferenceProvider> referenceProviders;
+	private final JavaProjectFinder projectFinder;
+	private final BootJavaLanguageServerComponents server;
+	private final Map<String, ReferenceProvider> referenceProviders;
+	private final CompilationUnitCache cuCache;
 
-	public BootJavaReferencesHandler(BootJavaLanguageServerComponents server, JavaProjectFinder projectFinder, Map<String, ReferenceProvider> specificProviders) {
+	public BootJavaReferencesHandler(BootJavaLanguageServerComponents server, CompilationUnitCache cuCache, JavaProjectFinder projectFinder, Map<String, ReferenceProvider> specificProviders) {
 		this.server = server;
+		this.cuCache = cuCache;
 		this.projectFinder = projectFinder;
 		this.referenceProviders = specificProviders;
 	}
@@ -67,7 +62,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 					
 					cancelToken.checkCanceled();
 					
-					List<? extends Location> referencesResult = provideReferences(cancelToken, doc, offset);
+					List<? extends Location> referencesResult = provideReferences(cancelToken, doc.getId(), offset);
 					if (referencesResult != null) {
 						return referencesResult;
 					}
@@ -83,39 +78,31 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 		return SimpleTextDocumentService.NO_REFERENCES;
 	}
 
-	private List<? extends Location> provideReferences(CancelChecker cancelToken, TextDocument document, int offset) throws Exception {
-		ASTParser parser = ASTParser.newParser(AST.JLS21);
-		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_21, options);
-		parser.setCompilerOptions(options);
-		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		parser.setStatementsRecovery(true);
-		parser.setBindingsRecovery(true);
-		parser.setResolveBindings(true);
+	private List<? extends Location> provideReferences(CancelChecker cancelToken, TextDocumentIdentifier docID, int offset) throws Exception {
+		Optional<IJavaProject> projectOptional = projectFinder.find(docID);
 
-		String[] classpathEntries = getClasspathEntries(document);
-		String[] sourceEntries = new String[] {};
-		parser.setEnvironment(classpathEntries, sourceEntries, null, true);
+		if (projectOptional.isPresent()) {
+			IJavaProject project = projectOptional.get();
 
-		String docURI = document.getUri();
-		String unitName = docURI.substring(docURI.lastIndexOf("/"));
-		parser.setUnitName(unitName);
-		parser.setSource(document.get(0, document.getLength()).toCharArray());
-		
-		cancelToken.checkCanceled();
+			URI docUri = URI.create(docID.getUri());
 
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-		ASTNode node = NodeFinder.perform(cu, offset, 0);
-
-		if (node != null) {
-			cancelToken.checkCanceled();
-			return provideReferencesForAnnotation(cancelToken, node, offset, document);
+			return cuCache.withCompilationUnit(project, docUri, cu -> {
+				cancelToken.checkCanceled();
+				
+				ASTNode node = NodeFinder.perform(cu, offset, 0);
+				if (node != null) {
+					return provideReferencesForAnnotation(cancelToken, project, node, offset);
+				}
+				else {
+					return null;
+				}
+			});
 		}
 
 		return null;
 	}
 
-	private List<? extends Location> provideReferencesForAnnotation(CancelChecker cancelToken, ASTNode node, int offset, TextDocument doc) {
+	private List<? extends Location> provideReferencesForAnnotation(CancelChecker cancelToken, IJavaProject project, ASTNode node, int offset) {
 		Annotation annotation = null;
 
 		ASTNode annotationNode = node;
@@ -135,26 +122,13 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 					ReferenceProvider provider = this.referenceProviders.get(qualifiedName);
 					
 					if (provider != null) {
-						Optional<IJavaProject> projectOptional = projectFinder.find(doc.getId());
-						if (projectOptional.isPresent()) {
-							return provider.provideReferences(cancelToken, projectOptional.get(), node, annotation, type, offset, doc);
-						}
+						return provider.provideReferences(cancelToken, project, node, annotation, type, offset);
 					}
 				}
 			}
 		}
 
 		return null;
-	}
-
-	private String[] getClasspathEntries(IDocument doc) throws Exception {
-		IJavaProject project = this.projectFinder.find(new TextDocumentIdentifier(doc.getUri())).get();
-		IClasspath classpath = project.getClasspath();
-		Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
-		return classpathEntries
-				.filter(file -> file.exists())
-				.map(file -> file.getAbsolutePath())
-				.toArray(String[]::new);
 	}
 
 }
