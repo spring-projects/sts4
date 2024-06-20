@@ -391,7 +391,9 @@ public class ModulithService {
 				for (Bean bean : beansOfProject) {
 					String beanType = bean.getType();
 					if (beanType != null) {
-						if (Arrays.stream(bean.getAnnotations()).anyMatch(Annotations.BOOT_APP::equals)) {
+						if (Arrays.stream(bean.getAnnotations())
+								.map(annotation -> annotation.getAnnotationType())
+								.anyMatch(Annotations.BOOT_APP::equals)) {
 							packages.add(getPackageNameFromTypeFQName(beanType));
 						}
 					}

@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.commands;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +29,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.Gav;
 import org.springframework.ide.vscode.commons.protocol.java.ProjectGavParams;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 
@@ -57,7 +57,7 @@ public class WorkspaceBootExecutableProjects {
 		params.setProjectName(project.getElementName());
 		return symbolIndex.beans(params).thenApply(beans -> {
 			List<Bean> bootAppBeans = beans.stream()
-					.filter(b -> Arrays.asList(b.getAnnotations()).contains(Annotations.BOOT_APP))
+					.filter(b -> hasAnnotation(b, Annotations.BOOT_APP))
 					.limit(2)
 					.collect(Collectors.toList());
 			if (bootAppBeans.size() == 1) {
@@ -74,6 +74,17 @@ public class WorkspaceBootExecutableProjects {
 			}
 			return Optional.empty();
 		});
+	}
+	
+	private boolean hasAnnotation(Bean bean, String annotationType) {
+		AnnotationMetadata[] annotations = bean.getAnnotations();
+		for (int i = 0; i < annotations.length; i++) {
+			if (annotationType.equals(annotations[i].getAnnotationType())) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	private CompletableFuture<List<ExecutableProject>> findExecutableProjects() {
