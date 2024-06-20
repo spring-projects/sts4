@@ -115,13 +115,13 @@ public class QualifierReferencesProviderTest {
         String expectedDefinitionUri = directory.toPath().resolve("src/main/java/org/test/injections/ConfigurationWithInjectionsAndAnnotations.java").toUri().toString();
         
 		Location expectedLocation = new Location(expectedDefinitionUri,
-				new Range(new Position(14, 0), new Position(14, 23)));
+				new Range(new Position(12, 0), new Position(12, 23)));
 
 		List<? extends Location> references = editor.getReferences();
 		assertEquals(1, references.size());
 
 		Location foundLocation = references.get(0);
-		assertEquals(foundLocation, expectedLocation);
+		assertEquals(expectedLocation, foundLocation);
 	}
 
 }

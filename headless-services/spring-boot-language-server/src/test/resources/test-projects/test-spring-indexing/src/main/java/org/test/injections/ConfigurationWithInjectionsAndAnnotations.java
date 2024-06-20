@@ -1,19 +1,17 @@
 package org.test.injections;
 
-import org.test.MainClass;
-
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.ImportRuntimeHints;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.test.BeanClass1;
 import org.test.BeanClass2;
 import org.test.ManuallyCreatedBeanWithConstructor;
 
 @Configuration
 @Qualifier("qualifier")
-@ImportRuntimeHints(MainClass.class)
+@ImportRuntimeHints(DummyRuntimeHintsRegistrar.class)
 public class ConfigurationWithInjectionsAndAnnotations {
 
 	@Bean
