@@ -17,7 +17,10 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +46,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
-public class QualifierDefinitionProviderTest {
+public class QualifierReferencesProviderTest {
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
@@ -67,7 +70,7 @@ public class QualifierDefinitionProviderTest {
 	}
 	
 	@Test
-	public void testQualifierRefersToBeanDefinitionLink() throws Exception {
+	public void testQualifierRefersToBean() throws Exception {
         String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
 
         Editor editor = harness.newEditor(LanguageId.JAVA, """
@@ -76,7 +79,7 @@ public class QualifierDefinitionProviderTest {
 				import org.springframework.beans.factory.annotation.Qualifier;
 
 				@Component
-				@Qualifier("bean1")
+				@Qualifier("be<*>an1")
 				public class TestDependsOnClass {
 				}""", tempJavaDocUri);
 		
@@ -85,15 +88,18 @@ public class QualifierDefinitionProviderTest {
         Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean1");
         assertEquals(1, beans.length);
 
-		LocationLink expectedLocation = new LocationLink(expectedDefinitionUri,
-				beans[0].getLocation().getRange(), beans[0].getLocation().getRange(),
-				null);
-
-		editor.assertLinkTargets("bean1", List.of(expectedLocation));
+		Location expectedLocation = new Location(expectedDefinitionUri,
+				beans[0].getLocation().getRange());
+		
+		List<? extends Location> references = editor.getReferences();
+		assertEquals(1, references.size());
+		
+		Location foundLocation = references.get(0);
+		assertEquals(expectedLocation, foundLocation);
 	}
 
 	@Test
-	public void testQualifierRefersToRandomQualifierWithoutDefinitionLink() throws Exception {
+	public void testQualifierRefersToOtherQualifier() throws Exception {
         String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
 
         Editor editor = harness.newEditor(LanguageId.JAVA, """
@@ -102,11 +108,20 @@ public class QualifierDefinitionProviderTest {
 				import org.springframework.beans.factory.annotation.Qualifier;
 
 				@Component
-				@Qualifier("qualifier")
+				@Qualifier("qualif<*>ier")
 				public class TestDependsOnClass {
 				}""", tempJavaDocUri);
 		
-		editor.assertNoLinkTargets("qualifier");
+        String expectedDefinitionUri = directory.toPath().resolve("src/main/java/org/test/injections/ConfigurationWithInjectionsAndAnnotations.java").toUri().toString();
+        
+		Location expectedLocation = new Location(expectedDefinitionUri,
+				new Range(new Position(14, 0), new Position(14, 23)));
+
+		List<? extends Location> references = editor.getReferences();
+		assertEquals(1, references.size());
+
+		Location foundLocation = references.get(0);
+		assertEquals(foundLocation, expectedLocation);
 	}
 
 }

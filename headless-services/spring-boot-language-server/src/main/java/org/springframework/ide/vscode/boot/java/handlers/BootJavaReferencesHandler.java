@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.handlers;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CancellationException;
 import java.util.stream.Stream;
 
@@ -125,13 +126,19 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 		if (annotationNode != null) {
 			annotation = (Annotation) annotationNode;
 			ITypeBinding type = annotation.resolveTypeBinding();
+
 			if (type != null) {
 
 				String qualifiedName = type.getQualifiedName();
+				
 				if (qualifiedName != null) {
 					ReferenceProvider provider = this.referenceProviders.get(qualifiedName);
+					
 					if (provider != null) {
-						return provider.provideReferences(cancelToken, node, annotation, type, offset, doc);
+						Optional<IJavaProject> projectOptional = projectFinder.find(doc.getId());
+						if (projectOptional.isPresent()) {
+							return provider.provideReferences(cancelToken, projectOptional.get(), node, annotation, type, offset, doc);
+						}
 					}
 				}
 			}

@@ -24,8 +24,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
+import org.springframework.ide.vscode.boot.java.beans.QualifierReferencesProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
@@ -126,7 +128,18 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		SimpleWorkspaceService workspaceService = server.getWorkspaceService();
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 
-		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder);
+		SpringSymbolIndex springSymbolIndex = appContext.getBean(SpringSymbolIndex.class);
+		SpringMetamodelIndex springIndex = appContext.getBean(SpringMetamodelIndex.class);
+		BootJavaConfig config = appContext.getBean(BootJavaConfig.class);
+		SourceLinks sourceLinks = appContext.getBean(SourceLinks.class);
+		liveDataService = appContext.getBean(SpringProcessConnectorService.class);
+		SpringProcessLiveDataProvider liveDataProvider = appContext.getBean(SpringProcessLiveDataProvider.class);
+		
+		reconcileEngine = appContext.getBean(BootJavaReconcileEngine.class);
+		codeActionProvider = appContext.getBean(BootJavaCodeActionProvider.class);
+
+
+		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder, springIndex, springSymbolIndex);
 		documents.onReferences(referencesHandler);
 		
 		//
@@ -134,29 +147,21 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		//
 
 		// central live data components (to coordinate live data flow)
-		liveDataService = appContext.getBean(SpringProcessConnectorService.class);
 
 		// connect the live data provider with the hovers (for data extraction and live updates)
-		SpringProcessLiveDataProvider liveDataProvider = appContext.getBean(SpringProcessLiveDataProvider.class);
-		SourceLinks sourceLinks = appContext.getBean(SourceLinks.class);
 		hoverProvider = createHoverHandler(projectFinder, sourceLinks, liveDataProvider);
 		new SpringProcessLiveHoverUpdater(server, hoverProvider, projectFinder, liveDataProvider);
-
-		BootJavaConfig config = appContext.getBean(BootJavaConfig.class);
 
 		// deal with locally running processes and their connections
 		SpringProcessConnectorLocal liveDataLocalProcessConnector = new SpringProcessConnectorLocal(liveDataService, projectObserver, config);
 
 		// create and handle commands
 		new SpringProcessCommandHandler(server, liveDataService, liveDataLocalProcessConnector, appContext.getBeansOfType(SpringProcessConnectorRemote.class).values());
-
-		SpringSymbolIndex indexer = appContext.getBean(SpringSymbolIndex.class);
 		
-		docSymbolProvider = params -> indexer.getSymbols(params.getTextDocument().getUri());
+		docSymbolProvider = params -> springSymbolIndex.getSymbols(params.getTextDocument().getUri());
 		
-		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
+		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(springSymbolIndex,
 				new LiveAppURLSymbolProvider(liveDataProvider)));
-
 
 		liveChangeDetectionWatchdog = new SpringLiveChangeDetectionWatchdog(
 				this,
@@ -166,14 +171,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 				Duration.ofSeconds(5),
 				sourceLinks);
 
-		codeLensHandler = createCodeLensEngine(indexer);
+		codeLensHandler = createCodeLensEngine(springSymbolIndex);
 
-		highlightsEngine = createDocumentHighlightEngine(indexer);
+		highlightsEngine = createDocumentHighlightEngine(springSymbolIndex);
 		documents.onDocumentHighlight(highlightsEngine);
-		
-		reconcileEngine = appContext.getBean(BootJavaReconcileEngine.class);
-		
-		codeActionProvider = appContext.getBean(BootJavaCodeActionProvider.class);
 		
 		Map<String, JdtSemanticTokensProvider> jdtSemanticTokensProviders = appContext.getBeansOfType(JdtSemanticTokensProvider.class);
 		if (!jdtSemanticTokensProviders.isEmpty()) {
@@ -289,10 +290,11 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, liveDataProvider);
 	}
 
-	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder,
+			SpringMetamodelIndex index, SpringSymbolIndex symbolIndex) {
 		Map<String, ReferenceProvider> providers = new HashMap<>();
-		providers.put(Annotations.VALUE,
-				new ValuePropertyReferencesProvider(server));
+		providers.put(Annotations.VALUE, new ValuePropertyReferencesProvider(server));
+		providers.put(Annotations.QUALIFIER, new QualifierReferencesProvider(index, symbolIndex));
 
 		return new BootJavaReferencesHandler(this, projectFinder, providers);
 	}

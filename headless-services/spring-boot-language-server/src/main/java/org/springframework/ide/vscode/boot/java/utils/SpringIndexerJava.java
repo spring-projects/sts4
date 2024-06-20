@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -903,7 +904,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				for (Path path : testJavaFiles) {
 					File file = path.toFile();
 					URI docUri = UriUtil.toUri(file);
-					String content = FileUtils.readFileToString(file);
+					String content = FileUtils.readFileToString(file, Charset.defaultCharset());
 					scanFile(project, new DocumentDescriptor(docUri.toASCIIString(), file.lastModified()), content);
 				}
 			} catch (Exception e) {

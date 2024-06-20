@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
@@ -70,7 +71,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	}
 
 	@Override
-	public List<? extends Location> provideReferences(CancelChecker cancelToken, ASTNode node, Annotation annotation,
+	public List<? extends Location> provideReferences(CancelChecker cancelToken, IJavaProject project, ASTNode node, Annotation annotation,
 			ITypeBinding type, int offset, TextDocument doc) {
 		
 		cancelToken.checkCanceled();

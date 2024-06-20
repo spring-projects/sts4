@@ -33,12 +33,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
-import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
@@ -57,15 +54,10 @@ public class ValuePropertyReferenceFinderTest {
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
-	@Autowired private SpringMetamodelIndex springIndex;
 	@Autowired private SpringSymbolIndex indexer;
 
 	private File directory;
-	private IJavaProject project;
-	private Bean[] indexedBeans;
 	private String tempJavaDocUri;
-	private Bean bean1;
-	private Bean bean2;
 
 	@BeforeEach
 	public void setup() throws Exception {
@@ -74,7 +66,7 @@ public class ValuePropertyReferenceFinderTest {
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-spring-indexing/").toURI());
 
 		String projectDir = directory.toURI().toString();
-		project = projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
+		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
 		
         tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
 
@@ -233,10 +225,10 @@ public class ValuePropertyReferenceFinderTest {
     			@Component
     			""" +
     			completionLine + "\n" +
-    					"""
-    					public class TestDependsOnClass {
-    					}
-    					""";
+    			"""
+    			public class TestDependsOnClass {
+    			}
+    			""";
 
     	Editor editor = harness.newEditor(LanguageId.JAVA, editorContent, tempJavaDocUri);
     	List<? extends Location> references = editor.getReferences();
