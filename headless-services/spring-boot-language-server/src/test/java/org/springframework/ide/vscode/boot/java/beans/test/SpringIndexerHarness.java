@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.beans.test;
 
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -119,7 +120,7 @@ public class SpringIndexerHarness {
 		if (symbols!=null) {
 			symbols = new ArrayList<>(symbols);
 			Collections.sort(symbols, SYMBOL_COMPARATOR);
-			TextDocument doc = new TextDocument(docURI, LanguageId.JAVA, 1, IOUtils.toString(new URI(docURI)));
+			TextDocument doc = new TextDocument(docURI, LanguageId.JAVA, 1, IOUtils.toString(new URI(docURI), Charset.defaultCharset()));
 			ImmutableList.Builder<TestSymbolInfo> symbolInfos = ImmutableList.builder();
 			for (WorkspaceSymbol s : symbols) {
 				int start = doc.toOffset(s.getLocation().getLeft().getRange().getStart());
