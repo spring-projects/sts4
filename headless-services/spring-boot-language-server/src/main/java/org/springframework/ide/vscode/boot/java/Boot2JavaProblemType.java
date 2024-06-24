@@ -41,7 +41,7 @@ public enum Boot2JavaProblemType implements ProblemType {
 	
 	DOMAIN_ID_FOR_REPOSITORY(ERROR, "Invalid Domain ID type for Spring Data Repository", "Invalid Domain ID Type for Spring Data Repository"),
 	
-	WEB_ANNOTATION_NAMES(HINT, "Web annotation names are unnecessary when it is the same as method parameter name");
+	WEB_ANNOTATION_NAMES(HINT, "Web annotation names are unnecessary when it is the same as method parameter name", "Implicit web annotations names");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

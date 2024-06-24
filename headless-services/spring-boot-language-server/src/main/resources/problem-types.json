@@ -79,6 +79,12 @@
         "label": "Invalid Domain ID Type for Spring Data Repository",
         "description": "Invalid Domain ID type for Spring Data Repository",
         "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "WEB_ANNOTATION_NAMES",
+        "label": "Implicit web annotations names",
+        "description": "Web annotation names are unnecessary when it is the same as method parameter name",
+        "defaultSeverity": "HINT"
       }
     ]
   },

@@ -613,7 +613,7 @@
           "spring-boot.ls.problem.boot2.WEB_ANNOTATION_NAMES": {
             "type": "string",
             "default": "HINT",
-            "description": "Remove Unnecessary Path Annotation Name",
+            "description": "Web annotation names are unnecessary when it is the same as method parameter name",
             "enum": [
               "IGNORE",
               "INFO",
