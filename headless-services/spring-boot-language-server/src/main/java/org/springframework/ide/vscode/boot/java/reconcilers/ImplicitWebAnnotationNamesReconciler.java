@@ -27,7 +27,6 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
-import org.springframework.ide.vscode.commons.rewrite.java.ImplicitWebAnnotationNames;
 
 public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 	
@@ -84,7 +83,7 @@ public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 						String uri = docUri.toASCIIString();
 						Range range = ReconcileUtils.createOpenRewriteRange(cu, a);
 						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
-							new FixDescriptor(ImplicitWebAnnotationNames.class.getName(), List.of(uri), "Remove Implicit Web Annotation Name")
+							new FixDescriptor(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), List.of(uri), "Remove Implicit Web Annotation Name")
 									.withRangeScope(range)
 									.withRecipeScope(RecipeScope.NODE),
 							new FixDescriptor(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), List.of(uri),
@@ -120,7 +119,8 @@ public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 			value = ((SingleMemberAnnotation) a).getValue();
 		} else if (a.isNormalAnnotation()) {
 			for (MemberValuePair pair : (List<MemberValuePair>) ((NormalAnnotation) a).values()) {
-					value = pair.getName().toString().equals("value") ? pair.getValue() : value;
+				String identifier = pair.getName().toString();
+				value = identifier.equals("value") || identifier.equals("name") ? pair.getValue() : value;
 			}
 		}
 		if (value instanceof StringLiteral) {

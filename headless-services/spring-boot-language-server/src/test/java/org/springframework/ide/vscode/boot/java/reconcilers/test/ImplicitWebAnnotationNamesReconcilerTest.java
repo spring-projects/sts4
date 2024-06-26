@@ -149,7 +149,7 @@ public class ImplicitWebAnnotationNamesReconcilerTest extends BaseReconcilerTest
 				class A {
 				
 					@GetMapping("/hello/{message}")
-					public String hello(@RequestParam(value="message", defaultValue = "world") String message) {
+					public String hello(@RequestParam(name="message", defaultValue = "world") String message) {
 						return "Hello "+ message; 
 					}
 				}
@@ -164,7 +164,7 @@ public class ImplicitWebAnnotationNamesReconcilerTest extends BaseReconcilerTest
 		assertEquals(Boot2JavaProblemType.WEB_ANNOTATION_NAMES, problem.getType());
 		
 		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
-		assertEquals("@RequestParam(value=\"message\", defaultValue = \"world\")", markedStr);
+		assertEquals("@RequestParam(name=\"message\", defaultValue = \"world\")", markedStr);
 
 		assertEquals(3, problem.getQuickfixes().size());
 		
