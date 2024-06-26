@@ -29,6 +29,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.BeanPostProcessingIg
 import org.springframework.ide.vscode.boot.java.reconcilers.Boot3NotSupportedTypeReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.EntityIdForRepoReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.HttpSecurityLambdaDslReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.ImplicitWebAnnotationNamesReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.ModulithTypeReferenceViolationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.NoAutowiredOnConstructorReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.NoRepoAnnotationReconciler;
@@ -139,6 +140,10 @@ public class JdtConfig {
 	
 	@Bean JdtSpelReconciler jdtSpelReconciler(SpelReconciler spelReconciler) {
 		return new JdtSpelReconciler(spelReconciler);
+	}
+	
+	@Bean ImplicitWebAnnotationNamesReconciler implicitWebAnnotationNamesReconciler(SimpleLanguageServer server) {
+		return new ImplicitWebAnnotationNamesReconciler(server.getQuickfixRegistry());
 	}
 
 }
