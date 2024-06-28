@@ -140,7 +140,7 @@ public class QualifierCompletionProviderTest {
 
 	@Test
 	public void testQualifierCompletionInsideOfQuotesWithPrefixAndReplacedPostfix() throws Exception {
-		assertCompletions("@Qualifier(\"be<*>xxx\")", 2, "@Qualifier(\"bean1<*>xxx\")");
+		assertCompletions("@Qualifier(\"be<*>xxx\")", 2, "@Qualifier(\"bean1<*>\")");
 	}
 	
 	private void assertCompletions(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine) throws Exception {

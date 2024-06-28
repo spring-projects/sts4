@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.scope.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.eclipse.lsp4j.CompletionItem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,10 +51,6 @@ public class ScopeCompletionTest {
 		harness.intialize(null);
 	}
 
-//	private IJavaProject getTestProject() {
-//		return testProject;
-//	}
-
     @Test
     void testEmptyBracketsCompletion() throws Exception {
         prepareCase("@Scope(\"onClass\")", "@Scope(<*>)");
@@ -71,13 +68,13 @@ public class ScopeCompletionTest {
     void testEmptyStringLiteralCompletion() throws Exception {
         prepareCase("@Scope(\"onClass\")", "@Scope(\"<*>\")");
         assertAnnotationCompletions(
-                "@Scope(\"application\"<*>)",
-                "@Scope(\"globalSession\"<*>)",
-                "@Scope(\"prototype\"<*>)",
-                "@Scope(\"request\"<*>)",
-                "@Scope(\"session\"<*>)",
-                "@Scope(\"singleton\"<*>)",
-                "@Scope(\"websocket\"<*>)");
+                "@Scope(\"application<*>\")",
+                "@Scope(\"globalSession<*>\")",
+                "@Scope(\"prototype<*>\")",
+                "@Scope(\"request<*>\")",
+                "@Scope(\"session<*>\")",
+                "@Scope(\"singleton<*>\")",
+                "@Scope(\"websocket<*>\")");
     }
 
     @Test
@@ -97,20 +94,20 @@ public class ScopeCompletionTest {
     void testEmptyValueStringLiteralCompletion() throws Exception {
         prepareCase("@Scope(\"onClass\")", "@Scope(value=\"<*>\")");
         assertAnnotationCompletions(
-                "@Scope(value=\"application\"<*>)",
-                "@Scope(value=\"globalSession\"<*>)",
-                "@Scope(value=\"prototype\"<*>)",
-                "@Scope(value=\"request\"<*>)",
-                "@Scope(value=\"session\"<*>)",
-                "@Scope(value=\"singleton\"<*>)",
-                "@Scope(value=\"websocket\"<*>)");
+                "@Scope(value=\"application<*>\")",
+                "@Scope(value=\"globalSession<*>\")",
+                "@Scope(value=\"prototype<*>\")",
+                "@Scope(value=\"request<*>\")",
+                "@Scope(value=\"session<*>\")",
+                "@Scope(value=\"singleton<*>\")",
+                "@Scope(value=\"websocket<*>\")");
     }
 
     @Test
     void testPrefixWithClosingQuotesCompletion() throws Exception {
         prepareCase("@Scope(\"onClass\")", "@Scope(\"pro<*>\")");
         assertAnnotationCompletions(
-                "@Scope(\"prototype\"<*>)");
+                "@Scope(\"prototype<*>\")");
     }
 
     @Test
@@ -123,7 +120,7 @@ public class ScopeCompletionTest {
     void testValuePrefixWithClosingQuotesCompletion() throws Exception {
         prepareCase("@Scope(\"onClass\")", "@Scope(value=\"pro<*>\")");
         assertAnnotationCompletions(
-                "@Scope(value=\"prototype\"<*>)");
+                "@Scope(value=\"prototype<*>\")");
     }
 
     @Test
@@ -136,7 +133,7 @@ public class ScopeCompletionTest {
     void testPrefixReplaceRestCompletion() throws Exception {
         prepareCase("@Scope(\"onClass\")", "@Scope(\"pro<*>something\")");
         assertAnnotationCompletions(
-                "@Scope(\"prototype\"<*>)");
+                "@Scope(\"prototype<*>\")");
     }
 
     @Test
@@ -147,7 +144,7 @@ public class ScopeCompletionTest {
 
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-annotations/src/main/java/org/test/TestScopeCompletion.java");
-		String content = IOUtils.toString(resource);
+		String content = IOUtils.toString(resource, Charset.defaultCharset());
 
 		content = content.replace(selectedAnnotation, annotationStatementBeforeTest);
 		editor = new Editor(harness, content, LanguageId.JAVA);

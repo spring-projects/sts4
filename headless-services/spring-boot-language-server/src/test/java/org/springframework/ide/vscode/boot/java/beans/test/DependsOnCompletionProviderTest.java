@@ -92,6 +92,12 @@ public class DependsOnCompletionProviderTest {
 		assertCompletions("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
 	}
 
+	// TODO: not yet working, needs more groundwork due to the parser skipping these non-valid parts of the AST
+//	@Test
+//	public void testDependsOnCompletionWithoutQuotesWithoutPrefixWithoutClosingBracket() throws Exception {
+//		assertCompletions("@DependsOn(<*>", 2, "@DependsOn(\"bean1\")<*>");
+//	}
+
 	@Test
 	public void testDependsOnCompletionWithoutQuotesWithPrefix() throws Exception {
 		assertCompletions("@DependsOn(be<*>)", 2, "@DependsOn(\"bean1\"<*>)");
@@ -102,10 +108,22 @@ public class DependsOnCompletionProviderTest {
 		assertCompletions("@DependsOn(value=<*>)", 2, "@DependsOn(value=\"bean1\"<*>)");
 	}
 
+	// TODO: not yet working, needs more groundwork due to the parser skipping these non-valid parts of the AST
+//	@Test
+//	public void testDependsOnCompletionWithoutQuotesWithAttributeNameAndDefaultSpaces() throws Exception {
+//		assertCompletions("@DependsOn(value = <*>)", 2, "@DependsOn(value = \"bean1\"<*>)");
+//	}
+
 	@Test
 	public void testDependsOnCompletionInsideOfQuotesWithoutPrefix() throws Exception {
 		assertCompletions("@DependsOn(\"<*>\")", 2, "@DependsOn(\"bean1<*>\")");
 	}
+
+	// TODO: not yet working, needs more groundwork due to the parser skipping these non-valid parts of the AST
+//	@Test
+//	public void testDependsOnCompletionOpeningQuoteOnlyWithoutPrefix() throws Exception {
+//		assertCompletions("@DependsOn(\"<*>)", 2, "@DependsOn(\"bean1<*>\")");
+//	}
 
 	@Test
 	public void testDependsOnCompletionWithoutQuotesWithoutPrefixInsideArray() throws Exception {
@@ -144,7 +162,7 @@ public class DependsOnCompletionProviderTest {
 
 	@Test
 	public void testDependsOnCompletionInsideOfQuotesWithPrefixAndReplacedPostfix() throws Exception {
-		assertCompletions("@DependsOn(\"be<*>xxx\")", 2, "@DependsOn(\"bean1<*>xxx\")");
+		assertCompletions("@DependsOn(\"be<*>xxx\")", 2, "@DependsOn(\"bean1<*>\")");
 	}
 	
 	@Test

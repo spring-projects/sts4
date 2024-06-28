@@ -23,9 +23,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.beans.DependsOnCompletionProcessor;
-import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProcessor;
+import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProvider;
 import org.springframework.ide.vscode.boot.java.data.DataRepositoryCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
@@ -111,12 +112,14 @@ public class BootJavaCompletionEngineConfigurer {
 		
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		
-		providers.put(Annotations.SCOPE, new ScopeCompletionProcessor());
 		providers.put(Annotations.VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
-		providers.put(Annotations.DEPENDS_ON, new DependsOnCompletionProcessor(javaProjectFinder, springIndex));
-		providers.put(Annotations.QUALIFIER, new QualifierCompletionProcessor(javaProjectFinder, springIndex));
 		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
+		
+		providers.put(Annotations.SCOPE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new ScopeCompletionProcessor())));
+		providers.put(Annotations.DEPENDS_ON, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new DependsOnCompletionProcessor(springIndex))));
+		providers.put(Annotations.QUALIFIER, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new QualifierCompletionProvider(springIndex))));
 
+		
 		return new BootJavaCompletionEngine(cuCache, providers, snippetManager);
 	}
 	

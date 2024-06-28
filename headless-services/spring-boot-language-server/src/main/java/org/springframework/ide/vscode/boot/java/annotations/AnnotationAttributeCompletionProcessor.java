@@ -8,18 +8,16 @@
  * Contributors:
  *     Broadcom - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.beans;
+package org.springframework.ide.vscode.boot.java.annotations;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -28,28 +26,26 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
-import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
-import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProposal;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class QualifierCompletionProcessor implements CompletionProvider {
-
+public class AnnotationAttributeCompletionProcessor implements CompletionProvider {
+	
 	private final JavaProjectFinder projectFinder;
-	private final SpringMetamodelIndex springIndex;
+	private final Map<String, AnnotationAttributeCompletionProvider> completionProviders;
 
-	public QualifierCompletionProcessor(JavaProjectFinder projectFinder, SpringMetamodelIndex springIndex) {
+	public AnnotationAttributeCompletionProcessor(JavaProjectFinder projectFinder, Map<String, AnnotationAttributeCompletionProvider> completionProviders) {
 		this.projectFinder = projectFinder;
-		this.springIndex = springIndex;
+		this.completionProviders = completionProviders;
 	}
 
 	@Override
@@ -67,7 +63,6 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 			// case: @Qualifier(<*>)
 			if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
 				createCompletionProposals(project, doc, node, completions, offset, offset, "", (beanName) -> "\"" + beanName + "\"");
-				
 			}
 			// case: @Qualifier(prefix<*>)
 			else if (node instanceof SimpleName && node.getParent() instanceof Annotation) {
@@ -105,7 +100,41 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 			e.printStackTrace();
 		}
 	}
+	
+	/**
+	 * create the concrete completion proposal
+	 */
+	private void createCompletionProposals(IJavaProject project, TextDocument doc, ASTNode node, Collection<ICompletionProposal> completions, int startOffset, int endOffset,
+			String filterPrefix, Function<String, String> createReplacementText) {
 
+		Set<String> alreadyMentionedValues = alreadyMentionedValues(node);
+
+		AnnotationAttributeCompletionProvider completionProvider = this.completionProviders.get("value");
+		if (completionProvider != null) {
+			List<String> candidates = completionProvider.getCompletionCandidates(project);
+
+			List<String> filteredCandidates = candidates.stream()
+				.filter(candidate -> candidate.toLowerCase().startsWith(filterPrefix.toLowerCase()))
+				.filter(candidate -> !alreadyMentionedValues.contains(candidate))
+				.collect(Collectors.toList());
+
+			double score = filteredCandidates.size();
+			for (String candidate : filteredCandidates) {
+	
+				DocumentEdits edits = new DocumentEdits(doc, false);
+				edits.replace(startOffset, endOffset, createReplacementText.apply(candidate));
+	
+				QualifierCompletionProposal proposal = new QualifierCompletionProposal(edits, candidate, candidate, null, score--);
+				completions.add(proposal);
+			}
+		}
+	}
+
+
+	//
+	// internal computation of the right positions, prefixes, etc.
+	//
+	
 	private void computeProposalsForSimpleName(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) {
 		String prefix = identifyPropertyPrefix(node.toString(), offset - node.getStartPosition());
 
@@ -123,7 +152,7 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 
 		String prefix = identifyPropertyPrefix(doc.get(node.getStartPosition() + 1, length), length);
 		int startOffset = offset - prefix.length();
-		int endOffset = offset;
+		int endOffset = node.getStartPosition() + node.getLength() - 1;
 
 		createCompletionProposals(project, doc, node, completions, startOffset, endOffset, prefix, (beanName) -> beanName);
 	}
@@ -142,34 +171,6 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 		}
 	}
 
-	private void createCompletionProposals(IJavaProject project, TextDocument doc, ASTNode node, Collection<ICompletionProposal> completions, int startOffset, int endOffset,
-			String filterPrefix, Function<String, String> createReplacementText) {
-
-		Set<String> mentionedQualifiers = alreadyMentionedValues(node);
-
-		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
-		Set<String> candidates = Stream.concat(
-				findAllQualifiers(beans),
-				Arrays.stream(beans).map(bean -> bean.getName()))
-				.collect(Collectors.toCollection(LinkedHashSet::new));
-
-		List<String> filteredCandidates = candidates.stream()
-			.filter(candidate -> candidate.toLowerCase().startsWith(filterPrefix.toLowerCase()))
-			.filter(candidate -> !mentionedQualifiers.contains(candidate))
-			.collect(Collectors.toList());
-		
-
-		double score = filteredCandidates.size();
-		for (String candidate : filteredCandidates) {
-
-			DocumentEdits edits = new DocumentEdits(doc, false);
-			edits.replace(startOffset, endOffset, createReplacementText.apply(candidate));
-
-			QualifierCompletionProposal proposal = new QualifierCompletionProposal(edits, candidate, candidate, null, score--);
-			completions.add(proposal);
-		}
-	}
-	
 	private String identifyPropertyPrefix(String nodeContent, int offset) {
 		String result = nodeContent.substring(0, offset);
 
@@ -186,7 +187,7 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 		return result;
 	}
 	
-	private Set<String> alreadyMentionedValues(ASTNode node) {
+	protected Set<String> alreadyMentionedValues(ASTNode node) {
 		Set<String> result = new HashSet<>();
 		
 		ArrayInitializer arrayNode = null;
@@ -213,29 +214,4 @@ public class QualifierCompletionProcessor implements CompletionProvider {
 		return result;
 	}
 	
-	private Stream<String> findAllQualifiers(Bean[] beans) {
-
-		Stream<String> qualifiersFromBeans = Arrays.stream(beans)
-				// annotations from beans themselves
-				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
-				.filter(annotation -> Annotations.QUALIFIER.equals(annotation.getAnnotationType()))
-				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value") && annotation.getAttributes().get("value").length == 1)
-				.map(annotation -> annotation.getAttributes().get("value")[0]);
-		
-		Stream<String> qualifiersFromInjectionPoints = Arrays.stream(beans)
-				// annotations from beans themselves
-				.filter(bean -> bean.getInjectionPoints() != null)
-				.flatMap(bean -> Arrays.stream(bean.getInjectionPoints()))
-				.filter(injectionPoint -> injectionPoint.getAnnotations() != null)
-				.flatMap(injectionPoint -> Arrays.stream(injectionPoint.getAnnotations()))
-				.filter(annotation -> Annotations.QUALIFIER.equals(annotation.getAnnotationType()))
-				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value") && annotation.getAttributes().get("value").length == 1)
-				.map(annotation -> annotation.getAttributes().get("value")[0]);
-		
-		return Stream.concat(qualifiersFromBeans, qualifiersFromInjectionPoints);
-		
-	}
-
-
-
 }

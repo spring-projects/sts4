@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -63,7 +64,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class ValueCompletionTest {
 
 	@Autowired private BootLanguageServerHarness harness;
-	@Autowired private IJavaProject testProject;
 	@Autowired private JavaProjectFinder projectFinder;
 
 	private Editor editor;
@@ -130,10 +130,6 @@ public class ValueCompletionTest {
 	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
-	}
-
-	private IJavaProject getTestProject() {
-		return testProject;
 	}
 
     @Test
@@ -392,7 +388,7 @@ public class ValueCompletionTest {
 
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-annotations/src/main/java/org/test/TestValueCompletion.java");
-		String content = IOUtils.toString(resource);
+		String content = IOUtils.toString(resource, Charset.defaultCharset());
 
 		content = content.replace(selectedAnnotation, annotationStatementBeforeTest);
 		editor = new Editor(harness, content, LanguageId.JAVA);
