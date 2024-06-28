@@ -21,6 +21,9 @@ import {registerJavaDataService} from "@pivotal-tools/commons-vscode/lib/java-da
 import * as setLogLevelUi from './set-log-levels-ui';
 import { startTestJarSupport } from "./test-jar-launch";
 import { startPropertiesConversionSupport } from "./convert-props-yaml";
+import * as springBootAgent from './copilot/springBootAgent';
+import { SpringCli } from './copilot/springCli';
+import { applyLspEdit } from "./copilot/guideApply";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -31,6 +34,7 @@ const JPA_QUERY_PROPERTIES_LANGUAGE_ID = "jpa-query-properties";
 
 const STOP_ASKING = "Stop Asking";
 
+export const SPRINGCLI = new SpringCli();
 /** Called when extension is activated */
 export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
 
@@ -164,8 +168,11 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
         rewrite.activate(client, options, context);
         setLogLevelUi.activate(client, options, context);
         startPropertiesConversionSupport(context);
+        springBootAgent.activate(client, options, context);
 
         registerMiscCommands(context);
+
+        commands.registerCommand('vscode-spring-boot.agent.apply', applyLspEdit);
 
         return new ApiManager(client).api;
     });

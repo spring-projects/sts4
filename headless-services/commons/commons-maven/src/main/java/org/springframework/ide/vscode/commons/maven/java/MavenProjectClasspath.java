@@ -226,6 +226,11 @@ public class MavenProjectClasspath implements IClasspath {
 	public ImmutableList<CPE> getClasspathEntries() throws Exception {
 		return cachedData != null ? ImmutableList.copyOf(cachedData.getClasspathEntries()) : ImmutableList.of();
 	}
+	
+	@Override
+	public String getJavaVersion() {
+		return cachedData.getJavaVersion() != null ? cachedData.getJavaVersion() : null;
+	}
 
 	private Set<Artifact> projectDependencies(MavenProject project) {
 		return project == null ? Collections.emptySet() : project.getArtifacts();
@@ -252,8 +257,9 @@ public class MavenProjectClasspath implements IClasspath {
 
 		ImmutableList<CPE> entries = resolveClasspathEntries(project);
 		String name = project.getArtifact().getArtifactId();
-
-		return new ClasspathData(name, new LinkedHashSet<>(entries));
+		String javaVersion = maven.getJavaRuntimeVersion();
+		
+		return new ClasspathData(name, new LinkedHashSet<>(entries), javaVersion);
 	}
 
 	@Override

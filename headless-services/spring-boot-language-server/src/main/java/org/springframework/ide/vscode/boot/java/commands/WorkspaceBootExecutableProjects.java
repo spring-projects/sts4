@@ -18,6 +18,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.ExecuteCommandParams;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -33,11 +35,17 @@ import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 
+import com.google.gson.JsonElement;
+
 public class WorkspaceBootExecutableProjects {
 	
 	public record ExecutableProject(String name, String uri, String gav, String mainClass, Collection<String> classpath) {}
 	
+	public record BootProjectInfo(String name, String uri, String mainClass, String buildTool, String springBootVersion, String javaVersion) {}
+	
 	final static String CMD = "sts/spring-boot/executableBootProjects";
+	
+	final static String BOOT_PROJECT_INFO_CMD = "sts/spring-boot/bootProjectInfo";
 	
 	private final static Logger log = LoggerFactory.getLogger(WorkspaceBootExecutableProjects.class);
 	
@@ -50,6 +58,10 @@ public class WorkspaceBootExecutableProjects {
 		this.projectFinder = projectFinder;
 		this.symbolIndex = symbolIndex;
 		server.onCommand(CMD, params -> findExecutableProjects());
+		
+		server.onCommand(BOOT_PROJECT_INFO_CMD, (params) -> {
+            return getBootProjectInfo(params);
+        });
 	}
 	
 	private CompletableFuture<Optional<ExecutableProject>> mapToExecProject(IJavaProject project) {
@@ -111,6 +123,37 @@ public class WorkspaceBootExecutableProjects {
 				 return filteredExecProjects;
 			 });
 		});
+	}
+	
+	private CompletableFuture<Optional<BootProjectInfo>> mapToBootProjectInfo(IJavaProject project) {
+		BeansParams params = new BeansParams();
+		params.setProjectName(project.getElementName());
+		return symbolIndex.beans(params).thenApply(beans -> {
+			List<Bean> bootAppBeans = beans.stream()
+					.filter(b -> Arrays.asList(b.getAnnotations()).contains(Annotations.BOOT_APP)).limit(2)
+					.collect(Collectors.toList());
+			if (bootAppBeans.size() == 1) {
+				try {
+					String appBean = bootAppBeans.get(0) != null ? bootAppBeans.get(0).getType() : null;
+					String springBootVersion = SpringProjectUtil.getSpringBootVersion(project).toString();
+					String buildTool = project.getProjectBuild().getType();
+					String javaVersion = project.getClasspath().getJavaVersion();
+					return Optional
+							.of(new BootProjectInfo(project.getElementName(), project.getLocationUri().toASCIIString(),
+									appBean, buildTool, springBootVersion, javaVersion));
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			}
+			return Optional.empty();
+		});
+	}
+
+	private CompletableFuture<BootProjectInfo> getBootProjectInfo(ExecuteCommandParams params) {
+		String projectUri = ((JsonElement) params.getArguments().get(0)).getAsString();
+		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(projectUri)).orElse(null);
+
+		return mapToBootProjectInfo(project).thenApply(opt -> opt.orElse(null));
 	}
 	
 }

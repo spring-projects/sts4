@@ -31,7 +31,7 @@ public interface IClasspath {
 	public static final Logger log = LoggerFactory.getLogger(IClasspath.class);
 
 	String getName();
-
+	
 	/**
 	 * Classpath entries paths
 	 *
@@ -57,5 +57,11 @@ public interface IClasspath {
 		}
 		return Optional.empty();
 	}
+
+	/**
+	 * Finds Java Version by parsing the classpath entries
+	 * @return returns java version
+	 */
+	String getJavaVersion();
 
 }
