@@ -52,13 +52,12 @@ export default class SpringBootChatAgent {
             User prompt: ${request.prompt}
         `;
 
-        console.log(projectContext);
-
         // Enhance prompt with project information and user prompt. Provide spring boot 3 speicifc context when necessary
         const messages = [
             LanguageModelChatMessage.User(projectContext),
-            LanguageModelChatMessage.User(request.prompt),
-            bootProjInfo.springBootVersion.startsWith('3') ? LanguageModelChatMessage.User(systemBoot3Prompt) : LanguageModelChatMessage.User(systemBoot2Prompt)
+            bootProjInfo.springBootVersion.startsWith('3') ? LanguageModelChatMessage.User(systemBoot3Prompt) : LanguageModelChatMessage.User(systemBoot2Prompt),
+            LanguageModelChatMessage.User('User Input: ' +request.prompt),
+            
         ];
 
         stream.progress('Generating code....This will take a few minutes');
@@ -71,15 +70,15 @@ export default class SpringBootChatAgent {
 
         let documentContent;
 
-        if (targetMarkdownUri !== null && targetMarkdownUri !== undefined) {
-            // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
-            // if (bootProjInfo.springBootVersion.startsWith('3')) {
-            //     const enhancedResponse = await SPRINGCLI.enhanceResponse(targetMarkdownUri, selectedProject);
-            //     await writeResponseToFile(enhancedResponse, bootProjInfo.name, selectedProject);
-            // }
-            documentContent = await workspace.fs.readFile(targetMarkdownUri);
-        } else {
+        if (!targetMarkdownUri) {
             documentContent = 'Note: The code provided is just an example and may not be suitable for production use. \n ' + response;
+        } else {
+            // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
+            if (bootProjInfo.springBootVersion.startsWith('3')) {
+                const enhancedResponse = await SPRINGCLI.enhanceResponse(targetMarkdownUri, selectedProject);
+                await writeResponseToFile(enhancedResponse, bootProjInfo.name, selectedProject);
+            }
+            documentContent = await workspace.fs.readFile(targetMarkdownUri);
         }
 
         const chatResponse = Buffer.from(documentContent).toString();
@@ -99,7 +98,7 @@ export function activate(
 ) {
     const systemPrompts: LanguageModelChatMessage[] = [
         new LanguageModelChatMessage(LanguageModelChatMessageRole.User, SYSTEM_PROMPT),
-        new LanguageModelChatMessage(LanguageModelChatMessageRole.User, USER_PROMPT)
+        // new LanguageModelChatMessage(LanguageModelChatMessageRole.User, USER_PROMPT)
     ];
     const copilotRequest = new CopilotRequest(systemPrompts);
     const springBootChatAgent = new SpringBootChatAgent(copilotRequest);

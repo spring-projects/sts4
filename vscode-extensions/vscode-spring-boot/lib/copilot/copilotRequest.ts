@@ -5,7 +5,7 @@ export const logger: LogOutputChannel = window.createOutputChannel("Spring tools
 export default class CopilotRequest {
 
     public static readonly DEFAULT_END_MARK = '<|endofresponse|>';
-    public static readonly DEFAULT_MAX_ROUNDS = 1;
+    public static readonly DEFAULT_MAX_ROUNDS = 2;
     public static readonly DEFAULT_MODEL_SELECTOR: LanguageModelChatSelector = { vendor: 'copilot', family: 'gpt-3.5-turbo' };
     public static readonly DEFAULT_MODEL_OPTIONS: LanguageModelChatRequestOptions = { modelOptions: {} };
 
