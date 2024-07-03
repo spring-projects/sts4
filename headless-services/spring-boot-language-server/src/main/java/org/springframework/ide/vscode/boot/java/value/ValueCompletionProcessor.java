@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.boot.java.value;
 
 import static org.springframework.ide.vscode.commons.util.StringUtil.camelCaseToHyphens;
 
+import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -275,6 +277,12 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	private String[] findResources(IJavaProject project, String prefix) {
 		String[] resources = IClasspathUtil.getClasspathResources(project.getClasspath()).stream()
 			.distinct()
+			.sorted(new Comparator<String>() {
+				@Override
+				public int compare(String o1, String o2) {
+					return Paths.get(o1).compareTo(Paths.get(o2));
+				}
+			})
 			.map(r -> r.replaceAll("\\\\", "/"))
 			.filter(r -> ("classpath:" + r).contains(prefix))
 			.toArray(String[]::new);
