@@ -10,20 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
-import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.getValueType;
-
 import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
-import org.springframework.ide.vscode.boot.java.value.ValuePropertyKeyProposal;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
-import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.boot.metadata.hints.ValueHintHoverInfo;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -34,9 +25,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
-import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.stereotype.Component;

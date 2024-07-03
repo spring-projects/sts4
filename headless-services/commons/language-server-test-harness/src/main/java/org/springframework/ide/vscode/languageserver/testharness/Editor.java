@@ -440,7 +440,8 @@ public class Editor {
 		textBefore = replaceSelection(textBefore);
 		textAfter = Arrays.stream(textAfter)
 				.map((String t) -> replaceSelection(t))
-				.collect(Collectors.toList()).toArray(new String[0]);
+				.toArray(String[]::new);
+
 		editor.setText(textBefore);
 		editor.assertCompletions(isInteresting, textAfter);
 	}
@@ -564,7 +565,7 @@ public class Editor {
 
 			private String sortKey(CompletionItem item) {
 				String k = item.getSortText();
-				if (k==null) {
+				if (k == null) {
 					k = item.getLabel();
 				}
 				return k;
