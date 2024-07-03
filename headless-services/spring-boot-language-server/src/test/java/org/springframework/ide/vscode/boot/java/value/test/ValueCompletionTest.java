@@ -159,7 +159,7 @@ public class ValueCompletionTest {
                 "@Value(\"${spring.prop1}\"<*>)");
         
         assertClasspathCompletions(
-        		"@Value(\"classpath:random-resource-root.md\"<*>)",
+        		"@Value(\"classpath:a-random-resource-root.md\"<*>)",
         		"@Value(\"classpath:org/random-resource-org.md\"<*>)",
         		"@Value(\"classpath:org/test/random-resource-org-test.txt\"<*>)");
     }
@@ -175,7 +175,7 @@ public class ValueCompletionTest {
                 "@Value(value=\"${spring.prop1}\"<*>)");
         
         assertClasspathCompletions(
-        		"@Value(value=\"classpath:random-resource-root.md\"<*>)",
+        		"@Value(value=\"classpath:a-random-resource-root.md\"<*>)",
         		"@Value(value=\"classpath:org/random-resource-org.md\"<*>)",
         		"@Value(value=\"classpath:org/test/random-resource-org-test.txt\"<*>)");
     }
@@ -277,7 +277,7 @@ public class ValueCompletionTest {
                 "@Value(\"${spring.prop1}<*>\")");
 
         assertClasspathCompletions(
-        		"@Value(\"classpath:random-resource-root.md<*>\")",
+        		"@Value(\"classpath:a-random-resource-root.md<*>\")",
         		"@Value(\"classpath:org/random-resource-org.md<*>\")",
         		"@Value(\"classpath:org/test/random-resource-org-test.txt<*>\")");
     }
@@ -334,7 +334,7 @@ public class ValueCompletionTest {
         assertPropertyCompletions();
 
         assertClasspathCompletions(
-        		"@Value(\"classpath:random-resource-root.md\"<*>)",
+        		"@Value(\"classpath:a-random-resource-root.md\"<*>)",
         		"@Value(\"classpath:org/random-resource-org.md\"<*>)",
         		"@Value(\"classpath:org/test/random-resource-org-test.txt\"<*>)");
     }
@@ -347,7 +347,7 @@ public class ValueCompletionTest {
         assertPropertyCompletions();
 
         assertClasspathCompletions(
-        		"@Value(\"classpath:random-resource-root.md\"<*>)");
+        		"@Value(\"classpath:a-random-resource-root.md\"<*>)");
     }
 
     @Test
@@ -358,7 +358,7 @@ public class ValueCompletionTest {
         assertPropertyCompletions();
 
         assertClasspathCompletions(
-        		"@Value(\"classpath:random-resource-root.md\"<*>)");
+        		"@Value(\"classpath:a-random-resource-root.md\"<*>)");
     }
 
     @Test
@@ -369,7 +369,7 @@ public class ValueCompletionTest {
         assertPropertyCompletions();
 
         assertClasspathCompletions(
-        		"@Value(\"classpath:random-resource-root.md<*>\")");
+        		"@Value(\"classpath:a-random-resource-root.md<*>\")");
     }
 
     @Test
@@ -380,7 +380,7 @@ public class ValueCompletionTest {
         assertPropertyCompletions();
 
         assertClasspathCompletions(
-        		"@Value(value=\"classpath:random-resource-root.md\"<*>)");
+        		"@Value(value=\"classpath:a-random-resource-root.md\"<*>)");
     }
 
     @Test
@@ -391,7 +391,7 @@ public class ValueCompletionTest {
         assertPropertyCompletions();
 
         assertClasspathCompletions(
-        		"@Value(value=\"classpath:random-resource-root.md<*>\")");
+        		"@Value(value=\"classpath:a-random-resource-root.md<*>\")");
     }
 
     @Test
@@ -402,7 +402,7 @@ public class ValueCompletionTest {
         assertPropertyCompletions();
 
         assertClasspathCompletions(
-        		"@Value(value=\"classpath:random-resource-root.md\"<*>)",
+        		"@Value(value=\"classpath:a-random-resource-root.md\"<*>)",
         		"@Value(value=\"classpath:org/random-resource-org.md\"<*>)",
         		"@Value(value=\"classpath:org/test/random-resource-org-test.txt\"<*>)");
     }
@@ -437,7 +437,7 @@ public class ValueCompletionTest {
         assertPropertyCompletions();
 
         assertClasspathCompletions(
-        		"@Value(\"classpath:random-resource-root.md<*>\")",
+        		"@Value(\"classpath:a-random-resource-root.md<*>\")",
         		"@Value(\"classpath:org/random-resource-org.md<*>\")",
         		"@Value(\"classpath:org/test/random-resource-org-test.txt<*>\")");
     }
@@ -535,7 +535,7 @@ public class ValueCompletionTest {
         editor.assertContextualCompletions(
                 "<*>"
         , //==>
-				"classpath:random-resource-root.md<*>",
+				"classpath:a-random-resource-root.md<*>",
 				"classpath:org/random-resource-org.md<*>",
         		"classpath:org/test/random-resource-org-test.txt<*>",
 
@@ -550,7 +550,7 @@ public class ValueCompletionTest {
         editor.assertContextualCompletions(
                 "<*>"
         , //==>
-				"classpath:random-resource-root.md<*>",
+				"classpath:a-random-resource-root.md<*>",
 				"classpath:org/random-resource-org.md<*>",
 				"classpath:org/test/random-resource-org-test.txt<*>",
 
