@@ -130,9 +130,10 @@ public class WorkspaceBootExecutableProjects {
 		params.setProjectName(project.getElementName());
 		return symbolIndex.beans(params).thenApply(beans -> {
 			List<Bean> bootAppBeans = beans.stream()
-					.filter(b -> Arrays.asList(b.getAnnotations()).contains(Annotations.BOOT_APP)).limit(2)
-					.collect(Collectors.toList());
-			if (bootAppBeans.size() == 1) {
+					  .filter(b -> hasAnnotation(b, Annotations.BOOT_APP))
+					  .limit(2)
+					  .collect(Collectors.toList());
+			if (bootAppBeans.size() > 0) {
 				try {
 					String appBean = bootAppBeans.get(0) != null ? bootAppBeans.get(0).getType() : null;
 					String springBootVersion = SpringProjectUtil.getSpringBootVersion(project).toString();

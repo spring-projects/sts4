@@ -1,9 +1,11 @@
-import { LanguageModelChatRequestOptions, LanguageModelChatSelector, CancellationToken, Disposable, LanguageModelChatMessage, window, ProgressLocation, lm, LogOutputChannel, LanguageModelChatMessageRole } from "vscode";
+import { LanguageModelChatRequestOptions, LanguageModelChatSelector, CancellationToken, Disposable, LanguageModelChatMessage, window, ProgressLocation, lm, LogOutputChannel, LanguageModelChatMessageRole, LanguageModelError } from "vscode";
 
 export const logger: LogOutputChannel = window.createOutputChannel("Spring tools agent", { log: true });
 
 export default class CopilotRequest {
 
+    public static readonly DEFAULT_END_MARK = '<|endofresponse|>';
+    public static readonly DEFAULT_MAX_ROUNDS = 1;
     public static readonly DEFAULT_MODEL_SELECTOR: LanguageModelChatSelector = { vendor: 'copilot', family: 'gpt-3.5-turbo' };
     public static readonly DEFAULT_MODEL_OPTIONS: LanguageModelChatRequestOptions = { modelOptions: {} };
 
@@ -12,16 +14,16 @@ export default class CopilotRequest {
     public constructor(
         private readonly systemMessagesOrPrompts: LanguageModelChatMessage[] = [],
         private readonly modelSelector: LanguageModelChatSelector = CopilotRequest.DEFAULT_MODEL_SELECTOR,
-        private readonly modelOptions: LanguageModelChatRequestOptions = CopilotRequest.DEFAULT_MODEL_OPTIONS
+        private readonly modelOptions: LanguageModelChatRequestOptions = CopilotRequest.DEFAULT_MODEL_OPTIONS,
+        private readonly endMark: string = CopilotRequest.DEFAULT_END_MARK,
+        private readonly maxRounds: number = CopilotRequest.DEFAULT_MAX_ROUNDS,
     ) {
     }
 
     public async chatRequest(userMessage: LanguageModelChatMessage[], modelOptions: LanguageModelChatRequestOptions = CopilotRequest.DEFAULT_MODEL_OPTIONS, cancellationToken: CancellationToken = CopilotRequest.NOT_CANCELLABLE): Promise<string> {
         const messages = [...this.systemMessagesOrPrompts];
-        messages.push(...userMessage);
-        logger.info(`Prompt: \n`, messages);
-        // console.log(messages[0].content)
-        messages.forEach(m => console.log(m.content));
+        let answer: string = '';
+        let rounds: number = 0;
 
         return window.withProgress({
             location: ProgressLocation.Window,
@@ -31,18 +33,39 @@ export default class CopilotRequest {
             progress.report({ message: "processing..." });
 
             if (cancellation.isCancellationRequested) {
-                console.log("Chat request cancelled");
+                logger.info("Chat request cancelled");
                 return 'Chat request cancelled';
             }
-            try {
-                const response = await this.sendRequest(messages, modelOptions, cancellationToken);
-                logger.info(`Copilot: \n`, response);
-                return response;
-            } catch (e) {
-                const cause = e.cause || e;
-                logger.error(`Failed to chat with copilot`, cause);
-                throw cause;
+            const _send = async (message: LanguageModelChatMessage[]): Promise<boolean> => {
+                rounds++;
+                let response: string = '';
+                messages.push(...message);
+                try {
+                    messages.forEach(m => logger.info(m.content));
+                    response = await this.sendRequest(messages, modelOptions, cancellationToken);
+                    answer += response;
+                    logger.info(`Response: \n`, response);
+                } catch (e) {
+                    if (e instanceof LanguageModelError) {
+                        logger.error(e.message, e.code);
+                        throw e;
+                    } else {
+                        const cause = e.cause || e;
+                        logger.error(`Failed to chat with copilot`, e.message, e.stack);
+                        throw cause;
+                    }
+                    
+                }
+                // messages.push(new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response));
+                return answer.trim().endsWith(this.endMark);
             }
+            let completeResponse: boolean = await _send(userMessage);
+            while (!completeResponse && rounds < this.maxRounds) {
+                completeResponse = await _send([new LanguageModelChatMessage(LanguageModelChatMessageRole.User, 'continue where you left off.')]);
+            }
+            logger.debug('rounds', rounds);
+            return answer.replace(this.endMark, "");
+            
         });
     }
 
