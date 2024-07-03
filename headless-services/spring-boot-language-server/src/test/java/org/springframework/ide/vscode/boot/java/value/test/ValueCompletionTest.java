@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -611,6 +612,12 @@ public class ValueCompletionTest {
 		
 		List<CompletionItem> filteredCompletions = completions.stream()
 				.filter(item -> item.getTextEdit().getLeft().getNewText().contains("classpath"))
+				.sorted(new Comparator<CompletionItem>() {
+					@Override
+					public int compare(CompletionItem o1, CompletionItem o2) {
+						return o1.getLabel().compareTo(o2.getLabel());
+					}
+				})
 				.toList();
 		
 		assertEquals(completedAnnotations.length, filteredCompletions.size());
