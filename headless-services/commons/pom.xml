@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.0</version>
+		<version>3.3.1</version>
 		<relativePath></relativePath>
 	</parent>
 
@@ -119,20 +119,33 @@
 		<kotlin.version>1.9.20</kotlin.version>
 
 		<!-- Rewrite specific properties -->
-		<rewrite-version>8.27.1</rewrite-version>
-		<rewrite-kotlin-version>1.16.2</rewrite-kotlin-version>
-		<rewrite-spring-version>5.11.0</rewrite-spring-version>
-		<rewrite-gradle-tooling-api-version>2.3.0</rewrite-gradle-tooling-api-version>
+        <rewrite-recipe-bom.version>2.14.0</rewrite-recipe-bom.version>
+        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
+        <gradle.version>8.4</gradle.version>
 		<jgit-version>6.9.0.202403050737-r</jgit-version>
-		
-		<gradle-tooling.version>8.5</gradle-tooling.version>
-		<gradle-core.version>6.1.1</gradle-core.version>
 		
 		<antlr.version>4.13.1</antlr.version>
 
 		<signing.skip>true</signing.skip>
 		<signing.alias>vmware</signing.alias>
 	</properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.openrewrite.recipe</groupId>
+                <artifactId>rewrite-recipe-bom</artifactId>
+                <version>${rewrite-recipe-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.gradle</groupId>
+                <artifactId>gradle-tooling-api</artifactId>
+                <version>${gradle.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
 	<build>
 		<plugins>

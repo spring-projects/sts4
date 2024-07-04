@@ -35,7 +35,7 @@ public class RewriteRecipeRepositoryTest {
 	@Test
 	void listSubRecipe() throws Exception {
 		List<Recipe> recipes = recipeRepo.getSubRecipes("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1", List.of()).get();
-		assertEquals(8, recipes.size());
+		assertEquals(7, recipes.size());
 		
 		recipes = recipeRepo.getSubRecipes("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1", List.of(0, 2)).get();
 		assertEquals(20, recipes.size());

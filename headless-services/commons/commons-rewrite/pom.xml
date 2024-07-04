@@ -49,47 +49,48 @@
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-properties</artifactId>
-			<version>${rewrite-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-maven</artifactId>
-			<version>${rewrite-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-groovy</artifactId>
-			<version>${rewrite-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-kotlin</artifactId>
-			<version>${rewrite-kotlin-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-gradle</artifactId>
-			<version>${rewrite-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-yaml</artifactId>
-			<version>${rewrite-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-java</artifactId>
-			<version>${rewrite-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-java-11</artifactId>
-			<version>${rewrite-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-java-17</artifactId>
-			<version>${rewrite-version}</version>
+		</dependency>
+        <dependency>
+            <groupId>org.openrewrite.gradle.tooling</groupId>
+            <artifactId>model</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-tooling-api</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jgit</groupId>
@@ -105,92 +106,12 @@
 		<dependency>
 			<groupId>org.openrewrite.recipe</groupId>
 			<artifactId>rewrite-spring</artifactId>
-			<version>${rewrite-spring-version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.openrewrite</groupId>
 					<artifactId>rewrite-kotlin</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>org.openrewrite.gradle.tooling</groupId>
-			<artifactId>model</artifactId>
-			<version>${rewrite-gradle-tooling-api-version}</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-tooling-api</artifactId>
-			<version>${gradle-tooling.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-base-services</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-core-api</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-language-groovy</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-language-java</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-logging</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-messaging</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-native</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-process-services</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-resources</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-testing-base</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.gradle</groupId>
-			<artifactId>gradle-testing-jvm</artifactId>
-			<version>${gradle-core.version}</version>
-			<scope>runtime</scope>
 		</dependency>
 		
 		<dependency>
