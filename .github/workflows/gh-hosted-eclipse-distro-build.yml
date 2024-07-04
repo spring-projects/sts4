@@ -27,6 +27,14 @@ on:
         default: '17'
         type: string
 
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.CDN_S3_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.CDN_S3_SECRET_KEY  }}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_ENDPOINT_URL_S3:  ${{ secrets.CDN_S3_ENDPOINT }}
+  AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}/spring-tools
+  DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
+
 jobs:
 
   eclipse-distro-build:
@@ -85,24 +93,13 @@ jobs:
           p2_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-p2-repo-dist-path.txt`
           echo "dist_path=$dist_path" >> $GITHUB_OUTPUT
           echo "p2_path=$p2_path" >> $GITHUB_OUTPUT
-      - name: Cloudgate S3 Configuration
-        if: always()
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
-        with:
-          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
-          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
-          role-session-name: ${{ github.run_id }}
-          aws-region: us-east-1
-          role-duration-seconds: 900
-          role-skip-session-tagging: true
       - name: Upload P2 Repo Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target
           p2_path=${{ steps.s3-paths.outputs.p2_path }}
           echo "P2 path: ${p2_path}"
-          aws s3 rm s3://tools-spring-io/$p2_path/ --recursive
-          aws s3 cp ./repository/ s3://tools-spring-io/$p2_path/ --recursive --no-progress
+          aws s3 rm s3://$AWS_S3_BUCKET/$p2_path/ --recursive
+          aws s3 cp ./repository/ s3://$AWS_S3_BUCKET/$p2_path/ --recursive --no-progress
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
@@ -125,20 +122,20 @@ jobs:
           dist_path=${{ steps.s3-paths.outputs.dist_path }}
           ls spring-tool-suite-4*linux*.tar.gz*
           echo "Removing old Linux .tar.gz files from Akamai s3..."
-          aws s3 rm s3://tools-spring-io/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
+          aws s3 rm s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .tar.gz files to Akamai s3..."
-          aws s3 cp . s3://tools-spring-io/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
+          aws s3 cp . s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
           eclipse_profile=${{ inputs.eclipse_profile }}
           eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
-          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh ${{ steps.s3-paths.outputs.dist_path }} $eclipse_version ${{ inputs.build_type }}
+          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh ${{ steps.s3-paths.outputs.dist_path }} $eclipse_version ${{ inputs.build_type }} $AWS_S3_BUCKET $DOWNLOAD_URL_ROOT
       - name: Upload Build Artifacts for Signing
         run: |
           echo "Uploading Win Zips and OSX tar.gz to S3 for signing..."
           id=${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
-          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://tools-spring-io/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
     outputs:
       id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
       dist_path: ${{ steps.s3-paths.outputs.dist_path }}
@@ -153,22 +150,12 @@ jobs:
         with:
           sparse-checkout: |
             .github
-      - name: Cloudgate S3 Configuration
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
-        with:
-          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
-          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
-          role-session-name: ${{ github.run_id }}
-          aws-region: us-east-1
-          role-duration-seconds: 3600
-          role-skip-session-tagging: true
       - name: Download Win Zips from S3 for Signing
         run: |
           rm -f spring-tool-suite-4*win*.zip*
           rm -f spring-tool-suite-4*win*.self-extracting.jar*
           ls
-          aws s3 mv s3://tools-spring-io/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*"
+          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*"
       - name: Sign EXE within zip files
         id: sign
         env:
@@ -188,16 +175,16 @@ jobs:
           ls spring-tool-suite-4*win*.zip*
           ls spring-tool-suite-4*win*.self-extracting.jar*
           echo "Removing old win zip and self extracting jar files from Akamai..."
-          aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
+          aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to Akamai..."
-          aws s3 mv . s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
+          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
           dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           eclipse_profile=${{ inputs.eclipse_profile }}
           eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
-          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }}
+          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }} $AWS_S3_BUCKET $DOWNLOAD_URL_ROOT
       - name: Cleanup
         if: ${{ always() }}
         env:
@@ -238,21 +225,11 @@ jobs:
       - name: Install appdmg
         run: |
           npm install -g appdmg
-      - name: Cloudgate S3 Configuration
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
-        with:
-          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
-          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
-          role-session-name: ${{ github.run_id }}
-          aws-region: us-east-1
-          role-duration-seconds: 900
-          role-skip-session-tagging: true
       - name: Download OSX tar.gz files from S3 for Signing/Notarization
         run: |
           rm -rf *macosx*
           ls
-          aws s3 mv s3://tools-spring-io/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
       - name: Sign .app, Create and Sign DMG
         env:
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
@@ -287,16 +264,6 @@ jobs:
             echo "Failed Notarization"
             exit 1
           fi
-      - name: Cloudgate S3 Configuration
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
-        with:
-          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
-          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
-          role-session-name: ${{ github.run_id }}_upload
-          aws-region: us-east-1
-          role-duration-seconds: 900
-          role-skip-session-tagging: true
       - name: Update DMG files on S3
         id: update-s3
         run: |
@@ -304,16 +271,16 @@ jobs:
           echo "Processing S3 update..."
           ls spring-tool-suite-4*macosx*.dmg*
           echo "Removing old dmg files from Akamai..."
-          aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
+          aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
           echo "Uploading new dmg files to Akamai..."
-          aws s3 mv . s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress
+          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |
           dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           eclipse_profile=${{ inputs.eclipse_profile }}
           eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
-          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }}
+          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }} $AWS_S3_BUCKET $DOWNLOAD_URL_ROOT
       - name: Cleanup
         if: ${{ always() }}
         run: |
@@ -322,60 +289,37 @@ jobs:
   purge_cache:
     needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
     if: ${{ always() && inputs.build_type != 'snapshot' && contains(join(needs.*.result, ','), 'success')}}
-    runs-on: [self-hosted]
-    steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
-        with:
-          sparse-checkout: |
-            .github
-      - name: Cloudgate S3 Configuration
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
-        with:
-          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
-          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
-          role-session-name: ${{ github.run_id }}
-          aws-region: us-east-1
-          role-duration-seconds: 900
-          role-skip-session-tagging: true
-      - name: Collect URLs on Akamai to Purge
-        id: collect-urls
-        run: |
-          dist_urls=`aws s3 ls s3://tools-spring-io/${{ needs.eclipse-distro-build.outputs.dist_path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
-          p2_urls=`aws s3 ls s3://tools-spring-io/${{ needs.eclipse-distro-build.outputs.p2_path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
-          urls="${dist_urls} ${p2_urls}" 
-          echo "urls=$urls" >> $GITHUB_OUTPUT
-      - uses: ./.github/actions/akamai-purge-osx
-        name: Invalidate URLs
-        env:
-          EDGERC: ${{ secrets.EDGERC }}
-        with:
-          command: invalidate
-          urls: ${{ steps.collect-urls.outputs.urls }}
-
-  cleanup:
-    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
-    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
             .github
-      - name: Cloudgate S3 Configuration
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
+      - name: Collect URLs on Akamai to Purge
+        id: collect-urls
+        run: |
+          ESCAPED_REPLACE_URL=$(printf '%s\n' "$DOWNLOAD_URL_ROOT/" | sed -e 's/[\/&]/\\&/g')
+          sed_pattern="s/^[ \t]*/$ESCAPED_REPLACE_URL/"
+          dist_urls=`aws s3 ls s3://$AWS_S3_BUCKET/${{ needs.eclipse-distro-build.outputs.dist_path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e "$sed_pattern" | paste -sd' ' -`
+          p2_urls=`aws s3 ls s3://$AWS_S3_BUCKET/${{ needs.eclipse-distro-build.outputs.p2_path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e "$sed_pattern" | paste -sd' ' -`
+          urls="${dist_urls} ${p2_urls}" 
+          echo "urls=$urls" >> $GITHUB_OUTPUT
+      - uses: ./.github/actions/cloudflare-purge
+        name: Invalidate URLs
         with:
-          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
-          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
-          role-session-name: ${{ github.run_id }}
-          aws-region: us-east-1
-          role-duration-seconds: 900
-          role-skip-session-tagging: true
+          urls: ${{ steps.collect-urls.outputs.urls }}
+          cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          cloudflare_cache_token: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
+
+  cleanup:
+    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Remove Temp Build Artifacts from S3
         id: cleanup-s3-temp-storage
         run: |
-          aws s3 rm s3://tools-spring-io/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
+          aws s3 rm s3://$AWS_S3_BUCKET/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
 
   notify-failure:
     needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros, cleanup, purge_cache ]

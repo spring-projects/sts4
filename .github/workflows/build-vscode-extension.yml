@@ -16,6 +16,14 @@ on:
 permissions:
   contents: write
 
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.CDN_S3_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.CDN_S3_SECRET_KEY  }}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_ENDPOINT_URL_S3:  ${{ secrets.CDN_S3_ENDPOINT }}
+  AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}/spring-tools
+  DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
+
 jobs:
   build-vscode-extension:
     runs-on: ubuntu-latest
@@ -35,16 +43,6 @@ jobs:
         run: |
           ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} ${{ inputs.dist }}
           ls ./vsix
-      - name: Cloudgate S3 Configuration
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
-          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
-          role-session-name: ${{ github.run_id }}
-          aws-region: us-east-1
-          role-duration-seconds: 900
-          role-skip-session-tagging: true
       - name: Upload Release
         id: upload-release
         if: ${{ inputs.dist == 'release' }}
@@ -55,10 +53,10 @@ jobs:
           cd $pwd
           vsix_file=`ls ./vsix | head -n 1`
           echo "VSIX file to upload ${vsix_file}"
-          s3_path=vscode-extensions/${{ inputs.extension-name }}/$base_version/${{ inputs.dist }}
+          s3_path=${{ inputs.dist }}/vscode-extensions/${{ inputs.extension-name }}/$base_version
           echo "S3 path: ${s3_path}"
-          aws s3 rm s3://tools-spring-io/$s3_path/ --recursive
-          aws s3 cp ./vsix/$vsix_file s3://tools-spring-io/$s3_path/$vsix_file --no-progress
+          aws s3 rm s3://$AWS_S3_BUCKET/$s3_path/ --recursive
+          aws s3 cp ./vsix/$vsix_file s3://$AWS_S3_BUCKET/$s3_path/$vsix_file --no-progress
           echo "version=$base_version" >> $GITHUB_OUTPUT
           echo "s3_url=https://cdn.spring.io/spring-tools/$s3_path/$vsix_file" >> $GITHUB_OUTPUT
       - id: tools-team-slack

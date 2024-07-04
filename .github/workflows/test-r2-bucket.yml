@@ -15,9 +15,11 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_TEST_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_TEST_SECRET_KEY  }}
           AWS_DEFAULT_REGION: us-east-1
+          AWS_ENDPOINT_URL_S3:  https://13b7012a66b58025c7f02b7c7c597d13.r2.cloudflarestorage.com
         run: |
           file="upload-test.txt"
           echo 'Upload test file' > $file
           cat $file
           aws s3 mv ./$file s3://cdn-test-spring-io/sts-test/$file
+          aws s3 ls s3://cdn-test-spring-io/sts-test/ --recursive | awk '{$1=$2=$3=""; print $0}'
           aws s3 rm s3://cdn-test-spring-io/sts-test/$file

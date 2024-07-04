@@ -3,47 +3,46 @@ name: Generate Nightly Downloads HTML
 # configure manual trigger
 on:
   workflow_dispatch:
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.CDN_S3_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.CDN_S3_SECRET_KEY  }}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_ENDPOINT_URL_S3:  ${{ secrets.CDN_S3_ENDPOINT }}
+  AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}/spring-tools
+  DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
 
 jobs:
   gen_html:
     runs-on: ubuntu-latest
     steps:
-      - name: Cloudgate S3 Configuration
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
-        with:
-          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
-          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
-          role-session-name: ${{ github.run_id }}
-          aws-region: us-east-1
-          role-duration-seconds: 900
-          role-skip-session-tagging: true
       - name: Update Nightly Distro Downloads page
         run: |
-          dist_path="snapshot/STS4/nightly/dist/e4.28"
-          s3_url=s3://tools-spring-io/${dist_path}/
-          downloads_html="sts4-nightly-e4.28.html"
+          dist_path="snapshot/STS4/nightly/dist/e4.32"
+          s3_url=s3://$AWS_S3_BUCKET/${dist_path}/
+          downloads_html="sts4-nightly-e4.32.html"
           files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
           echo '<ul>' >> $downloads_html
+          s3_url_prefix="s3://${AWS_S3_BUCKET}"
+          s3_url_prefix_length=${#s3_url_prefix}
           for file in $files
           do
-            if [[ "$file" =~ ^"s3://tools-spring-io" ]]; then
-              download_url=https://cdn.spring.io/spring-tools${file:20}
+            if [[ "$file" =~ ^"${s3_url_prefix}" ]]; then
+              download_url=${DOWNLOAD_URL_ROOT}${file:$s3_url_prefix_length}
               filename=${file:${#s3_url}}
               echo '  <li><a href="'${download_url}'">'${filename}'</li>' >> $downloads_html  
             fi
           done
           echo '</ul>' >> $downloads_html
           cat ./$downloads_html
-          aws s3 mv ./$downloads_html s3://tools-spring-io/snapshot/STS4/ --dryrun
+          aws s3 mv ./$downloads_html s3://$AWS_S3_BUCKET/snapshot/STS4/ --dryrun
           files=`aws s3 ls ${s3_url}`
           for file in $files
           do
             echo "file: ${file}"
             url="${s3_url}${file}"
             echo "url: ${url}"
-            if [[ "$file" =~ ^"s3://tools-spring-io" ]]; then
-              download_url=https://cdn.spring.io/spring-tools${file:20}
+            if [[ "$file" =~ ^"s3://${AWS_S3_BUCKET}" ]]; then
+              download_url=${DOWNLOAD_URL_ROOT}${file:20}
               filename=${file:${#s3_url}}
               echo '  <li><a href="'${download_url}'">'${filename}'</li>' >> $downloads_html  
             fi

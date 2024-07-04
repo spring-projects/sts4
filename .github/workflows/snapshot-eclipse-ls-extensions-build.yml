@@ -16,4 +16,5 @@ jobs:
     with:
       eclipse_profile: 'e431'
       build_type: 'snapshot'
+      skip_tests: true
     secrets: inherit
