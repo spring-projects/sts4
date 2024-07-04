@@ -119,9 +119,9 @@
 		<kotlin.version>1.9.20</kotlin.version>
 
 		<!-- Rewrite specific properties -->
-        <rewrite-recipe-bom.version>2.14.0</rewrite-recipe-bom.version>
-        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-        <gradle.version>8.4</gradle.version>
+		<rewrite-recipe-bom.version>2.14.0</rewrite-recipe-bom.version>
+		<gradle.version>8.4</gradle.version>
+		<rewrite-gradle-tooling-model.version>2.3.1</rewrite-gradle-tooling-model.version>
 		<jgit-version>6.9.0.202403050737-r</jgit-version>
 		
 		<antlr.version>4.13.1</antlr.version>
@@ -144,6 +144,16 @@
                 <artifactId>gradle-tooling-api</artifactId>
                 <version>${gradle.version}</version>
             </dependency>
+	        <dependency>
+	            <groupId>org.openrewrite.gradle.tooling</groupId>
+	            <artifactId>model</artifactId>
+	            <version>${rewrite-gradle-tooling-model.version}</version>
+	        </dependency>
+			<dependency>
+				<groupId>org.eclipse.jgit</groupId>
+				<artifactId>org.eclipse.jgit</artifactId>
+				<version>${jgit-version}</version>
+			</dependency>
         </dependencies>
     </dependencyManagement>
 
