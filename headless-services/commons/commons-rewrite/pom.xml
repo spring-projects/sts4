@@ -82,6 +82,10 @@
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-java-17</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.openrewrite</groupId>
+			<artifactId>rewrite-java-21</artifactId>
+		</dependency>
         <dependency>
             <groupId>org.openrewrite.gradle.tooling</groupId>
             <artifactId>model</artifactId>
