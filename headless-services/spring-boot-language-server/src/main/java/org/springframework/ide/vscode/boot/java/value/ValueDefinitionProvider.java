@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.value;
 
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,9 +45,9 @@ import org.yaml.snakeyaml.nodes.Node;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-public class PropertyValueAnnotationDefProvider implements IJavaDefinitionProvider {
+public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 	
-	private static final Logger log = LoggerFactory.getLogger(PropertyValueAnnotationDefProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(ValueDefinitionProvider.class);
 	
 	private static final String PARAM_VALUE = "value";
 	private static final String PARAM_NAME = "name";
@@ -77,61 +80,76 @@ public class PropertyValueAnnotationDefProvider implements IJavaDefinitionProvid
 	);
 
 	@Override
-	public List<LocationLink> getDefinitions(CancelChecker cancelToken, IJavaProject project, CompilationUnit cu,
-			ASTNode n) {
+	public List<LocationLink> getDefinitions(CancelChecker cancelToken, IJavaProject project, CompilationUnit cu, ASTNode n) {
+
 		if (n instanceof StringLiteral) {
 			StringLiteral valueNode = (StringLiteral) n;
-			String propertyKey = null;
 			
-			ASTNode parent = valueNode.getParent();
-			if (parent instanceof Annotation) {
-				Annotation a = (Annotation) parent;
-				IAnnotationBinding binding = a.resolveAnnotationBinding();
-				if (binding != null && binding.getAnnotationType() != null) {
-					PropertyKeyExtractor propertyExtractor = annotationToPropertyKeyExtractor.get(binding.getAnnotationType().getQualifiedName());
-					if (propertyExtractor != null) {
-						propertyKey = propertyExtractor.extract(a, null, valueNode);
-					}
+			String literalValue = valueNode.getLiteralValue();
+			if (literalValue != null) {
+				if (literalValue.startsWith("classpath")) {
+					return getDefinitionForClasspathResource(project, cu, valueNode, literalValue);
 				}
-			} else if (parent instanceof MemberValuePair
-					&& parent.getParent() instanceof Annotation) {
-				MemberValuePair pair = (MemberValuePair) parent;
-				Annotation a = (Annotation) parent.getParent();
-				IAnnotationBinding binding = a.resolveAnnotationBinding();
-				if (binding != null && binding.getAnnotationType() != null) {
-					PropertyKeyExtractor propertyExtractor = annotationToPropertyKeyExtractor.get(binding.getAnnotationType().getQualifiedName());
-					if (propertyExtractor != null) {
-						propertyKey = propertyExtractor.extract(a, pair, valueNode);
-					}
+				else {
+					return getDefinitionForProperty(project, cu, valueNode);
 				}
-			}
-			
-			if (propertyKey != null) {
-				Builder<LocationLink> builder = ImmutableList.builder();
-				Map<Location, Range> targetRanges = new HashMap<>();
-
-				Position startPosition = new Position(cu.getLineNumber(valueNode.getStartPosition()) - 1,
-						cu.getColumnNumber(valueNode.getStartPosition()));
-				Position endPosition = new Position(
-						cu.getLineNumber(valueNode.getStartPosition() + valueNode.getLength()) - 1,
-						cu.getColumnNumber(valueNode.getStartPosition() + valueNode.getLength()));
-				Range originRange = new Range(startPosition, endPosition);
-				
-
-				for (Location location : findValueReferences(project, propertyKey, targetRanges)) {
-					LocationLink ll = new LocationLink();
-					ll.setTargetUri(location.getUri());
-					ll.setTargetSelectionRange(location.getRange());
-					ll.setTargetRange(targetRanges.get(location));
-					ll.setOriginSelectionRange(originRange);
-					builder.add(ll);
-				}
-				return builder.build();
 			}
 		}
 		return Collections.emptyList();
 	}
 	
+	private List<LocationLink> getDefinitionForProperty(IJavaProject project, CompilationUnit cu, StringLiteral valueNode) {
+		String propertyKey = null;
+		
+		ASTNode parent = valueNode.getParent();
+		if (parent instanceof Annotation) {
+			Annotation a = (Annotation) parent;
+			IAnnotationBinding binding = a.resolveAnnotationBinding();
+			if (binding != null && binding.getAnnotationType() != null) {
+				PropertyKeyExtractor propertyExtractor = annotationToPropertyKeyExtractor.get(binding.getAnnotationType().getQualifiedName());
+				if (propertyExtractor != null) {
+					propertyKey = propertyExtractor.extract(a, null, valueNode);
+				}
+			}
+		} else if (parent instanceof MemberValuePair
+				&& parent.getParent() instanceof Annotation) {
+			MemberValuePair pair = (MemberValuePair) parent;
+			Annotation a = (Annotation) parent.getParent();
+			IAnnotationBinding binding = a.resolveAnnotationBinding();
+			if (binding != null && binding.getAnnotationType() != null) {
+				PropertyKeyExtractor propertyExtractor = annotationToPropertyKeyExtractor.get(binding.getAnnotationType().getQualifiedName());
+				if (propertyExtractor != null) {
+					propertyKey = propertyExtractor.extract(a, pair, valueNode);
+				}
+			}
+		}
+		
+		if (propertyKey != null) {
+			Builder<LocationLink> builder = ImmutableList.builder();
+			Map<Location, Range> targetRanges = new HashMap<>();
+
+			Position startPosition = new Position(cu.getLineNumber(valueNode.getStartPosition()) - 1,
+					cu.getColumnNumber(valueNode.getStartPosition()));
+			Position endPosition = new Position(
+					cu.getLineNumber(valueNode.getStartPosition() + valueNode.getLength()) - 1,
+					cu.getColumnNumber(valueNode.getStartPosition() + valueNode.getLength()));
+			Range originRange = new Range(startPosition, endPosition);
+			
+
+			for (Location location : findValueReferences(project, propertyKey, targetRanges)) {
+				LocationLink ll = new LocationLink();
+				ll.setTargetUri(location.getUri());
+				ll.setTargetSelectionRange(location.getRange());
+				ll.setTargetRange(targetRanges.get(location));
+				ll.setOriginSelectionRange(originRange);
+				builder.add(ll);
+			}
+			return builder.build();
+		}
+		
+		return Collections.emptyList();
+	}
+
 	private List<Location> findValueReferences(IJavaProject project, String propertyKey, Map<Location, Range> targetRanges) {
 		Builder<Location> links = ImmutableList.builder();
 		IClasspathUtil.getClasspathResourcesFullPaths(project.getClasspath()).forEach(path -> {
@@ -228,5 +246,43 @@ public class PropertyValueAnnotationDefProvider implements IJavaDefinitionProvid
 	private interface PropertyKeyExtractor {
 		String extract(Annotation a, MemberValuePair pair, StringLiteral v);
 	}
+
+	private List<LocationLink> getDefinitionForClasspathResource(IJavaProject project, CompilationUnit cu, StringLiteral valueNode, String literalValue) {
+		literalValue = literalValue.substring("classpath:".length());
+		
+		String[] resources = findResources(project, literalValue);
+		
+		List<LocationLink> result = new ArrayList<>();
+		
+		for (String resource : resources) {
+			String uri = "file://" + resource;
+			
+			Position startPosition = new Position(cu.getLineNumber(valueNode.getStartPosition()) - 1,
+					cu.getColumnNumber(valueNode.getStartPosition()));
+			Position endPosition = new Position(
+					cu.getLineNumber(valueNode.getStartPosition() + valueNode.getLength()) - 1,
+					cu.getColumnNumber(valueNode.getStartPosition() + valueNode.getLength()));
+			Range nodeRange = new Range(startPosition, endPosition);
+
+			LocationLink locationLink = new LocationLink(uri,
+					new Range(new Position(0, 0), new Position(0, 0)), new Range(new Position(0, 0), new Position(0, 0)),
+					nodeRange);
+			
+			result.add(locationLink);
+		}
+		
+		return result;
+	}
+	
+	private String[] findResources(IJavaProject project, String resource) {
+		String[] resources = IClasspathUtil.getClasspathResourcesFullPaths(project.getClasspath())
+			.filter(path -> path.toString().endsWith(resource))
+			.map(path -> path.toString())
+			.toArray(String[]::new);
+
+		return resources;
+	}
+
+
 
 }

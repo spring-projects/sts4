@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -40,7 +40,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import({ AdHocPropertyHarnessTestConf.class, ValueCompletionTest.TestConf.class })
-public class PropertyValueAnnotationDefProviderTest {
+public class ValueDefinitionProviderTest {
 
 	@Autowired
 	private BootLanguageServerHarness harness;
@@ -207,4 +207,29 @@ public class PropertyValueAnnotationDefProviderTest {
 
 		editor.assertLinkTargets("prop", List.of(expectedLocation));
 	}
+
+	@Test
+	void testFindClasspathResource() throws Exception {
+		Path randomResourceFilePath = projectFile("src/main/resources/random-resource.md", "");
+		Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+				import org.springframework.beans.factory.annotation.Value;
+
+				public class TestValueCompletion {
+
+					@Value("classpath:random-resource.md")
+					private String value1;
+				}""");
+
+		LocationLink expectedLocation = new LocationLink(randomResourceFilePath.toUri().toASCIIString(),
+				new Range(new Position(0, 0), new Position(0, 0)),
+				new Range(new Position(0, 0), new Position(0, 0)),
+				new Range(new Position(6, 8), new Position(6, 38)));
+
+		editor.assertLinkTargets("classpath:random-resource.md", List.of(expectedLocation));
+	}
+
+
+
 }
