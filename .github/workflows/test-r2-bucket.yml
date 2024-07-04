@@ -1,0 +1,23 @@
+name: Test R2 Bucket
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  akamai-upload:
+    name: Test R2 Bucket
+    runs-on: ubuntu-latest
+    steps:
+      - name: R2 bucket upload
+        id: upload
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_TEST_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_TEST_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          file="upload-test.txt"
+          echo 'Upload test file' > $file
+          cat $file
+          aws s3 mv ./$file s3://cdn-test-spring-io/sts-test/$file
+          aws s3 rm s3://cdn-test-spring-io/sts-test/$file
