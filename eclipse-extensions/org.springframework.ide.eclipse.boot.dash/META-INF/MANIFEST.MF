@@ -22,7 +22,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.console,
  org.eclipse.debug.ui,
  org.eclipse.ui.forms,
- org.json,
  com.google.guava;bundle-version="15.0.0",
  org.eclipse.equinox.security,
  org.eclipse.ui.views.properties.tabbed,
@@ -84,5 +83,6 @@ Import-Package: org.eclipse.core.runtime,
  com.google.gson.reflect,
  com.google.gson.stream,
  org.apache.commons.lang3,
- org.apache.commons.lang3.tuple
+ org.apache.commons.lang3.tuple,
+ org.json
 Automatic-Module-Name: org.springframework.ide.eclipse.boot.dash

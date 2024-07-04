@@ -155,7 +155,7 @@
 	<bundle id="com.google.gson"/>
 	<bundle id="org.jcodings"/>
 	<bundle id="org.joni"/>
-	<bundle id="org.json"/>
+	<bundle id="json"/>
 	<bundle id="org.jsoup"/>
 	<bundle id="org.apache.commons.lang3"/>
 	<bundle id="org.apache.commons.collections"/>
