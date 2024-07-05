@@ -56,15 +56,15 @@ export default class CopilotRequest {
                     }
                     
                 }
-                // messages.push(new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response));
+                messages.push(new LanguageModelChatMessage(LanguageModelChatMessageRole.Assistant, response));
                 return answer.trim().endsWith(this.endMark);
             }
             let completeResponse: boolean = await _send(userMessage);
             while (!completeResponse && rounds < this.maxRounds) {
-                completeResponse = await _send([new LanguageModelChatMessage(LanguageModelChatMessageRole.User, 'continue where you left off.')]);
+                completeResponse = await _send([new LanguageModelChatMessage(LanguageModelChatMessageRole.User, 'continue your response from where you left off.')]);
             }
             logger.debug('rounds', rounds);
-            return answer.replace(this.endMark, "");
+            return answer.replace("//"+this.endMark, "");
             
         });
     }

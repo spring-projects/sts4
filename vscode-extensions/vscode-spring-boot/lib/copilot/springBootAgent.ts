@@ -7,7 +7,7 @@ import { userPrompt } from "./user-ai-prompt";
 import { getWorkspaceRoot, writeResponseToFile } from "./util";
 import { SPRINGCLI } from "../Main";
 
-const CAT_PARTICIPANT_ID = 'springboot.agent';
+const PARTICIPANT_ID = 'springboot.agent';
 const SYSTEM_PROMPT = systemPrompt;
 const USER_PROMPT = userPrompt;
 
@@ -103,7 +103,7 @@ export function activate(
     const copilotRequest = new CopilotRequest(systemPrompts);
     const springBootChatAgent = new SpringBootChatAgent(copilotRequest);
 
-    const agent = chat.createChatParticipant(CAT_PARTICIPANT_ID, async (request, context, progress, token) => {
+    const agent = chat.createChatParticipant(PARTICIPANT_ID, async (request, context, progress, token) => {
         return springBootChatAgent.handlePrompts(request, context, progress, token);
     });
     agent.iconPath = Uri.joinPath(context.extensionUri, 'readme-imgs', 'spring-tools-icon.png');
