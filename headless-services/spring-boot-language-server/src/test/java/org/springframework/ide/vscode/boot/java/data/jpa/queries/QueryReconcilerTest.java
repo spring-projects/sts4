@@ -47,7 +47,7 @@ public class QueryReconcilerTest {
 	public void setup() throws Exception {
 		harness.intialize(null);
 
-		directory = new File(ProjectsHarness.class.getResource("/test-projects/spring-modulith-example-full/").toURI());
+		directory = new File(ProjectsHarness.class.getResource("/test-projects/boot-sql/").toURI());
 
 		String projectDir = directory.toURI().toString();
 
@@ -226,7 +226,7 @@ public class QueryReconcilerTest {
 		String docUri = directory.toPath().resolve("src/main/java/example/demo/OwnerRepository.java").toUri()
 				.toString();
 		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
-		editor.assertProblems("SELECTX|SQL: mismatched input 'SELECTX' expecting {'ALTER',");
+		editor.assertProblems("SELECTX|MySQL: mismatched input 'SELECTX' expecting {'ALTER',");
 	}
 	
 	@Test

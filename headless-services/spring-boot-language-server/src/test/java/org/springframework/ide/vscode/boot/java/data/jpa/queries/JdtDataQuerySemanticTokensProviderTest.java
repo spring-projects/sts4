@@ -45,7 +45,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
 		
 	@BeforeEach
 	public void setup() throws Exception {
-		jp =  projects.mavenProject("spring-modulith-example-full");
+		jp =  projects.mavenProject("boot-sql");
 	}
 	
 	private List<SemanticTokenData> computeTokens(CompilationUnit cu) {

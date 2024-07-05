@@ -7,10 +7,10 @@
 /src/main/java/org/springframework/ide/vscode/parser/hql/Hql.tokens
 /src/main/java/org/springframework/ide/vscode/parser/hql/HqlLexer.interp
 /src/main/java/org/springframework/ide/vscode/parser/hql/HqlLexer.tokens
-/src/main/java/org/springframework/ide/vscode/parser/sql/MySqlParser.interp
-/src/main/java/org/springframework/ide/vscode/parser/sql/MySqlParser.tokens
-/src/main/java/org/springframework/ide/vscode/parser/sql/MySqlLexer.interp
-/src/main/java/org/springframework/ide/vscode/parser/sql/MySqlLexer.tokens
+/src/main/java/org/springframework/ide/vscode/parser/mysql/MySqlParser.interp
+/src/main/java/org/springframework/ide/vscode/parser/mysql/MySqlParser.tokens
+/src/main/java/org/springframework/ide/vscode/parser/mysql/MySqlLexer.interp
+/src/main/java/org/springframework/ide/vscode/parser/mysql/MySqlLexer.tokens
 /src/main/java/org/springframework/ide/vscode/parser/spel/SpelParser.interp
 /src/main/java/org/springframework/ide/vscode/parser/spel/SpelParser.tokens
 /src/main/java/org/springframework/ide/vscode/parser/spel/SpelLexer.interp

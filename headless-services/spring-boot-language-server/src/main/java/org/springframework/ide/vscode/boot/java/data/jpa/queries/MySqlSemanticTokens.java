@@ -11,41 +11,37 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
-import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.atn.ATNConfigSet;
-import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
-import org.springframework.ide.vscode.parser.sql.MySqlLexer;
-import org.springframework.ide.vscode.parser.sql.MySqlParser;
-import org.springframework.ide.vscode.parser.sql.MySqlParserBaseListener;
+import org.springframework.ide.vscode.parser.mysql.MySqlLexer;
+import org.springframework.ide.vscode.parser.mysql.MySqlParser;
+import org.springframework.ide.vscode.parser.mysql.MySqlParser.ParameterContext;
+import org.springframework.ide.vscode.parser.mysql.MySqlParserBaseListener;
 
-public class SqlSemanticTokens implements SemanticTokensDataProvider {
+public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 
 	private static List<String> TOKEN_TYPES = List.of("keyword", "type", "string", "number", "operator",
-			"variable", "regexp", "comment");
+			"variable", "regexp", "comment", "parameter");
 
 	private Optional<SpelSemanticTokens> optSpelTokens;
 	
-	public SqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens) {
+	public MySqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens) {
 		this.optSpelTokens = optSpelTokens;
 	}
 
@@ -184,38 +180,31 @@ public class SqlSemanticTokens implements SemanticTokensDataProvider {
 			public void visitErrorNode(ErrorNode node) {
 				processTerminalNode(node);
 			}
-			
-		});
-		
-		parser.addErrorListener(new ANTLRErrorListener() {
-			
+
 			@Override
-			public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
-					String msg, RecognitionException e) {
-				// TODO Auto-generated method stub
-				msg.length();
+			public void exitParameter(ParameterContext ctx) {
+				if (ctx.dottedId() != null) {
+					getAllLeafs(ctx.dottedId()).forEach(t -> semantics.put(t, "parameter"));
+				}
+				if (ctx.uid() != null) {
+					getAllLeafs(ctx.uid()).forEach(t -> semantics.put(t, "parameter"));
+				}
+				if (ctx.decimalLiteral() != null) {
+					getAllLeafs(ctx.decimalLiteral()).forEach(t -> semantics.put(t, "parameter"));
+				}
 			}
 			
-			@Override
-			public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction,
-					ATNConfigSet configs) {
-				// TODO Auto-generated method stub
-				
+			private Stream<Token> getAllLeafs(ParserRuleContext ctx) {
+				return ctx.children.stream().flatMap(n -> {
+					if (n instanceof ParserRuleContext prc) {
+						return getAllLeafs(prc);
+					} else if (n instanceof TerminalNode tn) {
+						return Stream.of(tn.getSymbol());
+					}
+					return Stream.empty();
+				});
 			}
 			
-			@Override
-			public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex,
-					BitSet conflictingAlts, ATNConfigSet configs) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact,
-					BitSet ambigAlts, ATNConfigSet configs) {
-				// TODO Auto-generated method stub
-				
-			}
 		});
 		
 		parser.sqlStatements();

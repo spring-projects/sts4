@@ -608,7 +608,7 @@ dealingWithNullExpression
 
 // https://docs.jboss.org/hibernate/orm/6.1/userguide/html_single/Hibernate_User_Guide.html#hql-like-predicate
 stringPatternMatching
-    : expression NOT? (LIKE | ILIKE) expression (ESCAPE (stringLiteral|parameter))?
+    : expression NOT? (LIKE | ILIKE) ('%')? expression ('%')? (ESCAPE (stringLiteral|parameter))?
     ;
 
 // https://docs.jboss.org/hibernate/orm/6.1/userguide/html_single/Hibernate_User_Guide.html#hql-elements-indices
@@ -673,7 +673,7 @@ variable
 
 parameter
 	: prefix=':' SPEL
-    | prefix=':' identifier ('%')?
+    | prefix=':' identifier
 	| prefix='?' SPEL
     | prefix='?' INTEGER_LITERAL?
     ;

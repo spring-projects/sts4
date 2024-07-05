@@ -1,5 +1,5 @@
 // Generated from MySqlParser.g4 by ANTLR 4.13.1
-package org.springframework.ide.vscode.parser.sql;
+package org.springframework.ide.vscode.parser.mysql;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -7073,6 +7073,18 @@ public class MySqlParserBaseListener implements MySqlParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterParameterAtom(MySqlParser.ParameterAtomContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParameterAtom(MySqlParser.ParameterAtomContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterUnaryExpressionAtom(MySqlParser.UnaryExpressionAtomContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -7181,18 +7193,6 @@ public class MySqlParserBaseListener implements MySqlParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterSpelExpressionAtom(MySqlParser.SpelExpressionAtomContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitSpelExpressionAtom(MySqlParser.SpelExpressionAtomContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterJsonExpressionAtom(MySqlParser.JsonExpressionAtomContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -7272,6 +7272,18 @@ public class MySqlParserBaseListener implements MySqlParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBitExpressionAtom(MySqlParser.BitExpressionAtomContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterParameter(MySqlParser.ParameterContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParameter(MySqlParser.ParameterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

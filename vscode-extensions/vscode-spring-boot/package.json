@@ -1199,7 +1199,7 @@
           },
           "spring-boot.ls.problem.data-query.SQL_SYNTAX": {
             "type": "string",
-            "default": "IGNORE",
+            "default": "ERROR",
             "description": "Syntax",
             "enum": [
               "IGNORE",

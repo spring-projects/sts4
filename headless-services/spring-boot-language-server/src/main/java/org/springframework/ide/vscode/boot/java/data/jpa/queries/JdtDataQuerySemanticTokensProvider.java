@@ -11,7 +11,10 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,6 +30,7 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TextBlock;
 import org.springframework.ide.vscode.boot.java.JdtSemanticTokensProvider;
+import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
@@ -41,14 +45,17 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 
 	private final JpqlSemanticTokens jpqlProvider;
 	private final HqlSemanticTokens hqlProvider;
-	private final SqlSemanticTokens sqlProvider;
 	private final JpqlSupportState supportState;
+	private final Map<SqlType, SemanticTokensDataProvider> sqlTokenProviders;
+
 	
-	public JdtDataQuerySemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, SqlSemanticTokens sqlSemanticTokens, JpqlSupportState supportState) {
+	public JdtDataQuerySemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, JpqlSupportState supportState, Optional<SpelSemanticTokens> spelSemanticTokens) {
 		this.jpqlProvider = jpqlProvider;
 		this.hqlProvider = hqlProvider;
-		this.sqlProvider = sqlSemanticTokens;
 		this.supportState = supportState;
+		
+		this.sqlTokenProviders = new LinkedHashMap<>();
+		this.sqlTokenProviders.put(SqlType.MYSQL, new MySqlSemanticTokens(spelSemanticTokens));
 	}
 
 	@Override
@@ -97,7 +104,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 					
 					if (queryExpression != null) {
 						if (isNative) {
-							computeTokensForQueryExpression(sqlProvider, queryExpression).forEach(tokensData::accept);
+							computeTokensForQueryExpression(getSqlSemanticTokensProvider(jp), queryExpression).forEach(tokensData::accept);
 						} else {
 							computeTokensForQueryExpression(provider, queryExpression).forEach(tokensData::accept);
 						}
@@ -159,6 +166,10 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 	@Override
 	public boolean isApplicable(IJavaProject project) {
 		return supportState.isEnabled() && SpringProjectUtil.hasDependencyStartingWith(project, "spring-data-jpa", null);
+	}
+	
+	private SemanticTokensDataProvider getSqlSemanticTokensProvider(IJavaProject project) {
+		return sqlTokenProviders.get(SqlType.MYSQL);
 	}
 
 }

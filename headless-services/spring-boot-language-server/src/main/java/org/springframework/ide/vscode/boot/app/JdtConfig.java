@@ -10,17 +10,17 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryJdtAstReconciler;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlReconciler;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlSemanticTokens;
+import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AddConfigurationIfBeansPresentReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AuthorizeHttpRequestsReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AutowiredFieldIntoConstructorParameterReconciler;
@@ -122,12 +122,15 @@ public class JdtConfig {
 		return new JavaSemanticTokensProvider();
 	}
 	
-	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, SqlSemanticTokens sqlSemanticTokens, JpqlSupportState supportState) {
-		return new JdtDataQuerySemanticTokensProvider(jpqlProvider, hqlProvider, sqlSemanticTokens, supportState);
+	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, JpqlSupportState supportState, Optional<SpelSemanticTokens> spelSemanticTokens) {
+		return new JdtDataQuerySemanticTokensProvider(jpqlProvider, hqlProvider, supportState, spelSemanticTokens);
 	}
 	
-	@Bean QueryJdtAstReconciler dataQueryReconciler(HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler, SqlReconciler sqlReconciler) {
-		return new QueryJdtAstReconciler(hqlReconciler, jpqlReconciler, sqlReconciler);
+	@Bean QueryJdtAstReconciler dataQueryReconciler(
+			@Qualifier("hqlReconciler") Reconciler hqlReconciler,
+			@Qualifier("jpqlReconciler") Reconciler jpqlReconciler,
+			Optional<SpelReconciler> spelReconciler) {
+		return new QueryJdtAstReconciler(hqlReconciler, jpqlReconciler, spelReconciler);
 	}
 
 	@Bean EmbeddedLanguagesSemanticTokensSupport embbededLanguagesSyntaxHighlighting(SimpleLanguageServer server, BootJavaConfig config) {

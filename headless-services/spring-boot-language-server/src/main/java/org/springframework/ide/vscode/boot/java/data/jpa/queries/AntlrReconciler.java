@@ -11,41 +11,50 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.BitSet;
-import java.util.Optional;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
+import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
+import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
-import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
-import org.springframework.ide.vscode.parser.sql.MySqlLexer;
-import org.springframework.ide.vscode.parser.sql.MySqlParser;
-import org.springframework.ide.vscode.parser.sql.MySqlParserBaseListener;
 
-public class SqlReconciler implements Reconciler {
+public class AntlrReconciler implements Reconciler {
+	
+	private static final Logger log = LoggerFactory.getLogger(AntlrReconciler.class);
+	
+	private final String prefix;
+	private final Class<? extends Parser> parserClass;
+	private final Class<? extends Lexer> lexerClass;
+	private final String parseMethod;
+	private final ProblemType problemType;
 
-	private final Optional<SpelReconciler> spelReconciler;
-
-	public SqlReconciler(Optional<SpelReconciler> spelReconciler) {
-		this.spelReconciler = spelReconciler;
+	public AntlrReconciler(String prefix, Class<? extends Parser> parserClass, Class<? extends Lexer> lexerClass,
+			String parseMethod, ProblemType problemType) {
+		this.prefix = prefix;
+		this.parserClass = parserClass;
+		this.lexerClass = lexerClass;
+		this.parseMethod = parseMethod;
+		this.problemType = problemType;
 	}
 
-	@Override
-	public void reconcile(String text, int startPosition, IProblemCollector problemCollector) {
-		MySqlLexer lexer = new MySqlLexer(CharStreams.fromString(text));
+	protected Parser createParser(String text, int startPosition, IProblemCollector problemCollector) throws Exception {
+		Lexer lexer = lexerClass.getDeclaredConstructor(CharStream.class).newInstance(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
-		MySqlParser parser = new MySqlParser(antlrTokens);
+		Parser parser = parserClass.getDeclaredConstructor(TokenStream.class).newInstance(antlrTokens);
 		
 		lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
@@ -62,7 +71,7 @@ public class SqlReconciler implements Reconciler {
 					offset = token.getStartIndex() - token.getCharPositionInLine();
 					length = token.getCharPositionInLine() + 1;
 				}
-				problemCollector.accept(new ReconcileProblemImpl(QueryProblemType.SQL_SYNTAX, "SQL: " + msg, startPosition + offset, length));
+				problemCollector.accept(new ReconcileProblemImpl(problemType, prefix + ": " + msg, startPosition + offset, length));
 			}
 			
 			@Override
@@ -81,30 +90,17 @@ public class SqlReconciler implements Reconciler {
 			}
 		});
 		
-		// Reconcile embedded SPEL
-		parser.addParseListener(new MySqlParserBaseListener() {
-			
-			private void processTerminal(TerminalNode node) {
-				if (node.getSymbol().getType() == MySqlParser.SPEL) {
-					spelReconciler.ifPresent(r -> JpqlReconciler.reconcileEmbeddedSpelNode(node, startPosition, r, problemCollector));
-				}
-			}
+		return parser;
+	}
 
-			@Override
-			public void visitTerminal(TerminalNode node) {
-				processTerminal(node);
-			}
-
-			@Override
-			public void visitErrorNode(ErrorNode node) {
-				processTerminal(node);
-			}
-			
-		});
-
-		
-		parser.sqlStatements();
-		
+	@Override
+	public void reconcile(String text, int startPosition, IProblemCollector problemCollector) {
+		try {
+			Parser parser = createParser(text, startPosition, problemCollector);
+			parserClass.getDeclaredMethod(parseMethod).invoke(parser);
+		} catch (Throwable t) {
+			log.error("", t);
+		}
 	}
 
 }

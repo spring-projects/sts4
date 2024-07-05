@@ -14,17 +14,19 @@ import java.util.Optional;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlReconciler;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.AntlrReconcilerWithSpel;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlReconciler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlReconciler;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlSemanticTokens;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryProblemType;
 import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.parser.hql.HqlLexer;
+import org.springframework.ide.vscode.parser.hql.HqlParser;
+import org.springframework.ide.vscode.parser.jpql.JpqlLexer;
+import org.springframework.ide.vscode.parser.jpql.JpqlParser;
 
 @Configuration(proxyBeanMethods = false)
 public class SpringDataConfig {
@@ -39,26 +41,16 @@ public class SpringDataConfig {
 		return new HqlSemanticTokens(optSpelTokensProvider);
 	}
 	
-	@Bean
-	SqlSemanticTokens sqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokensProvider) {
-		return new SqlSemanticTokens(optSpelTokensProvider);
+	@Bean("hqlReconciler")
+	AntlrReconcilerWithSpel hqlReconciler(Optional<SpelReconciler> spelReconciler) {
+		return new AntlrReconcilerWithSpel("HQL", HqlParser.class, HqlLexer.class, "ql_statement", QueryProblemType.HQL_SYNTAX, spelReconciler, HqlLexer.SPEL);
 	}
 	
-	@Bean
-	HqlReconciler hqlReconciler(Optional<SpelReconciler> spelReconciler) {
-		return new HqlReconciler(spelReconciler);
+	@Bean("jpqlReconciler")
+	AntlrReconcilerWithSpel jpqlReconciler(Optional<SpelReconciler> spelReconciler) {
+		return new AntlrReconcilerWithSpel("JPQL", JpqlParser.class, JpqlLexer.class, "ql_statement", QueryProblemType.JPQL_SYNTAX, spelReconciler, JpqlLexer.SPEL);
 	}
 	
-	@Bean
-	JpqlReconciler jpqlReconciler(Optional<SpelReconciler> spelReconciler) {
-		return new JpqlReconciler(spelReconciler);
-	}
-	
-	@Bean
-	SqlReconciler sqlReconciler(Optional<SpelReconciler> spelReconciler) {
-		return new SqlReconciler(spelReconciler);
-	}
-
 	@Bean
 	JpqlSupportState jpqlSupportState(SimpleLanguageServer server, ProjectObserver projectObserver, BootJavaConfig config) {
 		return new JpqlSupportState(server, projectObserver, config);

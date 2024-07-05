@@ -151,4 +151,41 @@ public class HqlSemanticTokensTest {
 		assertThat(tokens.size()).isEqualTo(20);
 	}
 
+	@Test
+	void query_with_complex_SPEL_Tokens() {
+		provider = new HqlSemanticTokens(Optional.of(new SpelSemanticTokens()));
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{someBean.someProperty != null ? someBean.someProperty : 'default'}", 0);
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 12, "variable", new String[0])); // owner
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 17, "keyword", new String[0])); // FROM
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(18, 23, "class", new String[0])); // Owner
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(24, 29, "variable", new String[0])); // owner
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(30, 34, "keyword", new String[0])); // left
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(35, 39, "keyword", new String[0])); // join
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(40, 45, "keyword", new String[0])); // fetch
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(46, 51, "variable", new String[0])); // owner
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(51, 52, "operator", new String[0])); // .
+		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(52, 56, "method", new String[0])); // pets
+		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(57, 62, "keyword", new String[0])); // WHERE
+		assertThat(tokens.get(12)).isEqualTo(new SemanticTokenData(63, 68, "variable", new String[0])); // owner
+		assertThat(tokens.get(13)).isEqualTo(new SemanticTokenData(68, 69, "operator", new String[0])); // .
+		assertThat(tokens.get(14)).isEqualTo(new SemanticTokenData(69, 71, "method", new String[0])); // id
+		assertThat(tokens.get(15)).isEqualTo(new SemanticTokenData(72, 73, "operator", new String[0])); // =
+		assertThat(tokens.get(16)).isEqualTo(new SemanticTokenData(73, 74, "operator", new String[0])); // :
+		assertThat(tokens.get(17)).isEqualTo(new SemanticTokenData(74, 76, "operator", new String[0])); // #{
+		assertThat(tokens.get(18)).isEqualTo(new SemanticTokenData(76, 84, "variable", new String[0])); // someBean
+		assertThat(tokens.get(19)).isEqualTo(new SemanticTokenData(84, 85, "operator", new String[0])); // .
+		assertThat(tokens.get(20)).isEqualTo(new SemanticTokenData(85, 97, "property", new String[0])); // someProperty
+		assertThat(tokens.get(21)).isEqualTo(new SemanticTokenData(98, 100, "operator", new String[0])); // !=
+		assertThat(tokens.get(22)).isEqualTo(new SemanticTokenData(101, 105, "keyword", new String[0])); // null
+		assertThat(tokens.get(23)).isEqualTo(new SemanticTokenData(106, 107, "operator", new String[0])); // ?
+		assertThat(tokens.get(24)).isEqualTo(new SemanticTokenData(108, 116, "variable", new String[0])); // someBean
+		assertThat(tokens.get(25)).isEqualTo(new SemanticTokenData(116, 117, "operator", new String[0])); // .
+		assertThat(tokens.get(26)).isEqualTo(new SemanticTokenData(117, 129, "property", new String[0])); // someProperty
+		assertThat(tokens.get(27)).isEqualTo(new SemanticTokenData(130, 131, "operator", new String[0])); // :
+		assertThat(tokens.get(28)).isEqualTo(new SemanticTokenData(132, 141, "string", new String[0])); // 'default'
+		assertThat(tokens.get(29)).isEqualTo(new SemanticTokenData(141, 142, "operator", new String[0])); // }
+		
+		assertThat(tokens.size()).isEqualTo(30);
+	}
 }

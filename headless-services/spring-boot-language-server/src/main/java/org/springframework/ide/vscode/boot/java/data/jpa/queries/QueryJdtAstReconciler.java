@@ -11,7 +11,10 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.net.URI;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -28,23 +31,28 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchie
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
+import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.parser.mysql.MySqlLexer;
+import org.springframework.ide.vscode.parser.mysql.MySqlParser;
 
 public class QueryJdtAstReconciler implements JdtAstReconciler {
 	
-	private final HqlReconciler hqlReconciler;
-	private final JpqlReconciler jpqlReconciler;
-	private final SqlReconciler sqlReconciler;
+	private final Reconciler hqlReconciler;
+	private final Reconciler jpqlReconciler;
+	private final Map<SqlType, Reconciler> sqlReconcilers;
 
 	
-	public QueryJdtAstReconciler(HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler,
-			SqlReconciler sqlReconciler) {
+	public QueryJdtAstReconciler(Reconciler hqlReconciler, Reconciler jpqlReconciler,
+			Optional<SpelReconciler> spelReconciler) {
 		this.hqlReconciler = hqlReconciler;
 		this.jpqlReconciler = jpqlReconciler;
-		this.sqlReconciler = sqlReconciler;
+		
+		this.sqlReconcilers = new LinkedHashMap<>();
+		this.sqlReconcilers.put(SqlType.MYSQL, new AntlrReconcilerWithSpel("MySQL", MySqlParser.class, MySqlLexer.class, "sqlStatements", QueryProblemType.SQL_SYNTAX, spelReconciler, MySqlLexer.SPEL));
 	}
 
 	@Override
@@ -87,7 +95,8 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 				
 				if (queryExpression != null) {
 					if (isNative) {
-						reconcileExpression(sqlReconciler, queryExpression, problemCollector);
+						final Expression expr = queryExpression;
+						getSqlReconciler(project).ifPresent(r -> reconcileExpression(r, expr, problemCollector));
 					} else {
 						reconcileExpression(getQueryReconciler(project), queryExpression, problemCollector);
 					}
@@ -155,6 +164,13 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 	@Override
 	public ProblemType getProblemType() {
 		return QueryProblemType.JPQL_SYNTAX;
+	}
+	
+	private Optional<Reconciler> getSqlReconciler(IJavaProject project) {
+		if (SpringProjectUtil.hasDependencyStartingWith(project, "mysql-connector", null)) {
+			return Optional.of(sqlReconcilers.get(SqlType.MYSQL));
+		}
+		return Optional.empty();
 	}
 
 }

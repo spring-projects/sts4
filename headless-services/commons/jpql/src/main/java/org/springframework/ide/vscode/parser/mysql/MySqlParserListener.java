@@ -1,5 +1,5 @@
 // Generated from MySqlParser.g4 by ANTLR 4.13.1
-package org.springframework.ide.vscode.parser.sql;
+package org.springframework.ide.vscode.parser.mysql;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -6458,6 +6458,18 @@ public interface MySqlParserListener extends ParseTreeListener {
 	 */
 	void exitRegexpPredicate(MySqlParser.RegexpPredicateContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code parameterAtom}
+	 * labeled alternative in {@link MySqlParser#expressionAtom}.
+	 * @param ctx the parse tree
+	 */
+	void enterParameterAtom(MySqlParser.ParameterAtomContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code parameterAtom}
+	 * labeled alternative in {@link MySqlParser#expressionAtom}.
+	 * @param ctx the parse tree
+	 */
+	void exitParameterAtom(MySqlParser.ParameterAtomContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code unaryExpressionAtom}
 	 * labeled alternative in {@link MySqlParser#expressionAtom}.
 	 * @param ctx the parse tree
@@ -6566,18 +6578,6 @@ public interface MySqlParserListener extends ParseTreeListener {
 	 */
 	void exitIntervalExpressionAtom(MySqlParser.IntervalExpressionAtomContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code spelExpressionAtom}
-	 * labeled alternative in {@link MySqlParser#expressionAtom}.
-	 * @param ctx the parse tree
-	 */
-	void enterSpelExpressionAtom(MySqlParser.SpelExpressionAtomContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code spelExpressionAtom}
-	 * labeled alternative in {@link MySqlParser#expressionAtom}.
-	 * @param ctx the parse tree
-	 */
-	void exitSpelExpressionAtom(MySqlParser.SpelExpressionAtomContext ctx);
-	/**
 	 * Enter a parse tree produced by the {@code jsonExpressionAtom}
 	 * labeled alternative in {@link MySqlParser#expressionAtom}.
 	 * @param ctx the parse tree
@@ -6661,6 +6661,16 @@ public interface MySqlParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBitExpressionAtom(MySqlParser.BitExpressionAtomContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link MySqlParser#parameter}.
+	 * @param ctx the parse tree
+	 */
+	void enterParameter(MySqlParser.ParameterContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link MySqlParser#parameter}.
+	 * @param ctx the parse tree
+	 */
+	void exitParameter(MySqlParser.ParameterContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link MySqlParser#unaryOperator}.
 	 * @param ctx the parse tree

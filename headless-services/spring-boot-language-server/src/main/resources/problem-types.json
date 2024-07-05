@@ -425,7 +425,7 @@
         "code": "SQL_SYNTAX",
         "label": "SQL Query Syntax",
         "description": "Syntax",
-        "defaultSeverity": "IGNORE"
+        "defaultSeverity": "ERROR"
       }
     ]
   }

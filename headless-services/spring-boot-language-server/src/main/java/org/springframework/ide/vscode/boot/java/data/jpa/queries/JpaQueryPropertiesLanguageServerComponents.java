@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -27,7 +28,7 @@ public class JpaQueryPropertiesLanguageServerComponents implements LanguageServe
 
 	public JpaQueryPropertiesLanguageServerComponents(SimpleTextDocumentService documents, JavaProjectFinder projectsFinder,
 			JpqlSemanticTokens jpqlSemanticTokensProvider, HqlSemanticTokens hqlSematicTokensProvider, JpqlSupportState supportState,
-			HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler) {
+			Reconciler hqlReconciler, Reconciler jpqlReconciler) {
 		this.semanticTokensHandler = new QueryPropertiesSemanticTokensHandler(projectsFinder, jpqlSemanticTokensProvider, hqlSematicTokensProvider, supportState);
 		this.reconcileEngine = new NamedQueryPropertiesReconcileEngine(projectsFinder, hqlReconciler, jpqlReconciler);
 	}
