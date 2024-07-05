@@ -61,7 +61,7 @@ export default class CopilotRequest {
             }
             let completeResponse: boolean = await _send(userMessage);
             while (!completeResponse && rounds < this.maxRounds) {
-                completeResponse = await _send([new LanguageModelChatMessage(LanguageModelChatMessageRole.User, 'continue your response from where you left off.')]);
+                completeResponse = await _send([new LanguageModelChatMessage(LanguageModelChatMessageRole.User, `continue your response from where you left off, or end your response with "//${this.endMark}" to finish the conversation.`)]);
             }
             logger.debug('rounds', rounds);
             return answer.replace("//"+this.endMark, "");

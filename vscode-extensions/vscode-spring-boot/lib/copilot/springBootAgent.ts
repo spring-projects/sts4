@@ -36,8 +36,12 @@ export default class SpringBootChatAgent {
 
     public async handlePrompts(request: ChatRequest, context: ChatContext, stream: ChatResponseStream, cancellationToken: CancellationToken): Promise<SpringBootChatAgentResult> {
 
-        const selectedProject = (await getWorkspaceRoot()).fsPath;
-        const selectedProjectUri = Uri.file(selectedProject).toString();
+        const selectedProject = (await getWorkspaceRoot());
+        if(!selectedProject) {
+            stream.markdown('No project selected from the workspace');
+            return;
+        }
+        const selectedProjectUri = Uri.file(selectedProject?.fsPath).toString();
 
         // Fetch project related information from the Spring boot language server
         const bootProjInfo = await commands.executeCommand("sts/spring-boot/bootProjectInfo", selectedProjectUri) as BootProjectInfo;
@@ -66,7 +70,7 @@ export default class SpringBootChatAgent {
         const response = await this.copilotRequest.chatRequest(messages, {}, cancellationToken);
 
         // write the response to markdown file
-        const targetMarkdownUri = await writeResponseToFile(response, bootProjInfo.name, selectedProject);
+        const targetMarkdownUri = await writeResponseToFile(response, bootProjInfo.name, selectedProject.fsPath);
 
         let documentContent;
 
@@ -75,8 +79,8 @@ export default class SpringBootChatAgent {
         } else {
             // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
             if (bootProjInfo.springBootVersion.startsWith('3')) {
-                const enhancedResponse = await SPRINGCLI.enhanceResponse(targetMarkdownUri, selectedProject);
-                await writeResponseToFile(enhancedResponse, bootProjInfo.name, selectedProject);
+                const enhancedResponse = await SPRINGCLI.enhanceResponse(targetMarkdownUri, selectedProject.fsPath);
+                await writeResponseToFile(enhancedResponse, bootProjInfo.name, selectedProject.fsPath);
             }
             documentContent = await workspace.fs.readFile(targetMarkdownUri);
         }
@@ -92,8 +96,6 @@ export default class SpringBootChatAgent {
 }
 
 export function activate(
-    _client: LanguageClient,
-    _options: ActivatorOptions,
     context: ExtensionContext
 ) {
     const systemPrompts: LanguageModelChatMessage[] = [

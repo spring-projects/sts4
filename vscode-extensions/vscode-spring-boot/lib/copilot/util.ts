@@ -1,6 +1,7 @@
 import path from "path";
-import { Uri, WorkspaceFolder, window, workspace } from "vscode";
+import { Uri, WorkspaceFolder, version, window, workspace } from "vscode";
 import fs from "fs";
+import { SemVer } from "semver";
 
 export function getExecutable(): string {
     return workspace.getConfiguration("spring-cli").get("executable") || "spring";
@@ -83,4 +84,8 @@ export async function writeResponseToFile(response: string, appName: string, sel
     } catch (ex) {
         throw new Error(`Could not write readme file: ${readmeFilePath}, ${ex}`);
     }
+}
+
+export function isLlmApiReady(): boolean {
+    return version.includes('insider') && new SemVer(version).compare(new SemVer("1.90.0-insider")) >= 0;
 }
