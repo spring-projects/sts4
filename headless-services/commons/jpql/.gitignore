@@ -11,6 +11,10 @@
 /src/main/java/org/springframework/ide/vscode/parser/mysql/MySqlParser.tokens
 /src/main/java/org/springframework/ide/vscode/parser/mysql/MySqlLexer.interp
 /src/main/java/org/springframework/ide/vscode/parser/mysql/MySqlLexer.tokens
+/src/main/java/org/springframework/ide/vscode/parser/postgresql/PostgreSqlParser.interp
+/src/main/java/org/springframework/ide/vscode/parser/postgresql/PostgreSqlParser.tokens
+/src/main/java/org/springframework/ide/vscode/parser/postgresql/PostgreSqlLexer.interp
+/src/main/java/org/springframework/ide/vscode/parser/postgresql/PostgreSqlLexer.tokens
 /src/main/java/org/springframework/ide/vscode/parser/spel/SpelParser.interp
 /src/main/java/org/springframework/ide/vscode/parser/spel/SpelParser.tokens
 /src/main/java/org/springframework/ide/vscode/parser/spel/SpelLexer.interp

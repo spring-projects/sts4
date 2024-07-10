@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 public enum SqlType {
 	
-	MYSQL
+	MYSQL,
+	POSTGRESQL
 
 }

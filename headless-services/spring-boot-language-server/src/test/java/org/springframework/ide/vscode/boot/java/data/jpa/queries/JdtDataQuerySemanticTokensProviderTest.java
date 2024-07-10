@@ -17,7 +17,6 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
 		
 	@BeforeEach
 	public void setup() throws Exception {
-		jp =  projects.mavenProject("boot-sql");
+		jp =  projects.mavenProject("boot-mysql");
 	}
 	
 	private List<SemanticTokenData> computeTokens(CompilationUnit cu) {
@@ -342,21 +341,24 @@ public class JdtDataQuerySemanticTokensProviderTest {
         assertThat(token).isEqualTo(new SemanticTokenData(156, 157, "variable", new String[0]));
         
         token = tokens.get(7);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo(".status");
-        assertThat(token).isEqualTo(new SemanticTokenData(157, 164, "variable", new String[0]));
-
+        assertThat(source.substring(token.start(), token.end())).isEqualTo(".");
+        assertThat(token).isEqualTo(new SemanticTokenData(157, 158, "operator", new String[0]));
+        
         token = tokens.get(8);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("status");
+        assertThat(token).isEqualTo(new SemanticTokenData(158, 164, "property", new String[0]));
+
+        token = tokens.get(9);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("=");
         assertThat(token).isEqualTo(new SemanticTokenData(165, 166, "operator", new String[0]));
 
-        token = tokens.get(9);
+        token = tokens.get(10);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("1");
         assertThat(token).isEqualTo(new SemanticTokenData(167, 168, "number", new String[0]));
         
 	}
 
 	@Test
-	@Disabled("Needs proper SPEL support in SQL grammar")
 	void nativeQueryWithSpel() throws Exception {
 		String source = """
 		package my.package
@@ -406,26 +408,30 @@ public class JdtDataQuerySemanticTokensProviderTest {
         assertThat(token).isEqualTo(new SemanticTokenData(156, 157, "variable", new String[0]));
         
         token = tokens.get(7);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo(".status");
-        assertThat(token).isEqualTo(new SemanticTokenData(157, 164, "variable", new String[0]));
-
+        assertThat(source.substring(token.start(), token.end())).isEqualTo(".");
+        assertThat(token).isEqualTo(new SemanticTokenData(157, 158, "operator", new String[0]));
+        
         token = tokens.get(8);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("status");
+        assertThat(token).isEqualTo(new SemanticTokenData(158, 164, "property", new String[0]));
+
+        token = tokens.get(9);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("=");
         assertThat(token).isEqualTo(new SemanticTokenData(165, 166, "operator", new String[0]));
 
-        token = tokens.get(9);
+        token = tokens.get(10);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("?");
         assertThat(token).isEqualTo(new SemanticTokenData(167, 168, "operator", new String[0]));
-        token = tokens.get(9);
         
+        token = tokens.get(11);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("#{");
         assertThat(token).isEqualTo(new SemanticTokenData(168, 170, "operator", new String[0]));
         
-        token = tokens.get(10);
+        token = tokens.get(12);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("status");
         assertThat(token).isEqualTo(new SemanticTokenData(170, 176, "variable", new String[0]));
 
-        token = tokens.get(11);
+        token = tokens.get(13);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("}");
         assertThat(token).isEqualTo(new SemanticTokenData(176, 177, "operator", new String[0]));
 	}

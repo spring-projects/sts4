@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
@@ -26,7 +27,7 @@ public class JpqlSemanticTokensTest {
 	
 	@BeforeEach
 	void setup() {
-		provider = new JpqlSemanticTokens(Optional.empty());
+		provider = new JpqlSemanticTokens(Optional.empty(), Optional.of(Assertions::fail));
 	}
 	
 	@Test

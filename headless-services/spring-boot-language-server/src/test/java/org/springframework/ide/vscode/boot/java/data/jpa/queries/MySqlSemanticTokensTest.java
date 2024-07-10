@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
@@ -26,20 +27,27 @@ public class MySqlSemanticTokensTest {
 	
 	@BeforeEach
 	void setup() {
-		provider = new MySqlSemanticTokens(Optional.of(new SpelSemanticTokens()));
+		provider = new MySqlSemanticTokens(Optional.of(new SpelSemanticTokens()), Optional.of(Assertions::fail));
 	}
 	
 	@Test
 	void simple() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * from fn_module_candidates()", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * from Document document WHERE document.id=fn_module_candidates()", 0);
+		assertThat(tokens.size()).isEqualTo(13);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "operator", new String[0]));
-		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0]));
-		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 34, "variable", new String[0]));
-		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(34, 35, "operator", new String[0]));
-		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(35, 36, "operator", new String[0]));
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0])); // from
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 22, "variable", new String[0])); // Document
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(23, 31, "variable", new String[0])); // document
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(32, 37, "keyword", new String[0])); // WHERE
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(38, 46, "variable", new String[0])); // document
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(46, 47, "operator", new String[0])); // .
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(47, 49, "property", new String[0])); // id
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(49, 50, "operator", new String[0])); // =
+		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(50, 70, "method", new String[0])); // fn_module_candidates
+		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(70, 71, "operator", new String[0])); // (
+		assertThat(tokens.get(12)).isEqualTo(new SemanticTokenData(71, 72, "operator", new String[0])); // )
 		
-		assertThat(tokens.size()).isEqualTo(6);
 	}
 	
 	@Test

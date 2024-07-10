@@ -11,19 +11,27 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
+import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
@@ -32,19 +40,26 @@ import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.Sem
 import org.springframework.ide.vscode.parser.mysql.MySqlLexer;
 import org.springframework.ide.vscode.parser.mysql.MySqlParser;
 import org.springframework.ide.vscode.parser.mysql.MySqlParser.ParameterContext;
+import org.springframework.ide.vscode.parser.mysql.MySqlParser.UdfFunctionCallContext;
 import org.springframework.ide.vscode.parser.mysql.MySqlParserBaseListener;
 
 public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 
 	private static List<String> TOKEN_TYPES = List.of("keyword", "type", "string", "number", "operator",
-			"variable", "regexp", "comment", "parameter");
+			"variable", "regexp", "comment", "parameter", "method");
 
-	private Optional<SpelSemanticTokens> optSpelTokens;
+	private final Optional<SpelSemanticTokens> optSpelTokens;
+	private final Optional<Consumer<RecognitionException>> parseErrorHandler;
 	
 	public MySqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens) {
-		this.optSpelTokens = optSpelTokens;
+		this(optSpelTokens, Optional.empty());
 	}
 
+	public MySqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens, Optional<Consumer<RecognitionException>> parseErrorHandler) {
+		this.optSpelTokens = optSpelTokens;
+		this.parseErrorHandler = parseErrorHandler;
+	}
+	
 	@Override
 	public List<String> getTokenTypes() {
 		LinkedHashSet<String> tokenTypes = new LinkedHashSet<>(TOKEN_TYPES);
@@ -82,7 +97,7 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 					semantics.put(node.getSymbol(), "variable");
 					break;
 				case MySqlParser.DOT_ID:
-					semantics.put(node.getSymbol(), "variable");
+					semantics.put(node.getSymbol(), "property");
 					break;
 				case MySqlParser.DOT:
 					semantics.put(node.getSymbol(), "operator");
@@ -116,7 +131,7 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 					semantics.put(node.getSymbol(), "comment");
 					break;
 				default:
-					if (MySqlParser.VAR_ASSIGN <= type && type <= MySqlParser.COLON_SYMB) {
+					if (MySqlParser.VAR_ASSIGN <= type && type <= MySqlParser.QUESTION_SYMB) {
 						semantics.put(node.getSymbol(), "operator");
 					} else if (MySqlParser.DECIMAL_LITERAL <= type && type <= MySqlParser.BIT_STRING) {
 						semantics.put(node.getSymbol(), "number");
@@ -180,6 +195,18 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 			public void visitErrorNode(ErrorNode node) {
 				processTerminalNode(node);
 			}
+			
+			
+
+			@Override
+			public void exitUdfFunctionCall(UdfFunctionCallContext fc) {
+				if (fc.fullId() != null) {
+					List<Token> ls = getAllLeafs(fc.fullId()).toList();
+					if (!ls.isEmpty()) {
+						semantics.put(ls.get(ls.size() - 1), "method");
+					}
+				}
+			}
 
 			@Override
 			public void exitParameter(ParameterContext ctx) {
@@ -194,25 +221,55 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 				}
 			}
 			
-			private Stream<Token> getAllLeafs(ParserRuleContext ctx) {
-				return ctx.children.stream().flatMap(n -> {
-					if (n instanceof ParserRuleContext prc) {
-						return getAllLeafs(prc);
-					} else if (n instanceof TerminalNode tn) {
-						return Stream.of(tn.getSymbol());
-					}
-					return Stream.empty();
-				});
+		});
+		
+		parser.addErrorListener(new ANTLRErrorListener() {
+			
+			@Override
+			public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
+					String msg, RecognitionException e) {
+				parseErrorHandler.ifPresent(h -> h.accept(e));
 			}
 			
+			@Override
+			public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction,
+					ATNConfigSet configs) {
+			}
+			
+			@Override
+			public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex,
+					BitSet conflictingAlts, ATNConfigSet configs) {
+			}
+			
+			@Override
+			public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact,
+					BitSet ambigAlts, ATNConfigSet configs) {
+			}
 		});
+		
 		
 		parser.sqlStatements();
 		
 		semantics.entrySet().stream()
-				.map(e -> new SemanticTokenData(e.getKey().getStartIndex() + initialOffset,
-						e.getKey().getStartIndex() + e.getKey().getText().length() + initialOffset, e.getValue(),
-						new String[0]))
+				.flatMap(e -> {
+					int startIndex = e.getKey().getStartIndex();
+					if (e.getKey().getType() == MySqlLexer.DOT_ID) {
+						return Stream.of(
+								// the prefix '.' is an operator
+								new SemanticTokenData(startIndex + initialOffset,
+										startIndex + 1 + initialOffset, "operator",
+										new String[0]),
+								// the rest whatever it was meant to be initially
+								new SemanticTokenData(startIndex + 1 + initialOffset,
+										startIndex + e.getKey().getText().length() + initialOffset, e.getValue(),
+										new String[0])
+						);
+					} else {
+						return Stream.of(new SemanticTokenData(startIndex + initialOffset,
+								startIndex + e.getKey().getText().length() + initialOffset, e.getValue(),
+								new String[0]));
+					}
+				})
 				.forEach(tokens::add);
 		
 		Collections.sort(tokens);
@@ -220,5 +277,18 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 		return tokens;
 
 	}
+	
+	static Stream<Token> getAllLeafs(ParserRuleContext ctx) {
+		return ctx.children.stream().flatMap(n -> {
+			if (n instanceof ParserRuleContext prc) {
+				return getAllLeafs(prc);
+			} else if (n instanceof TerminalNode tn) {
+				return Stream.of(tn.getSymbol());
+			}
+			return Stream.empty();
+		});
+	}
+	
+
 
 }

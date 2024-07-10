@@ -47,7 +47,7 @@ public class QueryReconcilerTest {
 	public void setup() throws Exception {
 		harness.intialize(null);
 
-		directory = new File(ProjectsHarness.class.getResource("/test-projects/boot-sql/").toURI());
+		directory = new File(ProjectsHarness.class.getResource("/test-projects/boot-mysql/").toURI());
 
 		String projectDir = directory.toURI().toString();
 
@@ -209,7 +209,7 @@ public class QueryReconcilerTest {
 	}
 
 	@Test
-	void nativeSqlAnnotation() throws Exception {
+	void nativeMySqlAnnotation() throws Exception {
 		String source = """
 				package example.demo;
 
@@ -227,6 +227,32 @@ public class QueryReconcilerTest {
 				.toString();
 		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
 		editor.assertProblems("SELECTX|MySQL: mismatched input 'SELECTX' expecting {'ALTER',");
+	}
+	
+	@Test
+	void nativePostgreSql() throws Exception {
+		directory = new File(ProjectsHarness.class.getResource("/test-projects/boot-postgresql/").toURI());
+		String projectDir = directory.toURI().toString();
+		// trigger project creation
+		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
+
+		String source = """
+				package example.demo;
+
+				import org.springframework.data.jpa.repository.Query;
+				import org.springframework.data.repository.Repository;
+
+				public interface OwnerRepository extends Repository<Object, Integer> {
+
+					@Query(value = "SELECTX ptype FROM PetType", nativeQuery = true)
+					List<Object> findPetTypes();
+
+				}
+				""";
+		String docUri = directory.toPath().resolve("src/main/java/example/demo/OwnerRepository.java").toUri()
+				.toString();
+		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
+		editor.assertProblems("ptype|PostgreSQL: no viable alternative at input 'SELECTXptype'");
 	}
 	
 	@Test

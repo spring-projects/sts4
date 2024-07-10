@@ -56,6 +56,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 		
 		this.sqlTokenProviders = new LinkedHashMap<>();
 		this.sqlTokenProviders.put(SqlType.MYSQL, new MySqlSemanticTokens(spelSemanticTokens));
+		this.sqlTokenProviders.put(SqlType.POSTGRESQL, new PostgreSqlSemanticTokens(spelSemanticTokens));
 	}
 
 	@Override
@@ -169,6 +170,11 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 	}
 	
 	private SemanticTokensDataProvider getSqlSemanticTokensProvider(IJavaProject project) {
+		if (SpringProjectUtil.hasDependencyStartingWith(project, "mysql-connector", null)) {
+			return sqlTokenProviders.get(SqlType.MYSQL);
+		} else if (SpringProjectUtil.hasDependencyStartingWith(project, "postgresql", null)) {
+			return sqlTokenProviders.get(SqlType.POSTGRESQL);
+		}
 		return sqlTokenProviders.get(SqlType.MYSQL);
 	}
 

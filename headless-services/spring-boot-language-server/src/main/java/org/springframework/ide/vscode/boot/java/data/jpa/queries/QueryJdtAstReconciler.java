@@ -38,6 +38,8 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.parser.mysql.MySqlLexer;
 import org.springframework.ide.vscode.parser.mysql.MySqlParser;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlLexer;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser;
 
 public class QueryJdtAstReconciler implements JdtAstReconciler {
 	
@@ -53,6 +55,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 		
 		this.sqlReconcilers = new LinkedHashMap<>();
 		this.sqlReconcilers.put(SqlType.MYSQL, new AntlrReconcilerWithSpel("MySQL", MySqlParser.class, MySqlLexer.class, "sqlStatements", QueryProblemType.SQL_SYNTAX, spelReconciler, MySqlLexer.SPEL));
+		this.sqlReconcilers.put(SqlType.POSTGRESQL, new AntlrReconcilerWithSpel("PostgreSQL", PostgreSqlParser.class, PostgreSqlLexer.class, "root", QueryProblemType.SQL_SYNTAX, spelReconciler, PostgreSqlLexer.SPEL));
 	}
 
 	@Override
@@ -169,6 +172,8 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 	private Optional<Reconciler> getSqlReconciler(IJavaProject project) {
 		if (SpringProjectUtil.hasDependencyStartingWith(project, "mysql-connector", null)) {
 			return Optional.of(sqlReconcilers.get(SqlType.MYSQL));
+		} else if (SpringProjectUtil.hasDependencyStartingWith(project, "postgresql", null)) {
+			return Optional.of(sqlReconcilers.get(SqlType.POSTGRESQL));
 		}
 		return Optional.empty();
 	}

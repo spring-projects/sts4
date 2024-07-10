@@ -35,28 +35,27 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
-import org.springframework.ide.vscode.parser.hql.HqlBaseListener;
-import org.springframework.ide.vscode.parser.hql.HqlLexer;
-import org.springframework.ide.vscode.parser.hql.HqlParser;
-import org.springframework.ide.vscode.parser.hql.HqlParser.EntityNameContext;
-import org.springframework.ide.vscode.parser.hql.HqlParser.IdentifierContext;
-import org.springframework.ide.vscode.parser.hql.HqlParser.ParameterContext;
-import org.springframework.ide.vscode.parser.hql.HqlParser.SimplePathElementContext;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlLexer;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser.Data_typeContext;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser.Func_nameContext;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser.IdentifierContext;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser.ParameterContext;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParserBaseListener;
 
-public class HqlSemanticTokens implements SemanticTokensDataProvider {
-
-	private static List<String> TOKEN_TYPES = List.of("keyword", "type", "class", "string", "number", "operator",
-			"variable", "method", "parameter");
+public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 	
-	private final Optional<SpelSemanticTokens> optSpelTokens;
+	private static List<String> TOKEN_TYPES = List.of("keyword", "type", "string", "number", "operator",
+			"variable", "regexp", "comment", "parameter", "method");
 
-	private final Optional<Consumer<RecognitionException>> parseErrorHandler;
+	private Optional<SpelSemanticTokens> optSpelTokens;
+	private Optional<Consumer<RecognitionException>> parseErrorHandler;
 	
-	public HqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens) {
+	public PostgreSqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens) {
 		this(optSpelTokens, Optional.empty());
 	}
-	
-	public HqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens, Optional<Consumer<RecognitionException>> parseErrorHandler) {
+
+	public PostgreSqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens, Optional<Consumer<RecognitionException>> parseErrorHandler) {
 		this.optSpelTokens = optSpelTokens;
 		this.parseErrorHandler = parseErrorHandler;
 	}
@@ -75,50 +74,46 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 
 	@Override
 	public List<SemanticTokenData> computeTokens(String text, int initialOffset) {
-		HqlLexer lexer = new HqlLexer(CharStreams.fromString(text));
+		PostgreSqlLexer lexer = new PostgreSqlLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
-		HqlParser parser = new HqlParser(antlrTokens);		
+		PostgreSqlParser parser = new PostgreSqlParser(antlrTokens);
+		
 		Map<Token, String> semantics = new HashMap<>();
+		
 		List<SemanticTokenData> tokens = new ArrayList<>();
 		
 		lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		
-		parser.addParseListener(new HqlBaseListener() {
+		parser.addParseListener(new PostgreSqlParserBaseListener() {
 			
 			private void processTerminalNode(TerminalNode node) {
-				int type = node.getSymbol().getType();
-				switch (type) {
-				case HqlParser.STRINGLITERAL:
-				case HqlParser.CHARACTER:
-					semantics.put(node.getSymbol(), "string");
-					break;
-				case HqlParser.HEXLITERAL:
-				case HqlParser.INTEGER_LITERAL:
-				case HqlParser.FLOAT_LITERAL:
-				case HqlParser.BINARY_LITERAL:
-					semantics.put(node.getSymbol(), "number");
-					break;
-				case HqlParser.IDENTIFICATION_VARIABLE:
-					semantics.put(node.getSymbol(), "variable");
-					break;
-				case HqlParser.JAVASTRINGLITERAL:
-					semantics.put(node.getSymbol(), "class");
-					break;
-				case HqlParser.WS:
-					break;
-				case HqlParser.SPEL:
+				Token token = node.getSymbol();
+				int type = token.getType();
+				if (type >= PostgreSqlLexer.A_ && type <= PostgreSqlLexer.OWNED) {
+					semantics.put(token, "keyword");
+				} else if (type >= PostgreSqlLexer.ABSTIME && type <= PostgreSqlLexer.XML) {
+					semantics.put(token, "type");
+				} else if ((type >= PostgreSqlLexer.AMP && type <= PostgreSqlLexer.SEMI)
+						|| (type >= PostgreSqlLexer.COMMA && type <= PostgreSqlLexer.CLOSE_BRACKET)
+						|| type == PostgreSqlLexer.DOT) {
+					semantics.put(token, "operator");
+				} else if (type == PostgreSqlLexer.REGEX_STRING) {
+					semantics.put(token, "regexp");
+				} else if (type >= PostgreSqlLexer.SINGLEQ_STRING_LITERAL && type <= PostgreSqlLexer.DOUBLEQ_STRING_LITERAL) {
+					semantics.put(token, "string");
+				} else if ((type >= PostgreSqlLexer.NUMERIC_LITERAL && type <= PostgreSqlLexer.HEX_INTEGER_LITERAL)
+						|| type == PostgreSqlLexer.DOLLAR_DEC || type == PostgreSqlLexer.BIT_STRING) {
+					semantics.put(token, "number");
+				} else if (type == PostgreSqlLexer.IDENTIFIER) {
+					semantics.put(token, "variable");
+				} else if (type >= PostgreSqlLexer.BLOCK_COMMENT && type <= PostgreSqlLexer.LINE_COMMENT) {
+					semantics.put(token, "comment");
+				} else if (type == PostgreSqlLexer.SPEL) {
 					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, initialOffset, optSpelTokens));
-					break;
-				default:
-					if (HqlParser.WS < type && type <= HqlParser.YEAR) {
-						semantics.put(node.getSymbol(), "keyword");
-					} else {
-						semantics.put(node.getSymbol(), "operator");
-					}
 				}
 			}
-
+			
 			@Override
 			public void visitTerminal(TerminalNode node) {
 				processTerminalNode(node);
@@ -128,26 +123,45 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 			public void visitErrorNode(ErrorNode node) {
 				processTerminalNode(node);
 			}
-						
-			@Override
-			public void exitSimplePathElement(SimplePathElementContext ctx) {
-				semantics.put(ctx.identifier().getStart(), "method");
-			}
 
 			@Override
-			public void exitEntityName(EntityNameContext ctx) {
-				for (IdentifierContext i : ctx.identifier()) {
-					semantics.put(i.getStart(), "class");
+			public void exitIdentifier(IdentifierContext ctx) {
+				if (ctx.identifier() != null) {
+					for (int i = 1; i < ctx.identifier().size(); i++) {
+						IdentifierContext identifier = ctx.identifier(i);
+						if (identifier.IDENTIFIER() != null) {
+							semantics.put(identifier.IDENTIFIER().getSymbol(), "property");
+						}
+					}
 				}
 			}
 
 			@Override
-			public void exitParameter(ParameterContext ctx) {
-				if (ctx.identifier() != null && ctx.identifier().getStart() != null) {
-					semantics.put(ctx.identifier().getStart(), "parameter");
+			public void exitFunc_name(Func_nameContext funcName) {
+				if (funcName.identifier() != null && funcName.identifier().IDENTIFIER() != null) {
+					semantics.put(funcName.identifier().IDENTIFIER().getSymbol(), "method");
+				}
+			}
+			
+			@Override
+			public void exitData_type(Data_typeContext dataType) {
+				if (dataType.identifier() != null) {
+					MySqlSemanticTokens.getAllLeafs(dataType.identifier())
+						.filter(t -> t.getType() == PostgreSqlLexer.IDENTIFIER)
+						.forEach(t -> semantics.put(t, "type"));
 				}
 			}
 
+			@Override
+			public void exitParameter(ParameterContext param) {
+				if (param.identifier() != null) {
+					MySqlSemanticTokens.getAllLeafs(param.identifier()).forEach(t -> semantics.put(t, "parameter"));
+				}
+				if (param.INTEGER_LITERAL() != null) {
+					semantics.put(param.INTEGER_LITERAL().getSymbol(), "parameter");
+				}
+			}
+			
 		});
 		
 		parser.addErrorListener(new ANTLRErrorListener() {
@@ -174,7 +188,7 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 			}
 		});
 		
-		parser.ql_statement();
+		parser.root();
 		
 		semantics.entrySet().stream()
 				.map(e -> new SemanticTokenData(e.getKey().getStartIndex() + initialOffset,
