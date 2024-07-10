@@ -1,0 +1,13 @@
+name: Test - Snapshot - 4.32 Eclipse STS Distribution Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  e432-distro:
+    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e432'
+      build_type: 'snapshot'
+      java_version: '21'
+    secrets: inherit
