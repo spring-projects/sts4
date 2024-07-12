@@ -41,9 +41,6 @@ jobs:
             .github
       - uses: ./.github/actions/cloudflare-purge
         name: Invalidate Cache for URLs
-        env:
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         with:
           urls: ${{ steps.prepare-urls.outputs.urls }}
           cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}

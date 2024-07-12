@@ -121,9 +121,9 @@ jobs:
           echo "Processing S3 update..."
           dist_path=${{ steps.s3-paths.outputs.dist_path }}
           ls spring-tool-suite-4*linux*.tar.gz*
-          echo "Removing old Linux .tar.gz files from Akamai s3..."
+          echo "Removing old Linux .tar.gz files from s3..."
           aws s3 rm s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
-          echo "Uploading new Linux .tar.gz files to Akamai s3..."
+          echo "Uploading new Linux .tar.gz files to s3..."
           aws s3 cp . s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' }}
@@ -174,9 +174,9 @@ jobs:
           echo "Processing S3 update..."
           ls spring-tool-suite-4*win*.zip*
           ls spring-tool-suite-4*win*.self-extracting.jar*
-          echo "Removing old win zip and self extracting jar files from Akamai..."
+          echo "Removing old win zip and self extracting jar files from S3..."
           aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
-          echo "Uploading new win zip and self extracting jar files to Akamai..."
+          echo "Uploading new win zip and self extracting jar files to S3..."
           aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' }}
@@ -270,9 +270,9 @@ jobs:
           dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           echo "Processing S3 update..."
           ls spring-tool-suite-4*macosx*.dmg*
-          echo "Removing old dmg files from Akamai..."
+          echo "Removing old dmg files from S3..."
           aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
-          echo "Uploading new dmg files to Akamai..."
+          echo "Uploading new dmg files to S3..."
           aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
@@ -295,7 +295,7 @@ jobs:
         with:
           sparse-checkout: |
             .github
-      - name: Collect URLs on Akamai to Purge
+      - name: Collect URLs to Purge
         id: collect-urls
         run: |
           ESCAPED_REPLACE_URL=$(printf '%s\n' "$DOWNLOAD_URL_ROOT/" | sed -e 's/[\/&]/\\&/g')
