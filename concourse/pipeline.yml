@@ -168,42 +168,42 @@ resources:
     aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-spring-cli-(.*).vsix
-- name: s3-concourse-vsix-release-akamai
+- name: s3-concourse-vsix-release-cdn
   type: s3
   icon: content-save-outline
   source:
-    bucket: tools-spring-io
-    access_key_id: ((s3_svc_accesskey))
-    secret_access_key: ((s3_svc_secretkey))
-    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
-    regexp: release/STS4/vscode/vscode-concourse-(.*).vsix
-- name: s3-bosh-vsix-release-akamai
+    bucket: ((CDN_BUCKET))
+    access_key_id: ((CDN_S3_ACCESS_KEY))
+    secret_access_key: ((CDN_S3_SECRET_KEY))
+    endpoint: ((CDN_S3_ENDPOINT))
+    regexp: spring-tools/release/STS4/vscode/vscode-concourse-(.*).vsix
+- name: s3-bosh-vsix-release-cdn
   type: s3
   icon: content-save-outline
   source:
-    bucket: tools-spring-io
-    access_key_id: ((s3_svc_accesskey))
-    secret_access_key: ((s3_svc_secretkey))
-    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
-    regexp: release/STS4/vscode/vscode-bosh-(.*).vsix
-- name: s3-manifest-yaml-vsix-release-akamai
+    bucket: ((CDN_BUCKET))
+    access_key_id: ((CDN_S3_ACCESS_KEY))
+    secret_access_key: ((CDN_S3_SECRET_KEY))
+    endpoint: ((CDN_S3_ENDPOINT))
+    regexp: spring-tools/release/STS4/vscode/vscode-bosh-(.*).vsix
+- name: s3-manifest-yaml-vsix-release-cdn
   type: s3
   icon: content-save-outline
   source:
-    bucket: tools-spring-io
-    access_key_id: ((s3_svc_accesskey))
-    secret_access_key: ((s3_svc_secretkey))
-    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
-    regexp: release/STS4/vscode/vscode-manifest-yaml-(.*).vsix
-- name: s3-spring-boot-vsix-release-akamai
+    bucket: ((CDN_BUCKET))
+    access_key_id: ((CDN_S3_ACCESS_KEY))
+    secret_access_key: ((CDN_S3_SECRET_KEY))
+    endpoint: ((CDN_S3_ENDPOINT))
+    regexp: spring-tools/release/STS4/vscode/vscode-manifest-yaml-(.*).vsix
+- name: s3-spring-boot-vsix-release-cdn
   type: s3
   icon: content-save-outline
   source:
-    bucket: tools-spring-io
-    access_key_id: ((s3_svc_accesskey))
-    secret_access_key: ((s3_svc_secretkey))
-    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
-    regexp: release/STS4/vscode/vscode-spring-boot-(.*).vsix
+    bucket: ((CDN_BUCKET))
+    access_key_id: ((CDN_S3_ACCESS_KEY))
+    secret_access_key: ((CDN_S3_SECRET_KEY))
+    endpoint: ((CDN_S3_ENDPOINT))
+    regexp: spring-tools/release/STS4/vscode/vscode-spring-boot-(.*).vsix
 # - name: s3-manifest-yaml-fatjar-snapshot
 #   type: s3
 #   source:
@@ -268,16 +268,16 @@ resources:
 #     secret_access_key: ((s3_prod_secretkey))
 #     region_name: ((s3_prod_region))
 #     regexp: release/STS4/fatjars/spring-boot-language-server-(.*).jar
-- name: vscode-snapshot-website-akamai
+- name: vscode-snapshot-website-cdn
   type: s3-multi
   icon: content-save-outline
   source:
-    bucket: tools-spring-io
-    access_key_id: ((s3_svc_accesskey))
-    secret_access_key: ((s3_svc_secretkey))
-    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
+    bucket: ((CDN_BUCKET))
+    access_key_id: ((CDN_S3_ACCESS_KEY))
+    secret_access_key: ((CDN_S3_SECRET_KEY))
+    endpoint: ((CDN_S3_ENDPOINT))
     region_name: ((s3_region))
-    path: snapshot/STS4/vscode-extensions
+    path: spring-tools/snapshot/STS4/vscode-extensions
     change_dir_to: website
 - name: slack-notification
   type: slack-notification
@@ -362,16 +362,16 @@ jobs:
       passed:
       - publish-release
   - in_parallel:
-    - put: s3-spring-boot-vsix-release-akamai
+    - put: s3-spring-boot-vsix-release-cdn
       params:
         file: s3-spring-boot-vsix-snapshot/*.vsix
-    - put: s3-manifest-yaml-vsix-release-akamai
+    - put: s3-manifest-yaml-vsix-release-cdn
       params:
         file: s3-manifest-yaml-vsix-snapshot/*.vsix
-    - put: s3-bosh-vsix-release-akamai
+    - put: s3-bosh-vsix-release-cdn
       params:
         file: s3-bosh-vsix-snapshot/*.vsix
-    - put: s3-concourse-vsix-release-akamai
+    - put: s3-concourse-vsix-release-cdn
       params:
         file: s3-concourse-vsix-snapshot/*.vsix
 - name: create-rc-wiki-page
@@ -414,23 +414,23 @@ jobs:
   - in_parallel:
     - get: sts4-wiki
     - get: sts4
-    - get: s3-bosh-vsix-release-akamai
+    - get: s3-bosh-vsix-release-cdn
       trigger: true
-    - get: s3-manifest-yaml-vsix-release-akamai
+    - get: s3-manifest-yaml-vsix-release-cdn
       trigger: true
-    - get: s3-concourse-vsix-release-akamai
+    - get: s3-concourse-vsix-release-cdn
       trigger: true
-    - get: s3-spring-boot-vsix-release-akamai
+    - get: s3-spring-boot-vsix-release-cdn
       trigger: true
   - task: create-vsix-release-wiki-page
     file: sts4/concourse/tasks/create-release-wiki-page.yml
     params:
       wiki_page_file_name: Current-VSCode-Releases
     input_mapping:
-      concourse-vsix: s3-concourse-vsix-release-akamai
-      bosh-vsix: s3-bosh-vsix-release-akamai
-      manifest-yaml-vsix: s3-manifest-yaml-vsix-release-akamai
-      spring-boot-vsix: s3-spring-boot-vsix-release-akamai
+      concourse-vsix: s3-concourse-vsix-release-cdn
+      bosh-vsix: s3-bosh-vsix-release-cdn
+      manifest-yaml-vsix: s3-manifest-yaml-vsix-release-cdn
+      spring-boot-vsix: s3-spring-boot-vsix-release-cdn
   - put: sts4-wiki
     params:
       rebase: true
@@ -1126,7 +1126,7 @@ jobs:
   - task: build-website
     file: sts4/concourse/tasks/build-vscode-website.yml
   - in_parallel:
-    - put: vscode-snapshot-website-akamai      
+    - put: vscode-snapshot-website-cdn
 # - name: build-fatjars
 #   plan:
 #   - in_parallel:
