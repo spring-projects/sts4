@@ -113,7 +113,7 @@ jobs:
           fi
 
   notify-failure:
-    needs: [ eclipse-language-servers-build, purge_cache ]
+    needs: [ eclipse-language-servers-build ]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
     uses: ./.github/workflows/notify-failed.yml
     with:
