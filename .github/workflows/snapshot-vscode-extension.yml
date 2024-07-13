@@ -57,7 +57,7 @@ jobs:
           echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-spring-boot "Spring Boot Tools" $DOWNLOAD_URL_ROOT` >> $downloads_html
           echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-concourse "Concourse Editor" $DOWNLOAD_URL_ROOT` >> $downloads_html
           echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-bosh "Bosh Editor" $DOWNLOAD_URL_ROOT` >> $downloads_html
-          echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-manifest-yaml "CF Mnaifest Editor" $DOWNLOAD_URL_ROOT` >> $downloads_html
+          echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-manifest-yaml "CF Manifest Editor" $DOWNLOAD_URL_ROOT` >> $downloads_html
           echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-spring-cli "Spring CLI" $DOWNLOAD_URL_ROOT` >> $downloads_html
           echo '</ul>' >> $downloads_html
           cat ./$downloads_html

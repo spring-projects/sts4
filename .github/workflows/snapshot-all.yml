@@ -17,7 +17,7 @@ jobs:
     with:
       eclipse_profile: 'e431'
       build_type: 'snapshot'
-      skip_tests: true
+      skip_tests: false
     secrets: inherit
 
   e431-distro:
@@ -59,3 +59,14 @@ jobs:
       extension-name: vscode-concourse
     secrets: inherit
 
+  vscode-manifest-yaml:
+    uses: ./.github/workflows/snapshot-vscode-extension.yml
+    with:
+      extension-name: vscode-manifest-yaml
+    secrets: inherit
+
+  vscode-bosh:
+    uses: ./.github/workflows/snapshot-vscode-extension.yml
+    with:
+      extension-name: vscode-bosh
+    secrets: inherit
