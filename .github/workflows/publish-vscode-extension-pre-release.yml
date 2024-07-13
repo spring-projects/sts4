@@ -37,4 +37,4 @@ jobs:
           npm install --global @vscode/vsce
           vsix_file=`ls ./vsix | head -n 1`
           echo "VSIX pre-release file to publish ${vsix_file}"
-          vsce publish --pre-release -p ${{ secrets.VSCE_PUBLISH_TOKEN }} --packagePath $vsix_file
+          vsce publish --pre-release -p ${{ secrets.VSCE_PUBLISH_TOKEN }} --packagePath ./vsix/$vsix_file

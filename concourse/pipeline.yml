@@ -512,7 +512,7 @@ jobs:
   plan:
   - in_parallel:
     - get: sts4
-      trigger: true
+#      trigger: true
     - get: maven-cache
   - task: build-consourse-vsix-snapshot
     file: sts4/concourse/tasks/build-vsix.yml
