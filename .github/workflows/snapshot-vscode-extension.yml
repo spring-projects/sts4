@@ -7,6 +7,12 @@ on:
         description: name of the extension, e.g. vscode-spring-cli
         required: true
         type: string
+  workflow_call:
+    inputs:
+      extension-name:
+        description: name of the extension, e.g. vscode-spring-cli
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -51,8 +57,12 @@ jobs:
         run: |
           downloads_html="vscode-extensions-snippet.html"
           echo '<ul>' >> $downloads_html
-          echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-spring-boot "Spring Boot Tools" $DOWNLOAD_URL_ROOT`
-          echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-concourse "Concourse" $DOWNLOAD_URL_ROOT`
+          echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-spring-boot "Spring Boot Tools" $DOWNLOAD_URL_ROOT` >> $downloads_html
+          echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-concourse "Concourse Editor" $DOWNLOAD_URL_ROOT` >> $downloads_html
+          echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-bosh "Bosh Editor" $DOWNLOAD_URL_ROOT` >> $downloads_html
+          echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-manifest-yaml "CF Mnaifest Editor" $DOWNLOAD_URL_ROOT` >> $downloads_html
+          echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-spring-cli "Spring CLI" $DOWNLOAD_URL_ROOT` >> $downloads_html
           echo '</ul>' >> $downloads_html
-          cat ./$downloads_html          
+          cat ./$downloads_html
+          aws s3 mv ./$downloads_html s3://$AWS_S3_BUCKET/snapshot/STS4/vscode-extensions/ --no-progress
 

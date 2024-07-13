@@ -1,3 +1,3 @@
 #!/bin/bash
 set -e
-../mvnw -f ../pom.xml -pl bosh-language-server -am clean install
+../mvnw -B -f ../pom.xml -pl bosh-language-server -am clean install

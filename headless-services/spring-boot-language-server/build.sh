@@ -9,6 +9,7 @@ if command -v xvfb-run ; then
         -f ../pom.xml \
         -pl $modules \
         -am \
+        -B \
         clean install
 else
     ../mvnw \
@@ -16,6 +17,7 @@ else
         -f ../pom.xml \
         -pl $modules \
         -am \
+        -B \
         clean install
 fi
 cd ../xml-ls-extension
@@ -24,4 +26,5 @@ cd ../xml-ls-extension
         -f ../pom.xml \
         -pl xml-ls-extension \
         -am \
+        -B \
         clean install
