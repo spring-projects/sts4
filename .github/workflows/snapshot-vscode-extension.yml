@@ -1,7 +1,7 @@
 name: Snapshot VSCode Extension
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       extension-name:
         description: name of the extension, e.g. vscode-spring-cli
