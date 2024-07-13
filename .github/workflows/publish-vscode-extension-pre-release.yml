@@ -1,0 +1,40 @@
+name: Publish VSCode Extension Pre-Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      extension-name:
+        description: name of the extension, e.g. vscode-spring-cli
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      extension-name:
+        description: name of the extension, e.g. vscode-spring-cli
+        required: true
+        type: string
+
+jobs:
+  build-vscode-extension:
+    runs-on: ubuntu-latest
+    name: Publish Pre-Release for VSCode Extension '${{ inputs.extension-name }}'
+    steps:
+      - name: Checkout vscode-extensions code and workflow scripts
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Build .VSIX file
+        id: build-vsix
+        run: |
+          ${{ github.workspace }}/.github/scripts/build-vscode-extension.sh ${{ inputs.extension-name }} pre
+          ls ./vsix
+      - name: Publish to VSCode Marketplace
+        id: publish-pre-release
+        run: |
+          npm install --global @vscode/vsce
+          vsix_file=`ls ./vsix | head -n 1`
+          echo "VSIX pre-release file to publish ${vsix_file}"
+          vsce publish --pre-release -p ${{ secrets.VSCE_PUBLISH_TOKEN }} --packagePath $vsix_file

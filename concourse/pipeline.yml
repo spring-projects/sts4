@@ -535,7 +535,7 @@ jobs:
   plan:
   - in_parallel:
     - get: nightly
-      trigger: true
+#      trigger: true
     - get: sts4
     - get: maven-cache
       passed:
@@ -565,7 +565,7 @@ jobs:
   plan:
   - in_parallel:
     - get: sts4
-      trigger: true
+#      trigger: true
     - get: maven-cache
   - task: build-bosh-vsix-snapshot
     file: sts4/concourse/tasks/build-vsix.yml
@@ -588,7 +588,7 @@ jobs:
   plan:
   - in_parallel:
     - get: nightly
-      trigger: true
+#      trigger: true
     - get: sts4
     - get: maven-cache
       passed:
@@ -618,7 +618,7 @@ jobs:
   plan:
   - in_parallel:
     - get: sts4
-      trigger: true
+#      trigger: true
     - get: maven-cache
   - task: build-manifest-yaml-vsix-snapshot
     file: sts4/concourse/tasks/build-vsix.yml
@@ -638,7 +638,7 @@ jobs:
   plan:
   - in_parallel:
     - get: nightly
-      trigger: true
+#      trigger: true
     - get: sts4
     - get: maven-cache
       passed:
@@ -668,7 +668,7 @@ jobs:
   plan:
   - in_parallel:
     - get: sts4
-      trigger: true
+#      trigger: true
     - get: maven-cache
   - task: build-spring-boot-vsix-snapshot
     timeout: 40m
@@ -692,7 +692,7 @@ jobs:
   plan:
   - in_parallel:
     - get: nightly
-      trigger: true
+#      trigger: true
     - get: sts4
     - get: maven-cache
       passed:
@@ -723,7 +723,7 @@ jobs:
   plan:
   - in_parallel:
     - get: sts4
-      trigger: true
+#      trigger: true
     - get: maven-cache
   - task: build-spring-cli-vsix-snapshot
     timeout: 10m
