@@ -38,8 +38,9 @@ jobs:
         id: version
         run: |
           base_version=`jq -r .version vscode-extensions/${{ inputs.extension-name }}/package.json`
-          release_name=${{ inputs.extension-name }}-${{ steps.version.outputs.version }}-${{ inputs.postfix }}
+          release_name=${{ inputs.extension-name }}-$base_version-${{ inputs.postfix }}
           echo "Version: ${base_version}"
+          echo "Release Name: ${release_name}"
           echo "version=$base_version" >> $GITHUB_OUTPUT
           echo "release_name=$release_name" >> $GITHUB_OUTPUT
       - name: Create tag
@@ -81,13 +82,13 @@ jobs:
           channel-id: "C0188MENU2J"
           payload: |
             {
-              "text": "Release build `${{ inputs.extension-name }}-${{ steps.version.outputs.version }}`",
+              "text": "Release build `${{ steps.version.outputs.release_name }}`",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Release build for `${{ inputs.extension-name }}-${{ steps.version.outputs.version }}` is available: ${{ steps.upload-release.outputs.s3_url }}"
+                    "text": "Release build for `${{ steps.version.outputs.release_name }}` is available: ${{ steps.upload-release.outputs.s3_url }}"
                   }
                 }
               ]
