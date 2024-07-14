@@ -39,18 +39,18 @@ fi
 
 # for release build we don't add version-qualifier to package.json
 # So we must instead rename the file ourself to add a qualifier
-if [ "$dist_type" == release ]; then
-    vsix_file=`ls *.vsix`
-    git fetch --tags
-    release_name=`git tag --points-at HEAD | grep ${extension_id}`
-    echo "release_name=$release_name"
-    if [ -z "$release_name" ]; then
-        echo "Release Candidates must be tagged" >&2
-        exit 1
-    else
-        mv $vsix_file ${release_name}.vsix
-    fi
-fi
+#if [ "$dist_type" == release ]; then
+#    vsix_file=`ls *.vsix`
+#    git fetch --tags
+#    release_name=`git tag --points-at HEAD | grep ${extension_id}`
+#    echo "release_name=$release_name"
+#    if [ -z "$release_name" ]; then
+#        echo "Release Candidates must be tagged" >&2
+#        exit 1
+#    else
+#        mv $vsix_file ${release_name}.vsix
+#    fi
+#fi
 
 mkdir -p $workdir/vsix
 cp *.vsix $workdir/vsix
