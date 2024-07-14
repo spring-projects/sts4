@@ -11,10 +11,6 @@ on:
         description: For example "RC1"
         required: true
         type: string
-      tag:
-        description: tags the repository if value is true
-        required: true
-        type: boolean
 
 permissions:
   contents: write
@@ -27,12 +23,10 @@ env:
   AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}/spring-tools
   DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
 
-
 jobs:
-
-  tag-vscode-extension:
+  release-vscode-extension:
     runs-on: ubuntu-latest
-    name: Tag VSCode Extension '${{ inputs.extension-name }}'
+    name: Release Build and Upload VSCode Extension '${{ inputs.extension-name }}'
     steps:
       - name: Checkout vscode-extension '${{ inputs.extension-name }}'
         uses: actions/checkout@v4
@@ -43,7 +37,6 @@ jobs:
           echo "Version: ${base_version}"
           echo "version=$base_version" >> $GITHUB_OUTPUT
       - name: Create tag
-        if: ${{ inputs.tag }}
         uses: actions/github-script@v7
         with:
           script: |
