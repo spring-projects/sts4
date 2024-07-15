@@ -30,7 +30,7 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProposal;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProposal;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -148,7 +148,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 			
 			String label = "classpath:" + resource;
 			
-			ICompletionProposal proposal = new QualifierCompletionProposal(edits, label, label, null, score--);
+			ICompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits, label, label, null, score--);
 			completions.add(proposal);
 		}
 

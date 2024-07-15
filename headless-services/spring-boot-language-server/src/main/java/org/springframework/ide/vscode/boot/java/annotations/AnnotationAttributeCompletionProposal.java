@@ -8,7 +8,7 @@
  * Contributors:
  *     Broadcom - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.beans;
+package org.springframework.ide.vscode.boot.java.annotations;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -18,7 +18,7 @@ import org.springframework.ide.vscode.commons.util.Renderable;
 /**
  * @author Martin Lippert
  */
-public class QualifierCompletionProposal extends ScoreableProposal {
+public class AnnotationAttributeCompletionProposal extends ScoreableProposal {
 
 	private static final String EMPTY_DETAIL = "";
 
@@ -28,7 +28,7 @@ public class QualifierCompletionProposal extends ScoreableProposal {
 	private final Renderable documentation;
 	private final double score;
 
-	public QualifierCompletionProposal(DocumentEdits edits, String label, String detail, Renderable documentation, double score) {
+	public AnnotationAttributeCompletionProposal(DocumentEdits edits, String label, String detail, Renderable documentation, double score) {
 		this.edits = edits;
 		this.label = label;
 		this.detail = detail == null ? EMPTY_DETAIL : detail;

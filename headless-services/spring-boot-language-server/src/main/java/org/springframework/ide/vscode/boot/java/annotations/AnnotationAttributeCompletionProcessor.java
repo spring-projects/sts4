@@ -26,7 +26,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
-import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProposal;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -124,7 +123,7 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 				DocumentEdits edits = new DocumentEdits(doc, false);
 				edits.replace(startOffset, endOffset, createReplacementText.apply(candidate));
 	
-				QualifierCompletionProposal proposal = new QualifierCompletionProposal(edits, candidate, candidate, null, score--);
+				AnnotationAttributeCompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits, candidate, candidate, null, score--);
 				completions.add(proposal);
 			}
 		}
