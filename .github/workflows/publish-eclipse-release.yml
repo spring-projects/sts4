@@ -43,6 +43,7 @@ jobs:
     with:
       ls_version: ${{ inputs.ls_version }}
       release_version: ${{ inputs.release_version }}.RELEASE
+    secrets: inherit
 
 #  create-github-release:
 #    uses: ./.github/workflows/create-gh-release.yml

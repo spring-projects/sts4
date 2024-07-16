@@ -1,6 +1,16 @@
 name: Backup Eclipse Releases to GCP
 
 on:
+  workflow_call:
+    inputs:
+      ls_version:
+        description: The suffix of the p2 repo URL in S3 (i.e. 2023-11-01)
+        required: true
+        type: string
+      release_version:
+        description: Release version (i.e. 4.20.1.RELEASE)
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       ls_version:
