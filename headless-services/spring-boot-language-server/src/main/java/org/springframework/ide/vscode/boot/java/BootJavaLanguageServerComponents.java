@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
+import org.springframework.ide.vscode.boot.java.beans.ProfileReferencesProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierReferencesProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
@@ -296,6 +297,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		Map<String, ReferenceProvider> providers = new HashMap<>();
 		providers.put(Annotations.VALUE, new ValuePropertyReferencesProvider(server));
 		providers.put(Annotations.QUALIFIER, new QualifierReferencesProvider(index, symbolIndex));
+		providers.put(Annotations.PROFILE, new ProfileReferencesProvider(index, symbolIndex));
 
 		return new BootJavaReferencesHandler(this, cuCache, projectFinder, providers);
 	}
