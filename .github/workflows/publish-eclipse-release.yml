@@ -38,6 +38,12 @@ jobs:
       latest: ${{ inputs.eclipse_latest }}
     secrets: inherit
 
+  backup-release-on-gcp:
+    uses: ./.github/workflows/backup-eclipse-releases-to-gcp.yml
+    with:
+      ls_version: ${{ inputs.ls_version }}
+      release_version: ${{ inputs.release_version }}.RELEASE
+
 #  create-github-release:
 #    uses: ./.github/workflows/create-gh-release.yml
 #    with:
