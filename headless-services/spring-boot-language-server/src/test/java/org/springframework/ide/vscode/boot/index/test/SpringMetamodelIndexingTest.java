@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -119,7 +120,7 @@ public class SpringMetamodelIndexingTest {
         assertEquals(1, beans.length);
         assertEquals(0, beans[0].getInjectionPoints().length);
 
-        String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI))).replace("beanWithoutInjections()", "beanNowWithOneInjection(BeanClass1 bean1)");
+        String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI)), Charset.defaultCharset()).replace("beanWithoutInjections()", "beanNowWithOneInjection(BeanClass1 bean1)");
         CompletableFuture<Void> updateFuture = indexer.updateDocument(changedDocURI, newContent, "test triggered");
         updateFuture.get(5, TimeUnit.SECONDS);
         
@@ -165,7 +166,7 @@ public class SpringMetamodelIndexingTest {
             		+ "}\n"
             		+ "" +
                     "";
-            FileUtils.write(new File(new URI(createdDocURI)), content);
+            FileUtils.write(new File(new URI(createdDocURI)), content, Charset.defaultCharset());
             CompletableFuture<Void> createFuture = indexer.createDocument(createdDocURI);
             createFuture.get(5, TimeUnit.SECONDS);
 

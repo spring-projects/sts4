@@ -78,6 +78,7 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 					computeProposalsForStringLiteral(project, node, completions, offset, doc);
 				}
 			}
+			// case: @Qualifier({"prefix<*>"})
 			else if (node instanceof StringLiteral && node.getParent() instanceof ArrayInitializer) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
 					computeProposalsForInsideArrayInitializer(project, node, completions, offset, doc);
