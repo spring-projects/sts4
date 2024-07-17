@@ -52,4 +52,8 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SPRING_RELEASE_SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
-
+      - name: Announce Release in Chat
+        uses: julb/action-post-googlechat-message@v1
+        with:
+          message: "${{ github.event.repository.name }}-announcing `${{ inputs.version }}`"
+          gchat_webhook_url: ${{ secrets.SPRING_RELEASE_CHAT_WEBHOOK_URL }}
