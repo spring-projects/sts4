@@ -14,9 +14,14 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.net.MediaType;
 
 public class MimeTypes {
+	
+	private static final Logger log = LoggerFactory.getLogger(MimeTypes.class);
 
 	public static String[] getKnownMimeTypes() {
 		try {
@@ -30,7 +35,7 @@ public class MimeTypes {
 			}
 			return mediaTypes.toArray(new String[mediaTypes.size()]);
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return null;
 	}

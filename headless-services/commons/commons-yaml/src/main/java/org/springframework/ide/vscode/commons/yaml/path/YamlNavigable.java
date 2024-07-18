@@ -12,7 +12,8 @@ package org.springframework.ide.vscode.commons.yaml.path;
 
 import java.util.stream.Stream;
 
-import org.springframework.ide.vscode.commons.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
 
 /**
@@ -24,6 +25,9 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
  * of them must be implemented explicitly otherwise they will call eachother in an infinite recursion!
  */
 public interface YamlNavigable<T> {
+	
+	static final Logger log = LoggerFactory.getLogger(YamlNavigable.class);
+
 	
 	/**
 	 * Traversal which silently ignores ambiguity by picking the first valid target
@@ -45,7 +49,7 @@ public interface YamlNavigable<T> {
 			T it = traverse(s);
 			return it == null ? Stream.empty() : Stream.of(it);
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 			return Stream.empty();
 		}
 	}

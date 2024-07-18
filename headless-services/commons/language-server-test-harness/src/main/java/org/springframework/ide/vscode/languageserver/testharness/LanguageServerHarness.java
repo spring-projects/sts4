@@ -106,6 +106,7 @@ import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
 import org.eclipse.lsp4j.WorkspaceClientCapabilities;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.WorkspaceEditCapabilities;
+import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -277,9 +278,10 @@ public class LanguageServerHarness {
 	public InitializeResult intialize(File workspaceRoot) throws Exception {
 		int parentPid = random.nextInt(40000)+1000;
 		InitializeParams initParams = new InitializeParams();
-		if (workspaceRoot!=null) {
-			initParams.setRootPath(workspaceRoot.toString());
-			initParams.setRootUri(UriUtil.toUri(workspaceRoot).toASCIIString());
+		if (workspaceRoot != null) {
+			initParams.setWorkspaceFolders(List.of(
+					new WorkspaceFolder(UriUtil.toUri(workspaceRoot).toASCIIString(), workspaceRoot.getName())
+			));
 		}
 		initParams.setProcessId(parentPid);
 		ClientCapabilities clientCap = new ClientCapabilities();

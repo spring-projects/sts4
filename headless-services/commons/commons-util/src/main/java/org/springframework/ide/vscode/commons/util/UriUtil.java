@@ -14,13 +14,19 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class UriUtil {
+	
+	private static final Logger log = LoggerFactory.getLogger(UriUtil.class);
+
 
 	public static URI toUri(File file) {
 		try {
 			return new URI("file", "", file.getAbsoluteFile().toURI().getPath(), null);
 		} catch (URISyntaxException e) {
-			Log.log(e);
+			log.error("", e);
 			return file.getAbsoluteFile().toURI();
 		}
 	}

@@ -28,7 +28,6 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.TransformedCompletion;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -116,7 +115,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			return fixIndentations(getBaseCompletions(offset, doc, current, contextNode),
 					current, contextNode, baseIndent, deempasizeBy, doc);
 		} catch (Exception e) {
-			Log.log(e);
+			logger.error("", e);
 		}
 		return ImmutableList.of();
 	}
@@ -272,7 +271,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 				return "-".equals(value.trim());
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			logger.error("", e);
 		}
 		return false;
 	}
@@ -285,7 +284,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 				return value.trim().isEmpty();
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			logger.error("", e);
 		}
 		return false;
 	}

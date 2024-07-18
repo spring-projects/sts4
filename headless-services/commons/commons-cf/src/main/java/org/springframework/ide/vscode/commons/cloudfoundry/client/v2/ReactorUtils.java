@@ -22,9 +22,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.CancelationTokens.CancelationToken;
-import org.springframework.ide.vscode.commons.util.ExceptionUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -36,6 +36,8 @@ import reactor.util.function.Tuples;
  * @author Kris De Volder
  */
 public class ReactorUtils {
+	
+	private static final Logger log = LoggerFactory.getLogger(ReactorUtils.class);
 
 	private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(45); // reflects default timeout of Mono.block in reactor 2.x.
 	public static boolean DUMP_STACK_ON_TIMEOUT = false;
@@ -87,7 +89,7 @@ public class ReactorUtils {
 //			.otherwise(errorFilter(cancelationToken))
 			.block(timeout);
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 			throw new IOException(e);
 		}
 	}

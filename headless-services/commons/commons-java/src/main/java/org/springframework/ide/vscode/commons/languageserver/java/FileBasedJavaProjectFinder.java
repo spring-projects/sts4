@@ -18,8 +18,9 @@ import java.net.URLDecoder;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 /**
@@ -32,6 +33,8 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
  * @author Kris De Volder
  */
 public abstract class FileBasedJavaProjectFinder implements JavaProjectFinder {
+	
+	private static final Logger log = LoggerFactory.getLogger(FileBasedJavaProjectFinder.class);
 
 	@Override
 	public final Optional<IJavaProject> find(TextDocumentIdentifier doc) {
@@ -53,14 +56,14 @@ public abstract class FileBasedJavaProjectFinder implements JavaProjectFinder {
 							String projectName = getProjectName(decoded);
 							return findProjectByName(projectName);
 						} catch (UnsupportedEncodingException e) {
-							Log.log(e);
+							log.error("", e);
 						}
 					}
 				}
 			}
 		}
 		catch (URISyntaxException e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return Optional.empty();
 	}

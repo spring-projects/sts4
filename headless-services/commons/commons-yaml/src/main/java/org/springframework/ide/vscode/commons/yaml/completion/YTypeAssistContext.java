@@ -31,7 +31,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.PlaceHolderStr
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
@@ -405,7 +404,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 			YamlPath fullContextPath = contextPath.prepend(YamlPathSegment.valueAt(documentSelector));
 			return new SNodeDynamicSchemaContext(contextNode, fullContextPath);
 		} catch (Exception e) {
-			Log.log(e);
+			logger.error("", e);
 			return DynamicSchemaContext.NULL;
 		}
 	}
@@ -436,7 +435,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			logger.error("", e);
 		}
 		return null;
 	}
@@ -448,7 +447,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 				return relaxed.getCompletions(doc, current, offset);
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			logger.error("", e);
 		}
 		return ImmutableList.of();
 	}
@@ -490,7 +489,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 									return !"".equals(doc.getLineTextBefore(insertAt).trim());
 								}
 							} catch (Exception e) {
-								Log.log(e);
+								logger.error("", e);
 							}
 							return false;
 						}

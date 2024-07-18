@@ -20,18 +20,18 @@ import org.kohsuke.github.GHFileNotFoundException;
 import org.kohsuke.github.GHPerson;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
-import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import reactor.core.publisher.Flux;
-
 public class DefaultGithubInfoProvider implements GithubInfoProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(DefaultGithubInfoProvider.class);
 
 	//TODO: we only try to connect to github once and cache the connection.
 	//This means that, if creating the connection fails we won't try again.
@@ -140,7 +140,7 @@ public class DefaultGithubInfoProvider implements GithubInfoProvider {
 			}
 		} catch (Exception e) {
 			if (!isMissingOwnerException(e)) {
-				Log.log(e);
+				log.error("", e);
 			}
 		}
 		return ImmutableList.of();

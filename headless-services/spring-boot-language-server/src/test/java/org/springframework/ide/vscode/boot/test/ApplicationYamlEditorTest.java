@@ -3413,14 +3413,14 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
                 "server.error.path : String", // should be first because it is not deprecated, even though it is not as good a pattern match
                 "error.path : String"
         );
-        assertCompletionDetailsWithDeprecation("error.pa<*>", "server.error.path", "String", null, null);
+        assertCompletionDetailsWithDeprecation("error.pa<*>", "server.error.path", "String", null, false);
         assertCompletionDetailsWithDeprecation("error.pa<*>", "error.path", "String",
                 "~~error.path~~ \u2192 server.error.path  \n" +
                         "\n" +
                         "Path of the error controller.\n" +
                         "\n" +
                         "**Deprecated:** This is old",
-                Boolean.TRUE);
+                true);
     }
 
     @Test
@@ -3501,9 +3501,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
         useProject(jp);
         data("foo", "demo.Deprecater", null, "A Bean with deprecated properties");
 
-        assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "new-name", "String", null, null);
-        assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "name", "String", null, Boolean.TRUE);
-        assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "alt-name", "String", null, Boolean.TRUE);
+        assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "new-name", "String", null, false);
+        assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "name", "String", null, true);
+        assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "alt-name", "String", null, true);
     }
 
     @Test

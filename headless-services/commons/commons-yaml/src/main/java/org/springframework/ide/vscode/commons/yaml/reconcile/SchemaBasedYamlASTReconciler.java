@@ -23,6 +23,8 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
@@ -34,13 +36,11 @@ import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IntegerRange;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
-import org.springframework.ide.vscode.commons.yaml.ast.AstDumper;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeMergeSupport;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -66,6 +66,8 @@ import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
 
 public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
+	
+	private static final Logger log = LoggerFactory.getLogger(SchemaBasedYamlASTReconciler.class);
 
 	private final IProblemCollector problems;
 	private final YamlSchema schema;
@@ -136,7 +138,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				return dashes;
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		//something unexpected... we couldn't find the '---'. So just mark the entire node.
 		return allOf(ast, node);
@@ -443,7 +445,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 					)
 				);
 			} catch (Exception e) {
-				Log.log(e);
+				log.error("", e);
 			}
 		}
 		problems.accept(problem);

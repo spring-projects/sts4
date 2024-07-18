@@ -13,15 +13,18 @@ package org.springframework.ide.vscode.commons.javadoc;
 
 import java.net.URL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.javadoc.internal.JavadocContents;
-import org.springframework.ide.vscode.commons.util.Log;
 
 public class HtmlJavadocProvider implements IJavadocProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(HtmlJavadocProvider.class);
 	
 	private SourceUrlProvider htmlUrlProvider;
 	
@@ -36,7 +39,7 @@ public class HtmlJavadocProvider implements IJavadocProvider {
 			String html = javadocContents == null ? null : javadocContents.getTypeDoc(type);
 			return html == null ? null : new HtmlJavadoc(html);
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 			return null;
 		}
 	}
@@ -49,7 +52,7 @@ public class HtmlJavadocProvider implements IJavadocProvider {
 			String html = javadocContents == null ? null : javadocContents.getFieldDoc(field);
 			return html == null ? null : new HtmlJavadoc(html);
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 			return null;
 		}
 	}
@@ -62,7 +65,7 @@ public class HtmlJavadocProvider implements IJavadocProvider {
 			String html = javadocContents == null ? null : javadocContents.getMethodDoc(method);
 			return html == null ? null : new HtmlJavadoc(html);
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 			return null;
 		}
 	}

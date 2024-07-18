@@ -1307,14 +1307,14 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
                 "error.path : String"
         );
         //TODO: could we check that 'deprecated' completions are formatted with 'strikethrough font?
-        assertCompletionDetailsWithDeprecation("error.pa<*>", "server.error.path", "String", null, null);
+        assertCompletionDetailsWithDeprecation("error.pa<*>", "server.error.path", "String", null, false);
         assertCompletionDetailsWithDeprecation("error.pa<*>", "error.path", "String",
                 "~~error.path~~ \u2192 server.error.path  \n" +
                         "\n" +
                         "Path of the error controller.\n" +
                         "\n" +
                         "**Deprecated:** This is old",
-                Boolean.TRUE);
+                true);
     }
 
     @Test
@@ -1395,9 +1395,9 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
         useProject(p);
         data("foo", "demo.Deprecater", null, "A Bean with deprecated properties");
 
-        assertCompletionDetailsWithDeprecation("foo.nam<*>", "new-name", "String", null, null);
-        assertCompletionDetailsWithDeprecation("foo.nam<*>", "name", "String", null, Boolean.TRUE);
-        assertCompletionDetailsWithDeprecation("foo.nam<*>", "alt-name", "String", null, Boolean.TRUE);
+        assertCompletionDetailsWithDeprecation("foo.nam<*>", "new-name", "String", null, false);
+        assertCompletionDetailsWithDeprecation("foo.nam<*>", "name", "String", null, true);
+        assertCompletionDetailsWithDeprecation("foo.nam<*>", "alt-name", "String", null, true);
     }
 
     @Test

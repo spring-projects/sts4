@@ -23,7 +23,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.CompletionFilter;
-import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerInitializer;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.CompletionServerCapabilityRegistration;
@@ -52,14 +51,6 @@ public class LanguageServerAutoConf {
 		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId(), appContext, props);
 		server.setCompletionFilter(completionFilter);
 		return server;
-	}
-	
-	@ConditionalOnBean({LanguageServerInitializer.class, SimpleLanguageServer.class})
-	@Bean
-	InitializingBean initializer(SimpleLanguageServer server, LanguageServerInitializer serverInit) {
-		return () -> {
-			serverInit.initialize(server);
-		};
 	}
 	
 	@Bean CompletionServerCapabilityRegistration completionCapabilities(SimpleLanguageServer server, LanguageServerProperties props) {

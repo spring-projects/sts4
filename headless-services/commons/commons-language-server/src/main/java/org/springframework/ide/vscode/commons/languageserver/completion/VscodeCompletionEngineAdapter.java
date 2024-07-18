@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemTag;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
@@ -277,7 +278,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setFilterText(completion.getFilterText());
 		item.setInsertTextMode(InsertTextMode.AsIs);
 		if (completion.isDeprecated()) {
-			item.setDeprecated(completion.isDeprecated());
+			item.setTags(List.of(CompletionItemTag.Deprecated));
 		}
 		
 		resolveMainEdit(doc, completion, item);

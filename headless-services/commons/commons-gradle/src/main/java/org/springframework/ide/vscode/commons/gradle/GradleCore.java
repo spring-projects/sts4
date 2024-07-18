@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.gradle;
 
 import java.io.File;
-import java.net.URI;
 import java.util.concurrent.TimeUnit;
 
 import org.gradle.tooling.GradleConnectionException;
@@ -20,8 +19,9 @@ import org.gradle.tooling.ProjectConnection;
 import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
 import org.gradle.tooling.model.build.BuildEnvironment;
 import org.gradle.tooling.model.eclipse.EclipseProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * Gradle API tooling utility
@@ -30,6 +30,8 @@ import org.springframework.ide.vscode.commons.util.Log;
  *
  */
 public class GradleCore {
+	
+	private static final Logger log = LoggerFactory.getLogger(GradleCore.class);
 	
 	@FunctionalInterface
 	public interface GradleConfiguration {
@@ -81,7 +83,7 @@ public class GradleCore {
 			connection = gradleConnector.connect();
 			return connection.getModel(modelType);
 		} catch (GradleConnectionException e) {
-			Log.log(e);
+			log.error("", e);
 			throw new GradleException(e);
 		} finally {
 			if (connection != null) {

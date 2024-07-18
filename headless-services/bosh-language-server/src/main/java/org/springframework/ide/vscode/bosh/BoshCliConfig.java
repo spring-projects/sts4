@@ -12,8 +12,9 @@ package org.springframework.ide.vscode.bosh;
 
 import java.time.Duration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.stereotype.Component;
 
 /**
@@ -25,6 +26,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class BoshCliConfig {
+	
+	private static final Logger log = LoggerFactory.getLogger(BoshCliConfig.class);
 
 	/**
 	 * The settings object. This is obtained from 'didChangeConfiguration' events.
@@ -43,7 +46,7 @@ public class BoshCliConfig {
 	}
 
 	public void handleConfigurationChange(Settings newConfig) {
-		Log.info("Settings received: "+newConfig);
+		log.info("Settings received: " + newConfig);
 		this.settings = newConfig;
 	}
 }

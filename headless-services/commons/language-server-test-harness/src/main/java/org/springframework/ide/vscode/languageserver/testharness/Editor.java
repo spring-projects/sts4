@@ -37,6 +37,7 @@ import javax.swing.text.BadLocationException;
 
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemTag;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Diagnostic;
@@ -755,7 +756,7 @@ public class Editor {
 		return it;
 	}
 
-	public CompletionItem assertCompletionDetailsWithDeprecation(String expectLabel, String expectDetail, String expectDocSnippet, Boolean deprecated) throws Exception {
+	public CompletionItem assertCompletionDetailsWithDeprecation(String expectLabel, String expectDetail, String expectDocSnippet, boolean deprecated) throws Exception {
 		CompletionItem it = harness.resolveCompletionItem(assertCompletionWithLabel(expectLabel));
 		if (expectDetail!=null) {
 			assertEquals(expectDetail, it.getDetail());
@@ -763,7 +764,9 @@ public class Editor {
 		if (expectDocSnippet!=null) {
 			assertContains(expectDocSnippet, getDocString(it));
 		}
-		assertEquals(deprecated, it.getDeprecated());
+		@SuppressWarnings("deprecation")
+		boolean actualDeprecated = Boolean.TRUE.equals(it.getDeprecated()) || (it.getTags() != null && it.getTags().stream().anyMatch(t -> t.equals(CompletionItemTag.Deprecated))); 
+		assertEquals(deprecated, actualDeprecated);
 		return it;
 	}
 

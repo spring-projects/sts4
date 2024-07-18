@@ -14,9 +14,10 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.eclipse.lsp4j.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -29,6 +30,8 @@ import com.google.common.collect.ImmutableList;
  * @author Kris De Volder
  */
 public class WordHighlighter implements Function<TextDocument, List<Range>> {
+	
+	private static final Logger log = LoggerFactory.getLogger(WordHighlighter.class);
 
 	private final String word;
 
@@ -46,7 +49,7 @@ public class WordHighlighter implements Function<TextDocument, List<Range>> {
 			try {
 				highlights.add(doc.toRange(wordStart, word.length()));
 			} catch (BadLocationException e) {
-				Log.log(e);
+				log.error("", e);
 			}
 			wordStart = text.indexOf(word, wordStart+word.length());
 		}
