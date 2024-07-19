@@ -1,3 +1,25 @@
+## 2024-07-24 (4.24.0 RELEASE, incl. language servers version 1.56.0)
+
+#### important highlights
+
+* _(Spring Boot)_ SPEL syntax highlighting and validation inside Java and embedded Spring Data queries. MySQL and PostgreSQL queries syntax highlighting and validation
+* _(Spring Boot)_ Improvements Content Assist, Navigation and/or Find References for `@Profile`, `@Resource`, `@Qualifier`, `@Value` annotations
+
+#### all fixes and improvements in detail
+* _(Spring Boot)_ add code completion and to go definition support for `@Resource` annotation (name attribute) [#1298](https://github.com/spring-projects/sts4/issues/1298)
+* _(Spring Boot)_ support `jakarta` version of `Inject` annotation (in addition to `javax` variant) [#1297](https://github.com/spring-projects/sts4/issues/1297)
+* _(Spring Boot)_ add content-assist and find references for `@Profile` annotation [#1294](https://github.com/spring-projects/sts4/issues/1294)
+* _(Spring Boot)_ allow navigation to classpath resources from `@Value` annotation [#1287](https://github.com/spring-projects/sts4/issues/1287)
+* _(Spring Boot)_ do not show hidden files as proposals for classpath resources (in `@Value` annotation) [#1286](https://github.com/spring-projects/sts4/issues/1286)
+* _(Spring Boot)_ support classpath resources in code completion for `@Value` annotation [#1285](https://github.com/spring-projects/sts4/issues/1285)
+* _(Spring Boot)_ add content-assist for `@Qualifier` annotation [#1261](https://github.com/spring-projects/sts4/issues/1261)
+* _(Spring Boot)_ improve parser-based validation for SpEL snippets [#1237](https://github.com/spring-projects/sts4/issues/1237)
+* _(Spring Boot)_ SpEL Syntax Highlighting [#1234](https://github.com/spring-projects/sts4/issues/1234)
+* _(Spring Boot)_ Error when edit spring xml bean  config file [#1295](https://github.com/spring-projects/sts4/issues/1295)
+* _(Spring Boot)_ avoid mapping content-assist proposals to show up at class level [#1280](https://github.com/spring-projects/sts4/issues/1280)
+* _(Spring Boot)_ weird vscode JPQL/HQL syntax error for `@Query` text block in Spring Boot [#1279](https://github.com/spring-projects/sts4/issues/1279)
+* _(Spring Boot)_ Support SPEL expressions inside SQL queries [#1270](https://github.com/spring-projects/sts4/issues/1270)
+
 ## 2024-06-17 (4.23.1 RELEASE, incl. language servers version 1.55.1)
 
 #### important highlights
