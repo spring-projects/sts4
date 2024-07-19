@@ -47,6 +47,7 @@ import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
 import org.springframework.ide.vscode.boot.java.beans.DependsOnDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.beans.ResourceDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
@@ -397,6 +398,7 @@ public class BootLanguageServerBootApp {
 		return new JavaDefinitionHandler(cuCache, projectFinder, List.of(
 				new ValueDefinitionProvider(),
 				new DependsOnDefinitionProvider(springIndex),
+				new ResourceDefinitionProvider(springIndex),
 				new QualifierDefinitionProvider(springIndex)));
 	}
 	

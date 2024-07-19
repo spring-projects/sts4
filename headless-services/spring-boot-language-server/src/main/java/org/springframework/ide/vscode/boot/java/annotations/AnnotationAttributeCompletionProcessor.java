@@ -61,39 +61,41 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 			
 			// case: @Qualifier(<*>)
 			if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
-				createCompletionProposals(project, doc, node, completions, offset, offset, "", (beanName) -> "\"" + beanName + "\"");
+				createCompletionProposals(project, doc, node, "value", completions, offset, offset, "", (beanName) -> "\"" + beanName + "\"");
 			}
 			// case: @Qualifier(prefix<*>)
 			else if (node instanceof SimpleName && node.getParent() instanceof Annotation) {
-				computeProposalsForSimpleName(project, node, completions, offset, doc);
+				computeProposalsForSimpleName(project, node, "value", completions, offset, doc);
 			}
 			// case: @Qualifier(value=<*>)
 			else if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair
-					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
-				computeProposalsForSimpleName(project, node, completions, offset, doc);
+					&& completionProviders.containsKey(((MemberValuePair)node.getParent()).getName().toString())) {
+				String attributeName = ((MemberValuePair)node.getParent()).getName().toString();
+				computeProposalsForSimpleName(project, node, attributeName, completions, offset, doc);
 			}
 			// case: @Qualifier("prefix<*>")
 			else if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					computeProposalsForStringLiteral(project, node, completions, offset, doc);
+					computeProposalsForStringLiteral(project, node, "value", completions, offset, doc);
 				}
 			}
 			// case: @Qualifier({"prefix<*>"})
 			else if (node instanceof StringLiteral && node.getParent() instanceof ArrayInitializer) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					computeProposalsForInsideArrayInitializer(project, node, completions, offset, doc);
+					computeProposalsForInsideArrayInitializer(project, node, "value", completions, offset, doc);
 				}
 			}
 			// case: @Qualifier(value="prefix<*>")
 			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
-					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
+					&& completionProviders.containsKey(((MemberValuePair)node.getParent()).getName().toString())) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					computeProposalsForStringLiteral(project, node, completions, offset, doc);
+					String attributeName = ((MemberValuePair)node.getParent()).getName().toString();
+					computeProposalsForStringLiteral(project, node, attributeName, completions, offset, doc);
 				}
 			}
 			// case: @Qualifier({<*>})
 			else if (node instanceof ArrayInitializer && node.getParent() instanceof Annotation) {
-				computeProposalsForArrayInitializr(project, (ArrayInitializer) node, completions, offset, doc);
+				computeProposalsForArrayInitializr(project, (ArrayInitializer) node, "value", completions, offset, doc);
 			}
 		}
 		catch (Exception e) {
@@ -104,12 +106,12 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 	/**
 	 * create the concrete completion proposal
 	 */
-	private void createCompletionProposals(IJavaProject project, TextDocument doc, ASTNode node, Collection<ICompletionProposal> completions, int startOffset, int endOffset,
+	private void createCompletionProposals(IJavaProject project, TextDocument doc, ASTNode node, String attributeName, Collection<ICompletionProposal> completions, int startOffset, int endOffset,
 			String filterPrefix, Function<String, String> createReplacementText) {
 
 		Set<String> alreadyMentionedValues = alreadyMentionedValues(node);
 
-		AnnotationAttributeCompletionProvider completionProvider = this.completionProviders.get("value");
+		AnnotationAttributeCompletionProvider completionProvider = this.completionProviders.get(attributeName);
 		if (completionProvider != null) {
 			List<String> candidates = completionProvider.getCompletionCandidates(project);
 
@@ -135,7 +137,7 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 	// internal computation of the right positions, prefixes, etc.
 	//
 	
-	private void computeProposalsForSimpleName(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) {
+	private void computeProposalsForSimpleName(IJavaProject project, ASTNode node, String attributeName, Collection<ICompletionProposal> completions, int offset, TextDocument doc) {
 		String prefix = identifyPropertyPrefix(node.toString(), offset - node.getStartPosition());
 
 		int startOffset = node.getStartPosition();
@@ -144,30 +146,30 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 		String proposalPrefix = "\"";
 		String proposalPostfix = "\"";
 
-		createCompletionProposals(project, doc, node, completions, startOffset, endOffset, prefix, (beanName) -> proposalPrefix + beanName + proposalPostfix);
+		createCompletionProposals(project, doc, node, attributeName, completions, startOffset, endOffset, prefix, (beanName) -> proposalPrefix + beanName + proposalPostfix);
 	}
 
-	private void computeProposalsForStringLiteral(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) throws BadLocationException {
+	private void computeProposalsForStringLiteral(IJavaProject project, ASTNode node, String attributeName, Collection<ICompletionProposal> completions, int offset, TextDocument doc) throws BadLocationException {
 		int length = offset - (node.getStartPosition() + 1);
 
 		String prefix = identifyPropertyPrefix(doc.get(node.getStartPosition() + 1, length), length);
 		int startOffset = offset - prefix.length();
 		int endOffset = node.getStartPosition() + node.getLength() - 1;
 
-		createCompletionProposals(project, doc, node, completions, startOffset, endOffset, prefix, (beanName) -> beanName);
+		createCompletionProposals(project, doc, node, attributeName, completions, startOffset, endOffset, prefix, (beanName) -> beanName);
 	}
 	
-	private void computeProposalsForArrayInitializr(IJavaProject project, ArrayInitializer node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) {
-		createCompletionProposals(project, doc, node, completions, offset, offset, "", (beanName) -> "\"" + beanName + "\"");
+	private void computeProposalsForArrayInitializr(IJavaProject project, ArrayInitializer node, String attributeName, Collection<ICompletionProposal> completions, int offset, TextDocument doc) {
+		createCompletionProposals(project, doc, node, attributeName, completions, offset, offset, "", (beanName) -> "\"" + beanName + "\"");
 	}
 	
-	private void computeProposalsForInsideArrayInitializer(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) throws BadLocationException {
+	private void computeProposalsForInsideArrayInitializer(IJavaProject project, ASTNode node, String attributeName, Collection<ICompletionProposal> completions, int offset, TextDocument doc) throws BadLocationException {
 		int length = offset - (node.getStartPosition() + 1);
 		if (length >= 0) {
-			computeProposalsForStringLiteral(project, node, completions, offset, doc);
+			computeProposalsForStringLiteral(project, node, attributeName, completions, offset, doc);
 		}
 		else {
-			createCompletionProposals(project, doc, node, completions, offset, offset, "", (beanName) -> "\"" + beanName + "\",");
+			createCompletionProposals(project, doc, node, attributeName, completions, offset, offset, "", (beanName) -> "\"" + beanName + "\",");
 		}
 	}
 

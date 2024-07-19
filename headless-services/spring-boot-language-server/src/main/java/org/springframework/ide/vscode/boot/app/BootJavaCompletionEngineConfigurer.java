@@ -28,6 +28,7 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchie
 import org.springframework.ide.vscode.boot.java.beans.DependsOnCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.beans.ProfileCompletionProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProvider;
+import org.springframework.ide.vscode.boot.java.beans.ResourceCompletionProvider;
 import org.springframework.ide.vscode.boot.java.data.DataRepositoryCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
@@ -121,6 +122,9 @@ public class BootJavaCompletionEngineConfigurer {
 		providers.put(Annotations.QUALIFIER, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new QualifierCompletionProvider(springIndex))));
 		providers.put(Annotations.PROFILE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new ProfileCompletionProvider(springIndex))));
 		
+		providers.put(Annotations.RESOURCE_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new ResourceCompletionProvider(springIndex))));
+		providers.put(Annotations.RESOURCE_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new ResourceCompletionProvider(springIndex))));
+
 		return new BootJavaCompletionEngine(cuCache, providers, snippetManager);
 	}
 	
