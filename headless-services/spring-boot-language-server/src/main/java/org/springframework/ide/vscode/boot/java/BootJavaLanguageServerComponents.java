@@ -266,7 +266,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		providers.put(Annotations.PROFILE, new ActiveProfilesProvider());
 
 		providers.put(Annotations.AUTOWIRED, autowiredHoverProvider);
-		providers.put(Annotations.INJECT, autowiredHoverProvider);
+		providers.put(Annotations.INJECT_JAVAX, autowiredHoverProvider);
+		providers.put(Annotations.INJECT_JAKARTA, autowiredHoverProvider);
+
 		providers.put(Annotations.COMPONENT, componentInjectionsHoverProvider);
 		providers.put(Annotations.BEAN, beanInjectedIntoHoverProvider);
 

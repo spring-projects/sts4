@@ -38,8 +38,6 @@ public class Annotations {
 	public static final String DATA_QUERY = "org.springframework.data.jpa.repository.Query";
 
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
-	public static final String INJECT = "javax.inject.Inject";
-
 	public static final String QUALIFIER = "org.springframework.beans.factory.annotation.Qualifier";
 
 	public static final String SPRING_REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping";
@@ -73,5 +71,15 @@ public class Annotations {
 	public static final String VALUE = "org.springframework.beans.factory.annotation.Value";
 	public static final String SCOPE = "org.springframework.context.annotation.Scope";
 	public static final String DEPENDS_ON = "org.springframework.context.annotation.DependsOn";
+	
+	public static final String RESOURCE_JAVAX = "javax.annotation.Resource";
+	public static final String RESOURCE_JAKARTA = "jakarta.annotation.Resource";
+	
+	public static final String INJECT_JAVAX = "javax.inject.Inject";
+	public static final String INJECT_JAKARTA = "jakarta.inject.Inject";
+	public static final String NAMED_JAVAX = "javax.inject.Named";
+	public static final String NAMED_JAKARTA = "jakarta.inject.Named";
+	
+	
 
 }
