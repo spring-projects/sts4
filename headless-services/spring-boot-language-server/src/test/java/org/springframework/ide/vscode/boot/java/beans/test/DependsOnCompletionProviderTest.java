@@ -187,6 +187,7 @@ public class DependsOnCompletionProviderTest {
 		String editorContent = """
 				package org.test;
 
+        		import org.springframework.stereotype.Component;
 				import org.springframework.context.annotation.DependsOn;
 
 				@Component
@@ -207,6 +208,7 @@ public class DependsOnCompletionProviderTest {
 	        assertEquals("""
 					package org.test;
 	
+	        		import org.springframework.stereotype.Component;
 					import org.springframework.context.annotation.DependsOn;
 	
 					@Component
