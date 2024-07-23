@@ -11,6 +11,16 @@ on:
         description: Latest eclipse release version (i.e. e4.28)
         required: true
         type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version suffix in S3 (i.e. 4.19.1.RELEASE)
+        required: true
+        type: string
+      latest:
+        description: Latest eclipse release version (i.e. e4.28)
+        required: true
+        type: string
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.CDN_S3_ACCESS_KEY }}
@@ -51,7 +61,7 @@ jobs:
               echo "Found ${dir}"
               dir_name=${dir:0:-1}
               site_url="${DOWNLOAD_URL_ROOT}/release/TOOLS/sts4/update/${{ inputs.version }}/${dir_name}"
-              if [[ ${dir_name} == "e4.30" ]] || ; then 
+              if [[ ${dir_name} == "e4.30" ]]; then 
                   ${{ github.workspace }}/.github/scripts/generate-composite-site-files.sh ${{ steps.timestamp.outputs.date }} $site_url 
               else
                   ${{ github.workspace }}/.github/scripts/generate-composite-site-files.sh ${{ steps.timestamp.outputs.date }} $site_url true
