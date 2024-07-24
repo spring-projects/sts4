@@ -80,5 +80,25 @@ public class PostgreSqlSemanticTokensTest {
 		
 		assertThat(tokens.size()).isEqualTo(10);
 	}
+	
+	@Test
+	void semiColonAtEnd() {
+		List<SemanticTokenData> tokens = provider.computeTokens(" select count(*) from anecdote where anecdote_id=:anecdote ; ", 0);
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(1, 7, "keyword", new String[0])); // select
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(8, 13, "keyword", new String[0])); // count
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 14, "operator", new String[0])); // (
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 15, "operator", new String[0])); // *
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(15, 16, "operator", new String[0])); // )
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(17, 21, "keyword", new String[0])); // from 
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(22, 30, "variable", new String[0])); // anecdote
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(31, 36, "keyword", new String[0])); // where
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(37, 48, "variable", new String[0])); // anecdote_id
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(48, 49, "operator", new String[0])); // =
+		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(49, 50, "operator", new String[0])); // :
+		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(50, 58, "parameter", new String[0])); // anecdote
+		assertThat(tokens.get(12)).isEqualTo(new SemanticTokenData(59, 60, "operator", new String[0])); // ;
+		
+		assertThat(tokens.size()).isEqualTo(13);
+	}
 
 }
