@@ -36,8 +36,8 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 
-	private static final String PROBLEM_LABEL = "Unnecessary @Autowired";
-	private static final String FIX_LABEL = "Remove Unnecessary @Autowired";
+	private static final String PROBLEM_LABEL = "Unnecessary `@Autowired` annotation";
+	private static final String FIX_LABEL = "Remove unnecessary `@Autowired` annotation";
 
 	private QuickfixRegistry registry;
 
