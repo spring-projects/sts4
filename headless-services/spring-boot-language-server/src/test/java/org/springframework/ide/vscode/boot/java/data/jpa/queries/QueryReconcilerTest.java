@@ -278,4 +278,22 @@ public class QueryReconcilerTest {
 		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
 		editor.assertProblems();
 	}
+	
+	@Test
+	void namedQueryAnnotation() throws Exception {
+		String source = """
+				package my.package
+				
+				import jakarta.persistence.NamedQuery;
+		
+				@NamedQuery(name = " my_query", query = "SELECTX ptype FROM PetType ptype ORDER BY ptype.name")
+				public interface OwnerRepository {
+				}
+				""";
+		String docUri = directory.toPath().resolve("src/main/java/example/demo/OwnerRepository.java").toUri()
+				.toString();
+		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
+		editor.assertProblems("SELECTX|HQL: mismatched input 'SELECTX'");
+	}
+
 }

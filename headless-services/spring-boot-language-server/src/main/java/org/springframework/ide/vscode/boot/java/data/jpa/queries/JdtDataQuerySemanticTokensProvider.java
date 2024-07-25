@@ -23,13 +23,16 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TextBlock;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.JdtSemanticTokensProvider;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -41,7 +44,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProvider {
 	
 	private static final String QUERY = "Query";
-	private static final String FQN_QUERY = "org.springframework.data.jpa.repository." + QUERY;
+	private static final String NAMED_QUERY = "NamedQuery";	
 
 	private final JpqlSemanticTokens jpqlProvider;
 	private final HqlSemanticTokens hqlProvider;
@@ -75,12 +78,10 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 		return new ASTVisitor() {
 			@Override
 			public boolean visit(NormalAnnotation a) {
+				Expression queryExpression = null;
+				boolean isNative = false;
 				if (isQueryAnnotation(a)) {
-					List<?> values = a.values();
-					
-					Expression queryExpression = null;
-					boolean isNative = false;
-					for (Object value : values) {
+					for (Object value : a.values()) {
 						if (value instanceof MemberValuePair) {
 							MemberValuePair pair = (MemberValuePair) value;
 							String name = pair.getName().getFullyQualifiedName();
@@ -102,17 +103,30 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 							}
 						}
 					}
-					
-					if (queryExpression != null) {
-						if (isNative) {
-							computeTokensForQueryExpression(getSqlSemanticTokensProvider(jp), queryExpression).forEach(tokensData::accept);
-						} else {
-							computeTokensForQueryExpression(provider, queryExpression).forEach(tokensData::accept);
+				} else if (isNamedQueryAnnotation(a)) {
+					for (Object value : a.values()) {
+						if (value instanceof MemberValuePair) {
+							MemberValuePair pair = (MemberValuePair) value;
+							String name = pair.getName().getFullyQualifiedName();
+							if (name != null) {
+								switch (name) {
+								case "query":
+									queryExpression = pair.getValue();
+									break;
+								}
+							}
 						}
 					}
-					
-					return false;
 				}
+				
+				if (queryExpression != null) {
+					if (isNative) {
+						computeTokensForQueryExpression(getSqlSemanticTokensProvider(jp), queryExpression).forEach(tokensData::accept);
+					} else {
+						computeTokensForQueryExpression(provider, queryExpression).forEach(tokensData::accept);
+					}
+				}
+
 				return false;
 			}
 
@@ -159,14 +173,33 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 	}
 
 	
-	private static boolean isQueryAnnotation(Annotation a) {
-		return FQN_QUERY.equals(a.getTypeName().getFullyQualifiedName())
-				|| QUERY.equals(a.getTypeName().getFullyQualifiedName());
+	static boolean isQueryAnnotation(Annotation a) {
+		if (Annotations.DATA_QUERY.equals(a.getTypeName().getFullyQualifiedName()) || QUERY.equals(a.getTypeName().getFullyQualifiedName())) {
+			ITypeBinding type = a.resolveTypeBinding();
+			if (type != null) {
+				return AnnotationHierarchies.hasTransitiveSuperAnnotationType(type, Annotations.DATA_QUERY);
+			}
+		}
+		return false;
+	}
+	
+	static boolean isNamedQueryAnnotation(Annotation a) {
+		if (NAMED_QUERY.equals(a.getTypeName().getFullyQualifiedName()) || Annotations.JPA_JAKARTA_NAMED_QUERY.equals(a.getTypeName().getFullyQualifiedName())
+				|| Annotations.JPA_JAVAX_NAMED_QUERY.equals(a.getTypeName().getFullyQualifiedName())) {
+			ITypeBinding type = a.resolveTypeBinding();
+			if (type != null) {
+				return AnnotationHierarchies.hasTransitiveSuperAnnotationType(type, Annotations.JPA_JAKARTA_NAMED_QUERY)
+						|| AnnotationHierarchies.hasTransitiveSuperAnnotationType(type, Annotations.JPA_JAVAX_NAMED_QUERY);
+			}
+		}
+		return false;
 	}
 	
 	@Override
 	public boolean isApplicable(IJavaProject project) {
-		return supportState.isEnabled() && SpringProjectUtil.hasDependencyStartingWith(project, "spring-data-jpa", null);
+		return supportState.isEnabled() && (SpringProjectUtil.hasDependencyStartingWith(project, "spring-data-jpa", null) 
+				|| SpringProjectUtil.hasDependencyStartingWith(project, "jakarta.persistence-api", null)
+				|| SpringProjectUtil.hasDependencyStartingWith(project, "javax.persistence-api", null));
 	}
 	
 	private SemanticTokensDataProvider getSqlSemanticTokensProvider(IJavaProject project) {

@@ -35,6 +35,8 @@ public class Annotations {
 	public static final String JPA_JAVAX_EMBEDDED_ID = "javax.persistence.EmbeddedId";
 	public static final String JPA_JAKARTA_ID_CLASS = "jakarta.persistence.IdClass"; 
 	public static final String JPA_JAVAX_ID_CLASS = "javax.persistence.IdClass";
+	public static final String JPA_JAKARTA_NAMED_QUERY = "jakarta.persistence.NamedQuery"; 
+	public static final String JPA_JAVAX_NAMED_QUERY = "javax.persistence.NamedQuery";
 	public static final String DATA_QUERY = "org.springframework.data.jpa.repository.Query";
 
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";

@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.net.URI;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -26,8 +25,6 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TextBlock;
-import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
@@ -65,32 +62,42 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 			@Override
 			public boolean visit(NormalAnnotation node) {
 				
-				if (!AnnotationHierarchies.hasTransitiveSuperAnnotationType(node.resolveTypeBinding(), Annotations.DATA_QUERY)) {
-					return false;
-				}
-				
-				List<?> values = node.values();
-				
 				Expression queryExpression = null;
 				boolean isNative = false;
-				for (Object value : values) {
-					if (value instanceof MemberValuePair) {
-						MemberValuePair pair = (MemberValuePair) value;
-						String name = pair.getName().getFullyQualifiedName();
-						if (name != null) {
-							switch (name) {
-							case "value":
-								queryExpression = pair.getValue();
-								break;
-							case "nativeQuery":
-								Expression expression = pair.getValue();
-								if (expression != null) {
-									Object o = expression.resolveConstantExpressionValue();
-									if (o instanceof Boolean b) {
-										isNative = b.booleanValue();
+				if (JdtDataQuerySemanticTokensProvider.isQueryAnnotation(node)) {
+					for (Object value : node.values()) {
+						if (value instanceof MemberValuePair) {
+							MemberValuePair pair = (MemberValuePair) value;
+							String name = pair.getName().getFullyQualifiedName();
+							if (name != null) {
+								switch (name) {
+								case "value":
+									queryExpression = pair.getValue();
+									break;
+								case "nativeQuery":
+									Expression expression = pair.getValue();
+									if (expression != null) {
+										Object o = expression.resolveConstantExpressionValue();
+										if (o instanceof Boolean b) {
+											isNative = b.booleanValue();
+										}
 									}
+									break;
 								}
-								break;
+							}
+						}
+					}
+				} else if (JdtDataQuerySemanticTokensProvider.isNamedQueryAnnotation(node)) {
+					for (Object value : node.values()) {
+						if (value instanceof MemberValuePair) {
+							MemberValuePair pair = (MemberValuePair) value;
+							String name = pair.getName().getFullyQualifiedName();
+							if (name != null) {
+								switch (name) {
+								case "query":
+									queryExpression = pair.getValue();
+									break;
+								}
 							}
 						}
 					}
@@ -110,11 +117,9 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
-				if (!AnnotationHierarchies.hasTransitiveSuperAnnotationType(node.resolveTypeBinding(), Annotations.DATA_QUERY)) {
-					return false;
+				if (JdtDataQuerySemanticTokensProvider.isQueryAnnotation(node)) {
+					reconcileExpression(getQueryReconciler(project), node.getValue(), problemCollector);
 				}
-
-				reconcileExpression(getQueryReconciler(project), node.getValue(), problemCollector);
 				return false;
 			}
 
