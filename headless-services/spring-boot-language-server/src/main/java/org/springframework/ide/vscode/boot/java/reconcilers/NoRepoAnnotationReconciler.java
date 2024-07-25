@@ -34,7 +34,8 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class NoRepoAnnotationReconciler implements JdtAstReconciler {
 	
-	private static final String LABEL = "Remove Unnecessary @Repository";
+	private static final String PROBLEM_LABEL = "Unnecessary @Repository";
+	private static final String FIX_LABEL = "Remove Unnecessary @Repository";
 	private static final String INTERFACE_REPOSITORY = "org.springframework.data.repository.Repository";
 	
 	private QuickfixRegistry registry;
@@ -67,18 +68,18 @@ public class NoRepoAnnotationReconciler implements JdtAstReconciler {
 							if (isApplicableRepoAnnotation(a)) {
 								ITypeBinding type = typeDecl.resolveBinding();
 								if (type != null && isRepo(type)) {
-									ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, a.getStartPosition(), a.getLength());
+									ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, a.getStartPosition(), a.getLength());
 									String uri = docUri.toASCIIString();
 									String id = NoRepoAnnotationOnRepoInterface.class.getName();
 									ReconcileUtils.setRewriteFixes(registry, problem, List.of(
-//										new FixDescriptor(ID, List.of(uri), LABEL)
+//										new FixDescriptor(ID, List.of(uri), FIX_LABEL)
 //											.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, typeDecl))
 //											.withRecipeScope(RecipeScope.NODE),
 										new FixDescriptor(id, List.of(uri),
-												ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
+												ReconcileUtils.buildLabel(FIX_LABEL, RecipeScope.FILE))
 												.withRecipeScope(RecipeScope.FILE),
 										new FixDescriptor(id, List.of(uri),
-												ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
+												ReconcileUtils.buildLabel(FIX_LABEL, RecipeScope.PROJECT))
 												.withRecipeScope(RecipeScope.PROJECT)
 									));
 									problemCollector.accept(problem);

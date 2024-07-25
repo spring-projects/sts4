@@ -30,7 +30,9 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 	
-	private static final String LABEL = "Remove Implicit Web Annotation Names";
+	private static final String PROBLEM_LABEL = "Implicit Web Annotation Name";
+	private static final String FIX_LABEL = "Remove Implicit Web Annotation Name";
+	private static final String FIX_LABEL_PLURAL = "Remove Implicit Web Annotation Names";
 	
 	private static final Set<String> PARAM_ANNOTATIONS = new HashSet<>(
 	        Arrays.asList(
@@ -79,18 +81,18 @@ public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 			
 			private void processWebAnnotation(Annotation a) {
 				if (isApplicableWebAnnotation(a)) {
-						ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, a.getStartPosition(), a.getLength());
+						ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, a.getStartPosition(), a.getLength());
 						String uri = docUri.toASCIIString();
 						Range range = ReconcileUtils.createOpenRewriteRange(cu, a);
 						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
-							new FixDescriptor(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), List.of(uri), "Remove Implicit Web Annotation Name")
+							new FixDescriptor(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), List.of(uri), FIX_LABEL)
 									.withRangeScope(range)
 									.withRecipeScope(RecipeScope.NODE),
 							new FixDescriptor(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), List.of(uri),
-									ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
+									ReconcileUtils.buildLabel(FIX_LABEL_PLURAL, RecipeScope.FILE))
 									.withRecipeScope(RecipeScope.FILE),
 							new FixDescriptor(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), List.of(uri),
-									ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
+									ReconcileUtils.buildLabel(FIX_LABEL_PLURAL, RecipeScope.PROJECT))
 									.withRecipeScope(RecipeScope.PROJECT)
 						));
 						problemCollector.accept(problem);
