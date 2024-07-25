@@ -299,6 +299,11 @@
 					<url>https://download.eclipse.org/wildwebdeveloper/releases/latest/</url>
 				</repository>
 				<repository>
+					<id>cdt-updates</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/tools/cdt/releases/latest/</url>
+				</repository>
+				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 <!--					<url>https://download.eclipse.org/lsp4e/releases/0.26.0/</url> -->
@@ -397,6 +402,11 @@
 					<id>wildwebdeveloper</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/wildwebdeveloper/releases/latest/</url>
+				</repository>
+				<repository>
+					<id>cdt-updates</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/tools/cdt/releases/latest/</url>
 				</repository>
 				<repository>
 					<id>lsp4e</id>
