@@ -285,7 +285,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 			ParseResults parseResults = parser.parse(fileContent);
 	
 			if (parseResults != null && parseResults.ast != null) {
-				parseResults.ast.getNodes(KeyValuePair.class).forEach(pair -> {
+				parseResults.ast.getPropertyValuePairs().forEach(pair -> {
 					if (pair.getKey() != null && pair.getKey().decode().equals(propertyKey)) {
 						TextDocument doc = new TextDocument(file.toURI().toASCIIString(), null);
 						doc.setText(fileContent);

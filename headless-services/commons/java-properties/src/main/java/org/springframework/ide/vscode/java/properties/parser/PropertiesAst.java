@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,8 +11,6 @@
 package org.springframework.ide.vscode.java.properties.parser;
 
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Very basic AST for Java Properties to keep comments and key value pairs
@@ -36,21 +34,12 @@ public final class PropertiesAst {
 		return nodes;
 	}
 
-	public List<Node> getNodes(Predicate<Node> test) {
-		return nodes.stream().filter(test).collect(Collectors.toList());
+	public List<KeyValuePair> getPropertyValuePairs() {
+		return nodes.stream().filter(KeyValuePair.class::isInstance).map(KeyValuePair.class::cast).toList();
 	}
-
-	/**
-	 * Retrieves AST nodes of specific type
-	 * @param clazz Type of AST nodes
-	 * @return List of AST nodes of specific type sorted by line number
-	 */
-	@SuppressWarnings("unchecked")
-	public <T> List<T> getNodes(Class<T> clazz) {
-		List<Node> l = nodes.stream().filter(line -> {
-			return clazz.isAssignableFrom(line.getClass());
-		}).collect(Collectors.toList());
-		return (List<T>) l;
+	
+	public List<Comment> getComments() {
+		return nodes.stream().filter(Comment.class::isInstance).map(Comment.class::cast).toList();
 	}
 	
 	/**

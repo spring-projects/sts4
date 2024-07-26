@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2023 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -98,7 +98,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
     }
 
     @Test
-    void reconcilesWithMultiDocuments() throws Exception {
+    void reconcilesWithMultiDocuments_Hash() throws Exception {
         //See: https://github.com/spring-projects/sts4/issues/533
         
         defaultTestData();
@@ -155,9 +155,130 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
                         "server.port=8080\n"
         );
         editor.assertProblems(/*NONE*/);
+        
+        editor = newEditor(
+                "spring.application.name=frodo\n" +
+                        "spring.config.activate.on-profile=foo\n" +
+                        "server.port=8888\n" +
+                        "#---\n" +
+                        "# Something off\n" +
+                        "spring.application.name=sam\n" +
+                        "spring.config.activate.on-profile=bar\n" +
+                        "server.port=9090\n"
+        );
+        editor.assertProblems(
+                "spring.application.name|Duplicate",
+                "spring.config.activate.on-profile|Duplicate",
+                "server.port|Duplicate",
+                "spring.application.name|Duplicate",
+                "spring.config.activate.on-profile|Duplicate",
+                "server.port|Duplicate"
+        );
 
+        editor = newEditor(
+                "spring.application.name=frodo\n" +
+                        "spring.config.activate.on-profile=foo\n" +
+                        "server.port=8888\n" +
+                        "#---\n" +
+                        "! Something off\n" +
+                        "spring.application.name=sam\n" +
+                        "spring.config.activate.on-profile=bar\n" +
+                        "server.port=9090\n"
+        );
+        editor.assertProblems(/*NONE*/);
     }
 
+    @Test
+    void reconcilesWithMultiDocuments_Exclamation() throws Exception {
+        //See: https://github.com/spring-projects/sts4/issues/1129
+        
+        defaultTestData();
+
+        //lowest bar: just disable the warning
+        Editor editor = newEditor(
+                "spring.config.activate.on-profile=foo\n" +
+                        "server.port=8888\n" +
+                        "!---\n" +
+                        "spring.config.activate.on-profile=bar\n" +
+                        "server.port=8080\n"
+        );
+        editor.assertProblems(/*NONE*/);
+
+        //better: still detect duplicates within same section
+        editor = newEditor(
+                "spring.application.name=frodo\n" +
+                        "spring.config.activate.on-profile=foo\n" +
+                        "server.port=8888\n" +
+                        "spring.application.name=frodo\n" +
+                        "!---\n" +
+                        "spring.config.activate.on-profile=bar\n" +
+                        "server.port=8080\n" +
+                        "server.port=9090\n"
+        );
+        editor.assertProblems(
+                "spring.application.name|Duplicate",
+                "spring.application.name|Duplicate",
+                "server.port|Duplicate",
+                "server.port|Duplicate"
+        );
+
+        //nitpick 1: leading spaces before the marker means... it is not a marker
+        editor = newEditor(
+                "spring.config.activate.on-profile=foo\n" +
+                        "server.port=8888\n" +
+                        " !---\n" +
+                        "spring.config.activate.on-profile=bar\n" +
+                        "server.port=8080\n"
+        );
+        editor.assertProblems(
+                "spring.config.activate.on-profile|Duplicate",
+                "server.port|Duplicate",
+                "spring.config.activate.on-profile|Duplicate",
+                "server.port|Duplicate"
+        );
+
+        //nitpick 2: trailing spaces after the marker are ignored
+        editor = newEditor(
+                "spring.config.activate.on-profile=foo\n" +
+                        "server.port=8888\n" +
+                        "!---   \t\n" +
+                        "spring.config.activate.on-profile=bar\n" +
+                        "server.port=8080\n"
+        );
+        editor.assertProblems(/*NONE*/);
+        
+        editor = newEditor(
+                "spring.application.name=frodo\n" +
+                        "spring.config.activate.on-profile=foo\n" +
+                        "server.port=8888\n" +
+                        "!---\n" +
+                        "! Something off\n" +
+                        "spring.application.name=sam\n" +
+                        "spring.config.activate.on-profile=bar\n" +
+                        "server.port=9090\n"
+        );
+        editor.assertProblems(
+                "spring.application.name|Duplicate",
+                "spring.config.activate.on-profile|Duplicate",
+                "server.port|Duplicate",
+                "spring.application.name|Duplicate",
+                "spring.config.activate.on-profile|Duplicate",
+                "server.port|Duplicate"
+        );
+
+        editor = newEditor(
+                "spring.application.name=frodo\n" +
+                        "spring.config.activate.on-profile=foo\n" +
+                        "server.port=8888\n" +
+                        "!---\n" +
+                        "# Something off\n" +
+                        "spring.application.name=sam\n" +
+                        "spring.config.activate.on-profile=bar\n" +
+                        "server.port=9090\n"
+        );
+        editor.assertProblems(/*NONE*/);
+    }
+    
     @Test
     void inheritedPojoProperties() throws Exception {
         //See https://github.com/spring-projects/sts4/issues/116

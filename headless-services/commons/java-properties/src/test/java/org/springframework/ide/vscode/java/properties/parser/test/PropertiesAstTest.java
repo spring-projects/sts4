@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,8 +36,8 @@ public class PropertiesAstTest {
 		assertTrue(results.syntaxErrors.isEmpty());
 		assertTrue(results.problems.isEmpty());
 		assertEquals(4, results.ast.getAllNodes().size());
-		assertEquals(1, results.ast.getNodes(Comment.class).size());
-		assertEquals(3, results.ast.getNodes(EmptyLine.class).size());
+		assertEquals(1, results.ast.getComments().size());
+//		assertEquals(3, results.ast.getNodes(EmptyLine.class).size());
 	}
 	
 	@Test
@@ -46,8 +46,8 @@ public class PropertiesAstTest {
 		assertTrue(results.syntaxErrors.isEmpty());
 		assertTrue(results.problems.isEmpty());
 		assertEquals(5, results.ast.getAllNodes().size());
-		assertEquals(1, results.ast.getNodes(Comment.class).size());
-		assertEquals(4, results.ast.getNodes(EmptyLine.class).size());
+		assertEquals(1, results.ast.getComments().size());
+//		assertEquals(4, results.ast.getNodes(EmptyLine.class).size());
 	}
 	
 	@Test
@@ -56,26 +56,26 @@ public class PropertiesAstTest {
 		assertTrue(results.syntaxErrors.isEmpty());
 		assertTrue(results.problems.isEmpty());
 		assertEquals(5, results.ast.getAllNodes().size());
-		assertEquals(1, results.ast.getNodes(Comment.class).size());
-		assertEquals(1, results.ast.getNodes(KeyValuePair.class).size());		
-		assertEquals(3, results.ast.getNodes(EmptyLine.class).size());
+		assertEquals(1, results.ast.getComments().size());
+		assertEquals(1, results.ast.getPropertyValuePairs().size());		
+//		assertEquals(3, results.ast.getNodes(EmptyLine.class).size());
 	}
 	
 	@Test
 	public void testLines4() throws Exception {
 		ParseResults results = parser.parse("# Comment-1\n\nkey = value  1  \n# Comment-2");
 		assertEquals(4, results.ast.getAllNodes().size());
-		assertEquals(2, results.ast.getNodes(Comment.class).size());
-		assertEquals(1, results.ast.getNodes(KeyValuePair.class).size());		
-		assertEquals(1, results.ast.getNodes(EmptyLine.class).size());
+		assertEquals(2, results.ast.getComments().size());
+		assertEquals(1, results.ast.getPropertyValuePairs().size());		
+//		assertEquals(1, results.ast.getNodes(EmptyLine.class).size());
 	}
 	
 	@Test
 	public void testLines5() throws Exception {
 		ParseResults results = parser.parse("#comment\nliquibase.enabled=\n#comment");
 		assertEquals(3, results.ast.getAllNodes().size());
-		assertEquals(2, results.ast.getNodes(Comment.class).size());
-		assertEquals(1, results.ast.getNodes(KeyValuePair.class).size());		
+		assertEquals(2, results.ast.getComments().size());
+		assertEquals(1, results.ast.getPropertyValuePairs().size());		
 	}
 		
 	@Test

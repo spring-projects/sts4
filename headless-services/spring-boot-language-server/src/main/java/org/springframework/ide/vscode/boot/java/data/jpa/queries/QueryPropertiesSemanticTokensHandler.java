@@ -73,7 +73,7 @@ public class QueryPropertiesSemanticTokensHandler implements SemanticTokensHandl
 				AntlrParser propertiesParser = new AntlrParser();
 				ParseResults result = propertiesParser.parse(doc.get());
 				List<SemanticTokenData> data = new ArrayList<>();
-				for (PropertiesAst.KeyValuePair node : result.ast.getNodes(PropertiesAst.KeyValuePair.class)) {
+				for (PropertiesAst.KeyValuePair node : result.ast.getPropertyValuePairs()) {
 					Value value = node.getValue();
 					if (value != null) {
 						data.addAll(tokensProvider.computeTokens(value.decode(), value.getOffset()));

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2019 Pivotal, Inc.
+ * Copyright (c) 2014, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import static org.springframework.ide.vscode.boot.properties.reconcile.Applicati
 import static org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertyProblem.problem;
 import static org.springframework.ide.vscode.commons.util.StringUtil.commonPrefix;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -29,10 +30,10 @@ import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypeParser;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
-import org.springframework.ide.vscode.boot.properties.quickfix.DeprecatedPropertyData;
-import org.springframework.ide.vscode.boot.properties.quickfix.MissingPropertyData;
 import org.springframework.ide.vscode.boot.properties.quickfix.AppPropertiesQuickFixes;
 import org.springframework.ide.vscode.boot.properties.quickfix.CommonQuickfixes;
+import org.springframework.ide.vscode.boot.properties.quickfix.DeprecatedPropertyData;
+import org.springframework.ide.vscode.boot.properties.quickfix.MissingPropertyData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -47,8 +48,8 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.ParseResults;
 import org.springframework.ide.vscode.java.properties.parser.Parser;
-import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.KeyValuePair;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Comment;
+import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.KeyValuePair;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesFileEscapes;
 
@@ -68,9 +69,9 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 	/**
 	 * Regexp that matches a ',' surrounded by whitespace, including escaped whitespace / newlines
 	 */
-	private static final Pattern COMMA = Pattern.compile(
-			"(\\s|\\\\\\s)*,(\\s|\\\\\\s)*"
-	);
+//	private static final Pattern COMMA = Pattern.compile(
+//			"(\\s|\\\\\\s)*,(\\s|\\\\\\s)*"
+//	);
 
 	private static final Pattern SPACES = Pattern.compile(
 			"(\\s|\\\\\\s)*"
@@ -108,11 +109,13 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 				// some problem putting information about properties into the index.
 				return;
 			}
-
-			results.ast.getNodes(n -> n instanceof KeyValuePair || n instanceof Comment).forEach(node -> {
+			
+			List<Node> nodes = results.ast.getAllNodes();
+			for (int i = 0; i < results.ast.getAllNodes().size(); i++) {
+				Node node = nodes.get(i);
 				try {
 					if (node instanceof Comment) {
-						if (isDocumentMarker(doc, (Comment)node)) {
+						if (isDocumentMarker(doc, nodes, i)) {
 							duplicateNameChecker.startNewSubDocument();
 						}
 					} else if (node instanceof KeyValuePair) {
@@ -144,7 +147,8 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 				} catch (Exception e) {
 					log.error("", e);
 				}
-			});
+			}
+
 		} catch (Throwable e2) {
 			log.error("", e2);
 		} finally {
@@ -152,10 +156,43 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		}
 	}
 
-	private boolean isDocumentMarker(IDocument doc, Comment node) {
-		DocumentRegion region = createRegion(doc, node).trimEnd();
-		String t = region.toString();
-		return t.equals("#---") && region.isAtStartOfLine();
+	private boolean isDocumentMarker(IDocument doc, List<Node> nodes, int idx) {
+		Node node = nodes.get(idx);
+		if (node instanceof Comment) {
+			DocumentRegion region = createRegion(doc, node).trimEnd();
+			String t = region.toString();
+			if (region.isAtStartOfLine()) {
+				switch (t) {
+				case "#---":
+					// Check if next line starts with the same comment prefix. If yes then not a doc splitter
+					if (isNextLineCommentWithPrefix(doc, nodes, idx, "#")) {
+						return false;
+					}
+					return true;
+				case "!---":
+					// Check if next line starts with the same comment prefix. If yes then not a doc splitter
+					if (isNextLineCommentWithPrefix(doc, nodes, idx, "!")) {
+						return false;
+					}
+					return true;
+				}
+				
+			}
+		}
+		return false;
+	}
+	
+	private boolean isNextLineCommentWithPrefix(IDocument doc, List<Node> nodes, int idx, String prefix) {
+		if (idx < nodes.size() - 1) {
+			Node nextLine = nodes.get(idx + 1);
+			if (nextLine instanceof Comment) {
+				DocumentRegion nextRegion = createRegion(doc, nextLine).trimEnd();
+				if (nextRegion.toString().startsWith(prefix)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	protected SpringPropertyProblem problemDeprecated(DocumentRegion region, PropertyInfo property, QuickfixType fixType) {

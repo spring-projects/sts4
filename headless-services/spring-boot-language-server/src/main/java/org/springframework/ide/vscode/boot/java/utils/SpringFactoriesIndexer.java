@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -52,7 +52,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.KeyValuePair;
-import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
 
 import com.google.common.collect.ImmutableList;
 
@@ -109,8 +108,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 		ImmutableList.Builder<EnhancedSymbolInformation> symbols = ImmutableList.builder();
 		PropertiesAst ast = new AntlrParser().parse(content).ast;
 		if (ast != null) {
-			for (Node n : ast.getNodes(KeyValuePair.class::isInstance)) {
-				KeyValuePair pair = (KeyValuePair) n;
+			for (KeyValuePair pair : ast.getPropertyValuePairs()) {
 				String key = pair.getKey().decode();
 				
 				if (KEYS.contains(key)) {

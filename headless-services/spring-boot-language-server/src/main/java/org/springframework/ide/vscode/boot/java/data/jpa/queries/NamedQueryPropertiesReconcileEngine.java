@@ -43,7 +43,7 @@ public class NamedQueryPropertiesReconcileEngine implements IReconcileEngine {
 			
 			AntlrParser parser = new AntlrParser();
 			ParseResults parseResults = parser.parse(doc.get());
-			for (KeyValuePair pair : parseResults.ast.getNodes(KeyValuePair.class)) {
+			for (KeyValuePair pair : parseResults.ast.getPropertyValuePairs()) {
 				Value value = pair.getValue();
 				reconciler.reconcile(value.decode(), value.getOffset(), problemCollector);
 			}
