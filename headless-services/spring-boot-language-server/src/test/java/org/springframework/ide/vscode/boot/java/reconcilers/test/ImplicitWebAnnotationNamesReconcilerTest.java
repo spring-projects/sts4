@@ -71,9 +71,9 @@ public class ImplicitWebAnnotationNamesReconcilerTest extends BaseReconcilerTest
 		assertEquals("@PathVariable(\"message\")", markedStr);
 
 		assertEquals(3, problem.getQuickfixes().size());
-		assertEquals("Remove Implicit Web Annotation Name", problems.get(0).getQuickfixes().get(0).title);
-		assertEquals("Remove Implicit Web Annotation Names in file", problems.get(0).getQuickfixes().get(1).title);
-		assertEquals("Remove Implicit Web Annotation Names in project", problems.get(0).getQuickfixes().get(2).title);
+		assertEquals("Remove implicit web annotation name", problems.get(0).getQuickfixes().get(0).title);
+		assertEquals("Remove implicit web annotation names in file", problems.get(0).getQuickfixes().get(1).title);
+		assertEquals("Remove implicit web annotation names in project", problems.get(0).getQuickfixes().get(2).title);
 		
 	}
 	

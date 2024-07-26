@@ -31,7 +31,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 	
 	private static final String PROBLEM_LABEL = "Unnecessary path variable definition";
-	private static final String FIX_LABEL = "Remove implicit eeb annotation name";
+	private static final String FIX_LABEL = "Remove implicit web annotation name";
 	private static final String FIX_LABEL_PLURAL = "Remove implicit web annotation names";
 	
 	private static final Set<String> PARAM_ANNOTATIONS = new HashSet<>(
