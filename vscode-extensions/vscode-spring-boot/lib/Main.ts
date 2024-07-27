@@ -60,11 +60,6 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
                 );
             }
         },
-        explodedLsJarData: {
-            lsLocation: 'language-server',
-            mainClass: 'org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp',
-            configFileName: 'application.properties'
-        },
         workspaceOptions: workspace.getConfiguration("spring-boot.ls"),
         clientOptions: {
             markdown: {

@@ -22,11 +22,12 @@
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>3.1.1</version>
 				<executions>
+
 					<execution>
-						<id>unpack-server</id>
+						<id>copy-server</id>
 						<phase>prepare-package</phase>
 						<goals>
-							<goal>unpack</goal>
+							<goal>copy</goal>
 						</goals>
 						<configuration>
 							<artifactItems>
@@ -40,9 +41,29 @@
 							</artifactItems>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
-							<outputDirectory>${project.build.directory}/../servers/spring-boot-language-server</outputDirectory>
+							<outputDirectory>${project.basedir}/servers</outputDirectory>
 						</configuration>
 					</execution>
+					
+					<execution>
+						<id>problem-types.json</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.springframework.ide.vscode</groupId>
+									<artifactId>spring-boot-language-server</artifactId>
+									<version>${project.version}</version>
+									<outputDirectory>${project.basedir}/servers/spring-boot-language-server</outputDirectory>
+									<includes>**/problem-types.json</includes>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+
 					<execution>
 						<id>xml-extension</id>
 						<phase>prepare-package</phase>
@@ -67,7 +88,57 @@
 							<stripVersion>true</stripVersion>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
-							<outputDirectory>${project.build.directory}/../jars</outputDirectory>
+							<outputDirectory>${project.basedir}/jars</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.3.0</version>
+				<executions>
+					<execution>
+						<id>extract</id>
+						<phase>prepare-package</phase>
+						<configuration>
+							<executable>java</executable>
+							<arguments>
+								<argument>-Djarmode=tools</argument>
+								<argument>-jar</argument>
+								<argument>${project.basedir}/servers/spring-boot-language-server-${project.version}-exec.jar</argument>
+								<argument>extract</argument>
+								<argument>--force</argument>
+								<argument>--destination</argument>
+								<argument>${project.basedir}/servers/spring-boot-language-server</argument>
+							</arguments>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<delete>
+									<fileset
+										dir="${project.basedir}/servers"
+										includes="spring-boot-language-server-${project.version}-exec.jar" />
+								</delete>
+							</target>
 						</configuration>
 					</execution>
 				</executions>

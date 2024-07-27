@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,16 +25,15 @@ public class BoshLanguageServer extends STS4LanguageServerProcessStreamConnector
 	public BoshLanguageServer() {
 		super(BOSH_SERVER);
 		
-		initExplodedJarCommand(
+		initExecutableJarCommand(
 				Paths.get("servers", "bosh-language-server"),
-				"org.springframework.ide.vscode.bosh.BoshLanguageServerBootApp",
-				"application.properties",
+				"bosh-language-server",
 				Arrays.asList(
 						"-Dlsp.lazy.completions.disable=true",
 						"-XX:TieredStopAtLevel=1"
 				)
 		);
-
+		
 		setWorkingDirectory(getWorkingDirLocation());
 	}
 	

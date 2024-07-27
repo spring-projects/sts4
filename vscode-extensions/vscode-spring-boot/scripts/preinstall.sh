@@ -19,10 +19,10 @@ mkdir -p ${workdir}/language-server
 cd ${workdir}/../../headless-services/spring-boot-language-server
 ./build.sh
 
-# Explode LS JAR
-cd ${workdir}/language-server
-server_jar_file=$(find ${workdir}/../../headless-services/spring-boot-language-server/target -name '*-exec.jar');
-jar -xvf ${server_jar_file}
+# Extract LS JAR
+cd ${workdir}/../../headless-services/spring-boot-language-server/target
+server_jar_file=$(find . -name '*-exec.jar');
+java -Djarmode=tools -jar $server_jar_file extract --destination ${workdir}/language-server
 
 # JDT LS Extension
 cd ${workdir}/../../headless-services/jdt-ls-extension

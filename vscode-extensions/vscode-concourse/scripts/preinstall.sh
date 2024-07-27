@@ -15,7 +15,7 @@ cd ../../headless-services/concourse-language-server
 rm -fr ${workdir}/language-server
 mkdir -p ${workdir}/language-server
 
-# Explode LS JAR
-cd ${workdir}/language-server
-server_jar_file=$(find ${workdir}/../../headless-services/concourse-language-server/target -name '*-exec.jar');
-jar -xvf ${server_jar_file}
+# Extract LS JAR
+cd ${workdir}/../../headless-services/concourse-language-server/target
+server_jar_file=$(find . -name '*-exec.jar');
+java -Djarmode=tools -jar $server_jar_file extract --destination ${workdir}/language-server

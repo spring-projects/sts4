@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2022 Pivotal, Inc.
+ * Copyright (c) 2020, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,7 +27,7 @@ public class LanguageServerProblemTypesMetadata {
 
 	public static List<ProblemCategoryData> load() throws IOException {
 		File root = FileLocator.getBundleFile(BootLanguageServerPlugin.getDefault().getBundle());
-		File metadataFile = root.toPath().resolve("servers/spring-boot-language-server/BOOT-INF/classes/problem-types.json").toFile();
+		File metadataFile = root.toPath().resolve("servers/spring-boot-language-server/problem-types.json").toFile();
 		return readCategoriesFromFile(metadataFile);
 	}
 	
