@@ -2633,6 +2633,30 @@ public class PostgreSqlParserBaseListener implements PostgreSqlParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterParameterOrIntegerLiteral(PostgreSqlParser.ParameterOrIntegerLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParameterOrIntegerLiteral(PostgreSqlParser.ParameterOrIntegerLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterParameterOrNumericLiteral(PostgreSqlParser.ParameterOrNumericLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParameterOrNumericLiteral(PostgreSqlParser.ParameterOrNumericLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterBool_expr(PostgreSqlParser.Bool_exprContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -3084,6 +3108,18 @@ public class PostgreSqlParserBaseListener implements PostgreSqlParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitParam_value(PostgreSqlParser.Param_valueContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterReserved_keyword(PostgreSqlParser.Reserved_keywordContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitReserved_keyword(PostgreSqlParser.Reserved_keywordContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

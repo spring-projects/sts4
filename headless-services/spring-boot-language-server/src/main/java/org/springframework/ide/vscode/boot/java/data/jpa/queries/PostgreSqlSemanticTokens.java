@@ -156,9 +156,10 @@ public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 			public void exitParameter(ParameterContext param) {
 				if (param.identifier() != null) {
 					MySqlSemanticTokens.getAllLeafs(param.identifier()).forEach(t -> semantics.put(t, "parameter"));
-				}
-				if (param.INTEGER_LITERAL() != null) {
+				} else if (param.INTEGER_LITERAL() != null) {
 					semantics.put(param.INTEGER_LITERAL().getSymbol(), "parameter");
+				} else if (param.reserved_keyword() != null) {
+					MySqlSemanticTokens.getAllLeafs(param.reserved_keyword()).forEach(t -> semantics.put(t, "parameter"));
 				}
 			}
 			

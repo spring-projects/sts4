@@ -100,5 +100,82 @@ public class PostgreSqlSemanticTokensTest {
 		
 		assertThat(tokens.size()).isEqualTo(13);
 	}
+	
+	@Test
+	void parameterInLimitClause_1() {
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT :2", 0);
+		assertThat(tokens.size()).isEqualTo(12);
+		
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "operator", new String[0]));
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0]));
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 19, "variable", new String[0]));
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(20, 25, "keyword", new String[0]));
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(26, 28, "keyword", new String[0]));
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(29, 35, "method", new String[0]));
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(35, 36, "operator", new String[0]));
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(36, 37, "operator", new String[0]));
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(38, 43, "keyword", new String[0]));
+		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(44, 45, "operator", new String[0]));
+		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(45, 46, "parameter", new String[0]));
+	}
 
+	@Test
+	void parameterInLimitClause_2() {
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT ?2", 0);
+		assertThat(tokens.size()).isEqualTo(12);
+		
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "operator", new String[0]));
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0]));
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 19, "variable", new String[0]));
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(20, 25, "keyword", new String[0]));
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(26, 28, "keyword", new String[0]));
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(29, 35, "method", new String[0]));
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(35, 36, "operator", new String[0]));
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(36, 37, "operator", new String[0]));
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(38, 43, "keyword", new String[0]));
+		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(44, 45, "operator", new String[0]));
+		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(45, 46, "parameter", new String[0]));
+	}
+	
+	@Test
+	void parameterInLimitClause_3() {
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT :#{qq}", 0);
+		assertThat(tokens.size()).isEqualTo(14);
+		
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "operator", new String[0]));
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0]));
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 19, "variable", new String[0]));
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(20, 25, "keyword", new String[0]));
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(26, 28, "keyword", new String[0]));
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(29, 35, "method", new String[0]));
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(35, 36, "operator", new String[0]));
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(36, 37, "operator", new String[0]));
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(38, 43, "keyword", new String[0]));
+		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(44, 45, "operator", new String[0]));
+		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(45, 47, "operator", new String[0]));
+		assertThat(tokens.get(12)).isEqualTo(new SemanticTokenData(47, 49, "variable", new String[0]));
+		assertThat(tokens.get(13)).isEqualTo(new SemanticTokenData(49, 50, "operator", new String[0]));
+	}
+
+	@Test
+	void parameterInLimitClause_4() {
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT :limit", 0);
+		assertThat(tokens.size()).isEqualTo(12);
+		
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "operator", new String[0]));
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0]));
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 19, "variable", new String[0]));
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(20, 25, "keyword", new String[0]));
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(26, 28, "keyword", new String[0]));
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(29, 35, "method", new String[0]));
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(35, 36, "operator", new String[0]));
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(36, 37, "operator", new String[0]));
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(38, 43, "keyword", new String[0]));
+		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(44, 45, "operator", new String[0]));
+		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(45, 50, "parameter", new String[0]));
+	}
 }

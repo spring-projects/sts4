@@ -2188,6 +2188,26 @@ public interface PostgreSqlParserListener extends ParseTreeListener {
 	 */
 	void exitParameter(PostgreSqlParser.ParameterContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link PostgreSqlParser#parameterOrIntegerLiteral}.
+	 * @param ctx the parse tree
+	 */
+	void enterParameterOrIntegerLiteral(PostgreSqlParser.ParameterOrIntegerLiteralContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSqlParser#parameterOrIntegerLiteral}.
+	 * @param ctx the parse tree
+	 */
+	void exitParameterOrIntegerLiteral(PostgreSqlParser.ParameterOrIntegerLiteralContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSqlParser#parameterOrNumericLiteral}.
+	 * @param ctx the parse tree
+	 */
+	void enterParameterOrNumericLiteral(PostgreSqlParser.ParameterOrNumericLiteralContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSqlParser#parameterOrNumericLiteral}.
+	 * @param ctx the parse tree
+	 */
+	void exitParameterOrNumericLiteral(PostgreSqlParser.ParameterOrNumericLiteralContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PostgreSqlParser#bool_expr}.
 	 * @param ctx the parse tree
 	 */
@@ -2567,6 +2587,16 @@ public interface PostgreSqlParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitParam_value(PostgreSqlParser.Param_valueContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSqlParser#reserved_keyword}.
+	 * @param ctx the parse tree
+	 */
+	void enterReserved_keyword(PostgreSqlParser.Reserved_keywordContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSqlParser#reserved_keyword}.
+	 * @param ctx the parse tree
+	 */
+	void exitReserved_keyword(PostgreSqlParser.Reserved_keywordContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PostgreSqlParser#non_reserved_keyword}.
 	 * @param ctx the parse tree

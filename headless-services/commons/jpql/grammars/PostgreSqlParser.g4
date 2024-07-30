@@ -593,8 +593,8 @@ create_database_stmt
         (LC_CTYPE EQUAL name_)?
         (TABLESPACE EQUAL name_)?
         (ALLOW_CONNECTIONS EQUAL name_)?
-        (CONNECTION LIMIT EQUAL INTEGER_LITERAL)?
-        (IS_TEMPLATE EQUAL INTEGER_LITERAL)?
+        (CONNECTION LIMIT EQUAL parameterOrIntegerLiteral)?
+        (IS_TEMPLATE EQUAL parameterOrIntegerLiteral)?
       )
     ;
 
@@ -728,7 +728,7 @@ create_role_stmt
         (SUPERUSER | NOSUPERUSER | CREATEDB | NOCREATEDB |
          CREATEROLE | NOCREATEROLE | INHERIT | NOINHERIT | LOGIN | NOLOGIN |
          REPLICATION | NOREPLICATION | BYPASSRLS | NOBYPASSRLS |
-         CONNECTION LIMIT INTEGER_LITERAL | ENCRYPTED? PASSWORD (SINGLEQ_STRING_LITERAL | NULL) |
+         CONNECTION LIMIT parameterOrIntegerLiteral | ENCRYPTED? PASSWORD (SINGLEQ_STRING_LITERAL | NULL) |
          VALID UNTIL SINGLEQ_STRING_LITERAL | IN ROLE name_list | IN GROUP name_list | ROLE name_list |
          ADMIN name_list | USER name_list | SYSID INTEGER_LITERAL)+)?
     ;
@@ -752,10 +752,10 @@ create_schema_stmt
     ;
 
 create_sequence_stmt
-    : CREATE (TEMPORARY | TEMP)? SEQUENCE (IF NOT EXISTS)? name=identifier (INCREMENT BY? increment=INTEGER_LITERAL)?
-      (MINVALUE minvalue=INTEGER_LITERAL | NO MINVALUE)?
-      (MAXVALUE maxvalue=INTEGER_LITERAL | NO MAXVALUE)?
-      (START WITH? start=INTEGER_LITERAL)? (CACHE cache=INTEGER_LITERAL)? (NO? CYCLE)?
+    : CREATE (TEMPORARY | TEMP)? SEQUENCE (IF NOT EXISTS)? name=identifier (INCREMENT BY? increment=parameterOrIntegerLiteral)?
+      (MINVALUE minvalue=parameterOrIntegerLiteral | NO MINVALUE)?
+      (MAXVALUE maxvalue=parameterOrIntegerLiteral | NO MAXVALUE)?
+      (START WITH? start=parameterOrIntegerLiteral)? (CACHE cache=parameterOrIntegerLiteral)? (NO? CYCLE)?
       (OWNED BY ((table_name=identifier DOT column_name_=identifier) | NONE))?
     ;
 
@@ -1106,8 +1106,8 @@ lock_stmt
     ;
 
 move_stmt
-    : MOVE ((NEXT | PRIOR | FIRST | LAST | ABSOLUTE INTEGER | RELATIVE INTEGER_LITERAL | INTEGER_LITERAL |
-            ALL | FORWARD (INTEGER_LITERAL|ALL)? | BACKWARD (INTEGER_LITERAL|ALL)?) (FROM|IN)?)? cursor_name=name_
+    : MOVE ((NEXT | PRIOR | FIRST | LAST | ABSOLUTE INTEGER | RELATIVE parameterOrIntegerLiteral | parameterOrIntegerLiteral |
+            ALL | FORWARD (parameterOrIntegerLiteral|ALL)? | BACKWARD (parameterOrIntegerLiteral|ALL)?) (FROM|IN)?)? cursor_name=name_
     ;
 
 notify_stmt
@@ -1366,9 +1366,9 @@ explain_parameter
 
 frame
     : UNBOUNDED PRECEDING
-    | INTEGER_LITERAL PRECEDING
+    | parameterOrIntegerLiteral PRECEDING
     | CURRENT ROW
-    | INTEGER_LITERAL FOLLOWING
+    | parameterOrIntegerLiteral FOLLOWING
     | UNBOUNDED FOLLOWING
     ;
 
@@ -1408,15 +1408,15 @@ order_by_item
     ;
 
 limit_clause
-    : LIMIT (INTEGER_LITERAL | ALL | func_call)
+    : LIMIT (parameterOrIntegerLiteral | ALL | func_call)
     ;
 
 offset_clause
-    : OFFSET INTEGER_LITERAL (ROW | ROWS)?
+    : OFFSET parameterOrIntegerLiteral (ROW | ROWS)?
     ;
 
 fetch_clause
-    : FETCH (FIRST | NEXT) INTEGER_LITERAL? (ROW | ROWS) ONLY
+    : FETCH (FIRST | NEXT) parameterOrIntegerLiteral? (ROW | ROWS) ONLY
     ;
 
 for_clause
@@ -1502,10 +1502,22 @@ expr
     ;
     
 parameter
-	: prefix=':' SPEL
-    | prefix=':' identifier
+	: COLON SPEL
+    | COLON identifier
+    | COLON reserved_keyword
+    | COLON INTEGER_LITERAL
 	| prefix='?' SPEL
     | prefix='?' INTEGER_LITERAL?
+    ;
+    
+parameterOrIntegerLiteral
+    : parameter
+    | INTEGER_LITERAL
+    ;
+
+parameterOrNumericLiteral
+    : parameter
+    | NUMERIC_LITERAL
     ;
 
 // TODO: is this necessary. can we just encapsulate within expr's operator precedence?
@@ -1777,11 +1789,15 @@ role_name_list
 param_value
     : ON | OFF | TRUE | FALSE | YES | NO | NONE
     | SINGLEQ_STRING_LITERAL
-    | NUMERIC_LITERAL
-    | INTEGER_LITERAL
+    | parameterOrNumericLiteral
+    | parameterOrIntegerLiteral
     | identifier
     ;
 
+reserved_keyword
+    : CREATE | DROP | FROM | GROUP | LIMIT | ORDER | SELECT | UNION
+    ;
+    
 // allow non-reserved keywords as identifiers
 // TODO: is this necessary?
 // easier to whitelist than blacklist
