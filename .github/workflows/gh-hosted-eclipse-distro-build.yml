@@ -172,8 +172,7 @@ jobs:
         run: |
           dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           echo "Processing S3 update..."
-          ls spring-tool-suite-4*win*.zip*
-          ls spring-tool-suite-4*win*.self-extracting.jar*
+          ls spring-tool-suite-4*win*
           echo "Removing old win zip and self extracting jar files from S3..."
           aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to S3..."
