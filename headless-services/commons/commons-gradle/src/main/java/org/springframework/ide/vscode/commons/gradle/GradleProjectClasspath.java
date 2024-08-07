@@ -126,6 +126,11 @@ public class GradleProjectClasspath implements IClasspath {
 	public String getName() {
 		return project == null ? null : project.getName();
 	}
+	
+	@Override
+	public String getJavaVersion() {
+		return JavaUtils.getJavaRuntimeMinorVersion(getJavaRuntimeVersion());
+	}
 
 	public String getGradleVersion()  throws GradleException {
 		if (buildEnvironment == null) {
