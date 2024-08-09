@@ -39,6 +39,7 @@ import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
+import org.springframework.ide.vscode.boot.java.contextconfiguration.ContextConfigurationProcessor;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -115,6 +116,7 @@ public class BootJavaCompletionEngineConfigurer {
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		
 		providers.put(Annotations.VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
+		providers.put(Annotations.CONTEXT_CONFIGURATION, new ContextConfigurationProcessor(javaProjectFinder));
 		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
 		
 		providers.put(Annotations.SCOPE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new ScopeCompletionProcessor())));

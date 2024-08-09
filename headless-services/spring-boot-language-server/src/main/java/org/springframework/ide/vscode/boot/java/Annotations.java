@@ -73,6 +73,7 @@ public class Annotations {
 	public static final String VALUE = "org.springframework.beans.factory.annotation.Value";
 	public static final String SCOPE = "org.springframework.context.annotation.Scope";
 	public static final String DEPENDS_ON = "org.springframework.context.annotation.DependsOn";
+	public static final String CONTEXT_CONFIGURATION = "org.springframework.test.context.ContextConfiguration";
 	
 	public static final String RESOURCE_JAVAX = "javax.annotation.Resource";
 	public static final String RESOURCE_JAKARTA = "jakarta.annotation.Resource";
