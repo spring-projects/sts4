@@ -185,6 +185,18 @@ public class SpelParserBaseListener implements SpelParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterNumericLiteral(SpelParser.NumericLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNumericLiteral(SpelParser.NumericLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterParenspelExpr(SpelParser.ParenspelExprContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -324,6 +336,18 @@ public class SpelParserBaseListener implements SpelParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBeanReference(SpelParser.BeanReferenceContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterInputParameter(SpelParser.InputParameterContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitInputParameter(SpelParser.InputParameterContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

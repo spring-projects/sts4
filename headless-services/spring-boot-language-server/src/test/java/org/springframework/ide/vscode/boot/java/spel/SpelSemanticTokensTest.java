@@ -13,13 +13,15 @@ package org.springframework.ide.vscode.boot.java.spel;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 
 public class SpelSemanticTokensTest {
 
-	private SpelSemanticTokens provider = new SpelSemanticTokens();
+	private SpelSemanticTokens provider = new SpelSemanticTokens(Optional.of(Assertions::fail));
 	
 	@Test
 	void simpleCompare() {
@@ -124,5 +126,22 @@ public class SpelSemanticTokensTest {
 		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(37, 38, "operator", new String[0]));
 		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(38, 39, "operator", new String[0]));
 	}
+	
+	//https://github.com/spring-projects/sts4/issues/1320
+	@Test
+	void inputParameter() {
+		List<SemanticTokenData> tokens = provider.computeTokens("[1].size().longValue()", 0);
+		assertThat(tokens.size()).isEqualTo(9);
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 3, "parameter", new String[0])); // [1]
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(3, 4, "operator", new String[0])); // .
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(4, 8, "method", new String[0])); // size
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(8, 9, "operator", new String[0])); // (
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(9, 10, "operator", new String[0])); // )
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(10, 11, "operator", new String[0])); // .
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(11, 20, "method", new String[0])); // longValue
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(20, 21, "operator", new String[0])); // (
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(21, 22, "operator", new String[0])); // )
+	}
+
 
 }

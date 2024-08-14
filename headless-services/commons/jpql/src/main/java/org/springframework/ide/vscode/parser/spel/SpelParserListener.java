@@ -150,6 +150,16 @@ public interface SpelParserListener extends ParseTreeListener {
 	 */
 	void exitLiteral(SpelParser.LiteralContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SpelParser#numericLiteral}.
+	 * @param ctx the parse tree
+	 */
+	void enterNumericLiteral(SpelParser.NumericLiteralContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SpelParser#numericLiteral}.
+	 * @param ctx the parse tree
+	 */
+	void exitNumericLiteral(SpelParser.NumericLiteralContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SpelParser#parenspelExpr}.
 	 * @param ctx the parse tree
 	 */
@@ -269,4 +279,14 @@ public interface SpelParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBeanReference(SpelParser.BeanReferenceContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SpelParser#inputParameter}.
+	 * @param ctx the parse tree
+	 */
+	void enterInputParameter(SpelParser.InputParameterContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SpelParser#inputParameter}.
+	 * @param ctx the parse tree
+	 */
+	void exitInputParameter(SpelParser.InputParameterContext ctx);
 }
