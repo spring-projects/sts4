@@ -21,6 +21,7 @@ import {registerJavaDataService} from "@pivotal-tools/commons-vscode/lib/java-da
 import * as setLogLevelUi from './set-log-levels-ui';
 import { startTestJarSupport } from "./test-jar-launch";
 import { startPropertiesConversionSupport } from "./convert-props-yaml";
+import { activateCopilotFeatures } from "./copilot";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -146,6 +147,8 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
             // Boot LS is fully started
             registerClasspathService(client);
             registerJavaDataService(client);
+
+            activateCopilotFeatures(context);
 
             // Force classpath listener to be enabled. Boot LS can only be launched iff classpath is available and there Spring-Boot on the classpath somewhere.
             commands.executeCommand('sts.vscode-spring-boot.enableClasspathListening', true);
