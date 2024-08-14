@@ -141,7 +141,15 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 		String prefix = identifyPropertyPrefix(node.toString(), offset - node.getStartPosition());
 
 		int startOffset = node.getStartPosition();
-		int endOffset = node.getStartPosition() + node.getLength();
+
+		// special adjustment for the case of a $missing$ SimpleName node, e.g. @DependsOn(value = <*>)
+		// where the node starts right after the "=", not at the offset
+		if (node instanceof SimpleName && "$missing$".equals(((SimpleName)node).getIdentifier())) {
+			startOffset = offset;
+			prefix = "";
+		}
+		
+		int endOffset = startOffset + node.getLength();
 
 		String proposalPrefix = "\"";
 		String proposalPostfix = "\"";

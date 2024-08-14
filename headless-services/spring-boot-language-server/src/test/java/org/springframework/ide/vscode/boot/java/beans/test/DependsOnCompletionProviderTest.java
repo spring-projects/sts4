@@ -108,11 +108,15 @@ public class DependsOnCompletionProviderTest {
 		assertCompletions("@DependsOn(value=<*>)", 2, "@DependsOn(value=\"bean1\"<*>)");
 	}
 
-	// TODO: not yet working, needs more groundwork due to the parser skipping these non-valid parts of the AST
-//	@Test
-//	public void testDependsOnCompletionWithoutQuotesWithAttributeNameAndDefaultSpaces() throws Exception {
-//		assertCompletions("@DependsOn(value = <*>)", 2, "@DependsOn(value = \"bean1\"<*>)");
-//	}
+	@Test
+	public void testDependsOnCompletionWithoutQuotesWithAttributeNameAndDefaultSpaces() throws Exception {
+		assertCompletions("@DependsOn(value = <*>)", 2, "@DependsOn(value = \"bean1\"<*>)");
+	}
+
+	@Test
+	public void testDependsOnCompletionWithoutQuotesWithAttributeNameAndManySpaces() throws Exception {
+		assertCompletions("@DependsOn(value =    <*>  )", 2, "@DependsOn(value =    \"bean1\"<*>  )");
+	}
 
 	@Test
 	public void testDependsOnCompletionInsideOfQuotesWithoutPrefix() throws Exception {

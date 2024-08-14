@@ -17,13 +17,16 @@ import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -48,7 +51,7 @@ public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpec
 	public Collection<ICompletionProposal> getCompletions(TextDocument document, int offset) throws Exception {
 		return cuCache.withCompilationUnit(document, cu -> {
 			if (cu != null) {
-				ASTNode node = NodeFinder.perform(cu, offset, 0);
+				ASTNode node = findNode(document, offset, cu);
 
 				if (node != null) {
 					Collection<ICompletionProposal> completions = new ArrayList<ICompletionProposal>();
@@ -61,6 +64,36 @@ public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpec
 
 			return Collections.emptyList();
 		});
+	}
+
+	private ASTNode findNode(TextDocument document, int offset, CompilationUnit cu) {
+		ASTNode node = NodeFinder.perform(cu, offset, 0);
+
+		// take special case into account, e.g. @DependsOn(value = <*>)
+		// in this case the NodeFinder returns the outer AST node (the one where the annotation belongs to
+		// (e.g. the type declaration). This happens because the $missing$ SimpleName node is inserted right after
+		// the "=". Therefore, the NodeFinder doesn't find the SimpleName at the position behind the space
+		// and the information about the surrounding annotation is lost.
+		//
+		// For that case, we look for spaces before the offset and a $missing$ SimpleName to identify this
+		// exact situation and pass on the ASTNode for the SimpleName.
+		try {
+			int numberOfSpaces = 0;
+			while (Character.isSpaceChar(document.getChar(offset - numberOfSpaces - 1))) {
+				numberOfSpaces++;
+			}
+
+			if (numberOfSpaces > 0) {
+				ASTNode leftNode = NodeFinder.perform(cu, offset - numberOfSpaces, 0);
+				if (leftNode instanceof SimpleName && "$missing$".equals(((SimpleName)leftNode).getIdentifier())) {
+					node = leftNode;
+				}
+			}
+		} catch (BadLocationException e) {
+			// ignore, keep the original node
+		}
+		
+		return node;
 	}
 
 	private void collectCompletionsForAnnotations(ASTNode node, int offset, TextDocument doc, Collection<ICompletionProposal> completions) {
