@@ -21,7 +21,7 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 
-final class AnnotationParamSpelExtractor {
+public final class AnnotationParamSpelExtractor {
 	
 	private static final String SPRING_CACHEABLE = "org.springframework.cache.annotation.Cacheable";
 	private static final String SPRING_CACHE_EVICT = "org.springframework.cache.annotation.CacheEvict";
@@ -35,7 +35,7 @@ final class AnnotationParamSpelExtractor {
 	
 	private static final String SPRING_CONDITIONAL_ON_EXPRESSION = "org.springframework.boot.autoconfigure.condition.ConditionalOnExpression";
 	
-	final static AnnotationParamSpelExtractor[] SPEL_EXTRACTORS = new AnnotationParamSpelExtractor[] {
+	public final static AnnotationParamSpelExtractor[] SPEL_EXTRACTORS = new AnnotationParamSpelExtractor[] {
 			new AnnotationParamSpelExtractor(Annotations.VALUE, null, "#{", "}"),
 			new AnnotationParamSpelExtractor(Annotations.VALUE, "value", "#{", "}"),
 
@@ -62,7 +62,7 @@ final class AnnotationParamSpelExtractor {
 	};
 	
 	
-	record Snippet(String text, int offset) {}
+	public record Snippet(String text, int offset) {}
 	
 	private final String annotationType;
 	private final String paramName;
@@ -77,7 +77,7 @@ final class AnnotationParamSpelExtractor {
 		this.paramValuePostfix = paramValuePostfix;
 	}
 
-	Optional<Snippet> getSpelRegion(NormalAnnotation a) {
+	public Optional<Snippet> getSpelRegion(NormalAnnotation a) {
 		if (paramName == null) {
 			return Optional.empty();
 		}
@@ -104,7 +104,7 @@ final class AnnotationParamSpelExtractor {
 		return Optional.empty();
 	}
 	
-	Optional<Snippet> getSpelRegion(SingleMemberAnnotation a) {
+	public Optional<Snippet> getSpelRegion(SingleMemberAnnotation a) {
 		if (this.paramName != null) {
 			return Optional.empty();
 		}
