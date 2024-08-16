@@ -22,6 +22,7 @@ public class SpelReconciler extends AntlrReconciler {
 		
 	public SpelReconciler() {
 		super("SPEL", SpelParser.class, SpelLexer.class, "spelExpr", SpelProblemType.JAVA_SPEL_EXPRESSION_SYNTAX);
+		this.errorOnUnrecognizedTokens = false;
 		this.enabled = true;
 	}
 

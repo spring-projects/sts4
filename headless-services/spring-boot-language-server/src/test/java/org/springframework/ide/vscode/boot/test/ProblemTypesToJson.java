@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -24,12 +26,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
+import org.springframework.ide.vscode.boot.java.cron.CronProblemType;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryProblemType;
 import org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType;
 import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationProblemType;
@@ -179,6 +180,7 @@ public class ProblemTypesToJson {
 		writer.collectProblemTypeData(SpringAotJavaProblemType.values());
 		writer.collectProblemTypeData(VersionValidationProblemType.values());
 		writer.collectProblemTypeData(QueryProblemType.values());
+		writer.collectProblemTypeData(CronProblemType.values());
 		
 		Collections.sort(writer.problemCategories);
 		

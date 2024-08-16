@@ -397,7 +397,7 @@
   },
   {
     "id": "data-query",
-    "label": "Data Query",
+    "label": "Data Queries",
     "toggle": {
       "label": "Enablement",
       "values": [
@@ -425,6 +425,34 @@
         "code": "SQL_SYNTAX",
         "label": "SQL Query Syntax",
         "description": "Syntax",
+        "defaultSeverity": "ERROR"
+      }
+    ]
+  },
+  {
+    "id": "cron",
+    "label": "CRON Expressions",
+    "toggle": {
+      "label": "Enablement",
+      "values": [
+        "OFF",
+        "ON"
+      ],
+      "preferenceKey": "boot-java.validation.cron",
+      "defaultValue": "ON"
+    },
+    "order": 9,
+    "problemTypes": [
+      {
+        "code": "SYNTAX",
+        "label": "Cron Expression Syntax",
+        "description": "Syntax",
+        "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "FIELD",
+        "label": "Cron Expression field",
+        "description": "Field",
         "defaultSeverity": "ERROR"
       }
     ]

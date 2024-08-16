@@ -146,7 +146,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 		return SpringProjectUtil.hasDependencyStartingWith(project, "hibernate-core", null) ? hqlReconciler : jpqlReconciler;
 	}
 	
-	private void reconcileExpression(Reconciler reconciler, Expression valueExp, IProblemCollector problemCollector) {
+	public static void reconcileExpression(Reconciler reconciler, Expression valueExp, IProblemCollector problemCollector) {
 		String query = null;
 		int offset = 0;
 		if (valueExp instanceof StringLiteral sl) {
