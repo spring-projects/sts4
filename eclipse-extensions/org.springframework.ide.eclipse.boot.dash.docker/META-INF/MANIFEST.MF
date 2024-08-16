@@ -22,8 +22,8 @@ Require-Bundle: org.springframework.ide.eclipse.boot.dash,
  org.eclipse.jdt.launching,
  org.eclipse.jdt.core,
  org.springframework.ide.eclipse.docker.client;bundle-version="3.9.14",
- org.eclipse.linuxtools.docker.ui;resolution:=optional,
- org.eclipse.linuxtools.docker.core;resolution:=optional
+ org.eclipse.linuxtools.docker.ui,
+ org.eclipse.linuxtools.docker.core
 Import-Package: org.eclipse.core.runtime,
  org.eclipse.core.runtime.jobs,
  org.osgi.framework,
