@@ -222,7 +222,39 @@ public class ContextConfigurationCompletionTest {
                 "@ContextConfiguration(locations=\"/a-random-resource-root.xml<*>\")");
     }
 
+    @Test
+    void testComplexResourceNameWithSlashPrefixAndWithLocationsAndParamNameCompletion() throws Exception {
+        prepareCase("@ContextConfiguration(\"onClass\")", "@ContextConfiguration(locations=\"/root.xml<*>\")");
 
+        assertClasspathCompletions(
+                "@ContextConfiguration(locations=\"/a-random-resource-root.xml<*>\")");
+    }
+
+    @Test
+    void testComplexResourceNameWithSlashPrefixAndWithValueAndParamNameCompletion() throws Exception {
+        prepareCase("@ContextConfiguration(\"onClass\")", "@ContextConfiguration(value=\"/root.xml<*>\")");
+
+        assertClasspathCompletions(
+                "@ContextConfiguration(value=\"/a-random-resource-root.xml<*>\")");
+    }
+
+    @Test
+    void testComplexResourceNameWithSlashPrefixAndParamNameCompletion() throws Exception {
+        prepareCase("@ContextConfiguration(\"onClass\")", "@ContextConfiguration(\"/root.xml<*>\")");
+
+        assertClasspathCompletions(
+                "@ContextConfiguration(\"/a-random-resource-root.xml<*>\")");
+    }
+
+    @Test
+    void testComplexResourceNameWithSlashPrefixAndDifferentParamNameCompletion() throws Exception {
+        prepareCase("@ContextConfiguration(\"onClass\")", "@ContextConfiguration(locations=\"/random<*>\")");
+
+        assertClasspathCompletions(
+                "@ContextConfiguration(locations=\"/a-random-resource-root.xml<*>\")",
+                "@ContextConfiguration(locations=\"/org/random-resource-org.xml<*>\")",
+                "@ContextConfiguration(locations=\"/org/test/random-resource-org-test.xml<*>\")");
+    }
 
     private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
         InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-annotation-contextconfiguration/src/main/java/org/test/TestContextConfigurationCompletion.java");

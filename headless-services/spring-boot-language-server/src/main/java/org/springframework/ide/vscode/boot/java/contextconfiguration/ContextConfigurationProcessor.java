@@ -169,6 +169,7 @@ public class ContextConfigurationProcessor implements CompletionProvider {
     }
 
     private String[] findResources(IJavaProject project, String prefix) {
+        String filteredPrefix = prefix.replaceAll("^/+", "");
         String[] resources = IClasspathUtil.getClasspathResources(project.getClasspath()).stream()
                 .distinct()
                 .sorted(new Comparator<String>() {
@@ -178,7 +179,7 @@ public class ContextConfigurationProcessor implements CompletionProvider {
                     }
                 })
                 .map(r -> r.replaceAll("\\\\", "/"))
-                .filter(r -> ("classpath:" + r).contains(prefix))
+                .filter(r -> ("classpath:" + r).contains(filteredPrefix))
                 .toArray(String[]::new);
 
         return resources;
