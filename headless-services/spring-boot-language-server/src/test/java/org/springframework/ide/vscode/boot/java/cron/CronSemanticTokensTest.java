@@ -274,4 +274,5 @@ public class CronSemanticTokensTest {
 		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(24, 25, "operator", new String[0])); // -
 		assertThat(tokens.get(12)).isEqualTo(new SemanticTokenData(25, 30, "enum", new String[0])); // MARCH
 	}
+	
 }

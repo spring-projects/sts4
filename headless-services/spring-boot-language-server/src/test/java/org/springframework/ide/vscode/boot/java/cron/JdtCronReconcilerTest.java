@@ -88,6 +88,46 @@ public class JdtCronReconcilerTest {
 	}
 
 	@Test
+	void noErrors_PropertyHolder() throws Exception {
+		String source = """
+				package example.demo;
+
+				import org.springframework.scheduling.annotation.Scheduled;
+
+				public class A {
+
+					@Scheduled(cron = "   ${demo.cron}   ")
+					void foo() {}
+
+				}
+				""";
+		String docUri = directory.toPath().resolve("src/main/java/example/demo/A.java").toUri()
+				.toString();
+		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
+		editor.assertProblems();
+	}
+	
+	@Test
+	void noErrors_SPEL() throws Exception {
+		String source = """
+				package example.demo;
+
+				import org.springframework.scheduling.annotation.Scheduled;
+
+				public class A {
+
+					@Scheduled(cron = "   #{demo.cron}  ")
+					void foo() {}
+
+				}
+				""";
+		String docUri = directory.toPath().resolve("src/main/java/example/demo/A.java").toUri()
+				.toString();
+		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
+		editor.assertProblems();
+	}
+	
+	@Test
 	void errorsReported_1() throws Exception {
 		String source = """
 				package example.demo;

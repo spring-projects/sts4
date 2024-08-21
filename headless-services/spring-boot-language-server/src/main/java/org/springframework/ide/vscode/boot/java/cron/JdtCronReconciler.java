@@ -58,7 +58,7 @@ public class JdtCronReconciler implements JdtAstReconciler {
 								if (value instanceof MemberValuePair) {
 									MemberValuePair pair = (MemberValuePair) value;
 									String name = pair.getName().getFullyQualifiedName();
-									if (name != null && "cron".equals(name)) {
+									if (name != null && "cron".equals(name) && JdtCronSemanticTokensProvider.isCronExpression(pair.getValue())) {
 										QueryJdtAstReconciler.reconcileExpression(cronReconciler, pair.getValue(), problemCollector);
 									}
 								}

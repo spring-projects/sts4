@@ -58,7 +58,9 @@ public final class AnnotationParamSpelExtractor {
 			new AnnotationParamSpelExtractor(SPRING_POST_FILTER, "value", "", ""),
 
 			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, null, "", ""),
-			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "", "")
+			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "", ""),
+			
+			new AnnotationParamSpelExtractor(Annotations.SCHEDULED, "cron", "#{", "}"),
 	};
 	
 	
@@ -125,10 +127,16 @@ public final class AnnotationParamSpelExtractor {
 	private Optional<Snippet> fromStringLiteral(StringLiteral valueExp) {
 		String value = valueExp.getEscapedValue();
 		value = value.substring(1, value.length() - 1);
-		if (value != null && value.startsWith(paramValuePrefix) && value.endsWith(paramValuePostfix)) {
-			String spelText = value.substring(paramValuePrefix.length(), value.length() - paramValuePostfix.length());
-			int offset = valueExp.getStartPosition() + paramValuePrefix.length() + 1;
-			return Optional.of(new Snippet(spelText, offset));
+		if (value != null) {
+			int startIdx = value.indexOf(paramValuePrefix);
+			if (startIdx >= 0) {
+				int endIdx = value.lastIndexOf(paramValuePostfix);
+				if (endIdx >= 0) {
+					String spelText = value.substring(startIdx + paramValuePrefix.length(), endIdx);
+					int offset = valueExp.getStartPosition() + startIdx + paramValuePrefix.length() + 1;
+					return Optional.of(new Snippet(spelText, offset));
+				}
+			}
 		}
 		return Optional.empty();
 	}

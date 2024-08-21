@@ -14,9 +14,12 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.jdt.core.dom.TextBlock;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.JdtSemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
@@ -68,7 +71,7 @@ public class JdtCronSemanticTokensProvider implements JdtSemanticTokensProvider 
 								if (value instanceof MemberValuePair) {
 									MemberValuePair pair = (MemberValuePair) value;
 									String name = pair.getName().getFullyQualifiedName();
-									if (name != null && "cron".equals(name)) {
+									if (name != null && "cron".equals(name) && isCronExpression(pair.getValue())) {
 										JdtDataQuerySemanticTokensProvider.computeTokensForExpression(tokensProvider, pair.getValue()).forEach(collector::accept);
 									}
 								}
@@ -80,6 +83,21 @@ public class JdtCronSemanticTokensProvider implements JdtSemanticTokensProvider 
 			}
 			
 		};
+	}
+	
+	public static boolean isCronExpression(Expression e) {
+		String value = null;
+		if (e instanceof StringLiteral sl) {
+			value = sl.getLiteralValue();
+		} else if (e instanceof TextBlock tb) {
+			value = tb.getLiteralValue();
+		}
+		value = value.trim();
+		if (value.startsWith("#{") || value.startsWith("${")) {
+			// Either SPEL or Property Holder
+			return false;
+		}
+		return value != null;
 	}
 
 }

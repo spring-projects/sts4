@@ -367,4 +367,56 @@ public class JdtCronSemanticTokensProviderTest {
 		assertThat(token).isEqualTo(new SemanticTokenData(142, 147, "enum", new String[0]));
 		assertThat(source.substring(token.start(), token.end())).isEqualTo("MARCH");
 	}
+	
+	@Test
+	void noTokens_SPEL() throws Exception {
+		String source = """
+				package my.package
+
+				import org.springframework.scheduling.annotation.Scheduled;
+
+				public class A {
+
+					@Scheduled(cron="  #{demo.cron} ")
+					void foo() {}
+
+				}
+				""";
+
+		String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/A.java").toUri()
+				.toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "A.java", jp);
+
+		assertThat(cu).isNotNull();
+
+		List<SemanticTokenData> tokens = computeTokens(cu);
+
+		assertThat(tokens.size()).isEqualTo(0);
+	}
+
+	@Test
+	void noTokens_PropertyHolder() throws Exception {
+		String source = """
+				package my.package
+
+				import org.springframework.scheduling.annotation.Scheduled;
+
+				public class A {
+
+					@Scheduled(cron="  ${demo.cron} ")
+					void foo() {}
+
+				}
+				""";
+
+		String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/A.java").toUri()
+				.toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "A.java", jp);
+
+		assertThat(cu).isNotNull();
+
+		List<SemanticTokenData> tokens = computeTokens(cu);
+
+		assertThat(tokens.size()).isEqualTo(0);
+	}
 }
