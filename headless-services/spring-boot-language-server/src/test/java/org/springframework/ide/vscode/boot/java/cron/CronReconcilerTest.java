@@ -64,7 +64,7 @@ public class CronReconcilerTest {
 	void syntax_problems_3() {
 		reconciler.reconcile("10/2. * * ? * MON-5", 0, collector);
 		assertEquals(1, problems.size());
-		assertReconcileProblem(problems.get(0), CronProblemType.SYNTAX, 4, 1);
+		assertReconcileProblem(problems.get(0), CronProblemType.SYNTAX, 4, 0);
 	}
 	
 	static void assertReconcileProblem(ReconcileProblem p, ProblemType type, int offset, int length) {

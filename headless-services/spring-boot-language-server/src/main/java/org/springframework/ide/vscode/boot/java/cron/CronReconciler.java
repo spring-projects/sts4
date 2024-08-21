@@ -149,11 +149,13 @@ public class CronReconciler implements Reconciler {
 			public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
 					String msg, RecognitionException e) {
 				int offset = 0;
-				int length = 1;
+				int length = 0;
 				if (offendingSymbol instanceof Token) {
 					Token token = (Token) offendingSymbol;
 					offset = token.getStartIndex();
-					length = token.getText().length();
+					if (token.getStartIndex() <= token.getStopIndex()) {
+						length = token.getText() == null ? token.getStopIndex() + 1 - token.getStartIndex() : token.getText().length();
+					}
 				} else {
 					DefaultLineTracker lt = lineTrackerRef.get();
 					if (lt == null) {
