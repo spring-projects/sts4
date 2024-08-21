@@ -1173,7 +1173,7 @@
       },
       {
         "id": "data-query",
-        "title": "Data Query",
+        "title": "Data Queries",
         "order": 408,
         "properties": {
           "boot-java.validation.data-query": {
@@ -1213,6 +1213,46 @@
             "type": "string",
             "default": "ERROR",
             "description": "Syntax",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          }
+        }
+      },
+      {
+        "id": "cron",
+        "title": "CRON Expressions",
+        "order": 409,
+        "properties": {
+          "boot-java.validation.cron": {
+            "type": "string",
+            "default": "ON",
+            "description": "Enablement",
+            "enum": [
+              "OFF",
+              "ON"
+            ]
+          },
+          "spring-boot.ls.problem.cron.SYNTAX": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Syntax",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.cron.FIELD": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Field",
             "enum": [
               "IGNORE",
               "INFO",

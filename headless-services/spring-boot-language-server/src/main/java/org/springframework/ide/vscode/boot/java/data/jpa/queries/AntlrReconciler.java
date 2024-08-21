@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.BitSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStream;
@@ -31,6 +32,8 @@ import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.linetracker.DefaultLineTracker;
 
 public class AntlrReconciler implements Reconciler {
 	
@@ -41,6 +44,9 @@ public class AntlrReconciler implements Reconciler {
 	private final Class<? extends Lexer> lexerClass;
 	private final String parseMethod;
 	private final ProblemType problemType;
+	
+	// To quickly get around issues with token recognition coming from the Lexer as it might to much to handle in terms of fixing the parser/lexer right away
+	protected boolean errorOnUnrecognizedTokens;
 
 	public AntlrReconciler(String prefix, Class<? extends Parser> parserClass, Class<? extends Lexer> lexerClass,
 			String parseMethod, ProblemType problemType) {
@@ -59,19 +65,33 @@ public class AntlrReconciler implements Reconciler {
 		lexer.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		parser.removeErrorListener(ConsoleErrorListener.INSTANCE);
 		
-		parser.addErrorListener(new ANTLRErrorListener() {
+		AtomicReference<DefaultLineTracker> lineTrackerRef = new AtomicReference<>();
+		
+		ANTLRErrorListener antlrErrorListener = new ANTLRErrorListener() {
 			
 			@Override
 			public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
 					String msg, RecognitionException e) {
-				Token token = (Token) offendingSymbol;
-				int offset = token.getStartIndex();
-				int length = token.getStopIndex() - token.getStartIndex() + 1;
-				if (token.getStartIndex() >= token.getStopIndex()) {
-					offset = token.getStartIndex() - token.getCharPositionInLine();
-					length = token.getCharPositionInLine() + 1;
+				int offset = 0;
+				int length = 1;
+				if (offendingSymbol instanceof Token) {
+					Token token = (Token) offendingSymbol;
+					offset = token.getStartIndex();
+					length = token.getText().length();
+				} else {
+					DefaultLineTracker lt = lineTrackerRef.get();
+					if (lt == null) {
+						lt = new DefaultLineTracker();
+						lt.set(text);
+						lineTrackerRef.set(lt);
+					}
+					try {
+						offset = lt.getLineOffset(line - 1) + charPositionInLine;
+					} catch (BadLocationException e1) {
+						log.error("", e1);
+					}
 				}
-				problemCollector.accept(new ReconcileProblemImpl(problemType, prefix + ": " + msg, startPosition + offset, length));
+				problemCollector.accept(new ReconcileProblemImpl(problemType,  String.format("%s: %s",  prefix, msg), startPosition + offset, length));
 			}
 			
 			@Override
@@ -88,7 +108,12 @@ public class AntlrReconciler implements Reconciler {
 			public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact,
 					BitSet ambigAlts, ATNConfigSet configs) {
 			}
-		});
+		};
+		
+		if (errorOnUnrecognizedTokens) {
+			lexer.addErrorListener(antlrErrorListener);
+		}
+		parser.addErrorListener(antlrErrorListener);
 		
 		return parser;
 	}

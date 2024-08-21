@@ -83,6 +83,8 @@ public class Annotations {
 	public static final String NAMED_JAVAX = "javax.inject.Named";
 	public static final String NAMED_JAKARTA = "jakarta.inject.Named";
 	
+	public static final String SCHEDULED = "org.springframework.scheduling.annotation.Scheduled";
+	
 	
 
 }

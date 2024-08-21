@@ -121,9 +121,9 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 				
 				if (queryExpression != null) {
 					if (isNative) {
-						computeTokensForQueryExpression(getSqlSemanticTokensProvider(jp), queryExpression).forEach(tokensData::accept);
+						computeTokensForExpression(getSqlSemanticTokensProvider(jp), queryExpression).forEach(tokensData::accept);
 					} else {
-						computeTokensForQueryExpression(provider, queryExpression).forEach(tokensData::accept);
+						computeTokensForExpression(provider, queryExpression).forEach(tokensData::accept);
 					}
 				}
 
@@ -133,7 +133,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 			@Override
 			public boolean visit(SingleMemberAnnotation a) {
 				if (isQueryAnnotation(a)) {
-					computeTokensForQueryExpression(provider, a.getValue()).forEach(tokensData::accept);
+					computeTokensForExpression(provider, a.getValue()).forEach(tokensData::accept);
 				}
 				return false;
 			}
@@ -144,7 +144,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 					IMethodBinding methodBinding = node.resolveMethodBinding();
 					if ("jakarta.persistence.EntityManager".equals(methodBinding.getDeclaringClass().getQualifiedName())) {
 						if (methodBinding.getParameterTypes().length <= 2 && "java.lang.String".equals(methodBinding.getParameterTypes()[0].getQualifiedName())) {
-							computeTokensForQueryExpression(provider, queryExpr).forEach(tokensData::accept);
+							computeTokensForExpression(provider, queryExpr).forEach(tokensData::accept);
 						}
 					}
 				}
@@ -153,7 +153,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 		};
 	}
 	
-	private static List<SemanticTokenData> computeTokensForQueryExpression(SemanticTokensDataProvider provider, Expression valueExp) {
+	public static List<SemanticTokenData> computeTokensForExpression(SemanticTokensDataProvider provider, Expression valueExp) {
 		String query = null;
 		int offset = 0;
 		if (valueExp instanceof StringLiteral sl) {

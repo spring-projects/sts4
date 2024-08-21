@@ -15,6 +15,10 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.java.cron.CronReconciler;
+import org.springframework.ide.vscode.boot.java.cron.CronSemanticTokens;
+import org.springframework.ide.vscode.boot.java.cron.JdtCronReconciler;
+import org.springframework.ide.vscode.boot.java.cron.JdtCronSemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
@@ -126,6 +130,10 @@ public class JdtConfig {
 		return new JdtDataQuerySemanticTokensProvider(jpqlProvider, hqlProvider, supportState, spelSemanticTokens);
 	}
 	
+	@Bean JdtCronSemanticTokensProvider jdtCronSemanticTokensProvider(CronSemanticTokens cronProvider) {
+		return new JdtCronSemanticTokensProvider(cronProvider);
+	}
+	
 	@Bean QueryJdtAstReconciler dataQueryReconciler(
 			@Qualifier("hqlReconciler") Reconciler hqlReconciler,
 			@Qualifier("jpqlReconciler") Reconciler jpqlReconciler,
@@ -147,6 +155,10 @@ public class JdtConfig {
 	
 	@Bean ImplicitWebAnnotationNamesReconciler implicitWebAnnotationNamesReconciler(SimpleLanguageServer server) {
 		return new ImplicitWebAnnotationNamesReconciler(server.getQuickfixRegistry());
+	}
+	
+	@Bean JdtCronReconciler jdtCronReconciler(CronReconciler cronReconciler) {
+		return new JdtCronReconciler(cronReconciler);
 	}
 
 }
