@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.1</version>
+		<version>3.3.3</version>
 		<relativePath></relativePath>
 	</parent>
 
@@ -116,10 +116,9 @@
 		<reactor-netty>0.7.15.RELEASE</reactor-netty>
 		<commons-io-version>2.16.1</commons-io-version>
 		<commons-codec-version>1.13</commons-codec-version>
-		<kotlin.version>1.9.20</kotlin.version>
 
 		<!-- Rewrite specific properties -->
-		<rewrite-recipe-bom.version>2.14.0</rewrite-recipe-bom.version>
+		<rewrite-recipe-bom.version>2.17.0</rewrite-recipe-bom.version>
 		<gradle.version>8.4</gradle.version>
 		<rewrite-gradle-tooling-model.version>2.3.1</rewrite-gradle-tooling-model.version>
 		<jgit-version>6.9.0.202403050737-r</jgit-version>
