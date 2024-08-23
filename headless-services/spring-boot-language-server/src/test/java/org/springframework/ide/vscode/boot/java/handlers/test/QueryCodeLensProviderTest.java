@@ -39,6 +39,8 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.java.handlers.QueryCodeLensProvider;
+import org.springframework.ide.vscode.boot.java.handlers.QueryType;
+import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.ExecuteCommandHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -66,6 +68,9 @@ public class QueryCodeLensProviderTest {
 	@Autowired
 	private SpringSymbolIndex indexer;
 	private SimpleLanguageServer server;
+	
+	@Autowired
+	private SpelSemanticTokens spelSemanticTokens;
 
 	private ArgumentCaptor<ExecuteCommandHandler> commandHandlerCaptor;
 	private QueryCodeLensProvider queryCodeLensProvider;
@@ -78,7 +83,7 @@ public class QueryCodeLensProviderTest {
 		String projectDir = directory.toURI().toString();
 		server = mock(SimpleLanguageServer.class);
 		commandHandlerCaptor = ArgumentCaptor.forClass(ExecuteCommandHandler.class);
-		queryCodeLensProvider = new QueryCodeLensProvider(projectFinder, server);
+		queryCodeLensProvider = new QueryCodeLensProvider(projectFinder, server, spelSemanticTokens);
 
 		// trigger project creation
 		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
@@ -102,9 +107,9 @@ public class QueryCodeLensProviderTest {
 
 		assertEquals(3, codeLenses.size());
 
-		assertTrue(containsCodeLens(codeLenses.get(0), QueryCodeLensProvider.EXPLAIN_QUERY_TITLE, 9, 8, 9, 108));
-		assertTrue(containsCodeLens(codeLenses.get(1), QueryCodeLensProvider.EXPLAIN_QUERY_TITLE, 13, 8, 13, 39));
-		assertTrue(containsCodeLens(codeLenses.get(2), QueryCodeLensProvider.EXPLAIN_QUERY_TITLE, 17, 14, 17, 92));
+		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.DEFAULT.getTitle(), 9, 8, 9, 108));
+		assertTrue(containsCodeLens(codeLenses.get(1), QueryType.DEFAULT.getTitle(), 13, 8, 13, 39));
+		assertTrue(containsCodeLens(codeLenses.get(2), QueryType.DEFAULT.getTitle(), 17, 14, 17, 92));
 	}
 
 	@Test
@@ -118,11 +123,75 @@ public class QueryCodeLensProviderTest {
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
 
 		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+		
+		String expectedPrompt = """
+Explain the following SpEL Expression with a clear summary first, followed by a breakdown of the expression with details: \n
+T(org.test.SpelController).isValidVersion('${app.version}') ? 'Valid Version' :'Invalid Version'
 
-		assertEquals(2, codeLenses.size());
+   Finally, provide a brief summary of what the following method does, focusing on its role within the SpEL expression.
+   The summary should mention key criteria the method checks but avoid detailed implementation steps.
+   Please include this summary as an appendix to the main explanation, and avoid repeating information covered earlier.
 
-		assertTrue(containsCodeLens(codeLenses.get(0), QueryCodeLensProvider.EXPLAIN_SPEL_TITLE, 13, 17, 13, 111));
-		assertTrue(containsCodeLens(codeLenses.get(1), QueryCodeLensProvider.EXPLAIN_SPEL_TITLE, 16, 11, 16, 142));
+public static boolean isValidVersion(String version){
+  if (version.matches("\\\\d+\\\\.\\\\d+\\\\.\\\\d+")) {
+    String[] parts=version.split("\\\\.");
+    int major=Integer.parseInt(parts[0]);
+    int minor=Integer.parseInt(parts[1]);
+    int patch=Integer.parseInt(parts[2]);
+    return (major > 3) || (major == 3 && (minor > 0 || (minor == 0 && patch >= 0)));
+  }
+  return false;
+}
+
+				""";
+
+		assertEquals(3, codeLenses.size());
+		
+		String actualPrompt = codeLenses.get(1).getCommand().getArguments().get(0).toString();
+
+		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.SPEL.getTitle(), 13, 17, 13, 111));
+		assertTrue(containsCodeLens(codeLenses.get(1), QueryType.SPEL.getTitle(), 16, 11, 16, 107));
+		
+		assertEquals(expectedPrompt, actualPrompt);
+	}
+	
+	@Test
+	public void testShowCodeLensesTrueForSpelWithMultipleMethods() throws Exception {
+
+		// Simulate the command execution with true parameter
+		setCommandParamsHandler(true);
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SpelController.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+
+		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+		
+		String expectedPrompt = """
+Explain the following SpEL Expression with a clear summary first, followed by a breakdown of the expression with details: \n
+T(org.test.SpelController).toUpperCase('hello') + ' ' + T(org.test.SpelController).concat('world', '!')
+
+   Finally, provide a brief summary of what the following method does, focusing on its role within the SpEL expression.
+   The summary should mention key criteria the method checks but avoid detailed implementation steps.
+   Please include this summary as an appendix to the main explanation, and avoid repeating information covered earlier.
+
+public static String toUpperCase(String input){
+  return input.toUpperCase();
+}
+
+public static String concat(String str1,String str2){
+  return str1 + str2;
+}
+
+				""";
+
+		assertEquals(3, codeLenses.size());
+		
+		String actualPrompt = codeLenses.get(2).getCommand().getArguments().get(0).toString();
+
+		assertTrue(containsCodeLens(codeLenses.get(2), QueryType.SPEL.getTitle(), 19, 11, 19, 114));
+		
+		assertEquals(expectedPrompt, actualPrompt);
 	}
 	
 	@Test

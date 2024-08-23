@@ -56,6 +56,7 @@ import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolP
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerCodeLensProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouteHighlightProdivder;
+import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
@@ -116,6 +117,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private BootJavaCodeActionProvider codeActionProvider;
 	private DocumentSymbolHandler docSymbolProvider;
 	private JdtSemanticTokensHandler semanticTokensHandler;
+	private SpelSemanticTokens spelSemanticTokens;
 
 	public BootJavaLanguageServerComponents(ApplicationContext appContext) {
 		this.server = appContext.getBean(SimpleLanguageServer.class);
@@ -173,8 +175,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 				projectFinder,
 				Duration.ofSeconds(5),
 				sourceLinks);
+		
+		spelSemanticTokens = appContext.getBean(SpelSemanticTokens.class);
 
-		codeLensHandler = createCodeLensEngine(springSymbolIndex, projectFinder, server);
+		codeLensHandler = createCodeLensEngine(springSymbolIndex, projectFinder, server, spelSemanticTokens);
 
 		highlightsEngine = createDocumentHighlightEngine(springSymbolIndex);
 		documents.onDocumentHighlight(highlightsEngine);
@@ -305,10 +309,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return new BootJavaReferencesHandler(this, cuCache, projectFinder, providers);
 	}
 
-	protected BootJavaCodeLensEngine createCodeLensEngine(SpringSymbolIndex index, JavaProjectFinder projectFinder, SimpleLanguageServer server) {
+	protected BootJavaCodeLensEngine createCodeLensEngine(SpringSymbolIndex index, JavaProjectFinder projectFinder, SimpleLanguageServer server, SpelSemanticTokens spelSemanticTokens) {
 		Collection<CodeLensProvider> codeLensProvider = new ArrayList<>();
 		codeLensProvider.add(new WebfluxHandlerCodeLensProvider(index));
-		codeLensProvider.add(new QueryCodeLensProvider(projectFinder, server));
+		codeLensProvider.add(new QueryCodeLensProvider(projectFinder, server, spelSemanticTokens));
 
 		return new BootJavaCodeLensEngine(this, codeLensProvider);
 	}
