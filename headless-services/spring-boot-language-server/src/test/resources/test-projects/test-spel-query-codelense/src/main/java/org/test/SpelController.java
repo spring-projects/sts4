@@ -14,8 +14,11 @@ public class SpelController {
 	@Value(value="#{'${app.version}' matches '\\\\d+\\\\.\\\\d+\\\\.\\\\d+' ? '${app.version}' : 'Invalid Version'}")
 	private String version;
 
-	@Value("#{T(org.springframework.samples.petclinic.owner.SpelController).isValidVersion('${app.version}') ? 'Valid Version' :'Invalid Version'}")
+	@Value("#{T(org.test.SpelController).isValidVersion('${app.version}') ? 'Valid Version' :'Invalid Version'}")
 	private String versionValidity;
+	
+	@Value("#{T(org.test.SpelController).toUpperCase('hello') + ' ' + T(org.test.SpelController).concat('world', '!')}")
+    private String greeting;
 
 	@GetMapping("/version")
 	@ResponseBody
@@ -39,5 +42,13 @@ public class SpelController {
 		}
 		return false;
 	}
+	
+	public static String toUpperCase(String input) {
+        return input.toUpperCase();
+    }
+
+    public static String concat(String str1, String str2) {
+        return str1 + str2;
+    }
 
 }
