@@ -92,9 +92,6 @@ async function updateConfiguration(value: boolean) {
 
 async function explainQueryWithCopilot() {
     commands.registerCommand('vscode-spring-boot.query.explain', async (userPrompt) => {
-        console.log('spel.explain: ' + userPrompt);
-        console.log('messages: ' + userPrompt);
-
         await commands.executeCommand('workbench.action.chat.open', { query: userPrompt });
     })
 }
