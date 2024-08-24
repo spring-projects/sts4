@@ -581,9 +581,12 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		InlayHintHandler handler = this.inlayHintHandler;
 		
 		if (handler != null) {
-			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
-				return handler.handle(cancelToken, params);
-			});
+			TextDocument doc = getLatestSnapshot(params.getTextDocument().getUri());
+			if (doc != null) {
+				return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
+					return handler.handle(doc, params.getRange(), cancelToken);
+				});
+			}
 		}
 		return CompletableFuture.completedFuture(Collections.emptyList());
 	}

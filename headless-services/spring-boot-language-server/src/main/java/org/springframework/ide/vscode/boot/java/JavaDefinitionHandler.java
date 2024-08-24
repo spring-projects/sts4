@@ -21,6 +21,8 @@ import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -33,6 +35,8 @@ import com.google.common.collect.ImmutableList.Builder;
 
 public class JavaDefinitionHandler implements DefinitionHandler, LanguageSpecific {
 	
+	private static final Logger log = LoggerFactory.getLogger(JavaDefinitionHandler.class);
+
 	private CompilationUnitCache cuCache;
 	private JavaProjectFinder projectFinder;
 	private Collection<IJavaDefinitionProvider> providers;
@@ -64,7 +68,11 @@ public class JavaDefinitionHandler implements DefinitionHandler, LanguageSpecifi
 						if (cancelToken.isCanceled()) {
 							break;
 						}
-						builder.addAll(provider.getDefinitions(cancelToken, project, cu, node));
+						try {
+							builder.addAll(provider.getDefinitions(cancelToken, project, doc, cu, node, start));
+						} catch (Exception e) {
+							log.error("", e);
+						}
 					}
 				}
 				return builder.build();

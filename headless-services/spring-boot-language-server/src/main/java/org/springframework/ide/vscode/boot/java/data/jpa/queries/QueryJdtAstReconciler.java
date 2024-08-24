@@ -18,13 +18,12 @@ import java.util.Optional;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TextBlock;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedQueryExpression;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
@@ -61,77 +60,28 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 
 			@Override
 			public boolean visit(NormalAnnotation node) {
-				
-				Expression queryExpression = null;
-				boolean isNative = false;
-				if (JdtDataQuerySemanticTokensProvider.isQueryAnnotation(node)) {
-					for (Object value : node.values()) {
-						if (value instanceof MemberValuePair) {
-							MemberValuePair pair = (MemberValuePair) value;
-							String name = pair.getName().getFullyQualifiedName();
-							if (name != null) {
-								switch (name) {
-								case "value":
-									queryExpression = pair.getValue();
-									break;
-								case "nativeQuery":
-									Expression expression = pair.getValue();
-									if (expression != null) {
-										Object o = expression.resolveConstantExpressionValue();
-										if (o instanceof Boolean b) {
-											isNative = b.booleanValue();
-										}
-									}
-									break;
-								}
-							}
-						}
-					}
-				} else if (JdtDataQuerySemanticTokensProvider.isNamedQueryAnnotation(node)) {
-					for (Object value : node.values()) {
-						if (value instanceof MemberValuePair) {
-							MemberValuePair pair = (MemberValuePair) value;
-							String name = pair.getName().getFullyQualifiedName();
-							if (name != null) {
-								switch (name) {
-								case "query":
-									queryExpression = pair.getValue();
-									break;
-								}
-							}
-						}
-					}
+				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
+				if (q != null) {
+					Optional<Reconciler> reconcilerOpt = q.isNative() ? getSqlReconciler(project) : Optional.of(getQueryReconciler(project));
+					reconcilerOpt.ifPresent(r -> r.reconcile(q.query().text(), q.query().offset(), problemCollector));
 				}
-				
-				if (queryExpression != null) {
-					if (isNative) {
-						final Expression expr = queryExpression;
-						getSqlReconciler(project).ifPresent(r -> reconcileExpression(r, expr, problemCollector));
-					} else {
-						reconcileExpression(getQueryReconciler(project), queryExpression, problemCollector);
-					}
-				}
-				
-				return false;
+				return super.visit(node);
 			}
 
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
-				if (JdtDataQuerySemanticTokensProvider.isQueryAnnotation(node)) {
-					reconcileExpression(getQueryReconciler(project), node.getValue(), problemCollector);
+				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
+				if (q != null) {
+					getQueryReconciler(project).reconcile(q.query().text(), q.query().offset(), problemCollector);
 				}
-				return false;
+				return super.visit(node);
 			}
 
 			@Override
 			public boolean visit(MethodInvocation node) {
-				if ("createQuery".equals(node.getName().getIdentifier()) && node.arguments().size() <= 2 && node.arguments().get(0) instanceof Expression queryExpr) {
-					IMethodBinding methodBinding = node.resolveMethodBinding();
-					if ("jakarta.persistence.EntityManager".equals(methodBinding.getDeclaringClass().getQualifiedName())) {
-						if (methodBinding.getParameterTypes().length <= 2 && "java.lang.String".equals(methodBinding.getParameterTypes()[0].getQualifiedName())) {
-							reconcileExpression(getQueryReconciler(project), queryExpr, problemCollector);
-						}
-					}
+				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
+				if (q != null) {
+					getQueryReconciler(project).reconcile(q.query().text(), q.query().offset(), problemCollector);
 				}
 				return super.visit(node);
 			}

@@ -41,6 +41,7 @@ import org.eclipse.lsp4j.CompletionItemTag;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InsertReplaceEdit;
@@ -239,6 +240,15 @@ public class Editor {
 			.collect(Collectors.toList());
 		assertEquals(ImmutableList.copyOf(expectedHighlights), actualHighlights);
 		return ranges;
+	}
+	
+	public void assertDocumentHighlights(String afterString, DocumentHighlight... expected) throws Exception {
+		int pos = getRawText().indexOf(afterString);
+		if (pos>=0) {
+			pos += afterString.length();
+		}
+		List<? extends DocumentHighlight> actual = harness.getDocumentHighlights(doc.getId(), doc.toPosition(pos));
+		assertEquals(ImmutableList.copyOf(expected), actual);
 	}
 
 	/**

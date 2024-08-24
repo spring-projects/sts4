@@ -71,6 +71,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandle
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.InlayHintHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -116,6 +117,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private BootJavaCodeActionProvider codeActionProvider;
 	private DocumentSymbolHandler docSymbolProvider;
 	private JdtSemanticTokensHandler semanticTokensHandler;
+	private JdtInlayHintsHandler inlayHintsHandler;
 
 	public BootJavaLanguageServerComponents(ApplicationContext appContext) {
 		this.server = appContext.getBean(SimpleLanguageServer.class);
@@ -176,12 +178,17 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		codeLensHandler = createCodeLensEngine(springSymbolIndex, projectFinder, server);
 
-		highlightsEngine = createDocumentHighlightEngine(springSymbolIndex);
+		highlightsEngine = createDocumentHighlightEngine(appContext);
 		documents.onDocumentHighlight(highlightsEngine);
 		
 		Map<String, JdtSemanticTokensProvider> jdtSemanticTokensProviders = appContext.getBeansOfType(JdtSemanticTokensProvider.class);
 		if (!jdtSemanticTokensProviders.isEmpty()) {
 			semanticTokensHandler = new JdtSemanticTokensHandler(cuCache, projectFinder, jdtSemanticTokensProviders.values());
+		}
+		
+		Map<String, JdtInlayHintsProvider> jdtInlayHintsProviders = appContext.getBeansOfType(JdtInlayHintsProvider.class);
+		if (!jdtSemanticTokensProviders.isEmpty()) {
+			inlayHintsHandler = new JdtInlayHintsHandler(cuCache, projectFinder, jdtInlayHintsProviders.values());
 		}
 		
 		config.addListener(ignore -> {
@@ -313,9 +320,14 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return new BootJavaCodeLensEngine(this, codeLensProvider);
 	}
 
-	protected BootJavaDocumentHighlightEngine createDocumentHighlightEngine(SpringSymbolIndex indexer) {
+	protected BootJavaDocumentHighlightEngine createDocumentHighlightEngine(ApplicationContext appContext) {
 		Collection<HighlightProvider> highlightProvider = new ArrayList<>();
-		highlightProvider.add(new WebfluxRouteHighlightProdivder(indexer));
+		highlightProvider.add(new WebfluxRouteHighlightProdivder(appContext.getBean(SpringSymbolIndex.class)));
+		
+		Map<String, JdtAstDocHighlightsProvider> astHighlightProviders = appContext.getBeansOfType(JdtAstDocHighlightsProvider.class);
+		if (!astHighlightProviders.isEmpty()) {
+			highlightProvider.add(new JdtDocHighlightsProvider(projectFinder, cuCache, astHighlightProviders.values()));
+		}
 
 		return new BootJavaDocumentHighlightEngine(this, highlightProvider);
 	}
@@ -357,6 +369,11 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	@Override
 	public Optional<SemanticTokensHandler> getSemanticTokensHandler() {
 		return Optional.ofNullable(semanticTokensHandler);
+	}
+
+	@Override
+	public Optional<InlayHintHandler> getInlayHintHandler() {
+		return Optional.ofNullable(inlayHintsHandler);
 	}
 
 	

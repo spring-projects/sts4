@@ -10,10 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.value;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +30,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +79,8 @@ public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 	);
 
 	@Override
-	public List<LocationLink> getDefinitions(CancelChecker cancelToken, IJavaProject project, CompilationUnit cu, ASTNode n) {
+	public List<LocationLink> getDefinitions(CancelChecker cancelToken, IJavaProject project,
+			TextDocumentIdentifier docId, CompilationUnit cu, ASTNode n, int offset) {
 
 		if (n instanceof StringLiteral) {
 			StringLiteral valueNode = (StringLiteral) n;
@@ -282,7 +282,5 @@ public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 
 		return resources;
 	}
-
-
 
 }

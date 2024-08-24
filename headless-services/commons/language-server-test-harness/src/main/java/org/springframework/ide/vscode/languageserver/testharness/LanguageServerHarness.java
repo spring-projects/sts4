@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -65,6 +66,8 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolCapabilities;
 import org.eclipse.lsp4j.DocumentSymbolParams;
@@ -679,6 +682,9 @@ public class LanguageServerHarness {
 		return getServer().getTextDocumentService().codeLens(params).get();
 	}
 
+	public List<? extends DocumentHighlight> getDocumentHighlights(TextDocumentIdentifier docId, Position cursor) throws InterruptedException, ExecutionException {
+		return getServer().getTextDocumentService().documentHighlight(new DocumentHighlightParams(docId, cursor)).get();
+	}
 
 	public CompletionItem resolveCompletionItem(CompletionItem maybeUnresolved) {
 		if (getServer().hasLazyCompletionResolver()) {

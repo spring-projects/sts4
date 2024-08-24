@@ -20,7 +20,9 @@ import org.springframework.ide.vscode.boot.java.cron.CronSemanticTokens;
 import org.springframework.ide.vscode.boot.java.cron.JdtCronReconciler;
 import org.springframework.ide.vscode.boot.java.cron.JdtCronSemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQueriesInlayHintsProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryDocHighlightsProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryJdtAstReconciler;
@@ -128,6 +130,14 @@ public class JdtConfig {
 	
 	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, JpqlSupportState supportState, Optional<SpelSemanticTokens> spelSemanticTokens) {
 		return new JdtDataQuerySemanticTokensProvider(jpqlProvider, hqlProvider, supportState, spelSemanticTokens);
+	}
+	
+	@Bean JdtDataQueriesInlayHintsProvider jdtDataQueriesInlayHintsProvider(JdtDataQuerySemanticTokensProvider semanticTokensProvider) {
+		return new JdtDataQueriesInlayHintsProvider(semanticTokensProvider);
+	}
+	
+	@Bean JdtQueryDocHighlightsProvider jdtDocHighlightsProvider(JdtDataQuerySemanticTokensProvider semanticTokensProvider) {
+		return new JdtQueryDocHighlightsProvider(semanticTokensProvider);
 	}
 	
 	@Bean JdtCronSemanticTokensProvider jdtCronSemanticTokensProvider(CronSemanticTokens cronProvider) {

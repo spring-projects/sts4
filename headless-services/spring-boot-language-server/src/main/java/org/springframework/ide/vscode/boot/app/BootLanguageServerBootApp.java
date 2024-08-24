@@ -48,6 +48,8 @@ import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
 import org.springframework.ide.vscode.boot.java.beans.DependsOnDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.beans.ResourceDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.DataQueryParameterDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
@@ -394,12 +396,13 @@ public class BootLanguageServerBootApp {
 	}
 	
 	@Bean
-	JavaDefinitionHandler javaDefinitionHandler(CompilationUnitCache cuCache, JavaProjectFinder projectFinder, SpringMetamodelIndex springIndex) {
+	JavaDefinitionHandler javaDefinitionHandler(SimpleLanguageServer server, CompilationUnitCache cuCache, JavaProjectFinder projectFinder, SpringMetamodelIndex springIndex, JdtDataQuerySemanticTokensProvider qurySemanticTokens) {
 		return new JavaDefinitionHandler(cuCache, projectFinder, List.of(
 				new ValueDefinitionProvider(),
 				new DependsOnDefinitionProvider(springIndex),
 				new ResourceDefinitionProvider(springIndex),
-				new QualifierDefinitionProvider(springIndex)));
+				new QualifierDefinitionProvider(springIndex),
+				new DataQueryParameterDefinitionProvider(server.getTextDocumentService(), qurySemanticTokens)));
 	}
 	
 	@Bean

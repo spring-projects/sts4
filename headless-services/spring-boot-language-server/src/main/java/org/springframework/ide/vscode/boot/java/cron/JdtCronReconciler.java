@@ -14,11 +14,8 @@ import java.net.URI;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryJdtAstReconciler;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedExpression;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -49,22 +46,9 @@ public class JdtCronReconciler implements JdtAstReconciler {
 		return new ASTVisitor() {
 			@Override
 			public boolean visit(NormalAnnotation node) {
-				if (node.getTypeName() != null) {
-					String fqn = node.getTypeName().getFullyQualifiedName();
-					if (JdtCronSemanticTokensProvider.SCHEDULED_SIMPLE_NAME.equals(fqn) || Annotations.SCHEDULED.equals(fqn)) {
-						ITypeBinding typeBinding = node.resolveTypeBinding();
-						if (typeBinding != null && Annotations.SCHEDULED.equals(typeBinding.getQualifiedName())) {
-							for (Object value : node.values()) {
-								if (value instanceof MemberValuePair) {
-									MemberValuePair pair = (MemberValuePair) value;
-									String name = pair.getName().getFullyQualifiedName();
-									if (name != null && "cron".equals(name) && JdtCronSemanticTokensProvider.isCronExpression(pair.getValue())) {
-										QueryJdtAstReconciler.reconcileExpression(cronReconciler, pair.getValue(), problemCollector);
-									}
-								}
-							}
-						}
-					}
+				EmbeddedExpression e = JdtCronVisitorUtils.extractCron(node);
+				if (e != null) {
+					cronReconciler.reconcile(e.text(), e.offset(), problemCollector);
 				}
 				return super.visit(node);
 			}

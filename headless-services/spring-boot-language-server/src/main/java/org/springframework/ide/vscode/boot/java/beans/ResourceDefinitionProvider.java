@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
@@ -41,7 +42,7 @@ public class ResourceDefinitionProvider implements IJavaDefinitionProvider {
 	}
 
 	@Override
-	public List<LocationLink> getDefinitions(CancelChecker cancelToken, IJavaProject project, CompilationUnit cu, ASTNode n) {
+	public List<LocationLink> getDefinitions(CancelChecker cancelToken, IJavaProject project, TextDocumentIdentifier docId, CompilationUnit cu, ASTNode n, int offset) {
 		if (n instanceof StringLiteral) {
 			StringLiteral valueNode = (StringLiteral) n;
 			

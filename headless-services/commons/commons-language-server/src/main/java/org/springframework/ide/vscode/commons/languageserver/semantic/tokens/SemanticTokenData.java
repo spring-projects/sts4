@@ -13,7 +13,12 @@ package org.springframework.ide.vscode.commons.languageserver.semantic.tokens;
 import java.util.Arrays;
 import java.util.Objects;
 
-public record SemanticTokenData(int start, int end, String type, String[] modifiers) implements Comparable<SemanticTokenData>{
+public record SemanticTokenData(
+		int start,
+		int end,
+		String type,
+		String[] modifiers
+	) implements Comparable<SemanticTokenData> {
 
 	@Override
 	public int compareTo(SemanticTokenData o) {

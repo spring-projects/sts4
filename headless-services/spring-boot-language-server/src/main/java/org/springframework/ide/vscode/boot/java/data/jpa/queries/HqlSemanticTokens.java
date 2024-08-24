@@ -146,6 +146,9 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 				if (ctx.identifier() != null && ctx.identifier().getStart() != null) {
 					semantics.put(ctx.identifier().getStart(), "parameter");
 				}
+				if (ctx.INTEGER_LITERAL() != null) {
+					semantics.put(ctx.INTEGER_LITERAL().getSymbol(), "parameter");
+				}
 			}
 
 		});

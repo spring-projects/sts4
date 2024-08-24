@@ -157,6 +157,9 @@ public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 				if (ctx.identification_variable() != null && ctx.identification_variable().getStart() != null) {
 					semantics.put(ctx.identification_variable().getStart(), "parameter");
 				}
+				if (ctx.INTLITERAL() != null) {
+					semantics.put(ctx.INTLITERAL().getSymbol(), "parameter");
+				}
 			}
 
 			@Override
