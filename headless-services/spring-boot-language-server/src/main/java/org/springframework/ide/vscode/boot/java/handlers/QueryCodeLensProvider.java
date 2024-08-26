@@ -22,8 +22,6 @@ import java.util.stream.Collectors;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
@@ -32,6 +30,7 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.spel.AnnotationParamSpelExtractor;
 import org.springframework.ide.vscode.boot.java.spel.AnnotationParamSpelExtractor.Snippet;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
@@ -96,9 +95,10 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 						});
 
 				if (isQueryAnnotation(node)) {
-					String queryPrompt = determineQueryPrompt(document);
-					provideCodeLensForQuery(cancelToken, node, document, node.getValue(), queryPrompt,
-							resultAccumulator);
+					QueryType queryType = determineQueryType(document);
+					provideCodeLensForExpression(cancelToken, node, document, queryType, resultAccumulator);
+				} else if (isAopAnnotation(node)) {
+					provideCodeLensForExpression(cancelToken, node, document, QueryType.AOP, resultAccumulator);
 				}
 
 				return super.visit(node);
@@ -116,21 +116,15 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 						});
 
 				if (isQueryAnnotation(node)) {
-					String queryPrompt = determineQueryPrompt(document);
-					for (Object value : node.values()) {
-						if (value instanceof MemberValuePair) {
-							MemberValuePair pair = (MemberValuePair) value;
-							if ("value".equals(pair.getName().getIdentifier())) {
-								provideCodeLensForQuery(cancelToken, node, document, pair.getValue(), queryPrompt,
-										resultAccumulator);
-								break;
-							}
-						}
-					}
-				}
+					QueryType queryType = determineQueryType(document);
+						provideCodeLensForExpression(cancelToken, node, document, queryType, resultAccumulator);
+				} else if (isAopAnnotation(node)) {
+						provideCodeLensForExpression(cancelToken, node, document, QueryType.AOP, resultAccumulator);
+				}	
 
 				return super.visit(node);
 			}
+
 		});
 	}
 
@@ -163,20 +157,20 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 		}
 	}
 
-	protected void provideCodeLensForQuery(CancelChecker cancelToken, Annotation node, TextDocument document,
-			Expression valueExp, String query, List<CodeLens> resultAccumulator) {
+	protected void provideCodeLensForExpression(CancelChecker cancelToken, Annotation node, TextDocument document,
+			 QueryType queryType, List<CodeLens> resultAccumulator) {
 		cancelToken.checkCanceled();
 
-		if (valueExp != null) {
+		if (node != null) {
 			try {
 
 				CodeLens codeLens = new CodeLens();
-				codeLens.setRange(document.toRange(valueExp.getStartPosition(), valueExp.getLength()));
+				codeLens.setRange(document.toRange(node.getStartPosition(), node.getLength()));
 
 				Command cmd = new Command();
-				cmd.setTitle(QueryType.DEFAULT.getTitle());
+				cmd.setTitle(queryType.getTitle());
 				cmd.setCommand(CMD);
-				cmd.setArguments(ImmutableList.of(query + valueExp.toString()));
+				cmd.setArguments(ImmutableList.of(queryType.getPrompt() + node.toString()));
 				codeLens.setCommand(cmd);
 
 				resultAccumulator.add(codeLens);
@@ -190,15 +184,21 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 		return FQN_QUERY.equals(a.getTypeName().getFullyQualifiedName())
 				|| QUERY.equals(a.getTypeName().getFullyQualifiedName());
 	}
+	
+	private boolean isAopAnnotation(Annotation a) {
+		String annotationFQN = a.getTypeName().getFullyQualifiedName();
+		return Annotations.AOP_ANNOTATIONS.containsKey(annotationFQN) 
+	            || Annotations.AOP_ANNOTATIONS.containsValue(annotationFQN);
+	}
 
-	private String determineQueryPrompt(TextDocument document) {
+	private QueryType determineQueryType(TextDocument document) {
 		Optional<IJavaProject> optProject = projectFinder.find(document.getId());
 		if (optProject.isPresent()) {
 			IJavaProject jp = optProject.get();
-			return SpringProjectUtil.hasDependencyStartingWith(jp, "hibernate-core", null) ? QueryType.HQL.getPrompt()
-					: QueryType.JPQL.getPrompt();
+			return SpringProjectUtil.hasDependencyStartingWith(jp, "hibernate-core", null) ? QueryType.HQL
+					: QueryType.JPQL;
 		}
-		return QueryType.DEFAULT.getPrompt();
+		return QueryType.DEFAULT;
 	}
 
 	private String parseSpelAndFetchContext(CompilationUnit cu, String spelExpression) {

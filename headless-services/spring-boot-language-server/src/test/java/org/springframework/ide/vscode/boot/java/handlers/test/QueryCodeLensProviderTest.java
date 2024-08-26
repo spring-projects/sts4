@@ -79,7 +79,7 @@ public class QueryCodeLensProviderTest {
 	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
-		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-spel-query-codelense/").toURI());
+		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-spel-query-aop-codelenses/").toURI());
 		String projectDir = directory.toURI().toString();
 		server = mock(SimpleLanguageServer.class);
 		commandHandlerCaptor = ArgumentCaptor.forClass(ExecuteCommandHandler.class);
@@ -107,9 +107,9 @@ public class QueryCodeLensProviderTest {
 
 		assertEquals(3, codeLenses.size());
 
-		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.DEFAULT.getTitle(), 9, 8, 9, 108));
-		assertTrue(containsCodeLens(codeLenses.get(1), QueryType.DEFAULT.getTitle(), 13, 8, 13, 39));
-		assertTrue(containsCodeLens(codeLenses.get(2), QueryType.DEFAULT.getTitle(), 17, 14, 17, 92));
+		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.DEFAULT.getTitle(), 9, 1, 9, 109));
+		assertTrue(containsCodeLens(codeLenses.get(1), QueryType.DEFAULT.getTitle(), 13, 1, 13, 40));
+		assertTrue(containsCodeLens(codeLenses.get(2), QueryType.DEFAULT.getTitle(), 17, 1, 17, 93));
 	}
 
 	@Test
@@ -195,6 +195,28 @@ public static String concat(String str1,String str2){
 	}
 	
 	@Test
+	public void testShowCodeLensesTrueForAOP() throws Exception {
+
+		setCommandParamsHandler(true);
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MyAspect.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+
+		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+
+		assertEquals(7, codeLenses.size());
+
+		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.AOP.getTitle(), 9, 1, 9, 53));
+		assertTrue(containsCodeLens(codeLenses.get(1), QueryType.AOP.getTitle(), 14, 1, 14, 24));
+		assertTrue(containsCodeLens(codeLenses.get(2), QueryType.AOP.getTitle(), 19, 1, 19, 51));
+		assertTrue(containsCodeLens(codeLenses.get(3), QueryType.AOP.getTitle(), 27, 1, 27, 50));
+		assertTrue(containsCodeLens(codeLenses.get(4), QueryType.AOP.getTitle(), 32, 1, 32, 92));
+		assertTrue(containsCodeLens(codeLenses.get(5), QueryType.AOP.getTitle(), 37, 1, 37, 86));
+		assertTrue(containsCodeLens(codeLenses.get(6), QueryType.AOP.getTitle(), 42, 1, 42, 65));
+	}
+	
+	@Test
 	public void testShowCodeLensesFalseForQuery() throws Exception {
 		
 		setCommandParamsHandler(false);
@@ -214,6 +236,20 @@ public static String concat(String str1,String str2){
 		setCommandParamsHandler(false);
 		
 		String docUri = directory.toPath().resolve("src/main/java/org/test/SpelController.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+		
+		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+
+		assertEquals(0, codeLenses.size());
+	}
+	
+	@Test
+	public void testShowCodeLensesFalseForAOP() throws Exception {
+		
+		setCommandParamsHandler(false);
+		
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MyAspect.java").toUri().toString();
 		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
 		
