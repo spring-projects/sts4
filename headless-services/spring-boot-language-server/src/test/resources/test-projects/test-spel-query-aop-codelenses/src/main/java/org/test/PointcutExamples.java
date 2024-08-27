@@ -25,5 +25,14 @@ public class PointcutExamples {
 	    System.out.println("Around advice: after method execution");
 	    return result;
 	}
+	
+	@Pointcut("execution(* com.example.service.*.*(..))")
+	public void serviceLayer() {}
+
+	@Pointcut("within(com.example.repository..*)")
+	public void repositoryLayer() {}
+
+	@Pointcut("serviceLayer() || repositoryLayer()")
+	public void applicationLayer() {}
 
 }

@@ -191,8 +191,8 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 				
 				String context = additionalContext != null && !additionalContext.isEmpty() ? String.format(
 						"""
-						   This is the pointcut definition referenced in the above annotation. \n\n %s Provide a brief summary of what it does, focusing on its role within the annotation.
-						   Avoid detailed implementation steps.
+						   This is the pointcut definition referenced in the above annotation. \n\n %s \n\nProvide a brief summary of what it does, focusing on its role within the annotation.
+						   Avoid detailed implementation steps and avoid repeating information covered earlier.
 						""",additionalContext) : "";
 				
 				CodeLens codeLens = new CodeLens();
@@ -297,11 +297,13 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 			return ((SimpleName) expression).getIdentifier();
 		} else if (expression instanceof StringLiteral) {
 			String literalValue = ((StringLiteral) expression).getLiteralValue();
+			StringBuilder pointcuts = new StringBuilder();
 			for (Map.Entry<String, String> entry : pointcutMap.entrySet()) {
 				if (literalValue.contains(entry.getKey())) {
-					return entry.getValue();
+					pointcuts.append(entry.getValue());
 				}
 			}
+			return pointcuts.toString();
 		}
 		return null;
 	}
