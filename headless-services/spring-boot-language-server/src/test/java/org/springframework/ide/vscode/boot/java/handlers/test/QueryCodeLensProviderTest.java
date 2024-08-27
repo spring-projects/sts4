@@ -217,6 +217,47 @@ public static String concat(String str1,String str2){
 	}
 	
 	@Test
+	public void testShowCodeLensesTrueForAopPointcutExamples() throws Exception {
+
+		setCommandParamsHandler(true);
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/PointcutExamples.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+		
+		String expectedPrompt = """
+Explain the following AOP annotation with a clear summary first, followed by a detailed contextual explanation of its usage and any parameters it includes: \n
+@Pointcut("cflow(execution(* com.example..*.*(..)))")
+
+								""";
+		
+		String expectedPromptWithContext = """
+Explain the following AOP annotation with a clear summary first, followed by a detailed contextual explanation of its usage and any parameters it includes: \n
+@AfterReturning(pointcut="targetService()",returning="result")
+
+   This is the pointcut definition referenced in the above annotation. \n
+ @Pointcut("target(com.example.service.MyService)") public void targetService(){
+}
+ Provide a brief summary of what it does, focusing on its role within the annotation.
+   Avoid detailed implementation steps.
+												""";
+
+		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+
+		assertEquals(5, codeLenses.size());
+
+		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.AOP.getTitle(), 4, 1, 4, 54));
+		assertTrue(containsCodeLens(codeLenses.get(3), QueryType.AOP.getTitle(), 15, 1, 15, 64));
+								
+		String actualPrompt = codeLenses.get(0).getCommand().getArguments().get(0).toString();
+		String actualPromptWithContext = codeLenses.get(3).getCommand().getArguments().get(0).toString();
+
+		assertEquals(expectedPrompt, actualPrompt);
+		assertEquals(expectedPromptWithContext, actualPromptWithContext);
+
+	}
+	
+	@Test
 	public void testShowCodeLensesFalseForQuery() throws Exception {
 		
 		setCommandParamsHandler(false);
