@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -87,7 +88,8 @@ public class JdtDataQueriesInlayHintsProvider implements JdtInlayHintsProvider {
 							hint.setKind(InlayHintKind.Parameter);
 							hint.setLabel(Either.forLeft(paramName));
 							hint.setPaddingLeft(true);
-							hint.setPosition(doc.toPosition(t.end()));
+							hint.setPaddingRight(true);
+							hint.setPosition(doc.toPosition(firstNonSkippedChar(doc, t.end(), c -> '%' != c)));
 							
 							collector.accept(hint);
 						}
@@ -99,6 +101,17 @@ public class JdtDataQueriesInlayHintsProvider implements JdtInlayHintsProvider {
 				}
 			}
 		}
+	}
+	
+	private static int firstNonSkippedChar(TextDocument doc, int offset, Predicate<Character> skip) {
+		try {
+			int i = offset;
+			for (; i < doc.getLength() && !skip.test(doc.getChar(i)); i++) {}
+			return i;
+		} catch (BadLocationException e) {
+			// ignore - shouldn't happen
+		}
+		return doc.getLength();
 	}
 
 }
