@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
+import java.util.Map;
+
 /**
  * Constants containing various fully-qualified annotation names.
  *
@@ -84,6 +86,16 @@ public class Annotations {
 	public static final String NAMED_JAKARTA = "jakarta.inject.Named";
 	
 	public static final String SCHEDULED = "org.springframework.scheduling.annotation.Scheduled";
+	
+	public static final Map<String, String> AOP_ANNOTATIONS = Map.of(
+	        "org.aspectj.lang.annotation.Pointcut", "Pointcut",
+	        "org.aspectj.lang.annotation.Before", "Before",
+	        "org.aspectj.lang.annotation.Around", "Around",
+	        "org.aspectj.lang.annotation.After", "After",
+	        "org.aspectj.lang.annotation.AfterReturning", "AfterReturning",
+	        "org.aspectj.lang.annotation.AfterThrowing", "AfterThrowing",
+	        "org.aspectj.lang.annotation.DeclareParents", "DeclareParents"
+	);
 	
 	
 

@@ -38,7 +38,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
-import org.springframework.ide.vscode.boot.java.handlers.QueryCodeLensProvider;
+import org.springframework.ide.vscode.boot.java.handlers.CopilotCodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.QueryType;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -59,7 +59,7 @@ import com.google.gson.JsonPrimitive;
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
-public class QueryCodeLensProviderTest {
+public class CopilotCodeLensProviderTest {
 
 	@Autowired
 	private BootLanguageServerHarness harness;
@@ -73,17 +73,17 @@ public class QueryCodeLensProviderTest {
 	private SpelSemanticTokens spelSemanticTokens;
 
 	private ArgumentCaptor<ExecuteCommandHandler> commandHandlerCaptor;
-	private QueryCodeLensProvider queryCodeLensProvider;
+	private CopilotCodeLensProvider queryCodeLensProvider;
 	private File directory;
 
 	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
-		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-spel-query-codelense/").toURI());
+		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-spel-query-aop-codelenses/").toURI());
 		String projectDir = directory.toURI().toString();
 		server = mock(SimpleLanguageServer.class);
 		commandHandlerCaptor = ArgumentCaptor.forClass(ExecuteCommandHandler.class);
-		queryCodeLensProvider = new QueryCodeLensProvider(projectFinder, server, spelSemanticTokens);
+		queryCodeLensProvider = new CopilotCodeLensProvider(projectFinder, server, spelSemanticTokens);
 
 		// trigger project creation
 		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
@@ -91,7 +91,7 @@ public class QueryCodeLensProviderTest {
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);
 
-		verify(server).onCommand(eq(QueryCodeLensProvider.CMD_ENABLE_COPILOT_FEATURES), commandHandlerCaptor.capture());
+		verify(server).onCommand(eq(CopilotCodeLensProvider.CMD_ENABLE_COPILOT_FEATURES), commandHandlerCaptor.capture());
 	}
 
 	@Test
@@ -107,9 +107,9 @@ public class QueryCodeLensProviderTest {
 
 		assertEquals(3, codeLenses.size());
 
-		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.DEFAULT.getTitle(), 9, 8, 9, 108));
-		assertTrue(containsCodeLens(codeLenses.get(1), QueryType.DEFAULT.getTitle(), 13, 8, 13, 39));
-		assertTrue(containsCodeLens(codeLenses.get(2), QueryType.DEFAULT.getTitle(), 17, 14, 17, 92));
+		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.DEFAULT.getTitle(), 9, 1, 9, 109));
+		assertTrue(containsCodeLens(codeLenses.get(1), QueryType.DEFAULT.getTitle(), 13, 1, 13, 40));
+		assertTrue(containsCodeLens(codeLenses.get(2), QueryType.DEFAULT.getTitle(), 17, 1, 17, 93));
 	}
 
 	@Test
@@ -195,6 +195,85 @@ public static String concat(String str1,String str2){
 	}
 	
 	@Test
+	public void testShowCodeLensesTrueForAOP() throws Exception {
+
+		setCommandParamsHandler(true);
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MyAspect.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+
+		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+
+		assertEquals(7, codeLenses.size());
+
+		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.AOP.getTitle(), 9, 1, 9, 53));
+		assertTrue(containsCodeLens(codeLenses.get(1), QueryType.AOP.getTitle(), 14, 1, 14, 24));
+		assertTrue(containsCodeLens(codeLenses.get(2), QueryType.AOP.getTitle(), 19, 1, 19, 51));
+		assertTrue(containsCodeLens(codeLenses.get(3), QueryType.AOP.getTitle(), 27, 1, 27, 50));
+		assertTrue(containsCodeLens(codeLenses.get(4), QueryType.AOP.getTitle(), 32, 1, 32, 92));
+		assertTrue(containsCodeLens(codeLenses.get(5), QueryType.AOP.getTitle(), 37, 1, 37, 86));
+		assertTrue(containsCodeLens(codeLenses.get(6), QueryType.AOP.getTitle(), 42, 1, 42, 65));
+	}
+	
+	@Test
+	public void testShowCodeLensesTrueForAopPointcutExamples() throws Exception {
+
+		setCommandParamsHandler(true);
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/PointcutExamples.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+		
+		String expectedPrompt = """
+Explain the following AOP annotation with a clear summary first, followed by a detailed contextual explanation of annotation and its purpose: \n
+@Pointcut("cflow(execution(* com.example..*.*(..)))")
+
+								""";
+		
+		String expectedPromptWithContext = """
+Explain the following AOP annotation with a clear summary first, followed by a detailed contextual explanation of annotation and its purpose: \n
+@AfterReturning(pointcut="targetService()",returning="result")
+
+   This is the pointcut definition referenced in the above annotation. \n
+ @Pointcut("target(com.example.service.MyService)") public void targetService(){
+}
+ \n
+Provide a brief summary of the pointcut's role within the annotation.
+   Avoid detailed implementation steps and avoid repeating information covered earlier.
+												""";
+		String expectedPromptWithMultiPointcutRef = """
+Explain the following AOP annotation with a clear summary first, followed by a detailed contextual explanation of annotation and its purpose: \n
+@Pointcut("serviceLayer() || repositoryLayer()")
+
+   This is the pointcut definition referenced in the above annotation. \n
+ @Pointcut("within(com.example.repository..*)") public void repositoryLayer(){
+}
+@Pointcut("execution(* com.example.service.*.*(..))") public void serviceLayer(){
+}
+ \n
+Provide a brief summary of the pointcut's role within the annotation.
+   Avoid detailed implementation steps and avoid repeating information covered earlier.
+												""";
+
+		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+
+		assertEquals(8, codeLenses.size());
+
+		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.AOP.getTitle(), 4, 1, 4, 54));
+		assertTrue(containsCodeLens(codeLenses.get(3), QueryType.AOP.getTitle(), 15, 1, 15, 64));
+								
+		String actualPrompt = codeLenses.get(0).getCommand().getArguments().get(0).toString();
+		String actualPromptWithContext = codeLenses.get(3).getCommand().getArguments().get(0).toString();
+		String actualPromptWithMultiPointcutRef = codeLenses.get(7).getCommand().getArguments().get(0).toString();
+
+		assertEquals(expectedPrompt, actualPrompt);
+		assertEquals(expectedPromptWithContext, actualPromptWithContext);
+		assertEquals(expectedPromptWithMultiPointcutRef, actualPromptWithMultiPointcutRef);
+
+	}
+	
+	@Test
 	public void testShowCodeLensesFalseForQuery() throws Exception {
 		
 		setCommandParamsHandler(false);
@@ -214,6 +293,20 @@ public static String concat(String str1,String str2){
 		setCommandParamsHandler(false);
 		
 		String docUri = directory.toPath().resolve("src/main/java/org/test/SpelController.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+		
+		List<? extends CodeLens> codeLenses = harness.getCodeLenses(openedDoc);
+
+		assertEquals(0, codeLenses.size());
+	}
+	
+	@Test
+	public void testShowCodeLensesFalseForAOP() throws Exception {
+		
+		setCommandParamsHandler(false);
+		
+		String docUri = directory.toPath().resolve("src/main/java/org/test/MyAspect.java").toUri().toString();
 		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
 		

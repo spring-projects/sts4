@@ -40,7 +40,7 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbol
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
-import org.springframework.ide.vscode.boot.java.handlers.QueryCodeLensProvider;
+import org.springframework.ide.vscode.boot.java.handlers.CopilotCodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
@@ -319,7 +319,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	protected BootJavaCodeLensEngine createCodeLensEngine(SpringSymbolIndex index, JavaProjectFinder projectFinder, SimpleLanguageServer server, SpelSemanticTokens spelSemanticTokens) {
 		Collection<CodeLensProvider> codeLensProvider = new ArrayList<>();
 		codeLensProvider.add(new WebfluxHandlerCodeLensProvider(index));
-		codeLensProvider.add(new QueryCodeLensProvider(projectFinder, server, spelSemanticTokens));
+		codeLensProvider.add(new CopilotCodeLensProvider(projectFinder, server, spelSemanticTokens));
 
 		return new BootJavaCodeLensEngine(this, codeLensProvider);
 	}

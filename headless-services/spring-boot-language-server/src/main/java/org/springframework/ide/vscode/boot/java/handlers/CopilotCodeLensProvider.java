@@ -13,7 +13,9 @@ package org.springframework.ide.vscode.boot.java.handlers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -25,13 +27,17 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
+import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.spel.AnnotationParamSpelExtractor;
 import org.springframework.ide.vscode.boot.java.spel.AnnotationParamSpelExtractor.Snippet;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
@@ -49,9 +55,9 @@ import com.google.gson.JsonPrimitive;
 /**
  * @author Udayani V
  */
-public class QueryCodeLensProvider implements CodeLensProvider {
+public class CopilotCodeLensProvider implements CodeLensProvider {
 	
-	protected static Logger logger = LoggerFactory.getLogger(QueryCodeLensProvider.class);
+	protected static Logger logger = LoggerFactory.getLogger(CopilotCodeLensProvider.class);
 
 	public static final String CMD_ENABLE_COPILOT_FEATURES = "sts/enable/copilot/features";
 
@@ -66,13 +72,13 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 	private SpelSemanticTokens spelSemanticTokens;
 
 	private static boolean showCodeLenses;
-
-	public QueryCodeLensProvider(JavaProjectFinder projectFinder, SimpleLanguageServer server, SpelSemanticTokens spelSemanticTokens) {
+	
+	public CopilotCodeLensProvider(JavaProjectFinder projectFinder, SimpleLanguageServer server, SpelSemanticTokens spelSemanticTokens) {
 		this.projectFinder = projectFinder;
 		this.spelSemanticTokens = spelSemanticTokens;
 		server.onCommand(CMD_ENABLE_COPILOT_FEATURES, params -> {
 			if (params.getArguments().get(0) instanceof JsonPrimitive) {
-				QueryCodeLensProvider.showCodeLenses = ((JsonPrimitive) params.getArguments().get(0)).getAsBoolean();
+				CopilotCodeLensProvider.showCodeLenses = ((JsonPrimitive) params.getArguments().get(0)).getAsBoolean();
 			}
 			return CompletableFuture.completedFuture(showCodeLenses);
 		});
@@ -84,6 +90,9 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 		if (!showCodeLenses) {
 			return;
 		}
+
+		Map<String, String> pointcutMap = findPointcuts(cu);
+
 		cu.accept(new ASTVisitor() {
 
 			@Override
@@ -91,14 +100,15 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 				Arrays.stream(spelExtractors).map(e -> e.getSpelRegion(node)).filter(o -> o.isPresent())
 						.map(o -> o.get()).forEach(snippet -> {
 							String additionalContext = parseSpelAndFetchContext(cu, snippet.text());
-							provideCodeLensForSpelExpression(cancelToken, node, document, snippet,
-									additionalContext, resultAccumulator);
+							provideCodeLensForSpelExpression(cancelToken, node, document, snippet, additionalContext, resultAccumulator);
 						});
 
 				if (isQueryAnnotation(node)) {
-					String queryPrompt = determineQueryPrompt(document);
-					provideCodeLensForQuery(cancelToken, node, document, node.getValue(), queryPrompt,
-							resultAccumulator);
+					QueryType queryType = determineQueryType(document);
+					provideCodeLensForExpression(cancelToken, node, document, queryType, "", resultAccumulator);
+				} else if (isAopAnnotation(node)) {
+					String additionalPointcutContext = extractPointcutReference(node.getValue(), pointcutMap);
+					provideCodeLensForExpression(cancelToken, node, document, QueryType.AOP, additionalPointcutContext, resultAccumulator);
 				}
 
 				return super.visit(node);
@@ -106,31 +116,40 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 
 			@Override
 			public boolean visit(NormalAnnotation node) {
-				
 
 				Arrays.stream(spelExtractors).map(e -> e.getSpelRegion(node)).filter(o -> o.isPresent())
 						.map(o -> o.get()).forEach(snippet -> {
 							String additionalContext = parseSpelAndFetchContext(cu, snippet.text());
-							provideCodeLensForSpelExpression(cancelToken, node, document, snippet, additionalContext,
-									resultAccumulator);
+							provideCodeLensForSpelExpression(cancelToken, node, document, snippet, additionalContext, resultAccumulator);
 						});
 
 				if (isQueryAnnotation(node)) {
-					String queryPrompt = determineQueryPrompt(document);
-					for (Object value : node.values()) {
-						if (value instanceof MemberValuePair) {
-							MemberValuePair pair = (MemberValuePair) value;
-							if ("value".equals(pair.getName().getIdentifier())) {
-								provideCodeLensForQuery(cancelToken, node, document, pair.getValue(), queryPrompt,
-										resultAccumulator);
-								break;
-							}
-						}
+					QueryType queryType = determineQueryType(document);
+					provideCodeLensForExpression(cancelToken, node, document, queryType, "", resultAccumulator);
+				} else if (isAopAnnotation(node)) {
+					Expression value = getMemberValue(node);
+					String additionalPointcutContext = null;
+					if (value != null) {
+						additionalPointcutContext = extractPointcutReference(value, pointcutMap);
 					}
+					provideCodeLensForExpression(cancelToken, node, document, QueryType.AOP, additionalPointcutContext, resultAccumulator);
 				}
 
 				return super.visit(node);
 			}
+
+			private Expression getMemberValue(NormalAnnotation node) {
+				for (Object value : node.values()) {
+					if (value instanceof MemberValuePair) {
+						MemberValuePair pair = (MemberValuePair) value;
+						if ("pointcut".equals(pair.getName().getIdentifier())) {
+							return pair.getValue();
+						}
+					}
+				}
+				return null;
+			}
+
 		});
 	}
 
@@ -163,20 +182,26 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 		}
 	}
 
-	protected void provideCodeLensForQuery(CancelChecker cancelToken, Annotation node, TextDocument document,
-			Expression valueExp, String query, List<CodeLens> resultAccumulator) {
+	protected void provideCodeLensForExpression(CancelChecker cancelToken, Annotation node, TextDocument document,
+			 QueryType queryType, String additionalContext, List<CodeLens> resultAccumulator) {
 		cancelToken.checkCanceled();
 
-		if (valueExp != null) {
+		if (node != null) {
 			try {
-
+				
+				String context = additionalContext != null && !additionalContext.isEmpty() ? String.format(
+						"""
+						   This is the pointcut definition referenced in the above annotation. \n\n %s \n\nProvide a brief summary of the pointcut's role within the annotation.
+						   Avoid detailed implementation steps and avoid repeating information covered earlier.
+						""",additionalContext) : "";
+				
 				CodeLens codeLens = new CodeLens();
-				codeLens.setRange(document.toRange(valueExp.getStartPosition(), valueExp.getLength()));
+				codeLens.setRange(document.toRange(node.getStartPosition(), node.getLength()));
 
 				Command cmd = new Command();
-				cmd.setTitle(QueryType.DEFAULT.getTitle());
+				cmd.setTitle(queryType.getTitle());
 				cmd.setCommand(CMD);
-				cmd.setArguments(ImmutableList.of(query + valueExp.toString()));
+				cmd.setArguments(ImmutableList.of(queryType.getPrompt() + node.toString() + "\n\n" +context));
 				codeLens.setCommand(cmd);
 
 				resultAccumulator.add(codeLens);
@@ -190,15 +215,15 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 		return FQN_QUERY.equals(a.getTypeName().getFullyQualifiedName())
 				|| QUERY.equals(a.getTypeName().getFullyQualifiedName());
 	}
-
-	private String determineQueryPrompt(TextDocument document) {
+	
+	private QueryType determineQueryType(TextDocument document) {
 		Optional<IJavaProject> optProject = projectFinder.find(document.getId());
 		if (optProject.isPresent()) {
 			IJavaProject jp = optProject.get();
-			return SpringProjectUtil.hasDependencyStartingWith(jp, "hibernate-core", null) ? QueryType.HQL.getPrompt()
-					: QueryType.JPQL.getPrompt();
+			return SpringProjectUtil.hasDependencyStartingWith(jp, "hibernate-core", null) ? QueryType.HQL
+					: QueryType.JPQL;
 		}
-		return QueryType.DEFAULT.getPrompt();
+		return QueryType.DEFAULT;
 	}
 
 	private String parseSpelAndFetchContext(CompilationUnit cu, String spelExpression) {
@@ -236,6 +261,51 @@ public class QueryCodeLensProvider implements CodeLensProvider {
 			});
 		}
 		return methodContext;
+	}
+
+	private boolean isAopAnnotation(Annotation a) {
+		String annotationFQN = a.getTypeName().getFullyQualifiedName();
+		return Annotations.AOP_ANNOTATIONS.containsKey(annotationFQN)
+				|| Annotations.AOP_ANNOTATIONS.containsValue(annotationFQN);
+	}
+
+	private Map<String, String> findPointcuts(CompilationUnit cu) {
+		Map<String, String> pointcutMap = new HashMap<>();
+		cu.accept(new ASTVisitor() {
+			@Override
+			public boolean visit(MethodDeclaration node) {
+				for (Object modifierObj : node.modifiers()) {
+					if (modifierObj instanceof Annotation) {
+						Annotation annotation = (Annotation) modifierObj;
+						if ("Pointcut".equals(annotation.getTypeName().getFullyQualifiedName())) {
+							String methodName = node.getName().getIdentifier();
+							pointcutMap.put(methodName, node.toString());
+						}
+					}
+				}
+				return super.visit(node);
+			}
+		});
+		return pointcutMap;
+
+	}
+
+	private String extractPointcutReference(org.eclipse.jdt.core.dom.Expression expression, Map<String, String> pointcutMap) {
+		if (expression instanceof MethodInvocation) {
+			return ((MethodInvocation) expression).getName().getIdentifier();
+		} else if (expression instanceof SimpleName) {
+			return ((SimpleName) expression).getIdentifier();
+		} else if (expression instanceof StringLiteral) {
+			String literalValue = ((StringLiteral) expression).getLiteralValue();
+			StringBuilder pointcuts = new StringBuilder();
+			for (Map.Entry<String, String> entry : pointcutMap.entrySet()) {
+				if (literalValue.contains(entry.getKey())) {
+					pointcuts.append(entry.getValue());
+				}
+			}
+			return pointcuts.toString();
+		}
+		return null;
 	}
 
 }
