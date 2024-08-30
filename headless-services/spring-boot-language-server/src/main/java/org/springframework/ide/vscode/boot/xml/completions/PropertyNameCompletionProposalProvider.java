@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.CLASS_A
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,6 +31,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -49,7 +51,7 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 	}
 
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt,
+	public InternalCompletionList getCompletions(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt,
 			Scanner scanner, int offset) {
 
 		int tokenOffset = scanner.getTokenOffset();
@@ -77,14 +79,16 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 				log.info("Bean class '{}'", beanClass);
 
 				final String searchPrefix = prefix;
-				return propertyNameCandidateMethods(project, beanClass)
+				List<ICompletionProposal> completionItems = propertyNameCandidateMethods(project, beanClass)
 					.filter(method -> getPropertyName(method).startsWith(searchPrefix))
 					.map(method -> createProposal(method, doc, offset, tokenOffset, tokenEnd))
 					.collect(Collectors.toList());
+				
+				return new InternalCompletionList(completionItems, false);
 			}
 		};
 
-		return Collections.emptyList();
+		return new InternalCompletionList(Collections.emptyList(), false);
 	}
 
 	public static String identifyBeanClass(DOMNode node) {

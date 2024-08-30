@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -50,23 +50,32 @@ public class CompositeCompletionEngine implements ICompletionEngine {
 	}
 	
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument document, int offset) throws Exception {
+	public InternalCompletionList getCompletions(TextDocument document, int offset) throws Exception {
 		LanguageId language = document.getLanguageId();
 		log.info("languageId = {}", language);
 		Collection<ICompletionEngine> engines = subEngines.get(language);
+		
 		if (engines.size()==1) {
+
 			//Special case to avoid some collection copying
 			ICompletionEngine engine = engines.iterator().next();
 			return engine.getCompletions(document, offset);
+
 		} else {
+
+			boolean isIncomplete = false;
 			ImmutableList.Builder<ICompletionProposal> completions = ImmutableList.builder();
+
 			for (ICompletionEngine engine : engines) {
-				Collection<ICompletionProposal> c = engine.getCompletions(document, offset);
-				if (c!=null) {
-					completions.addAll(c);
+				InternalCompletionList c = engine.getCompletions(document, offset);
+				if (c != null && c.completionItems() != null) {
+					completions.addAll(c.completionItems());
+					if (c.isIncomplete()) {
+						isIncomplete = true;
+					}
 				}
 			}
-			return completions.build();
+			return new InternalCompletionList(completions.build(), isIncomplete);
 		}
 	};
 

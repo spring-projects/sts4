@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml.completions;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +26,7 @@ import org.springframework.ide.vscode.boot.xml.XMLCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -48,7 +48,7 @@ public class BeanRefCompletionProposalProvider implements XMLCompletionProvider 
 	}
 
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt,
+	public InternalCompletionList getCompletions(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt,
 			Scanner scanner, int offset) {
 
 		int tokenOffset = scanner.getTokenOffset();
@@ -68,7 +68,7 @@ public class BeanRefCompletionProposalProvider implements XMLCompletionProvider 
 
 			List<SymbolAddOnInformation> addonInfos = symbolIndex.getAllAdditionalInformation(addonInfo -> addonInfo instanceof BeansSymbolAddOnInformation);
 
-			return addonInfos.stream()
+			List<ICompletionProposal> completionItems = addonInfos.stream()
 				.map(info -> (BeansSymbolAddOnInformation) info)
 				.map(beanInfo -> beanInfo.getBeanID())
 				.filter(beanID -> beanID != null && beanID.length() > 0)
@@ -76,9 +76,11 @@ public class BeanRefCompletionProposalProvider implements XMLCompletionProvider 
 				.filter(tuple -> tuple.getT2() != 0.0)
 				.map(tuple -> createProposal(tuple.getT1(), doc, offset, searchPrefix, tuple.getT2()))
 				.collect(Collectors.toList());
+			
+			return new InternalCompletionList(completionItems, false);
 		};
 
-		return Collections.emptyList();
+		return new InternalCompletionList(Collections.emptyList(), false);
 	}
 
 	private ICompletionProposal createProposal(String beanID, TextDocument doc, int offset, String prefix, Double score) {

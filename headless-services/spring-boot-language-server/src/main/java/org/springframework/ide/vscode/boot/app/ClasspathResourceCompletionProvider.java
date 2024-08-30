@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
@@ -73,7 +74,7 @@ public class ClasspathResourceCompletionProvider implements ICompletionEngine, L
 	private PropertyCompletionFactory completionFactory = new PropertyCompletionFactory();
 	
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument doc, int offset) {
+	public InternalCompletionList getCompletions(TextDocument doc, int offset) {
 		ImmutableList.Builder<ICompletionProposal> proposals = ImmutableList.builder();
 		IJavaProject jp = projectFinder.find(doc.getId()).orElse(null);
 		if (jp!=null) {
@@ -98,7 +99,7 @@ public class ClasspathResourceCompletionProvider implements ICompletionEngine, L
 				}
 			}
 		}
-		return proposals.build();
+		return new InternalCompletionList(proposals.build(), false);
 	}
 
 	@Override

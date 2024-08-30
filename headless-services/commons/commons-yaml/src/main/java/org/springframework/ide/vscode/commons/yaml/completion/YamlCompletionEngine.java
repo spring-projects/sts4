@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.TransformedCompletion;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -81,7 +82,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 	}
 
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument _doc, int offset) throws Exception {
+	public InternalCompletionList getCompletions(TextDocument _doc, int offset) throws Exception {
 		YamlDocument doc = new YamlDocument(_doc, structureProvider);
 		if (!doc.isCommented(offset)) {
 			SRootNode root = doc.getStructure();
@@ -98,16 +99,16 @@ public class YamlCompletionEngine implements ICompletionEngine {
 					completions.addAll(getRelaxedCompletions(offset, doc, current, contextNode, baseIndent, deempasizeBy));
 					deempasizeBy += ScoreableProposal.DEEMP_NEXT_CONTEXT;
 				}
-				return completions;
+				return new InternalCompletionList(completions, false);
 			} else {
 				//precise indentation only
 				Assert.isLegal(contextNodes.size()<=1);
 				for (SNode contextNode : contextNodes) {
-					return getBaseCompletions(offset, doc, current, contextNode);
+					return new InternalCompletionList(getBaseCompletions(offset, doc, current, contextNode), false);
 				}
 			}
 		}
-		return Collections.emptyList();
+		return new InternalCompletionList(Collections.emptyList(), false);
 	}
 
 	protected Collection<? extends ICompletionProposal> getRelaxedCompletions(int offset, YamlDocument doc, SNode current, SNode contextNode, int baseIndent, double deempasizeBy) {

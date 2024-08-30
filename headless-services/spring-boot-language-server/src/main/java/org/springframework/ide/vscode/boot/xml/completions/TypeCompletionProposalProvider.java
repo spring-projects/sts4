@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml.completions;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +26,7 @@ import org.springframework.ide.vscode.boot.xml.XMLCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData;
@@ -59,7 +59,7 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 	}
 
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt,
+	public InternalCompletionList getCompletions(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt,
 			Scanner scanner, int offset) {
 
 		int tokenOffset = scanner.getTokenOffset();
@@ -92,7 +92,7 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 			
 			try {
 				List<JavaCodeCompleteData> list = completions.get();
-				return list.stream()
+				List<ICompletionProposal> completionItems = list.stream()
 						.filter(proposal -> {
 							if (proposal.isClassProposal()) return classesAllowed;
 							if (proposal.isInterfaceProposal()) return interfacesAllowed;
@@ -103,13 +103,15 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 						.map(proposal -> createProposal(proposal, doc, finalPrefix, offset))
 						.filter(proposal -> proposal != null)
 						.collect(Collectors.toList());
+				
+				return new InternalCompletionList(completionItems, true);
 			}
 			catch (Exception e) {
 				log.error("{}", e);
 			}
 		};
 
-		return Collections.emptyList();
+		return new InternalCompletionList(Collections.emptyList(), false);
 	}
 
 	private ICompletionProposal createProposal(JavaCodeCompleteData proposal, TextDocument doc, String prefix, int offset) {
@@ -130,11 +132,12 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 		CompletionItemKind kind = CompletionItemKind.Module;
 
 		DocumentEdits edits = new DocumentEdits(doc, false);
-		if (fqName.startsWith(prefix)) {
-			edits.insert(offset, fqName.substring(prefix.length()));
-		} else {
-			edits.replace(offset - prefix.length(), offset, fqName);
-		}
+		edits.replace(offset - prefix.length(), offset, fqName);
+//		if (fqName.startsWith(prefix)) {
+//			edits.insert(offset, fqName.substring(prefix.length()));
+//		} else {
+//			edits.replace(offset - prefix.length(), offset, fqName);
+//		}
 
 		Renderable renderable = null;
 
@@ -160,15 +163,18 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 		}
 
 		DocumentEdits edits = new DocumentEdits(doc, false);
-		if (fqName.startsWith(prefix)) {
-			edits.insert(offset, fqName.substring(prefix.length()));
-		} else {
-			edits.replace(offset - prefix.length(), offset, fqName);
-		}
+		edits.replace(offset - prefix.length(), offset, fqName);
+//		if (fqName.startsWith(prefix)) {
+//			edits.insert(offset, fqName.substring(prefix.length()));
+//		} else {
+//			edits.replace(offset - prefix.length(), offset, fqName);
+//		}
 
 		Renderable renderable = null;
+		
+		String filterText = prefix;
 
-		return new GenericXMLCompletionProposal(label, kind, edits, fqName, renderable, proposal.getRelevance());
+		return new GenericXMLCompletionProposal(label, kind, edits, fqName, renderable, proposal.getRelevance(), filterText, null);
 	}
 		
 }

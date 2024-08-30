@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,6 +25,7 @@ import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -48,7 +49,7 @@ public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpec
 	}
 
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument document, int offset) throws Exception {
+	public InternalCompletionList getCompletions(TextDocument document, int offset) throws Exception {
 		return cuCache.withCompilationUnit(document, cu -> {
 			if (cu != null) {
 				ASTNode node = findNode(document, offset, cu);
@@ -58,11 +59,12 @@ public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpec
 					collectCompletionsForAnnotations(node, offset, document, completions);
 					collectCompletions(node, offset, document, completions);
 					snippets.getCompletions(document, offset, node, cu, completions);
-					return completions;
+					
+					return new InternalCompletionList(completions, false);
 				}
 			}
 
-			return Collections.emptyList();
+			return new InternalCompletionList(Collections.emptyList(), false);
 		});
 	}
 

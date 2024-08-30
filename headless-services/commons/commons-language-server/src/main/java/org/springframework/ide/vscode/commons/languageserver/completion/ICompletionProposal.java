@@ -22,7 +22,6 @@ import org.springframework.ide.vscode.commons.util.Renderable;
  */
 public interface ICompletionProposal {
 
-
 	String getLabel();
 	CompletionItemKind getKind();
 	DocumentEdits getTextEdit();
