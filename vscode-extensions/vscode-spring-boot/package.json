@@ -246,7 +246,7 @@
       },
       {
         "command": "vscode-spring-boot.query.explain",
-        "title": "Explain Spel Expressions and Queries",
+        "title": "Explain Spel expressions, Spring Data queries, and AOP annotations (using Copilot)",
         "category": "Spring Boot"
       }
     ],
@@ -390,7 +390,7 @@
           "boot-java.highlight-copilot-codelens.on": {
             "type": "boolean",
             "default": false,
-            "description": "Explain SpEL Expressions and queries using Copilot"
+            "description": "Explain SpEL expressions, Spring Data queries, and AOP annotations using Copilot"
           }
         }
       },
