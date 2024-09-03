@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans.test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +25,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -38,9 +42,10 @@ public class SpringIndexerJakartaJavaxAnnotationsTest {
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
+	@Autowired private SpringMetamodelIndex springIndex;
+	@Autowired private SpringSymbolIndex indexer;
 
 	private File directory;
-	@Autowired private SpringSymbolIndex indexer;
 
 	@BeforeEach
 	public void setup() throws Exception {
@@ -68,7 +73,36 @@ public class SpringIndexerJakartaJavaxAnnotationsTest {
                 SpringIndexerHarness.symbol("@Inject", "@Inject"),
                 SpringIndexerHarness.symbol("@Named(\"specificFinder\")", "@Named(\"specificFinder\")")
         );
+     }
 
+    @Test
+    void testNamedAnnotationJakarta() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/jakarta/NamedComponentWithSpecificName.java").toUri().toString();
+        
+        SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+                SpringIndexerHarness.symbol("@Named(\"specificallyNamedComponent\")", "@+ 'namedComponentWithSpecificName' (@Named) NamedComponentWithSpecificName")
+        );
+
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(1, beans.length);
+        
+        assertEquals("namedComponentWithSpecificName", beans[0].getName());
+        assertEquals("org.test.jakarta.NamedComponentWithSpecificName", beans[0].getType());
+     }
+
+    @Test
+    void testNamedAnnotationJavax() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/javax/NamedComponentWithSpecificName.java").toUri().toString();
+        
+        SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+                SpringIndexerHarness.symbol("@Named(\"specificallyNamedComponent\")", "@+ 'namedComponentWithSpecificName' (@Named) NamedComponentWithSpecificName")
+        );
+
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(1, beans.length);
+        
+        assertEquals("namedComponentWithSpecificName", beans[0].getName());
+        assertEquals("org.test.javax.NamedComponentWithSpecificName", beans[0].getType());
      }
 
 }
