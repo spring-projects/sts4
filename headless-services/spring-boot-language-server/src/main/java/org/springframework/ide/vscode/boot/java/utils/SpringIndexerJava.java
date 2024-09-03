@@ -781,7 +781,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private boolean isJakartaAnnotationWithDefaultSymbol(String qualifiedName) {
-		return jakartaAnnnotations .contains(qualifiedName);
+		return jakartaAnnnotations.contains(qualifiedName);
 	}
 
 	public static ASTParserCleanupEnabled createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
