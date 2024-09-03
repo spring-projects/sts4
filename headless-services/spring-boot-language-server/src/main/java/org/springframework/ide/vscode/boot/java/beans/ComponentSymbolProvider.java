@@ -48,7 +48,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class ComponentSymbolProvider extends AbstractSymbolProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(ComponentSymbolProvider.class);
-	private static final Set<String> NAMED_ANNOTATIONS = Set.of(Annotations.NAMED_JAKARTA, Annotations.NAMED_JAVAX);
 
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
@@ -61,7 +60,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 			}
-			else if (NAMED_ANNOTATIONS.contains(annotationType.getQualifiedName())) {
+			else if (Annotations.NAMED_ANNOTATIONS.contains(annotationType.getQualifiedName())) {
 				WorkspaceSymbol symbol = DefaultSymbolProvider.provideDefaultSymbol(node, doc);
 				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));

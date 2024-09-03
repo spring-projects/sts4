@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Constants containing various fully-qualified annotation names.
@@ -82,8 +83,10 @@ public class Annotations {
 	
 	public static final String INJECT_JAVAX = "javax.inject.Inject";
 	public static final String INJECT_JAKARTA = "jakarta.inject.Inject";
+
 	public static final String NAMED_JAVAX = "javax.inject.Named";
 	public static final String NAMED_JAKARTA = "jakarta.inject.Named";
+	public static final Set<String> NAMED_ANNOTATIONS = Set.of(Annotations.NAMED_JAKARTA, Annotations.NAMED_JAVAX);
 	
 	public static final String SCHEDULED = "org.springframework.scheduling.annotation.Scheduled";
 	

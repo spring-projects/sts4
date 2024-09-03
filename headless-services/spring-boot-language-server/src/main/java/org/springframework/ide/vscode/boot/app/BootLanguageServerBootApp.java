@@ -46,6 +46,7 @@ import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDisc;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
 import org.springframework.ide.vscode.boot.java.beans.DependsOnDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.beans.NamedDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.beans.ResourceDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.DataQueryParameterDefinitionProvider;
@@ -402,6 +403,7 @@ public class BootLanguageServerBootApp {
 				new DependsOnDefinitionProvider(springIndex),
 				new ResourceDefinitionProvider(springIndex),
 				new QualifierDefinitionProvider(springIndex),
+				new NamedDefinitionProvider(springIndex),
 				new DataQueryParameterDefinitionProvider(server.getTextDocumentService(), qurySemanticTokens)));
 	}
 	
