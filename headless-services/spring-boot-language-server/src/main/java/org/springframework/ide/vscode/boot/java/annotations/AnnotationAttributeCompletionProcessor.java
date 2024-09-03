@@ -64,7 +64,8 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 				createCompletionProposals(project, doc, node, "value", completions, offset, offset, "", (beanName) -> "\"" + beanName + "\"");
 			}
 			// case: @Qualifier(prefix<*>)
-			else if (node instanceof SimpleName && node.getParent() instanceof Annotation) {
+			else if (node instanceof SimpleName && node.getParent() instanceof Annotation
+					&& node != annotation.getTypeName()) {
 				computeProposalsForSimpleName(project, node, "value", completions, offset, doc);
 			}
 			// case: @Qualifier(value=<*>)
