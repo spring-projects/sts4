@@ -71,6 +71,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.ValueDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.conditionalonresource.ConditionalOnResourceDefinitionProvider;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
 import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
@@ -399,6 +400,7 @@ public class BootLanguageServerBootApp {
 	JavaDefinitionHandler javaDefinitionHandler(SimpleLanguageServer server, CompilationUnitCache cuCache, JavaProjectFinder projectFinder, SpringMetamodelIndex springIndex, JdtDataQuerySemanticTokensProvider qurySemanticTokens) {
 		return new JavaDefinitionHandler(cuCache, projectFinder, List.of(
 				new ValueDefinitionProvider(),
+				new ConditionalOnResourceDefinitionProvider(),
 				new DependsOnDefinitionProvider(springIndex),
 				new ResourceDefinitionProvider(springIndex),
 				new QualifierDefinitionProvider(springIndex),
