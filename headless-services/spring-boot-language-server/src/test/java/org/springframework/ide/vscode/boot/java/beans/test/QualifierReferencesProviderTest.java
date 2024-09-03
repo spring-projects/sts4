@@ -75,6 +75,7 @@ public class QualifierReferencesProviderTest {
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;
 
+        		import org.springframework.stereotype.Component;
 				import org.springframework.beans.factory.annotation.Qualifier;
 
 				@Component
@@ -104,6 +105,7 @@ public class QualifierReferencesProviderTest {
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;
 
+        		import org.springframework.stereotype.Component;
 				import org.springframework.beans.factory.annotation.Qualifier;
 
 				@Component
