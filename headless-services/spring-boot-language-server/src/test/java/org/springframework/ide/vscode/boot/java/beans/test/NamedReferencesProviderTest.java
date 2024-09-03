@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.beans.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.List;
@@ -129,12 +130,9 @@ public class NamedReferencesProviderTest {
 
 		List<? extends Location> references = editor.getReferences();
 		assertEquals(2, references.size());
-
-		Location foundLocation1 = references.get(1);
-		assertEquals(expectedLocation1, foundLocation1);
-
-		Location foundLocation2 = references.get(0);
-		assertEquals(expectedLocation2, foundLocation2);
+		
+		assertTrue(references.contains(expectedLocation1));
+		assertTrue(references.contains(expectedLocation2));
 	}
 
 }
