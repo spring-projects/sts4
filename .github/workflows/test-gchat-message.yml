@@ -2,6 +2,11 @@ name: Test GChat Message
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: version
+        required: true
+        type: string
 
 jobs:
     slack-message:
