@@ -104,7 +104,6 @@ jobs:
                       "title": "${{ inputs.extension-name }} ${{ steps.version.outputs.version }}",
                       "subtitle": "Release Candidate ${{ inputs.postfix }}",
                       "imageUrl": "https://code.visualstudio.com/assets/images/code-stable.png",
-                      "imageType": "CIRCLE"
                     },
                     "sections": [
                       {
@@ -115,7 +114,6 @@ jobs:
                             }
                           },
                           {
-                            "buttonList": {
                               "buttons": [
                                 {
                                   "text": "Download VSIX",
@@ -126,7 +124,6 @@ jobs:
                                   }
                                 }
                               ]
-                            }
                           }
                         ]
                       }
