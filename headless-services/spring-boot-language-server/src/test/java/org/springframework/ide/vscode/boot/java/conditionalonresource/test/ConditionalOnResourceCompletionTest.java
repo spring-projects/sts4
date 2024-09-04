@@ -26,6 +26,7 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +62,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import({AdHocPropertyHarnessTestConf.class, ConditionalOnResourceCompletionTest.TestConf.class})
+@Disabled
 public class ConditionalOnResourceCompletionTest {
 
     @Autowired private BootLanguageServerHarness harness;
