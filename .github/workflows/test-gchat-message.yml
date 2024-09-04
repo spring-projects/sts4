@@ -1,4 +1,4 @@
-name: Test Slack Message
+name: Test GChat Message
 
 on:
   workflow_dispatch:
