@@ -74,23 +74,64 @@ jobs:
           aws s3 rm s3://$AWS_S3_BUCKET/$s3_path/ --recursive
           aws s3 cp ./vsix/$vsix_file s3://$AWS_S3_BUCKET/$s3_path/${{ steps.version.outputs.release_name }}.vsix --no-progress
           echo "s3_url=${DOWNLOAD_URL_ROOT}/$s3_path/${{ steps.version.outputs.release_name }}.vsix" >> $GITHUB_OUTPUT
-      - id: tools-team-slack
-        uses: slackapi/slack-github-action@v1.26
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0188MENU2J"
-          payload: |
-            {
-              "text": "Release build `${{ steps.version.outputs.release_name }}`",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Release build for `${{ steps.version.outputs.release_name }}` is available: ${{ steps.upload-release.outputs.s3_url }}"
+#      - id: tools-team-slack
+#        uses: slackapi/slack-github-action@v1.26
+#        env:
+#          SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
+#        with:
+#          channel-id: "C0188MENU2J"
+#          payload: |
+#            {
+#              "text": "Release build `${{ steps.version.outputs.release_name }}`",
+#              "blocks": [
+#                {
+#                  "type": "section",
+#                  "text": {
+#                    "type": "mrkdwn",
+#                    "text": "Release build for `${{ steps.version.outputs.release_name }}` is available: ${{ steps.upload-release.outputs.s3_url }}"
+#                  }
+#                }
+#              ]
+#            }
+      - name: GChat spring-tools-team notification
+        run: |
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+              "cards": [
+                  {
+                    "header": {
+                      "title": "${{ inputs.extension-name }} ${{ steps.version.outputs.version }}",
+                      "subtitle": "Release Candidate ${{ inputs.postfix }}",
+                      "imageUrl": "https://code.visualstudio.com/assets/images/code-stable.png",
+                      "imageType": "CIRCLE"
+                    },
+                    "sections": [
+                      {
+                        "widgets": [
+                          {
+                            "textParagraph": {
+                              "text": "VSCode extension <b>${{ inputs.extension-name }}</b> release candidate build <b>${{ inputs.postfix }}</b> is available: <a href=${{ steps.upload-release.outputs.s3_url }}>${{ steps.version.outputs.release_name }}.vsix</a>"
+                            }
+                          },
+                          {
+                            "buttonList": {
+                              "buttons": [
+                                {
+                                  "text": "Download VSIX",
+                                  "onClick": {
+                                    "openLink": {
+                                      "url": "${{ steps.upload-release.outputs.s3_url }}"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
                   }
-                }
               ]
-            }
+          }'
 
