@@ -46,13 +46,13 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 /**
  * @author Karthik Sankaranarayanan
  */
-public class ConditionalOnResourceProcessor implements CompletionProvider {
+public class ConditionalOnResourceCompletionProcessor implements CompletionProvider {
 
-    private static final Logger log = LoggerFactory.getLogger(ConditionalOnResourceProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(ConditionalOnResourceCompletionProcessor.class);
 
     private final JavaProjectFinder projectFinder;
 
-    public ConditionalOnResourceProcessor(JavaProjectFinder projectFinder) {
+    public ConditionalOnResourceCompletionProcessor(JavaProjectFinder projectFinder) {
         this.projectFinder = projectFinder;
     }
 
