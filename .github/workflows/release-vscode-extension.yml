@@ -115,14 +115,14 @@ jobs:
                           },
                           {
                               "buttons": [
-                                {
-                                  "text": "Download VSIX",
-                                  "onClick": {
-                                    "openLink": {
-                                      "url": "${{ steps.upload-release.outputs.s3_url }}"
+                                  textButton: {
+                                    "text": "Download VSIX",
+                                    "onClick": {
+                                      "openLink": {
+                                        "url": "${{ steps.upload-release.outputs.s3_url }}"
+                                      }
                                     }
                                   }
-                                }
                               ]
                           }
                         ]

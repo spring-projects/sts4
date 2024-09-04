@@ -61,8 +61,33 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Release is now available on VSCode Marketplace: <https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
+                    "text": "Published release `$VSIX_FILE`<https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
                   }
                 }
               ]
             }
+      - name: GChat spring-tools-team notification
+        run: |
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{
+              "cards": [
+                  {
+                    "header": {
+                      "title": "Published release `$VSIX_FILE`",
+                      "imageUrl": "https://code.visualstudio.com/assets/images/code-stable.png",
+                    },
+                    "sections": [
+                      {
+                        "widgets": [
+                          {
+                            "textParagraph": {
+                              "text": "Published release `$VSIX_FILE`<https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+              ]
+          }'
