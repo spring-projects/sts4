@@ -11,14 +11,16 @@ on:
       build_type:
         description: Build type such as 'snapshot', 'milestone' or 'release'
         required: true
-        default: 'snapshot'
+        default: 'release'
         type: string
       p2-path:
-        description: p2 path example `release/TOOLS/sts4/update/4.24.0.RELEASE/e4.32`
+        description: p2 path
+        default: 'release/TOOLS/sts4/update/4.24.0.RELEASE/e4.32'
         required: true
         type: string
       dist-path:
-        description: distro path `release/STS4/4.24.0.RELEASE/dist/e4.32`
+        description: distro path
+        default: 'release/STS4/4.24.0.RELEASE/dist/e4.32'
         required: true
         type: string
 
