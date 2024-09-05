@@ -24,6 +24,8 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
@@ -59,17 +61,22 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 		
 		try {
 			
+			// in case the node is embedded in an qualified name, e.g. "file.txt", use the fully qualified node instead just a part
+			if (node instanceof Name && node.getParent() instanceof QualifiedName) {
+				node = node.getParent();
+			}
+			
 			// case: @Qualifier(<*>)
 			if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
 				createCompletionProposals(project, doc, node, "value", completions, offset, offset, "", (beanName) -> "\"" + beanName + "\"");
 			}
 			// case: @Qualifier(prefix<*>)
-			else if (node instanceof SimpleName && node.getParent() instanceof Annotation
+			else if (node instanceof Name && node.getParent() instanceof Annotation
 					&& node != annotation.getTypeName()) {
 				computeProposalsForSimpleName(project, node, "value", completions, offset, doc);
 			}
 			// case: @Qualifier(value=<*>)
-			else if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair
+			else if (node instanceof Name && node.getParent() instanceof MemberValuePair
 					&& completionProviders.containsKey(((MemberValuePair)node.getParent()).getName().toString())) {
 				String attributeName = ((MemberValuePair)node.getParent()).getName().toString();
 				computeProposalsForSimpleName(project, node, attributeName, completions, offset, doc);
@@ -117,7 +124,8 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 			List<String> candidates = completionProvider.getCompletionCandidates(project);
 
 			List<String> filteredCandidates = candidates.stream()
-				.filter(candidate -> candidate.toLowerCase().startsWith(filterPrefix.toLowerCase()))
+//				.filter(candidate -> candidate.toLowerCase().startsWith(filterPrefix.toLowerCase()))
+				.filter(candidate -> candidate.toLowerCase().contains(filterPrefix.toLowerCase()))
 				.filter(candidate -> !alreadyMentionedValues.contains(candidate))
 				.collect(Collectors.toList());
 

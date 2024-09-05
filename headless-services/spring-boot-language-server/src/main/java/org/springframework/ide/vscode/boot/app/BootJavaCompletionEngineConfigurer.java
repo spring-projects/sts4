@@ -119,7 +119,7 @@ public class BootJavaCompletionEngineConfigurer {
 		
 		providers.put(Annotations.VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
 		providers.put(Annotations.CONTEXT_CONFIGURATION, new ContextConfigurationProcessor(javaProjectFinder));
-		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, new ConditionalOnResourceCompletionProcessor(javaProjectFinder));
+		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("resources", new ConditionalOnResourceCompletionProcessor())));
 		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
 		
 		providers.put(Annotations.SCOPE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new ScopeCompletionProcessor())));

@@ -104,6 +104,11 @@ public class DependsOnCompletionProviderTest {
 	}
 
 	@Test
+	public void testDependsOnCompletionWithoutQuotesWithNotExactPrefix() throws Exception {
+		assertCompletions("@DependsOn(ea<*>)", 2, "@DependsOn(\"bean1\"<*>)");
+	}
+
+	@Test
 	public void testDependsOnCompletionWithoutQuotesWithAttributeName() throws Exception {
 		assertCompletions("@DependsOn(value=<*>)", 2, "@DependsOn(value=\"bean1\"<*>)");
 	}

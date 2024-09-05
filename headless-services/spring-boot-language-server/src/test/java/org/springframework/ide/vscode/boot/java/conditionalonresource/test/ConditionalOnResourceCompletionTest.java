@@ -181,7 +181,15 @@ public class ConditionalOnResourceCompletionTest {
     }
 
     @Test
-    void testComplexResourceNameInPrefixWithParamNameCompletion() throws Exception {
+    void testResourceNameInPrefixWithParamNameCompletion() throws Exception {
+        prepareCase("@ConditionalOnResource(resources=\"onClass\")", "@ConditionalOnResource(resources=root<*>)");
+
+        assertClasspathCompletions(
+                "@ConditionalOnResource(resources=\"classpath:a-random-resource-root.md\"<*>)");
+    }
+
+    @Test
+    void testQualifiedResourceNameInPrefixWithParamNameCompletion() throws Exception {
         prepareCase("@ConditionalOnResource(resources=\"onClass\")", "@ConditionalOnResource(resources=root.md<*>)");
 
         assertClasspathCompletions(
@@ -209,10 +217,6 @@ public class ConditionalOnResourceCompletionTest {
 
         assertClasspathCompletions();
     }
-
-
-
-
 
     private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
         InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-annotation-conditionalonresource/src/main/java/org/test/TestConditionalOnResourceCompletion.java");
