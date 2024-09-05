@@ -39,7 +39,7 @@ jobs:
         run: |
           echo "P2 Update Site: ${DOWNLOAD_URL_ROOT}/${{ inputs.p2_path }}"
           downloads_md="sts4-distro-downloads-${{ inputs.eclipse_profile }}.txt"
-          rm -f ./${downloads_html}
+          rm -f ./$downloads_md
           s3_url=s3://${AWS_S3_BUCKET}/${{ inputs.dist_path }}
           files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
           s3_url_prefix="s3://${AWS_S3_BUCKET}"
@@ -49,9 +49,9 @@ jobs:
             if [[ "$file" =~ ^"${s3_url_prefix}" ]]; then
               download_url=${DOWNLOAD_URL_ROOT}${file:$s3_url_prefix_length}
               filename=${file:${#s3_url}+1}
-              echo '<a href="${download_url}">${filename}</a>' >> $downloads_html
+              echo '<a href="${download_url}">${filename}</a>' >> $$downloads_md
             fi
           done
-          cat ./$downloads_html
-          rm -f ./${downloads_html}
+          cat ./$$downloads_md
+          rm -f ./$downloads_md
 
