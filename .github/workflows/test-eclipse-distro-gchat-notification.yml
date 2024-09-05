@@ -3,6 +3,11 @@ name: Test Eclipse Distro GChat Message
 on:
   workflow_dispatch:
     inputs:
+      version:
+        description: version
+        required: true
+        default: 4.24.0
+        type: string
       eclipse_profile:
         description: Eclipse profile 'e429' etc
         required: true
@@ -13,12 +18,12 @@ on:
         required: true
         default: 'release'
         type: string
-      p2-path:
+      p2_path:
         description: p2 path
         default: 'release/TOOLS/sts4/update/4.24.0.RELEASE/e4.32'
         required: true
         type: string
-      dist-path:
+      dist_path:
         description: distro path
         default: 'release/STS4/4.24.0.RELEASE/dist/e4.32'
         required: true
@@ -40,8 +45,8 @@ jobs:
       - name: Google Chat Notification
         run: |
           echo "P2 Update Site: ${DOWNLOAD_URL_ROOT}/${{ inputs.p2_path }}"
-          downloads_md="sts4-distro-downloads-${{ inputs.eclipse_profile }}.txt"
-          rm -f ./$downloads_md
+          downloads_html="sts4-distro-downloads-${{ inputs.eclipse_profile }}.txt"
+          rm -f ./downloads_html
           s3_url=s3://${AWS_S3_BUCKET}/${{ inputs.dist_path }}
           files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
           s3_url_prefix="s3://${AWS_S3_BUCKET}"
@@ -51,9 +56,48 @@ jobs:
             if [[ "$file" =~ ^"${s3_url_prefix}" ]]; then
               download_url=${DOWNLOAD_URL_ROOT}${file:$s3_url_prefix_length}
               filename=${file:${#s3_url}+1}
-              echo '<a href="${download_url}">${filename}</a>' >> $$downloads_md
+              echo $download_url
+              echo $filename
+              echo "<li><a href=${download_url}>${filename}</a></li>" >> $downloads_html
             fi
           done
-          cat ./$$downloads_md
-          rm -f ./$downloads_md
+          distro_links=`cat ./$downloads_html`
+          rm -f ./$downloads_html
+          
+          build_type=${{ inputs.build_type }}
+          build_type=${build_type^}
+          eclipse_profile=${{ inputs.eclipse_profile }}
+          eclipse_version=${eclipse_profile:1:1}.${eclipse_profile:2}
 
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw "{
+              \"cards\": [
+                  {
+                    \"header\": {
+                      \"title\": \"STS ${{ inputs.version }} ${build_type}\",
+                      \"subtitle\": \"Eclipse ${eclipse_version}\",
+                      \"imageUrl\": \"https://avatars.githubusercontent.com/u/317776?s=48&amp;v=4\",
+                    },
+                    \"sections\": [
+                      {
+                        \"widgets\": [
+                          {
+                            \"keyValue\": {
+                              \"topLabel\": \"P2 Update Site\",
+                              \"content\": \"<a href=${DOWNLOAD_URL_ROOT}/${{ inputs.p2_path }}>${DOWNLOAD_URL_ROOT}/${{ inputs.p2_path }}</a>\"
+                            }
+                          },
+                          {
+                            \"keyValue\": {
+                              \"topLabel\": \"Distributions\",
+                              \"content\": \"${distro_links}\",
+                              \"contentMultiline\": true
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+              ]
+          }"          

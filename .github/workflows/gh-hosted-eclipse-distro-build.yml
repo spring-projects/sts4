@@ -57,6 +57,12 @@ jobs:
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
           echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
+      - name: Project Version
+        id: project-version
+        run: |
+          current_version=`./mvnw help:evaluate -Dexpression="project.version" -q -DforceStdout`
+          version=${current_version%%-*}
+          echo "version=$version" >> $GITHUB_OUTPUT
       - name: Build Eclipse Distro
         env:
 #          MAVEN_OPTS: -Dmaven.wagon.httpconnectionManager.ttlSeconds=40 -Dmaven.wagon.http.retryHandler.count=10 -Daether.connector.http.connectionMaxTtl=40 -Dhttp.keepAlive=false -Dhttpclient.retry-max=30 -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30 -Dorg.eclipse.equinox.p2.transport.ecf.retry=10
@@ -140,6 +146,7 @@ jobs:
       id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
       dist_path: ${{ steps.s3-paths.outputs.dist_path }}
       p2_path: ${{ steps.s3-paths.outputs.p2_path }}
+      version: ${{ steps.project-version.outputs.version }}
 
 
   sign-win-distros:
@@ -309,6 +316,72 @@ jobs:
           urls: ${{ steps.collect-urls.outputs.urls }}
           cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           cloudflare_cache_token: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
+
+  gchat-message:
+    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
+    if: ${{ inputs.build_type == 'release' }}
+    name: Send GChat message
+    runs-on: ubuntu-latest
+    steps:
+      - name: Google Chat Notification
+        run: |
+          echo "P2 Update Site: ${DOWNLOAD_URL_ROOT}/${{ needs.eclipse-distro-build.outputs.p2_path }}"
+          downloads_html="sts4-distro-downloads-${{ inputs.eclipse_profile }}.txt"
+          rm -f ./downloads_html
+          s3_url=s3://${AWS_S3_BUCKET}/${{ needs.eclipse-distro-build.outputs.dist_path }}
+          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
+          s3_url_prefix="s3://${AWS_S3_BUCKET}"
+          s3_url_prefix_length=${#s3_url_prefix}
+          for file in $files
+          do
+            if [[ "$file" =~ ^"${s3_url_prefix}" ]]; then
+              download_url=${DOWNLOAD_URL_ROOT}${file:$s3_url_prefix_length}
+              filename=${file:${#s3_url}+1}
+              echo $download_url
+              echo $filename
+              echo "<li><a href=${download_url}>${filename}</a></li>" >> $downloads_html
+            fi
+          done
+          distro_links=`cat ./$downloads_html`
+          rm -f ./$downloads_html
+          
+          build_type=${{ inputs.build_type }}
+          build_type=${build_type^}
+          eclipse_profile=${{ inputs.eclipse_profile }}
+          eclipse_version=${eclipse_profile:1:1}.${eclipse_profile:2}
+
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw "{
+              \"cards\": [
+                  {
+                    \"header\": {
+                      \"title\": \"STS ${{ needs.eclipse-distro-build.outputs.version }} ${build_type}\",
+                      \"subtitle\": \"Eclipse ${eclipse_version}\",
+                      \"imageUrl\": \"https://avatars.githubusercontent.com/u/317776?s=48&amp;v=4\",
+                    },
+                    \"sections\": [
+                      {
+                        \"widgets\": [
+                          {
+                            \"keyValue\": {
+                              \"topLabel\": \"P2 Update Site\",
+                              \"content\": \"<a href=${DOWNLOAD_URL_ROOT}/${{ needs.eclipse-distro-build.outputs.p2_path }}>${DOWNLOAD_URL_ROOT}/${{ needs.eclipse-distro-build.outputs.p2_path }}</a>\"
+                            }
+                          },
+                          {
+                            \"keyValue\": {
+                              \"topLabel\": \"Distributions\",
+                              \"content\": \"${distro_links}\",
+                              \"contentMultiline\": true
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+              ]
+          }"          
 
   cleanup:
     needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
