@@ -52,6 +52,9 @@ done
 ls -la ${dir}/${destination_folder_name}/SpringToolSuite4.app/
 codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" ${dir}/${destination_folder_name}/SpringToolSuite4.app
 
+#Verify codesign
+codesign --verify --deep --verbose ${dir}/${destination_folder_name}/SpringToolSuite4.app
+
 cd ${dir}/${destination_folder_name}
 echo "Generating dmg-config.json..."
 echo '{' >> dmg-config.json

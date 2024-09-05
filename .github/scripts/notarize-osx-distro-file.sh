@@ -7,7 +7,9 @@ dmg_filename="$(basename -- $dmg_file)"
 dir="$(dirname "$dmg_file")"
 
 cd $dir
-xcrun notarytool submit ./${dmg_filename} --keychain-profile $notarize_profile --wait
+submission_id=`xcrun notarytool submit ./${dmg_filename} --keychain-profile $notarize_profile --wait --no-progress -f json | jq -r .id`
+echo $submission_id
+xcrun notarytool log --keychain-profile $notarize_profile $submission_id
 echo "Staple and generate checksums for ${dmg_filename}"
 xcrun stapler staple $dmg_filename
 if [ $? -eq 0 ]; then
