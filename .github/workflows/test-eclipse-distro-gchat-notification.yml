@@ -1,0 +1,57 @@
+name: Test Eclipse Distro GChat Message
+
+on:
+  workflow_dispatch:
+    inputs:
+      eclipse_profile:
+        description: Eclipse profile 'e429' etc
+        required: true
+        default: 'e429'
+        type: string
+      build_type:
+        description: Build type such as 'snapshot', 'milestone' or 'release'
+        required: true
+        default: 'snapshot'
+        type: string
+      p2-path:
+        description: p2 path example `release/TOOLS/sts4/update/4.24.0.RELEASE/e4.32`
+        required: true
+        type: string
+      dist-path:
+        description: distro path `release/STS4/4.24.0.RELEASE/dist/e4.32`
+        required: true
+        type: string
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.CDN_S3_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.CDN_S3_SECRET_KEY  }}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_ENDPOINT_URL_S3:  ${{ secrets.CDN_S3_ENDPOINT }}
+  AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}/spring-tools
+  DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
+
+jobs:
+  gchat-message:
+    name: Send GChat message
+    runs-on: ubuntu-latest
+    steps:
+      - name: Google Chat Notification
+        run: |
+          echo "P2 Update Site: ${DOWNLOAD_URL_ROOT}/${{ inputs.p2_path }}"
+          downloads_md="sts4-distro-downloads-${{ inputs.eclipse_profile }}.txt"
+          rm -f ./${downloads_html}
+          s3_url=s3://${AWS_S3_BUCKET}/${{ inputs.dist_path }}
+          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
+          s3_url_prefix="s3://${AWS_S3_BUCKET}"
+          s3_url_prefix_length=${#s3_url_prefix}
+          for file in $files
+          do
+            if [[ "$file" =~ ^"${s3_url_prefix}" ]]; then
+              download_url=${DOWNLOAD_URL_ROOT}${file:$s3_url_prefix_length}
+              filename=${file:${#s3_url}+1}
+              echo '<a href="${download_url}">${filename}</a>' >> $downloads_html
+            fi
+          done
+          cat ./$downloads_html
+          rm -f ./${downloads_html}
+
