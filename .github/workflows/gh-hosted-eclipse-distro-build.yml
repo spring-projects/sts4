@@ -60,6 +60,7 @@ jobs:
       - name: Project Version
         id: project-version
         run: |
+          cd eclipse-distribution
           current_version=`./mvnw help:evaluate -Dexpression="project.version" -q -DforceStdout`
           version=${current_version%%-*}
           echo "version=$version" >> $GITHUB_OUTPUT
