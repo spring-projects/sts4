@@ -79,23 +79,22 @@ function signExecutableInsideJar2() {
 
 function signExecutableInsideNestedJar() {
   local pwd=`pwd`
-  for f in `find $1 -type f | grep -E $2`
+  for jar_file in `find $1 -type f | grep -E $2`
   do
-    local f_name="$(basename -- $f)"
+    local f_name="$(basename -- $jar_file)"
     local extracted_jar_dir=extracted_${f_name}
     rm -rf $extracted_jar_dir
     mkdir $extracted_jar_dir
-    echo "Extracting archive ${f}"
-    unzip -q $f -d ./${extracted_jar_dir}
+    echo "Extracting archive ${jar_file}"
+    unzip -q $jar_file -d ./${extracted_jar_dir}
     signExecutableInsideJar2 $extracted_jar_dir $3 $4 $5
-    pwd
-    ls
     cd $extracted_jar_dir
-    zip -r -u ../$f .
+    ls
+    zip -r -u ../$jar_file .
     cd ..
     rm -rf $extracted_jar_dir
-    echo "Signing binary file: ${f}"
-    codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
+    echo "Signing binary file: ${jar_file}"
+    codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $jar_file
   done
   cd $pwd
 }
