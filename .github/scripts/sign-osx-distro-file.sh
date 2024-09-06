@@ -94,7 +94,7 @@ function signExecutableInsideNestedJar() {
 }
 
 # sign libjansi.jnilib inside kotlin-compiler-embeddable.jar
-signExecutableInsideJar2 {dir}/${destination_folder_name}/SpringToolSuite4.app ".*/kotlin-compiler-embeddable.*\.jar$" "libjansi.jnilib" ".*/libjansi\.jnilib$"
+signExecutableInsideJar2 ${dir}/${destination_folder_name}/SpringToolSuite4.app ".*/kotlin-compiler-embeddable.*\.jar$" "libjansi.jnilib" ".*/libjansi\.jnilib$"
 #for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/kotlin-compiler-embeddable.*\.jar$"`
 #do
 #  echo "Looking for 'libjansi.jnilib' files inside ${f} to sign..."
