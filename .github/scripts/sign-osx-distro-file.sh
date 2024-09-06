@@ -119,13 +119,13 @@ signExecutableInsideJar2 {dir}/${destination_folder_name}/SpringToolSuite4.app "
 #done
 
 # sign libsnappyjava.jnilib and libsnappyjava.dylib inside snappy-java.jar
-signExecutableInsideJar2 {dir}/${destination_folder_name}/SpringToolSuite4.app ".*/snappy-java.*\.jar$" "libsnappyjava.jnilib" ".*/libsnappyjava\.(jni|dy)lib$"
+signExecutableInsideJar2 ${dir}/${destination_folder_name}/SpringToolSuite4.app ".*/snappy-java.*\.jar$" "libsnappyjava.jnilib" ".*/libsnappyjava\.(jni|dy)lib$"
 
 # sign libjnidispatch.jnilib inside jna.jar
 signExecutableInsideJar ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib.jnilib" ".*/libjnidispatch\.jnilib$"
 
 #sign libjnidispatch.jnilib inside jna.jar which is inside org.springframework.ide.eclipse.docker.client.jar bundle
-signExecutableInsideNestedJar {dir}/${destination_folder_name}/SpringToolSuite4.app ".*/org.springframework.ide.eclipse.docker.client.*\.jar$" ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib" ".*/libjnidispatch\.jnilib$"
+signExecutableInsideNestedJar ${dir}/${destination_folder_name}/SpringToolSuite4.app ".*/org.springframework.ide.eclipse.docker.client.*\.jar$" ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib" ".*/libjnidispatch\.jnilib$"
 
 # Sign the app
 ls -la ${dir}/${destination_folder_name}/SpringToolSuite4.app/
