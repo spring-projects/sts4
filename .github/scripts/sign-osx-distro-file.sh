@@ -78,7 +78,6 @@ function signExecutableInsideJar2() {
 function signExecutableInsideNestedJar() {
   for f in `find $1 -type f | grep -E $2`
   do
-    echo "Looking for '$3' files inside ${f} to sign..."
     f_name="$(basename -- $f)"
     extracted_jar_dir=extracted_${f_name}
     rm -rf $extracted_jar_dir
@@ -126,7 +125,7 @@ signExecutableInsideJar2 {dir}/${destination_folder_name}/SpringToolSuite4.app "
 signExecutableInsideJar ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib.jnilib" ".*/libjnidispatch\.jnilib$"
 
 #sign libjnidispatch.jnilib inside jna.jar which is inside org.springframework.ide.eclipse.docker.client.jar bundle
-signExecutableInsideNestedJar {dir}/${destination_folder_name}/SpringToolSuite4.app ".*/org.springframework.ide.eclipse.docker.client.*\.jar$" "org.springframework.ide.eclipse.docker.client.jar" "libjnidispatch.jnilib.jnilib" ".*/libjnidispatch\.jnilib$"
+signExecutableInsideNestedJar {dir}/${destination_folder_name}/SpringToolSuite4.app ".*/org.springframework.ide.eclipse.docker.client.*\.jar$" ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib" ".*/libjnidispatch\.jnilib$"
 
 # Sign the app
 ls -la ${dir}/${destination_folder_name}/SpringToolSuite4.app/
