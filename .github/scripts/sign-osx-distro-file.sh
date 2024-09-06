@@ -77,6 +77,9 @@ done
 # sign libsnappyjava.jnilib inside snappy-java.jar
 signExecutableInsideJar ".*/snappy-java.*\.jar$" "libsnappyjava.jnilib" ".*/libsnappyjava\.jnilib$"
 
+# sign libjnidispatch.jnilib.jnilib inside jna.jar
+signExecutableInsideJar ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib.jnilib" ".*/libjnidispatch\.jnilib$"
+
 # Sign the app
 ls -la ${dir}/${destination_folder_name}/SpringToolSuite4.app/
 codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" ${dir}/${destination_folder_name}/SpringToolSuite4.app
