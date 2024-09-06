@@ -29,8 +29,8 @@ function signExecutableInsideJar() {
   for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E $1`
   do
     echo "Looking for '$2' files inside ${f} to sign..."
-    f_name="$(basename -- $f)"
-    extracted_jar_dir=extracted_${f_name}
+    local f_name="$(basename -- $f)"
+    local extracted_jar_dir=extracted_${f_name}
     rm -rf $extracted_jar_dir
     mkdir $extracted_jar_dir
     echo "Extracting archive ${f}"
@@ -55,8 +55,8 @@ function signExecutableInsideJar2() {
   for f in `find $1 -type f | grep -E $2`
   do
     echo "Looking for '$3' files inside ${f} to sign..."
-    f_name="$(basename -- $f)"
-    extracted_jar_dir=extracted_${f_name}
+    local f_name="$(basename -- $f)"
+    local extracted_jar_dir=extracted_${f_name}
     rm -rf $extracted_jar_dir
     mkdir $extracted_jar_dir
     echo "Extracting archive ${f}"
@@ -81,13 +81,15 @@ function signExecutableInsideNestedJar() {
   local pwd=`pwd`
   for f in `find $1 -type f | grep -E $2`
   do
-    f_name="$(basename -- $f)"
-    extracted_jar_dir=extracted_${f_name}
+    local f_name="$(basename -- $f)"
+    local extracted_jar_dir=extracted_${f_name}
     rm -rf $extracted_jar_dir
     mkdir $extracted_jar_dir
     echo "Extracting archive ${f}"
     unzip -q $f -d ./${extracted_jar_dir}
     signExecutableInsideJar2 $extracted_jar_dir $3 $4 $5
+    pwd
+    ls
     cd $extracted_jar_dir
     zip -r -u ../$f .
     cd ..
