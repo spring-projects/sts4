@@ -74,10 +74,10 @@ do
   codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
 done
 
-# sign libsnappyjava.jnilib inside snappy-java.jar
-signExecutableInsideJar ".*/snappy-java.*\.jar$" "libsnappyjava.jnilib" ".*/libsnappyjava\.jnilib$"
+# sign libsnappyjava.jnilib and libsnappyjava.dylib inside snappy-java.jar
+signExecutableInsideJar ".*/snappy-java.*\.jar$" "libsnappyjava.jnilib" ".*/libsnappyjava\.(jni|dy)lib$"
 
-# sign libjnidispatch.jnilib.jnilib inside jna.jar
+# sign libjnidispatch.jnilib inside jna.jar
 signExecutableInsideJar ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib.jnilib" ".*/libjnidispatch\.jnilib$"
 
 # Sign the app
