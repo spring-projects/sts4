@@ -50,35 +50,83 @@ function signExecutableInsideJar() {
   done
 }
 
-# sign libjansi.jnilib inside kotlin-compiler-embeddable.jar
-for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/kotlin-compiler-embeddable.*\.jar$"`
-do
-  echo "Looking for 'libjansi.jnilib' files inside ${f} to sign..."
-  f_name="$(basename -- $f)"
-  extracted_jar_dir=extracted_${f_name}
-  rm -rf $extracted_jar_dir
-  mkdir $extracted_jar_dir
-  echo "Extracting archive ${f}"
-  unzip -q $f -d ./${extracted_jar_dir}
-  for jnilib_file in `find $extracted_jar_dir -type f | grep -E ".*/libjansi\.jnilib$"`
+function signExecutableInsideJar2() {
+  for f in `find $1 -type f | grep -E $2`
   do
-    echo "Signing binary file: ${jnilib_file}"
-    codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $jnilib_file
-  done
-  cd $extracted_jar_dir
-  zip -r -u ../$f .
-  cd ..
-  rm -rf $extracted_jar_dir
+    echo "Looking for '$3' files inside ${f} to sign..."
+    f_name="$(basename -- $f)"
+    extracted_jar_dir=extracted_${f_name}
+    rm -rf $extracted_jar_dir
+    mkdir $extracted_jar_dir
+    echo "Extracting archive ${f}"
+    unzip -q $f -d ./${extracted_jar_dir}
+    for jnilib_file in `find $extracted_jar_dir -type f | grep -E "$4"`
+    do
+      echo "Signing binary file: ${jnilib_file}"
+      codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $jnilib_file
+    done
+    cd $extracted_jar_dir
+    zip -r -u ../$f .
+    cd ..
+    rm -rf $extracted_jar_dir
 
-  echo "Signing binary file: ${f}"
-  codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
-done
+    echo "Signing binary file: ${f}"
+    codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
+  done
+}
+
+function signExecutableInsideNestedJar() {
+  for f in `find $1 -type f | grep -E $2`
+  do
+    echo "Looking for '$3' files inside ${f} to sign..."
+    f_name="$(basename -- $f)"
+    extracted_jar_dir=extracted_${f_name}
+    rm -rf $extracted_jar_dir
+    mkdir $extracted_jar_dir
+    echo "Extracting archive ${f}"
+    unzip -q $f -d ./${extracted_jar_dir}
+    signExecutableInsideJar2 $extracted_jar_dir $3 $4 $5
+    zip -r -u ../$f .
+    cd ..
+    rm -rf $extracted_jar_dir
+    echo "Signing binary file: ${f}"
+    codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
+  done
+}
+
+# sign libjansi.jnilib inside kotlin-compiler-embeddable.jar
+signExecutableInsideJar2 {dir}/${destination_folder_name}/SpringToolSuite4.app ".*/kotlin-compiler-embeddable.*\.jar$" "libjansi.jnilib" ".*/libjansi\.jnilib$"
+#for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/kotlin-compiler-embeddable.*\.jar$"`
+#do
+#  echo "Looking for 'libjansi.jnilib' files inside ${f} to sign..."
+#  f_name="$(basename -- $f)"
+#  extracted_jar_dir=extracted_${f_name}
+#  rm -rf $extracted_jar_dir
+#  mkdir $extracted_jar_dir
+#  echo "Extracting archive ${f}"
+#  unzip -q $f -d ./${extracted_jar_dir}
+#  for jnilib_file in `find $extracted_jar_dir -type f | grep -E ".*/libjansi\.jnilib$"`
+#  do
+#    echo "Signing binary file: ${jnilib_file}"
+#    codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $jnilib_file
+#  done
+#  cd $extracted_jar_dir
+#  zip -r -u ../$f .
+#  cd ..
+#  rm -rf $extracted_jar_dir
+#
+#  echo "Signing binary file: ${f}"
+#  codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
+#done
 
 # sign libsnappyjava.jnilib and libsnappyjava.dylib inside snappy-java.jar
-signExecutableInsideJar ".*/snappy-java.*\.jar$" "libsnappyjava.jnilib" ".*/libsnappyjava\.(jni|dy)lib$"
+signExecutableInsideJar2 {dir}/${destination_folder_name}/SpringToolSuite4.app ".*/snappy-java.*\.jar$" "libsnappyjava.jnilib" ".*/libsnappyjava\.(jni|dy)lib$"
 
 # sign libjnidispatch.jnilib inside jna.jar
 signExecutableInsideJar ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib.jnilib" ".*/libjnidispatch\.jnilib$"
+
+#sign libjnidispatch.jnilib inside jna.jar which is inside org.springframework.ide.eclipse.docker.client.jar bundle
+signExecutableInsideNestedJar {dir}/${destination_folder_name}/SpringToolSuite4.app ".*/org.springframework.ide.eclipse.docker.client.*\.jar$" "org.springframework.ide.eclipse.docker.client.jar" "libjnidispatch.jnilib.jnilib" ".*/libjnidispatch\.jnilib$"
 
 # Sign the app
 ls -la ${dir}/${destination_folder_name}/SpringToolSuite4.app/
