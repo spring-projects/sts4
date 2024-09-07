@@ -34,7 +34,8 @@ function signExecutableInsideJar() {
     rm -rf $extracted_jar_dir
     mkdir $extracted_jar_dir
     echo "Extracting archive ${f}"
-    unzip -q $f -d ./${extracted_jar_dir}
+    unzip -o -q $f -d ./${extracted_jar_dir}
+    echo "Extracted successfully"
     for jnilib_file in `find $extracted_jar_dir -type f | grep -E "$4"`
     do
       echo "Signing binary file: ${jnilib_file}"
@@ -60,7 +61,7 @@ function signExecutableInsideNestedJar() {
     rm -rf $extracted_jar_dir
     mkdir $extracted_jar_dir
     echo "Extracting archive ${jar_file}"
-    unzip -q $jar_file -d ./${extracted_jar_dir}
+    unzip -o -q $jar_file -d ./${extracted_jar_dir}
     signExecutableInsideJar $extracted_jar_dir $3 $4 $5
     cd $extracted_jar_dir
     zip -r -u ../$jar_file .

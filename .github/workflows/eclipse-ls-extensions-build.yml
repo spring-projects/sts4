@@ -111,6 +111,41 @@ jobs:
           else
             ./mvnw --batch-mode clean package -Pe433 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           fi
+      - name: GChat spring-tools-team notification
+        if: ${{ inputs.build_type == 'release' }}
+        run: |
+          cd eclipse-language-servers
+          current_version=`./mvnw help:evaluate -Dexpression="project.version" -q -DforceStdout`
+          version=${current_version%%-*}
+          
+          build_type=${{ inputs.build_type }}
+          build_type=${build_type^}
+
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw "{
+              \"cards\": [
+                  {
+                    \"header\": {
+                      \"title\": \"${build_type} Eclipse LS Extensions ${version}\",
+                      \"subtitle\": \"${{ inputs.sts4-language-servers-version }}\",
+                      \"imageUrl\": \"https://avatars.githubusercontent.com/u/317776?s=48&amp;v=4\",
+                    },
+                    \"sections\": [
+                      {
+                        \"widgets\": [
+                          {
+                            \"keyValue\": {
+                              \"topLabel\": \"P2 Update Site\",
+                              \"content\": \"<a href=${DOWNLOAD_URL_ROOT}/${{ steps.upload-p2.outputs.p2_path }}/>${DOWNLOAD_URL_ROOT}/${{ steps.upload-p2.outputs.p2_path }}</a>\"
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+              ]
+          }"
 
   notify-failure:
     needs: [ eclipse-language-servers-build ]
