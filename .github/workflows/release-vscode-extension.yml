@@ -115,7 +115,7 @@ jobs:
                           },
                           {
                               "buttons": [
-                                  textButton: {
+                                  "textButton": {
                                     "text": "Download VSIX",
                                     "onClick": {
                                       "openLink": {
