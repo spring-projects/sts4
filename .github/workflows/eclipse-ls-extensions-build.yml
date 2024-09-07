@@ -137,7 +137,8 @@ jobs:
                           {
                             \"keyValue\": {
                               \"topLabel\": \"P2 Update Site\",
-                              \"content\": \"<a href=${DOWNLOAD_URL_ROOT}/${{ steps.upload-p2.outputs.p2_path }}/>${DOWNLOAD_URL_ROOT}/${{ steps.upload-p2.outputs.p2_path }}</a>\"
+                              \"content\": \"<a href=${DOWNLOAD_URL_ROOT}/${{ steps.upload-p2.outputs.p2_path }}/>${DOWNLOAD_URL_ROOT}/${{ steps.upload-p2.outputs.p2_path }}</a>\",
+                              \"contentMultiline\": true
                             }
                           }
                         ]
