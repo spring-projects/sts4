@@ -99,36 +99,38 @@ jobs:
           --header 'Content-Type: application/json' \
           --data-raw '{
               "cards": [
-                  {
-                    "header": {
-                      "title": "${{ inputs.extension-name }} ${{ steps.version.outputs.version }}",
-                      "subtitle": "Release Candidate ${{ inputs.postfix }}",
-                      "imageUrl": "https://code.visualstudio.com/assets/images/code-stable.png",
-                    },
-                    "sections": [
-                      {
-                        "widgets": [
-                          {
-                            "textParagraph": {
-                              "text": "VSCode extension <b>${{ inputs.extension-name }}</b> release candidate build <b>${{ inputs.postfix }}</b> is available: <a href=${{ steps.upload-release.outputs.s3_url }}>${{ steps.version.outputs.release_name }}.vsix</a>"
-                            }
-                          },
-                          {
-                              "buttons": [
-                                  "textButton": {
-                                    "text": "Download VSIX",
-                                    "onClick": {
-                                      "openLink": {
-                                        "url": "${{ steps.upload-release.outputs.s3_url }}"
-                                      }
-                                    }
-                                  }
-                              ]
+                {
+                  "header": {
+                    "title": "${{ inputs.extension-name }} ${{ steps.version.outputs.version }}",
+                    "subtitle": "Release Candidate ${{ inputs.postfix }}",
+                    "imageUrl": "https://code.visualstudio.com/assets/images/code-stable.png",
+                  },
+                  "sections": [
+                    {
+                      "widgets": [
+                        {
+                          "textParagraph": {
+                            "text": "VSCode extension <b>${{ inputs.extension-name }}</b> release candidate build <b>${{ inputs.postfix }}</b> is available: <a href=${{ steps.upload-release.outputs.s3_url }}>${{ steps.version.outputs.release_name }}.vsix</a>"
                           }
-                        ]
-                      }
-                    ]
-                  }
+                        },
+                        {
+                          "buttons": [
+                            {
+                              "textButton": {
+                                "text": "Download VSIX",
+                                "onClick": {
+                                  "openLink": {
+                                    "url": "${{ steps.upload-release.outputs.s3_url }}"
+                                  }
+                                }
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
               ]
           }'
 
