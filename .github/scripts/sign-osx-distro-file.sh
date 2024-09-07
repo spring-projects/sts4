@@ -84,6 +84,9 @@ signExecutableInsideJar ${dir}/${destination_folder_name}/SpringToolSuite4.app "
 #sign libjnidispatch.jnilib inside jna.jar which is inside org.springframework.ide.eclipse.docker.client.jar bundle
 signExecutableInsideNestedJar ${dir}/${destination_folder_name}/SpringToolSuite4.app ".*/org.springframework.ide.eclipse.docker.client.*\.jar$" ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib" ".*/libjnidispatch\.jnilib$"
 
+#sign libjnidispatch.jnilib inside develocity-gradle-plugin.jar which is inside rewrite-gradle.jar bundle
+signExecutableInsideNestedJar ${dir}/${destination_folder_name}/SpringToolSuite4.app ".*/develocity-gradle-plugin.*\.jar$" ".*/rewrite-gradle-\d+.*\.jar$" "libjnidispatch.jnilib" ".*/libjnidispatch\.jnilib$"
+
 # Sign the app
 ls -la ${dir}/${destination_folder_name}/SpringToolSuite4.app/
 codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" ${dir}/${destination_folder_name}/SpringToolSuite4.app
