@@ -109,11 +109,12 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 			List<String> command = new ArrayList<>();
 
 			command.add(runtime.getJavaExecutable());
+
+			fillCommand(command, extraVmArgs);
+
 			command.add("-jar");
 
 			command.add(languageServerRoot.resolve(jarFile).toFile().toString());
-
-			fillCommand(command, extraVmArgs);
 
 			setCommands(command);
 
