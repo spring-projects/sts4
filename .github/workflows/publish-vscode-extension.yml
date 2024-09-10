@@ -70,19 +70,28 @@ jobs:
         run: |
           curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
           --header 'Content-Type: application/json' \
-          --data-raw '{
-              "cards": [
+          --data-raw "{
+              \"cards\": [
                   {
-                    "header": {
-                      "title": "Published release `$VSIX_FILE`",
-                      "imageUrl": "https://code.visualstudio.com/assets/images/code-stable.png",
+                    \"header\": {
+                      \"title\": \"Published `${VSIX_FILE}`\",
+                      \"imageUrl\": \"https://code.visualstudio.com/assets/images/code-stable.png\",
                     },
-                    "sections": [
+                    \"sections\": [
                       {
-                        "widgets": [
+                        \"widgets\": [
                           {
-                            "textParagraph": {
-                              "text": "Published release `$VSIX_FILE`<https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
+                            \"keyValue\": {
+                              \"topLabel\": \"VSCode Marketplace\",
+                              \"content\": \"<a href=\"https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}\">${VSIX_FILE}</a>\",
+                              \"contentMultiline\": true
+                            }
+                          },
+                          {
+                            \"keyValue\": {
+                              \"topLabel\": \"Open VSX Registry\",
+                              \"content\": \"<a href=\"https://open-vsx.org/extension/VMware/${{ inputs.extension-name }}\">${VSIX_FILE}</a>\",
+                              \"contentMultiline\": true
                             }
                           }
                         ]
@@ -90,4 +99,4 @@ jobs:
                     ]
                   }
               ]
-          }'
+          }"
