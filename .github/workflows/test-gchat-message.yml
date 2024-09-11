@@ -70,3 +70,38 @@ jobs:
                   }
               ]
           }'
+      - name: Spring Tools Team GChat Notification
+        run: |
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw "{
+            "cardsV2": [
+              {
+                \"card\": {
+                  \"header\": {
+                    \"title\": \"Published STS ${{ inputs.version }}\",
+                    \"imageUrl\": \"https://avatars.githubusercontent.com/u/317776?s=48&amp;v=4\",
+                    \"imageType\": \"CIRCLE\",
+                    \"imageAltText\": \"Avatar for STS\"
+                  },
+                  \"sections\": [
+                    {
+                      \"collapsible\": false,
+                      \"widgets\": [
+                        {
+                          \"textParagraph\": {
+                            \"text\": \"Successfully published <b>STS ${{ inputs.version }}</b> release\"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }"
+      - name: Announce Release on `Spring-Releases` space
+        run: |
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{ text: "spring-tools-4-announcing `${{ inputs.version }}`"}'

@@ -13,47 +13,38 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - id: tools-team-slack
-        uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0188MENU2J"
-          payload: |
-            {
-              "text": "Released `${{ inputs.version }}`",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Published `${{ inputs.version }}` successfully"
-                  }
+      - name: Spring Tools Team GChat Notification
+        run: |
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw "{
+            "cardsV2": [
+              {
+                \"card\": {
+                  \"header\": {
+                    \"title\": \"Published STS ${{ inputs.version }}\",
+                    \"imageUrl\": \"https://avatars.githubusercontent.com/u/317776?s=48&amp;v=4\",
+                    \"imageType\": \"CIRCLE\",
+                    \"imageAltText\": \"Avatar for STS\"
+                  },
+                  \"sections\": [
+                    {
+                      \"collapsible\": false,
+                      \"widgets\": [
+                        {
+                          \"textParagraph\": {
+                            \"text\": \"Successfully published <b>STS ${{ inputs.version }}</b> release\"
+                          }
+                        }
+                      ]
+                    }
+                  ]
                 }
-              ]
-            }
-      - name: Announce Release on Slack
-        id: spring-tools-announcing
-        uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117
-        with:
-          payload: |
-            {
-              "text": "spring-tools-4-announcing `${{ inputs.version }}`",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "spring-tools-4-announcing `${{ inputs.version }}`"
-                  }
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SPRING_RELEASE_SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
-      - name: Announce Release in Chat
-        uses: julb/action-post-googlechat-message@v1
-        with:
-          message: "${{ github.event.repository.name }}-announcing `${{ inputs.version }}`"
-          gchat_webhook_url: ${{ secrets.SPRING_RELEASE_CHAT_WEBHOOK_URL }}
+              }
+            ]
+          }"
+      - name: Announce Release on `Spring-Releases` space
+        run: |
+          curl --location --request POST '${{ secrets.SPRING_RELEASE_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw '{ text: "spring-tools-4-announcing `${{ inputs.version }}`"}'
