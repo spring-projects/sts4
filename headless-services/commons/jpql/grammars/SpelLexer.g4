@@ -141,6 +141,10 @@ DOUBLE_QUOTED_STRING
     : '"' ( '""' | ~["\n] )* '"'
     ;
 
+PROPERTY_PLACE_HOLDER
+	: '${' (.)*? '}'
+	;
+
 fragment INTEGER_TYPE_SUFFIX : ( 'L' | 'l' );
 fragment HEX_DIGIT : [0-9A-Fa-f];
 fragment DECIMAL_DIGIT: [0-9];

@@ -143,5 +143,17 @@ public class SpelSemanticTokensTest {
 		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(21, 22, "operator", new String[0])); // )
 	}
 
+	@Test
+	void withPropertyPlaceHolder() {
+		List<SemanticTokenData> tokens = provider.computeTokens("${server.port:8080} == 8080", 0);
+		assertThat(tokens.size()).isEqualTo(7);
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 2, "operator", new String[0])); // ${
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 13, "property", new String[0])); // server.port
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 14, "operator", new String[0])); // :
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 18, "string", new String[0])); // 8080
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(18, 19, "operator", new String[0])); // }
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(20, 22, "operator", new String[0])); // ==
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(23, 27, "number", new String[0])); // 8080
+	}
 
 }

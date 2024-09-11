@@ -26,7 +26,6 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
@@ -201,7 +200,7 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 			@Override
 			public void exitUdfFunctionCall(UdfFunctionCallContext fc) {
 				if (fc.fullId() != null) {
-					List<Token> ls = getAllLeafs(fc.fullId()).toList();
+					List<Token> ls = AntlrUtils.getAllLeafs(fc.fullId()).toList();
 					if (!ls.isEmpty()) {
 						semantics.put(ls.get(ls.size() - 1), "method");
 					}
@@ -211,13 +210,13 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 			@Override
 			public void exitParameter(ParameterContext ctx) {
 				if (ctx.dottedId() != null) {
-					getAllLeafs(ctx.dottedId()).forEach(t -> semantics.put(t, "parameter"));
+					AntlrUtils.getAllLeafs(ctx.dottedId()).forEach(t -> semantics.put(t, "parameter"));
 				}
 				if (ctx.uid() != null) {
-					getAllLeafs(ctx.uid()).forEach(t -> semantics.put(t, "parameter"));
+					AntlrUtils.getAllLeafs(ctx.uid()).forEach(t -> semantics.put(t, "parameter"));
 				}
 				if (ctx.decimalLiteral() != null) {
-					getAllLeafs(ctx.decimalLiteral()).forEach(t -> semantics.put(t, "parameter"));
+					AntlrUtils.getAllLeafs(ctx.decimalLiteral()).forEach(t -> semantics.put(t, "parameter"));
 				}
 			}
 			
@@ -276,17 +275,6 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 		
 		return tokens;
 
-	}
-	
-	static Stream<Token> getAllLeafs(ParserRuleContext ctx) {
-		return ctx.children.stream().flatMap(n -> {
-			if (n instanceof ParserRuleContext prc) {
-				return getAllLeafs(prc);
-			} else if (n instanceof TerminalNode tn) {
-				return Stream.of(tn.getSymbol());
-			}
-			return Stream.empty();
-		});
 	}
 	
 

@@ -289,4 +289,14 @@ public interface SpelParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitInputParameter(SpelParser.InputParameterContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link SpelParser#propertyPlaceHolder}.
+	 * @param ctx the parse tree
+	 */
+	void enterPropertyPlaceHolder(SpelParser.PropertyPlaceHolderContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SpelParser#propertyPlaceHolder}.
+	 * @param ctx the parse tree
+	 */
+	void exitPropertyPlaceHolder(SpelParser.PropertyPlaceHolderContext ctx);
 }

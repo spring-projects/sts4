@@ -14,8 +14,10 @@ import static org.springframework.ide.vscode.parser.spel.SpelLexer.*;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -50,9 +52,11 @@ import org.springframework.ide.vscode.parser.spel.SpelParserBaseListener;
 public class SpelSemanticTokens implements SemanticTokensDataProvider {
 	
 	private final Optional<Consumer<RecognitionException>> parseErrorHandler;
+	private final PropertyPlaceHolderSemanticTokens propertyPlaceHolderSemanticTokens;
 	
 	public SpelSemanticTokens(Optional<Consumer<RecognitionException>> parseErrorHandler) {
 		this.parseErrorHandler = parseErrorHandler;
+		this.propertyPlaceHolderSemanticTokens = new PropertyPlaceHolderSemanticTokens(parseErrorHandler);
 	}
 	
 	public SpelSemanticTokens() {
@@ -61,7 +65,9 @@ public class SpelSemanticTokens implements SemanticTokensDataProvider {
 
 	@Override
 	public List<String> getTokenTypes() {
-		return List.of("operator", "keyword", "type", "string", "number", "method", "property", "parameter");
+		LinkedHashSet<String> tokenTypes = new LinkedHashSet<>(List.of("operator", "keyword", "type", "string", "number", "method", "property", "parameter"));
+		tokenTypes.addAll(propertyPlaceHolderSemanticTokens.getTokenTypes());
+		return tokenTypes.stream().toList();
 	}
 
 	@Override
@@ -150,6 +156,9 @@ public class SpelSemanticTokens implements SemanticTokensDataProvider {
 				case SINGLE_QUOTED_STRING:
 				case DOUBLE_QUOTED_STRING:
 					semantics.put(node.getSymbol(), "string");
+					break;
+				case PROPERTY_PLACE_HOLDER:
+					tokens.addAll(computeTokensFromPropertyPlaceHolderNode(node, initialOffset));
 					break;
 				}
 			}
@@ -260,5 +269,24 @@ public class SpelSemanticTokens implements SemanticTokensDataProvider {
 		
 		return tokens;
 	}
+	
+	private Collection<? extends SemanticTokenData> computeTokensFromPropertyPlaceHolderNode(TerminalNode node,
+			int initialOffset) {
+		List<SemanticTokenData> placeHolderTokens = new ArrayList<>();
+
+		int startPosition = initialOffset + node.getSymbol().getStartIndex();
+		int placeHolderStartPosition = startPosition + 2;
+		int endPosition = startPosition + node.getText().length();
+		int placeHolderEndPosition = endPosition - 1;
+		// '${' operator
+		placeHolderTokens.add(new SemanticTokenData(startPosition, placeHolderStartPosition, "operator", new String[0]));
+		// Property Place Holder contents
+		placeHolderTokens.addAll(propertyPlaceHolderSemanticTokens.computeTokens(node.getText().substring(2, node.getText().length() - 1), placeHolderStartPosition));		
+		// '}' operator
+		placeHolderTokens.add(new SemanticTokenData(placeHolderEndPosition, endPosition, "operator", new String[0]));
+		return placeHolderTokens;
+	}
+
+
 
 }

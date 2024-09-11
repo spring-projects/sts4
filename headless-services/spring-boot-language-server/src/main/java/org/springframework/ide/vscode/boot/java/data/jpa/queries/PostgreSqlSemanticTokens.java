@@ -146,7 +146,7 @@ public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 			@Override
 			public void exitData_type(Data_typeContext dataType) {
 				if (dataType.identifier() != null) {
-					MySqlSemanticTokens.getAllLeafs(dataType.identifier())
+					AntlrUtils.getAllLeafs(dataType.identifier())
 						.filter(t -> t.getType() == PostgreSqlLexer.IDENTIFIER)
 						.forEach(t -> semantics.put(t, "type"));
 				}
@@ -155,11 +155,11 @@ public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 			@Override
 			public void exitParameter(ParameterContext param) {
 				if (param.identifier() != null) {
-					MySqlSemanticTokens.getAllLeafs(param.identifier()).forEach(t -> semantics.put(t, "parameter"));
+					AntlrUtils.getAllLeafs(param.identifier()).forEach(t -> semantics.put(t, "parameter"));
 				} else if (param.INTEGER_LITERAL() != null) {
 					semantics.put(param.INTEGER_LITERAL().getSymbol(), "parameter");
 				} else if (param.reserved_keyword() != null) {
-					MySqlSemanticTokens.getAllLeafs(param.reserved_keyword()).forEach(t -> semantics.put(t, "parameter"));
+					AntlrUtils.getAllLeafs(param.reserved_keyword()).forEach(t -> semantics.put(t, "parameter"));
 				}
 			}
 			

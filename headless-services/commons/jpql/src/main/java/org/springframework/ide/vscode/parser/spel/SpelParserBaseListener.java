@@ -348,6 +348,18 @@ public class SpelParserBaseListener implements SpelParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitInputParameter(SpelParser.InputParameterContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPropertyPlaceHolder(SpelParser.PropertyPlaceHolderContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPropertyPlaceHolder(SpelParser.PropertyPlaceHolderContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

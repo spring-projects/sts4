@@ -19,7 +19,8 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 
 public enum SpelProblemType implements ProblemType {
 	
-	JAVA_SPEL_EXPRESSION_SYNTAX(ERROR, "SpEL parser raised a ParseException", "SpEL Expression Syntax");
+	JAVA_SPEL_EXPRESSION_SYNTAX(ERROR, "SpEL parser raised a ParseException", "SpEL Expression Syntax"),
+	PROPERTY_PLACE_HOLDER_SYNTAX(ERROR, "Property place holder raised a ParseException", "Property Place Holder Syntax");
 
 	private final ProblemSeverity defaultSeverity;
 	private String description;

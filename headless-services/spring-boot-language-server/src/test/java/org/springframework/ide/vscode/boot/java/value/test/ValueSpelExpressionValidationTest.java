@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.value.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URI;
@@ -43,6 +44,7 @@ import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
+import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -330,7 +332,7 @@ public class ValueSpelExpressionValidationTest {
     }
 
     @Test
-    void testIgnoreSpelExpressionsWithPropertyPlaceholder() throws Exception {
+    void testSpelExpressionsWithPropertyPlaceholder_noErrors() throws Exception {
         TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(value=\"#{${property.hello:false}}\")");
         assertNotNull(doc);
 
@@ -340,6 +342,23 @@ public class ValueSpelExpressionValidationTest {
         assertEquals(0, problems.size());
     }
 	
+    @Test
+    void testSpelExpressionsWithPropertyPlaceholder_withErrors() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(value=\"#{${property.}}\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(1, problems.size());
+        
+        ReconcileProblem problem = problems.get(0);
+        assertEquals(199, problem.getOffset());
+        assertEquals(0, problem.getLength());
+        assertEquals(SpelProblemType.PROPERTY_PLACE_HOLDER_SYNTAX, problem.getType());
+        assertTrue(problem.getMessage().startsWith("Place-Holder:"));
+    }
+    
 	private TextDocument prepareDocument(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		String content = IOUtils.toString(new URI(docUri), StandardCharsets.UTF_8);
 

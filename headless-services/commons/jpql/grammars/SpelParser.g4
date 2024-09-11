@@ -59,6 +59,7 @@ node
 nonDottedNode
 	: (LSQUARE spelExpr RSQUARE)
 	| inputParameter
+	| propertyPlaceHolder
 	;
 
 dottedNode
@@ -107,6 +108,7 @@ startNode
 	| selection
 	| inlineListOrMap
 	| inputParameter
+	| propertyPlaceHolder
 	;
 
 
@@ -176,5 +178,9 @@ beanReference
 	
 inputParameter
 	: (LSQUARE INTEGER_LITERAL RSQUARE)
+	;
+	
+propertyPlaceHolder
+	: PROPERTY_PLACE_HOLDER
 	;
 	
