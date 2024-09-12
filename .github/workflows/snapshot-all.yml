@@ -15,18 +15,9 @@ jobs:
   eclipse-ls-extensions:
     uses: ./.github/workflows/eclipse-ls-extensions-build.yml
     with:
-      eclipse_profile: 'e431'
+      eclipse_profile: 'e432'
       build_type: 'snapshot'
       skip_tests: false
-    secrets: inherit
-
-  e431-distro:
-    needs: [ eclipse-ls-extensions ]
-    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
-    with:
-      eclipse_profile: 'e431'
-      build_type: 'snapshot'
-      java_version: '17'
     secrets: inherit
 
   e432-distro:
@@ -43,6 +34,15 @@ jobs:
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e433'
+      build_type: 'snapshot'
+      java_version: '21'
+    secrets: inherit
+
+  e434-distro:
+    needs: [ eclipse-ls-extensions ]
+    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e434'
       build_type: 'snapshot'
       java_version: '21'
     secrets: inherit
