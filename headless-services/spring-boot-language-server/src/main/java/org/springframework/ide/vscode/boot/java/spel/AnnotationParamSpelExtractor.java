@@ -57,8 +57,8 @@ public final class AnnotationParamSpelExtractor {
 			new AnnotationParamSpelExtractor(SPRING_POST_FILTER, null, "", ""),
 			new AnnotationParamSpelExtractor(SPRING_POST_FILTER, "value", "", ""),
 
-			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, null, "", ""),
-			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "", ""),
+			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, null, "#{", "}", true),
+			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "#{", "}", true),
 			
 			new AnnotationParamSpelExtractor(Annotations.SCHEDULED, "cron", "#{", "}"),
 	};
@@ -66,19 +66,27 @@ public final class AnnotationParamSpelExtractor {
 	
 	public record Snippet(String text, int offset) {}
 	
+	public record PrefixSuffix(String prefix, String suffix) {}
+	
 	private final String annotationType;
 	private final String paramName;
-	private final String paramValuePrefix;
-	private final String paramValuePostfix;
+	
+	private final List<PrefixSuffix> prefixSuffixes;
 	
 	public AnnotationParamSpelExtractor(String annotationType, String paramName, String paramValuePrefix,
-			String paramValuePostfix) {
+			String paramValueSuffix) {
 		this.annotationType = annotationType;
 		this.paramName = paramName;
-		this.paramValuePrefix = paramValuePrefix;
-		this.paramValuePostfix = paramValuePostfix;
+		this.prefixSuffixes = List.of(new PrefixSuffix(paramValuePrefix, paramValueSuffix));
 	}
 
+	public AnnotationParamSpelExtractor(String annotationType, String paramName, String paramValuePrefix,
+			String paramValueSuffx, boolean optinalPrefixAndSuffix) {
+		this.annotationType = annotationType;
+		this.paramName = paramName;
+		this.prefixSuffixes = List.of(new PrefixSuffix(paramValuePrefix, paramValueSuffx), new PrefixSuffix("",  ""));
+	}
+	
 	public Optional<Snippet> getSpelRegion(NormalAnnotation a) {
 		if (paramName == null) {
 			return Optional.empty();
@@ -128,13 +136,15 @@ public final class AnnotationParamSpelExtractor {
 		String value = valueExp.getEscapedValue();
 		value = value.substring(1, value.length() - 1);
 		if (value != null) {
-			int startIdx = value.indexOf(paramValuePrefix);
-			if (startIdx >= 0) {
-				int endIdx = value.lastIndexOf(paramValuePostfix);
-				if (endIdx >= 0) {
-					String spelText = value.substring(startIdx + paramValuePrefix.length(), endIdx);
-					int offset = valueExp.getStartPosition() + startIdx + paramValuePrefix.length() + 1;
-					return Optional.of(new Snippet(spelText, offset));
+			for (PrefixSuffix ps : prefixSuffixes) {
+				int startIdx = value.indexOf(ps.prefix);
+				if (startIdx >= 0) {
+					int endIdx = value.lastIndexOf(ps.suffix);
+					if (endIdx >= 0) {
+						String spelText = value.substring(startIdx + ps.prefix.length(), endIdx);
+						int offset = valueExp.getStartPosition() + startIdx + ps.prefix.length() + 1;
+						return Optional.of(new Snippet(spelText, offset));
+					}
 				}
 			}
 		}
