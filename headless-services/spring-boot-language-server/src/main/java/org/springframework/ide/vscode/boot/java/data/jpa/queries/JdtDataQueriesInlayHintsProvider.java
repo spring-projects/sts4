@@ -76,8 +76,9 @@ public class JdtDataQueriesInlayHintsProvider implements JdtInlayHintsProvider {
 	
 	private void processQuery(IJavaProject project, TextDocument doc, Collector<InlayHint> collector, MethodDeclaration m, EmbeddedQueryExpression q) {
 		List<SemanticTokenData> semanticTokens = semanticTokensProvider.computeSemanticTokens(project, q.query().text(), q.query().offset(), q.isNative());
+		SemanticTokenData previousToken = null;
 		for (SemanticTokenData t : semanticTokens) {
-			if ("parameter".equals(t.type())) {
+			if (isValidParameterOrdinalInputParameterToken(doc, t, previousToken)) {
 				try {
 					int number = Integer.parseInt(doc.get(t.start(), t.end() - t.start()));
 					if (number > 0 && number <= m.parameters().size()) {
@@ -100,7 +101,22 @@ public class JdtDataQueriesInlayHintsProvider implements JdtInlayHintsProvider {
 					// ignore
 				}
 			}
+			previousToken = t;
 		}
+	}
+	
+	/*
+	 * Determines if token is parameter token and previous token is a '?' operator - valid syntax for method parameter ordinal
+	 */
+	private static boolean isValidParameterOrdinalInputParameterToken(TextDocument doc, SemanticTokenData token, SemanticTokenData previous) {
+		if ("parameter".equals(token.type()) && previous != null && "operator".equals(previous.type())) {
+			try {
+				return "?".equals(doc.get(previous.start(), previous.end() - previous.start()));
+			} catch (BadLocationException e) {
+				// ignore
+			}
+		}
+		return false;
 	}
 	
 	private static int firstNonSkippedChar(TextDocument doc, int offset, Predicate<Character> skip) {
