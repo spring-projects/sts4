@@ -118,9 +118,9 @@
 		<commons-codec-version>1.13</commons-codec-version>
 
 		<!-- Rewrite specific properties -->
-		<rewrite-recipe-bom.version>2.18.0</rewrite-recipe-bom.version>
+		<rewrite-recipe-bom.version>2.19.0</rewrite-recipe-bom.version>
 		<gradle.version>8.4</gradle.version>
-		<rewrite-gradle-tooling-model.version>2.3.1</rewrite-gradle-tooling-model.version>
+		<rewrite-gradle-tooling-model.version>2.6.3</rewrite-gradle-tooling-model.version>
 		<jgit-version>6.9.0.202403050737-r</jgit-version>
 		
 		<antlr.version>4.13.1</antlr.version>
