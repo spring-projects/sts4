@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,15 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.value.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.springframework.ide.vscode.boot.java.value.test.MockProjects.MockProject;
 import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.TextDocumentSaveChange;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -46,6 +45,38 @@ public class AdHocSpringPropertyIndexProviderTest {
     }
 
     @Test
+    void parsePropertiesInSubFolder() throws Exception {
+        MockProject project = projects.create("test-project");
+        project.ensureFile("src/main/resources/test/application.properties",
+                "some-adhoc-foo=somefoo\n" +
+                        "some-adhoc-bar=somebar\n"
+        );
+        AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null, documents);
+
+        assertProperties(indexer.getIndex(project),
+                //alphabetic order
+                "some-adhoc-bar",
+                "some-adhoc-foo"
+        );
+    }
+
+    @Test
+    void parsePropertiesFromPropertyFileVariants() throws Exception {
+        MockProject project = projects.create("test-project");
+        project.ensureFile("src/main/resources/application-dev.properties",
+                "dev-some-adhoc-foo=somefoo\n" +
+                        "dev-some-adhoc-bar=somebar\n"
+        );
+        AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null, documents);
+
+        assertProperties(indexer.getIndex(project),
+                //alphabetic order
+                "dev-some-adhoc-bar",
+                "dev-some-adhoc-foo"
+        );
+    }
+
+    @Test
     void parseYamlWithList() throws Exception {
         //Note: the LoggerNameProvider implementation relies on this behavior
         MockProject project = projects.create("test-project");
@@ -64,9 +95,27 @@ public class AdHocSpringPropertyIndexProviderTest {
     }
 
     @Test
-    void parseYaml() throws Exception {
+    void parseYml() throws Exception {
         MockProject project = projects.create("test-project");
         project.ensureFile("src/main/resources/application.yml",
+                "from-yaml:\n" +
+                        "  adhoc:\n" +
+                        "    foo: somefoo\n" +
+                        "    bar: somebar\n"
+        );
+        AdHocSpringPropertyIndexProvider indexer = new AdHocSpringPropertyIndexProvider(projects.finder, projects.observer, null, documents);
+
+        assertProperties(indexer.getIndex(project),
+                //alphabetic order
+                "from-yaml.adhoc.bar",
+                "from-yaml.adhoc.foo"
+        );
+    }
+
+    @Test
+    void parseYaml() throws Exception {
+        MockProject project = projects.create("test-project");
+        project.ensureFile("src/main/resources/application.yaml",
                 "from-yaml:\n" +
                         "  adhoc:\n" +
                         "    foo: somefoo\n" +

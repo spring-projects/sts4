@@ -116,10 +116,8 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 
-	public List<? extends Location> findReferencesFromPropertyFiles(
-			Collection<WorkspaceFolder> workspaceRoots,
-			String propertyKey
-	) {
+	public List<? extends Location> findReferencesFromPropertyFiles(Collection<WorkspaceFolder> workspaceRoots, String propertyKey) {
+
 		for (WorkspaceFolder workspaceFolder : workspaceRoots) {
 			try {
 				Path workspaceRoot = Paths.get(new URI(workspaceFolder.getUri()));
@@ -141,7 +139,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 
-	static boolean isPropertiesFile(Path path) {
+	public static boolean isPropertiesFile(Path path) {
 		String fileName = path.getFileName().toString();
 
 		if (fileName.endsWith(BootPropertiesLanguageServerComponents.PROPERTIES)) {
