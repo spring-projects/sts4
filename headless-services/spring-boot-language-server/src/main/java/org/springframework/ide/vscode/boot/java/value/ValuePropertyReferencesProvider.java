@@ -18,7 +18,6 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,14 +36,14 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -65,10 +64,10 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(ValuePropertyReferencesProvider.class);
 
-	private SimpleLanguageServer languageServer;
+	private final JavaProjectFinder projectFinder;
 
-	public ValuePropertyReferencesProvider(SimpleLanguageServer server) {
-		this.languageServer = server;
+	public ValuePropertyReferencesProvider(JavaProjectFinder projectFinder) {
+		this.projectFinder = projectFinder;
 	}
 
 	@Override
@@ -105,7 +104,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 			if (range != null) {
 				String propertyKey = value.substring(range.getStart(), range.getEnd());
 				if (propertyKey != null && propertyKey.length() > 0) {
-					return findReferencesFromPropertyFiles(languageServer.getWorkspaceRoots(), propertyKey);
+					return findReferencesFromPropertyFiles(propertyKey);
 				}
 			}
 		}
@@ -116,27 +115,29 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 
-	public List<? extends Location> findReferencesFromPropertyFiles(Collection<WorkspaceFolder> workspaceRoots, String propertyKey) {
-
-		for (WorkspaceFolder workspaceFolder : workspaceRoots) {
-			try {
-				Path workspaceRoot = Paths.get(new URI(workspaceFolder.getUri()));
-				try (Stream<Path> walk = Files.walk(workspaceRoot)) {
-					List<Location> locations = walk
-							.filter(path -> isPropertiesFile(path))
-							.filter(path -> path.toFile().isFile())
-							.map(path -> findReferences(path, propertyKey))
-							.flatMap(Collection::stream)
-							.collect(Collectors.toList());
-
-					return locations;
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+	public List<? extends Location> findReferencesFromPropertyFiles(String propertyKey) {
+		Collection<? extends IJavaProject> allProjects = this.projectFinder.all();
+		
+		try {
+			return allProjects
+				.stream()
+				.flatMap(project -> IClasspathUtil.getSourceFolders(project.getClasspath()))
+				.flatMap(sourceFolder -> {
+					try {
+						return Files.walk(sourceFolder.toPath());
+					} catch (IOException e) {
+						return Stream.empty();
+					}
+				})
+				.filter(path -> ValuePropertyReferencesProvider.isPropertiesFile(path))
+				.filter(path -> path.toFile().isFile())
+				.map(path -> findReferences(path, propertyKey))
+				.flatMap(Collection::stream)
+				.collect(Collectors.toList());
 		}
-
-		return null;
+		catch (Exception e) {
+			return null;
+		}
 	}
 
 	public static boolean isPropertiesFile(Path path) {
@@ -154,7 +155,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return false;
 	}
 
-	private List<Location> findReferences(Path path, String propertyKey) {
+	public List<Location> findReferences(Path path, String propertyKey) {
 		String filePath = path.toString();
 		if (filePath.endsWith(BootPropertiesLanguageServerComponents.PROPERTIES)) {
 			return findReferencesInPropertiesFile(path.toFile(), propertyKey);
