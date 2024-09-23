@@ -168,7 +168,7 @@ function createServerOptions(options: ActivatorOptions, context: VSCode.Extensio
     const executable: Executable = Object.create(null);
     const execOptions: ExecutableOptions = Object.create(null);
     execOptions.env = Object.assign(process.env);
-    // execOptions.cwd = VSCode.workspace.rootPath
+    execOptions.cwd = context.extensionPath
     executable.options = execOptions;
     executable.command = jvm.getJavaExecutable();
     const vmArgs = prepareJvmArgs(options, context, jvm, port);
@@ -192,7 +192,7 @@ function createServerOptionsForPortComm(options: ActivatorOptions, context: VSCo
                 })
                     .listen(port, () => {
                         let processLaunchoptions = {
-                            cwd: VSCode.workspace.rootPath
+                            cwd: context.extensionPath
                         };
                         const args = prepareJvmArgs(options, context, jvm, port);
                         if (options.explodedLsJarData) {
