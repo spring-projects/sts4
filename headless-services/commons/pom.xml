@@ -119,7 +119,7 @@
 
 		<!-- Rewrite specific properties -->
 		<rewrite-recipe-bom.version>2.19.0</rewrite-recipe-bom.version>
-		<gradle.version>8.4</gradle.version>
+		<gradle.version>8.9</gradle.version>
 		<rewrite-gradle-tooling-model.version>2.6.3</rewrite-gradle-tooling-model.version>
 		<jgit-version>6.9.0.202403050737-r</jgit-version>
 		
