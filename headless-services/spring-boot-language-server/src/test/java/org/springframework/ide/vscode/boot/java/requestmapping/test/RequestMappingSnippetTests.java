@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
@@ -227,13 +228,23 @@ public class RequestMappingSnippetTests {
 		}
     }
     
+    @Test
+    void testSnippetNotShowUpOnClassDeclaration() throws Exception {
+        prepareCase(CONTROLLER_CLASSNAME, "@Controller", "@Controller\n<*>");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+		for (CompletionItem completionItem : completions) {
+	        assertNotEquals("@GetMapping(..) {..}", completionItem.getLabel());
+		}
+    }
+
     private void prepareCase(String className, String prefix) throws Exception {
     	prepareCase(className, "class " + className + " {", "class " + className + " {\n\n" + prefix);
     }
 
 	private void prepareCase(String className, String replace, String replaceWith) throws Exception {
 		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-request-mapping-completions/src/main/java/example/" + className + ".java");
-		String content = IOUtils.toString(resource);
+		String content = IOUtils.toString(resource, Charset.defaultCharset());
 
 		content = content.replace(replace, replaceWith);
 		editor = new Editor(harness, content, LanguageId.JAVA);

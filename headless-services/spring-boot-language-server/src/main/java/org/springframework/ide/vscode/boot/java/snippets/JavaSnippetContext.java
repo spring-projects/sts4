@@ -20,7 +20,12 @@ public interface JavaSnippetContext {
 	JavaSnippetContext BOOT_MEMBERS = (node, offset, prefix) -> node instanceof TypeDeclaration || node instanceof SimpleName;
 	
 	JavaSnippetContext AT_ROOT_LEVEL = (node, offset, prefix) -> {
-		if (node instanceof TypeDeclaration) return true;
+		if (node instanceof TypeDeclaration) {
+			TypeDeclaration typeNode = (TypeDeclaration) node;
+			SimpleName name = typeNode.getName();
+			
+			return offset > (name.getStartPosition() + name.getLength());
+		}
 		
 		ASTNode nodeBeforePrefix = NodeFinder.perform(node.getRoot(), offset - (prefix.length() + 1), 0);
 		return nodeBeforePrefix != null && nodeBeforePrefix instanceof TypeDeclaration;

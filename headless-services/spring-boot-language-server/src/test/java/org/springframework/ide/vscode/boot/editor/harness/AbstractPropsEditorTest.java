@@ -127,7 +127,7 @@ public abstract class AbstractPropsEditorTest {
 		editor.assertCompletionDetails(expectLabel, expectDetail, expectDocumenation);
 	}
 
-	public void assertCompletionDetailsWithDeprecation(String editorText, String expectLabel, String expectDetail, String expectDocumenation, Boolean deprecated) throws Exception {
+	public void assertCompletionDetailsWithDeprecation(String editorText, String expectLabel, String expectDetail, String expectDocumenation, boolean deprecated) throws Exception {
 		Editor editor = newEditor(editorText);
 		editor.assertCompletionDetailsWithDeprecation(expectLabel, expectDetail, expectDocumenation, deprecated);
 	}

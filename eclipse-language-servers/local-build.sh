@@ -5,4 +5,4 @@ cd ../headless-services
 ./mvnw clean install -Dmaven.test.skip=true
 
 cd $workdir
-./mvnw -Psnapshot -Pe430 clean install -Dmaven.test.skip=true
+./mvnw -Psnapshot -Pe431 clean install -Dmaven.test.skip=true

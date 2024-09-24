@@ -288,7 +288,7 @@ public class Decompressor extends JSONzip {
     private Object readValue() throws JSONException {
         switch (read(2)) {
         case 0:
-            return new Integer(read(!bit() ? 4 : !bit() ? 7 : 14));
+            return Integer.valueOf(read(!bit() ? 4 : !bit() ? 7 : 14));
         case 1:
             byte[] bytes = new byte[256];
             int length = 0;

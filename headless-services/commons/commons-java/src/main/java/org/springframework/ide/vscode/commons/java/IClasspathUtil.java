@@ -157,6 +157,14 @@ public class IClasspathUtil {
 			try {
 				return Files.walk(folder.toPath())
 						.filter(path -> Files.isRegularFile(path))
+						.filter(path -> {
+							try {
+								return !Files.isHidden(path);
+							}
+							catch (IOException e) {
+								return false;
+							}
+						})
 						.map(path -> folder.toPath().relativize(path))
 						.map(relativePath -> relativePath.toString())
 						.filter(pathString -> !pathString.endsWith(".java") && !pathString.endsWith(".class"));

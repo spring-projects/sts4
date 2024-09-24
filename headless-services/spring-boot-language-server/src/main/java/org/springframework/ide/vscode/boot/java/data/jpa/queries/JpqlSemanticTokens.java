@@ -11,17 +11,25 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
+import org.antlr.v4.runtime.Parser;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.atn.ATNConfigSet;
+import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
@@ -43,22 +51,29 @@ public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 	private static List<String> TOKEN_TYPES = List.of("keyword", "type", "class", "string", "number", "operator",
 			"variable", "method", "regexp", "parameter");
 	
-	final private Optional<SpelSemanticTokens> optSpelSemantictokens;
+	private final Optional<SpelSemanticTokens> optSpelTokens;
+
+	private final Optional<Consumer<RecognitionException>> parseErrorHandler;
 	
 	public JpqlSemanticTokens(Optional<SpelSemanticTokens> optSpelSemantictokens) {
-		this.optSpelSemantictokens = optSpelSemantictokens;
+		this(optSpelSemantictokens, Optional.empty());
 	}
 
+	public JpqlSemanticTokens(Optional<SpelSemanticTokens> optSpelTokens, Optional<Consumer<RecognitionException>> parseErrorHandler) {
+		this.optSpelTokens = optSpelTokens;
+		this.parseErrorHandler = parseErrorHandler;
+	}
+	
 	@Override
 	public List<String> getTokenTypes() {
 		LinkedHashSet<String> tokenTypes = new LinkedHashSet<>(TOKEN_TYPES);
-		tokenTypes.addAll(optSpelSemantictokens.map(s -> s.getTokenTypes()).orElse(Collections.emptyList()));
+		tokenTypes.addAll(optSpelTokens.map(s -> s.getTokenTypes()).orElse(Collections.emptyList()));
 		return tokenTypes.stream().toList();
 	}
 
 	@Override
 	public List<String> getTypeModifiers() {
-		return optSpelSemantictokens.map(s -> s.getTypeModifiers()).orElse(Collections.emptyList());
+		return optSpelTokens.map(s -> s.getTypeModifiers()).orElse(Collections.emptyList());
 	}
 	
 	@Override
@@ -99,7 +114,7 @@ public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 				case JpqlParser.WS:
 					break;
 				case JpqlParser.SPEL:
-					tokens.addAll(computeTokensFromSpelNode(node, initialOffset, optSpelSemantictokens));
+					tokens.addAll(computeTokensFromSpelNode(node, initialOffset, optSpelTokens));
 					break;
 				default:
 					if (JpqlParser.WS < type && type <= JpqlParser.WHERE) {
@@ -142,6 +157,9 @@ public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 				if (ctx.identification_variable() != null && ctx.identification_variable().getStart() != null) {
 					semantics.put(ctx.identification_variable().getStart(), "parameter");
 				}
+				if (ctx.INTLITERAL() != null) {
+					semantics.put(ctx.INTLITERAL().getSymbol(), "parameter");
+				}
 			}
 
 			@Override
@@ -154,6 +172,30 @@ public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 				processTerminalNode(node);
 			}
 
+		});
+		
+		parser.addErrorListener(new ANTLRErrorListener() {
+			
+			@Override
+			public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol, int line, int charPositionInLine,
+					String msg, RecognitionException e) {
+				parseErrorHandler.ifPresent(h -> h.accept(e));
+			}
+			
+			@Override
+			public void reportContextSensitivity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, int prediction,
+					ATNConfigSet configs) {
+			}
+			
+			@Override
+			public void reportAttemptingFullContext(Parser recognizer, DFA dfa, int startIndex, int stopIndex,
+					BitSet conflictingAlts, ATNConfigSet configs) {
+			}
+			
+			@Override
+			public void reportAmbiguity(Parser recognizer, DFA dfa, int startIndex, int stopIndex, boolean exact,
+					BitSet ambigAlts, ATNConfigSet configs) {
+			}
 		});
 		
 		parser.ql_statement();

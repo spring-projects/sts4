@@ -1,0 +1,101 @@
+name: Publish All VSCode Extension Releases
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: version of the extension, i.e. '1.56.0'
+        required: true
+        type: string
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.CDN_S3_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.CDN_S3_SECRET_KEY  }}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_ENDPOINT_URL_S3:  ${{ secrets.CDN_S3_ENDPOINT }}
+  AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}/spring-tools
+  DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
+
+permissions:
+  contents: write
+
+jobs:
+  publish-vscode-releases:
+    runs-on: ubuntu-latest
+    name: Publish '${{ inputs.version }}'
+    steps:
+      - name: Prepare to Publish
+        run: |
+          npm install --global @vscode/vsce
+          npm install --global ovsx
+      - name: Search and Publish Releases
+        id: search-publish-releases
+        run: |
+          md_file=release-links.md
+          extensions=`aws s3 ls s3://$AWS_S3_BUCKET/release/vscode-extensions/ | grep '/$'`
+          for ext_folder in $extensions
+          do
+            if [[ "$ext_folder" =~ ^[^[:space:]]+"/"$ ]]; then
+              ext=${ext_folder%/}
+              echo "Found extension: '${ext}'"
+              regex="^${ext}-${{ inputs.version }}-(RC[0-9]*|RELEASE)\.vsix$"
+              vsix_release_files=`aws s3 ls s3://$AWS_S3_BUCKET/release/vscode-extensions/$ext/${{ inputs.version }}/ | awk '{$1=$2=$3=""; print $0}' | awk '{$1=$1};1' | grep -E "$regex" || true` 
+              if [ -z $vsix_release_files ]; then
+                echo "[${ext}]: No release builds found for version ${{ inputs.version }}"
+              else
+                unset vsix_file
+                for f in $vsix_release_files
+                do
+                  if [ -z $vsix_file ]; then
+                    vsix_file=$f
+                  else
+                    unset vsix_file
+                    break
+                  fi
+                done
+                if [ -z vsix_file ]; then
+                  echo "[${ext}]: More than one release file found. Skip publishing."
+                else
+                  echo "[${ext}]: Publishing ${vsix_file}..."
+                  wget -q $DOWNLOAD_URL_ROOT/release/vscode-extensions/$ext/${{ inputs.version }}/$vsix_file
+                  vsce publish -p ${{ secrets.VSCE_PUBLISH_TOKEN }} --packagePath $vsix_file
+                  echo "[${ext}]: Published to VSCode Marketplace"
+                  ovsx publish -p ${{ secrets.OVSX_PUBLISH_TOKEN }} $vsix_file
+                  echo "[${ext}]: Published to Open VSX Marketplace"
+                  echo "- [$vsix_file]($DOWNLOAD_URL_ROOT/release/vscode-extensions/$ext/${{ inputs.version }}/$vsix_file)" >> $md_file
+                fi
+              fi
+            fi
+          done
+          if [ -f $md_file ]; then
+            cat $md_file
+            echo "links=$md_file" >> $GITHUB_OUTPUT
+          else
+            echo "$md_file not updated. No releases published." 
+          fi
+      - name: Checkout wiki code
+        if: ${{ steps.search-publish-releases.outputs.links == 'release-links.md' }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{github.repository}}.wiki
+          path: markdown
+      - name: Update Wiki
+        id: update-wiki
+        if: ${{ steps.search-publish-releases.outputs.links == 'release-links.md' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          current_release=${{ github.workspace }}/markdown/Current-VSCode-Releases.md
+          previous_releases=${{ github.workspace }}/markdown/VSCode-Extensions-Downloads.md
+          echo -e "\n$(cat ${{ steps.search-publish-releases.outputs.links }})\n" > $current_release
+          echo -e "### Extensions ${{ inputs.version }}\n\n$(cat ${{ steps.search-publish-releases.outputs.links }})\n\n$(cat $previous_releases)" > $previous_releases
+          rm -f ${{ steps.search-publish-releases.outputs.links }}
+          
+          echo "Push Wiki changes in..."
+          cd markdown
+          git config --global user.name "@spring-projects/spring-ide-admin"
+          git add .
+          git diff-index --quiet HEAD || git commit -m "Publish version ${{ inputs.version }}" && git push
+
+          
+          

@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.springframework.ide.vscode</groupId>
 		<artifactId>commons-parent</artifactId>
-		<version>1.56.0-SNAPSHOT</version>
+		<version>1.58.0-SNAPSHOT</version>
 		<relativePath>../commons/pom.xml</relativePath>
 	</parent>
 
@@ -63,6 +63,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-util</artifactId>
+			<version>${dependencies.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-yaml</artifactId>
 			<version>${dependencies.version}</version>
 		</dependency>
@@ -113,19 +118,7 @@
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
 			<version>${jdt.core.version}</version>
- 		    <exclusions>
-		        <exclusion>
-		            <groupId>org.eclipse.platform</groupId>
-		            <artifactId>org.eclipse.equinox.preferences</artifactId>
-		        </exclusion>
-		    </exclusions>
     	</dependency>
-		<!-- the 3.10.1 org.eclipse.platform fixed the pb -->
-		<dependency>
-		    <groupId>org.eclipse.platform</groupId>
-		    <artifactId>org.eclipse.equinox.preferences</artifactId>
-		    <version>3.10.1</version>
-		</dependency>
 
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -158,11 +151,6 @@
 			</exclusions>
 		</dependency>
 		
-		<dependency>
-			<groupId>com.squareup.okhttp3</groupId>
-			<artifactId>okhttp</artifactId>
-		</dependency>
-	
 		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -200,6 +188,11 @@
 			<artifactId>commons-gradle</artifactId>
 			<version>${dependencies.version}</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-util</artifactId>
+			<version>1.58.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 

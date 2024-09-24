@@ -15,4 +15,4 @@ jobs:
     steps:
     - name: Notarization Logs
       run: |
-        xcrun notarytool log ${{ inputs.id }} --apple-id ${{ secrets.AC_USERNAME }} --team-id ${{ secrets.APPLE_TEAM_ID }} --password ${{ secrets.AC_PASSWORD }}
+        xcrun notarytool log ${{ inputs.id }} --apple-id ${{ secrets.VMWARE_APPLE_USER }} --team-id ${{ secrets.VMWARE_APPLE_TEAM_ID }} --password ${{ secrets.VMWARE_APPLE_PASSWORD }}

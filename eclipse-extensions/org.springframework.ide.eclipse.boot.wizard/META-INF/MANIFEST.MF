@@ -2,11 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Boot UI Support
 Bundle-SymbolicName: org.springframework.ide.eclipse.boot.wizard;singleton:=true
-Bundle-Version: 4.24.0.qualifier
+Bundle-Version: 4.26.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.eclipse.ui,
  org.springsource.ide.eclipse.commons.livexp;bundle-version="3.8.4",
- org.json;bundle-version="1.0.0",
  org.eclipse.core.resources,
  com.google.guava,
  org.eclipse.jdt.ui,
@@ -49,5 +48,6 @@ Import-Package: org.eclipse.core.runtime,
  org.apache.commons.lang3,
  org.eclipse.osgi.util,
  org.osgi.framework,
- javax.inject
+ javax.inject,
+ org.json
 Automatic-Module-Name: org.springframework.ide.eclipse.boot.wizard

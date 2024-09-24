@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,14 +15,19 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
+import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -64,8 +69,9 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 		}
 		if (fileObserver!=null) {
 			fileObserver.onAnyChange(ImmutableList.of(
-					"**/application.properties",
-					"**/application.yml"
+					"**/application*.properties",
+					"**/application*.yaml",
+					"**/application*.yml"
 			), changed -> {
 				log.debug("Files changed: {}", (Object[])changed);
 				
@@ -83,7 +89,7 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 				
 			});
 		}
-		if (documents!=null) {
+		if (documents != null) {
 			documents.onDidSave(saveEvent -> {
 				LanguageId language = saveEvent.getDocument().getLanguageId();
 				if (language.equals(LanguageId.BOOT_PROPERTIES) || language.equals(LanguageId.BOOT_PROPERTIES_YAML)) {
@@ -95,13 +101,12 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 
 	@Override
 	public FuzzyMap<PropertyInfo> getIndex(IJavaProject jp) {
-		if (jp!=null) {
+		if (jp != null) {
 			try {
 				return indexes.get(jp, () -> {
 					SimplePropertyIndex index = new SimplePropertyIndex();
 					IClasspathUtil.getSourceFolders(jp.getClasspath()).forEach(sourceFolder -> {
-						processFile(this::parseProperties, new File(sourceFolder, "application.properties"), index);
-						processFile(this::parseYaml, new File(sourceFolder, "application.yml"), index);
+						getIndexFromSourceFolder(sourceFolder, index);
 					});
 					return index;
 				});
@@ -112,9 +117,28 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 		return SpringPropertyIndex.EMPTY_INDEX.getProperties();
 	}
 
+	private void getIndexFromSourceFolder(File sourceFolder, SimplePropertyIndex index) {
+		try (Stream<Path> walk = Files.walk(sourceFolder.toPath())) {
+			walk
+				.filter(path -> ValuePropertyReferencesProvider.isPropertiesFile(path))
+				.filter(path -> path.toFile().isFile())
+				.forEach(path -> {
+					String fileName = path.getFileName().toString();
+					if (fileName.endsWith(BootPropertiesLanguageServerComponents.PROPERTIES)) {
+						processFile(this::parseProperties, path.toFile(), index);
+					}
+					else if (fileName.endsWith(".yml") || fileName.endsWith(".yaml")) {
+						processFile(this::parseYaml, path.toFile(), index);
+					}
+				});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void processFile(Function<File, Properties> parserFunction, File file, SimplePropertyIndex index) {
 		Properties props = parserFunction.apply(file);
-		if (props!=null) {
+		if (props != null) {
 			for (Object p : props.keySet()) {
 				if (p instanceof String) {
 					String filename = file.getName();
@@ -157,22 +181,25 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 
 	private void flattenProperties(String prefix, Node node, Properties props) {
 		switch (node.getNodeId()) {
+		
 		case mapping:
 			if (!prefix.isEmpty()) {
-				prefix = prefix +".";
+				prefix = prefix + ".";
 			}
 			MappingNode mapping = (MappingNode)node;
 			for (NodeTuple tup : mapping.getValue()) {
 				String key = NodeUtil.asScalar(tup.getKeyNode());
-				if (key!=null) {
-					flattenProperties(prefix+key, tup.getValueNode(), props);
+				if (key != null) {
+					flattenProperties(prefix + key, tup.getValueNode(), props);
 				}
 			}
 			break;
+			
 		case scalar:
 			//End of the line.
 			props.put(prefix, NodeUtil.asScalar(node));
 			break;
+			
 		default:
 			if (!prefix.isEmpty()) {
 				props.put(prefix, "<object>");

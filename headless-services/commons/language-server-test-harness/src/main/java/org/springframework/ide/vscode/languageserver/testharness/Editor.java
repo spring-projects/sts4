@@ -37,9 +37,11 @@ import javax.swing.text.BadLocationException;
 
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemTag;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InsertReplaceEdit;
@@ -238,6 +240,15 @@ public class Editor {
 			.collect(Collectors.toList());
 		assertEquals(ImmutableList.copyOf(expectedHighlights), actualHighlights);
 		return ranges;
+	}
+	
+	public void assertDocumentHighlights(String afterString, DocumentHighlight... expected) throws Exception {
+		int pos = getRawText().indexOf(afterString);
+		if (pos>=0) {
+			pos += afterString.length();
+		}
+		List<? extends DocumentHighlight> actual = harness.getDocumentHighlights(doc.getId(), doc.toPosition(pos));
+		assertEquals(ImmutableList.copyOf(expected), actual);
 	}
 
 	/**
@@ -440,7 +451,8 @@ public class Editor {
 		textBefore = replaceSelection(textBefore);
 		textAfter = Arrays.stream(textAfter)
 				.map((String t) -> replaceSelection(t))
-				.collect(Collectors.toList()).toArray(new String[0]);
+				.toArray(String[]::new);
+
 		editor.setText(textBefore);
 		editor.assertCompletions(isInteresting, textAfter);
 	}
@@ -564,7 +576,7 @@ public class Editor {
 
 			private String sortKey(CompletionItem item) {
 				String k = item.getSortText();
-				if (k==null) {
+				if (k == null) {
 					k = item.getLabel();
 				}
 				return k;
@@ -754,7 +766,7 @@ public class Editor {
 		return it;
 	}
 
-	public CompletionItem assertCompletionDetailsWithDeprecation(String expectLabel, String expectDetail, String expectDocSnippet, Boolean deprecated) throws Exception {
+	public CompletionItem assertCompletionDetailsWithDeprecation(String expectLabel, String expectDetail, String expectDocSnippet, boolean deprecated) throws Exception {
 		CompletionItem it = harness.resolveCompletionItem(assertCompletionWithLabel(expectLabel));
 		if (expectDetail!=null) {
 			assertEquals(expectDetail, it.getDetail());
@@ -762,7 +774,9 @@ public class Editor {
 		if (expectDocSnippet!=null) {
 			assertContains(expectDocSnippet, getDocString(it));
 		}
-		assertEquals(deprecated, it.getDeprecated());
+		@SuppressWarnings("deprecation")
+		boolean actualDeprecated = Boolean.TRUE.equals(it.getDeprecated()) || (it.getTags() != null && it.getTags().stream().anyMatch(t -> t.equals(CompletionItemTag.Deprecated))); 
+		assertEquals(deprecated, actualDeprecated);
 		return it;
 	}
 

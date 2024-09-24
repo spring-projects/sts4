@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformati
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
+import org.springframework.ide.vscode.boot.java.utils.DefaultSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
@@ -58,6 +59,11 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				Bean beanDefinition = result.getSecond();
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
+			}
+			else if (Annotations.NAMED_ANNOTATIONS.contains(annotationType.getQualifiedName())) {
+				WorkspaceSymbol symbol = DefaultSymbolProvider.provideDefaultSymbol(node, doc);
+				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 			}
 		}
 		catch (Exception e) {

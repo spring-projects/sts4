@@ -2544,7 +2544,7 @@ predicate
 
 // Add in ASTVisitor nullNotnull in constant
 expressionAtom
-    : (QUESTION_SYMB | COLON_SYMB) SPEL                         # spelExpressionAtom
+    : parameter                                                 # parameterAtom
     | constant                                                  # constantExpressionAtom
     | fullColumnName                                            # fullColumnNameExpressionAtom
     | functionCall                                              # functionCallExpressionAtom
@@ -2563,7 +2563,15 @@ expressionAtom
     | left = expressionAtom addOperator right = expressionAtom  # mathExpressionAtom
     | left = expressionAtom jsonOperator right = expressionAtom # jsonExpressionAtom
     ;
-
+    
+parameter
+	: prefix=':' SPEL
+    | prefix=':' dottedId
+    | prefix=':' uid
+	| prefix='?' SPEL
+    | prefix='?' decimalLiteral?
+    ;
+    
 unaryOperator
     : '!'
     | '~'

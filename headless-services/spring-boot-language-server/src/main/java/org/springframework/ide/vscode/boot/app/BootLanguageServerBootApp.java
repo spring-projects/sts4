@@ -46,7 +46,11 @@ import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDisc;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
 import org.springframework.ide.vscode.boot.java.beans.DependsOnDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.beans.NamedDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.beans.ResourceDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.DataQueryParameterDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
@@ -67,7 +71,8 @@ import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.value.PropertyValueAnnotationDefProvider;
+import org.springframework.ide.vscode.boot.java.value.ValueDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.conditionalonresource.ConditionalOnResourceDefinitionProvider;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
 import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
@@ -393,11 +398,15 @@ public class BootLanguageServerBootApp {
 	}
 	
 	@Bean
-	JavaDefinitionHandler javaDefinitionHandler(CompilationUnitCache cuCache, JavaProjectFinder projectFinder, SpringMetamodelIndex springIndex) {
+	JavaDefinitionHandler javaDefinitionHandler(SimpleLanguageServer server, CompilationUnitCache cuCache, JavaProjectFinder projectFinder, SpringMetamodelIndex springIndex, JdtDataQuerySemanticTokensProvider qurySemanticTokens) {
 		return new JavaDefinitionHandler(cuCache, projectFinder, List.of(
-				new PropertyValueAnnotationDefProvider(),
+				new ValueDefinitionProvider(),
+				new ConditionalOnResourceDefinitionProvider(),
 				new DependsOnDefinitionProvider(springIndex),
-				new QualifierDefinitionProvider(springIndex)));
+				new ResourceDefinitionProvider(springIndex),
+				new QualifierDefinitionProvider(springIndex),
+				new NamedDefinitionProvider(springIndex),
+				new DataQueryParameterDefinitionProvider(server.getTextDocumentService(), qurySemanticTokens)));
 	}
 	
 	@Bean

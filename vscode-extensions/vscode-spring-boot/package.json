@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Tools",
   "description": "Provides validation and content assist for Spring Boot `application.properties`, `application.yml` properties files. As well as Boot-specific support for `.java` files.",
   "icon": "spring-boot-logo.png",
-  "version": "1.56.0",
+  "version": "1.58.0",
   "publisher": "vmware",
   "repository": {
     "type": "git",
@@ -12,7 +12,7 @@
   "license": "EPL-1.0",
   "engines": {
     "npm": ">=6.0.0",
-    "vscode": "^1.75.0"
+    "vscode": "^1.92.0"
   },
   "categories": [
     "Programming Languages",
@@ -266,6 +266,11 @@
         "title": "Apply Changes",
         "category": "Spring Boot Agent",
         "enablement": "false"
+      },
+      {
+        "command": "vscode-spring-boot.query.explain",
+        "title": "Explain Spel expressions, Spring Data queries, and AOP annotations (using Copilot)",
+        "category": "Spring Boot"
       }
     ],
     "configuration": [
@@ -404,6 +409,11 @@
             ],
             "scope": "window",
             "description": "Defines which browser to use when opening Spring Boot apps web pages."
+          },
+          "boot-java.highlight-copilot-codelens.on": {
+            "type": "boolean",
+            "default": false,
+            "description": "Explain SpEL expressions, Spring Data queries, and AOP annotations using Copilot"
           }
         }
       },
@@ -638,6 +648,18 @@
             "type": "string",
             "default": "ERROR",
             "description": "Invalid Domain ID type for Spring Data Repository",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.boot2.WEB_ANNOTATION_NAMES": {
+            "type": "string",
+            "default": "HINT",
+            "description": "Web annotation names are unnecessary when it is the same as method parameter name",
             "enum": [
               "IGNORE",
               "INFO",
@@ -1080,6 +1102,18 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.spel.PROPERTY_PLACE_HOLDER_SYNTAX": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Property place holder raised a ParseException",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },
@@ -1185,7 +1219,7 @@
       },
       {
         "id": "data-query",
-        "title": "Data Query",
+        "title": "Data Queries",
         "order": 408,
         "properties": {
           "boot-java.validation.data-query": {
@@ -1223,8 +1257,48 @@
           },
           "spring-boot.ls.problem.data-query.SQL_SYNTAX": {
             "type": "string",
-            "default": "IGNORE",
+            "default": "ERROR",
             "description": "Syntax",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          }
+        }
+      },
+      {
+        "id": "cron",
+        "title": "CRON Expressions",
+        "order": 409,
+        "properties": {
+          "boot-java.validation.cron": {
+            "type": "string",
+            "default": "ON",
+            "description": "Enablement",
+            "enum": [
+              "OFF",
+              "ON"
+            ]
+          },
+          "spring-boot.ls.problem.cron.SYNTAX": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Syntax",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.cron.FIELD": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Field",
             "enum": [
               "IGNORE",
               "INFO",
@@ -1278,6 +1352,7 @@
   "devDependencies": {
     "@types/node": "^18.8.0",
     "@types/semver": "^7.5.8",
+    "@types/vscode": "1.92.0",
     "@vscode/vsce": "^2.22.0",
     "typescript": "^4.8.0"
   },

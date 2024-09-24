@@ -58,6 +58,8 @@ node
 
 nonDottedNode
 	: (LSQUARE spelExpr RSQUARE)
+	| inputParameter
+	| propertyPlaceHolder
 	;
 
 dottedNode
@@ -105,16 +107,22 @@ startNode
 	| projection
 	| selection
 	| inlineListOrMap
+	| inputParameter
+	| propertyPlaceHolder
 	;
 
 
 literal
-	: NUMERIC_LITERAL
+	: numericLiteral
 	| STRING_LITERAL
 	| TRUE
 	| FALSE
 	;
 
+numericLiteral
+    : INTEGER_LITERAL
+    | REAL_LITERAL
+    ;
 
 parenspelExpr
 	: LPAREN spelExpr RPAREN
@@ -168,4 +176,11 @@ beanReference
 	: (BEAN_REF | FACTORY_BEAN_REF) (IDENTIFIER | STRING_LITERAL)
 	;
 	
+inputParameter
+	: (LSQUARE INTEGER_LITERAL RSQUARE)
+	;
+	
+propertyPlaceHolder
+	: PROPERTY_PLACE_HOLDER
+	;
 	

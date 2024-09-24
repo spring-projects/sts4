@@ -19,14 +19,17 @@ import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.javadoc.internal.JavadocContents;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 
 public interface HtmlJavadocIndex {
+	
+	static final Logger log = LoggerFactory.getLogger(HtmlJavadocIndex.class);
 	
 	static JavadocContents NO_HTML_CONTENT = new JavadocContents(null);
 	
@@ -45,7 +48,7 @@ public interface HtmlJavadocIndex {
 						BufferedReader buffer = new BufferedReader(new InputStreamReader(stream));
 					    return new JavadocContents(buffer.lines().collect(Collectors.joining("\n")));
 					} catch (IOException e) {
-						Log.log("Cannot load javadoc content from " + url, e);
+						log.error("Cannot load javadoc content from " + url, e);
 						return NO_HTML_CONTENT;
 					} finally {
 						if (stream != null) {
@@ -55,7 +58,7 @@ public interface HtmlJavadocIndex {
 				});
 				return content == NO_HTML_CONTENT ? null : content;
 			} catch (ExecutionException e) {
-				Log.log(e);
+				log.error("", e);
 				return null;
 			}
 		}

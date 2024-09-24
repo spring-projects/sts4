@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.boot.java.value;
 
 import static org.springframework.ide.vscode.commons.util.StringUtil.camelCaseToHyphens;
 
+import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -22,13 +24,18 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProposal;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
@@ -43,6 +50,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Martin Lippert
  */
 public class ValueCompletionProcessor implements CompletionProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(ValueCompletionProcessor.class);
 
 	private final SpringPropertyIndexProvider indexProvider;
 	private final ProjectBasedPropertyIndexProvider adHocIndexProvider;
@@ -59,6 +68,13 @@ public class ValueCompletionProcessor implements CompletionProvider {
 			int offset, TextDocument doc, Collection<ICompletionProposal> completions) {
 
 		try {
+			Optional<IJavaProject> optionalProject = this.projectFinder.find(doc.getId());
+			if (optionalProject.isEmpty()) {
+				return;
+			}
+			
+			IJavaProject project = optionalProject.get();
+			
 			// case: @Value(<*>)
 			if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
 				List<Match<PropertyInfo>> matches = findMatches("", doc);
@@ -75,37 +91,70 @@ public class ValueCompletionProcessor implements CompletionProvider {
 
 					completions.add(proposal);
 				}
+				
+				addClasspathResourceProposals(project, doc, offset, offset, "", true, completions);
 			}
 			// case: @Value(prefix<*>)
 			else if (node instanceof SimpleName && node.getParent() instanceof Annotation) {
-				computeProposalsForSimpleName(node, completions, offset, doc);
+				computeProposalsForSimpleName(project, node, completions, offset, doc);
+			}
+			// case: @Value(file.ext<*>) - the "." causes a QualifierNode to be generated
+			else if (node instanceof SimpleName && node.getParent() instanceof QualifiedName && node.getParent().getParent() instanceof Annotation) {
+				computeProposalsForSimpleName(project, node.getParent(), completions, offset, doc);
 			}
 			// case: @Value(value=<*>)
 			else if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
-				computeProposalsForSimpleName(node, completions, offset, doc);
+				computeProposalsForSimpleName(project, node, completions, offset, doc);
+			}
+			// case: @Value(value=<*>)
+			else if (node instanceof SimpleName && node.getParent() instanceof QualifiedName && node.getParent().getParent() instanceof MemberValuePair
+					&& "value".equals(((MemberValuePair)node.getParent().getParent()).getName().toString())) {
+				computeProposalsForSimpleName(project, node.getParent(), completions, offset, doc);
 			}
 			// case: @Value("prefix<*>")
 			else if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					computeProposalsForStringLiteral(node, completions, offset, doc);
+					computeProposalsForStringLiteral(project, (StringLiteral) node, completions, offset, doc);
 				}
 			}
 			// case: @Value(value="prefix<*>")
 			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					computeProposalsForStringLiteral(node, completions, offset, doc);
+					computeProposalsForStringLiteral(project, (StringLiteral) node, completions, offset, doc);
 				}
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			log.error("problem while looking for value annotation proposals", e);
 		}
 	}
 
-	private void computeProposalsForSimpleName(ASTNode node, Collection<ICompletionProposal> completions, int offset,
-			IDocument doc) {
+	private void addClasspathResourceProposals(IJavaProject project, TextDocument doc, int startOffset, int endOffset, String prefix, boolean includeQuotes, Collection<ICompletionProposal> completions) {
+		String[] resources = findResources(project, prefix);
+
+		double score = resources.length + 1000;
+		for (String resource : resources) {
+
+			DocumentEdits edits = new DocumentEdits(doc, false);
+			
+			if (includeQuotes) {
+				edits.replace(startOffset, endOffset, "\"classpath:" + resource + "\"");
+			}
+			else {
+				edits.replace(startOffset, endOffset, "classpath:" + resource);
+			}
+			
+			String label = "classpath:" + resource;
+			
+			ICompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits, label, label, null, score--);
+			completions.add(proposal);
+		}
+
+	}
+
+	private void computeProposalsForSimpleName(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) {
 		String prefix = identifyPropertyPrefix(node.toString(), offset - node.getStartPosition());
 
 		int startOffset = node.getStartPosition();
@@ -125,10 +174,12 @@ public class ValueCompletionProcessor implements CompletionProvider {
 
 			completions.add(proposal);
 		}
+		
+		String unfilteredPrefix = node.toString().substring(0, offset - node.getStartPosition());
+		addClasspathResourceProposals(project, doc, startOffset, endOffset, unfilteredPrefix, true, completions);
 	}
 
-	private void computeProposalsForStringLiteral(ASTNode node, Collection<ICompletionProposal> completions, int offset,
-			IDocument doc) throws BadLocationException {
+	private void computeProposalsForStringLiteral(IJavaProject project, StringLiteral node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) throws BadLocationException {
 		String prefix = identifyPropertyPrefix(doc.get(node.getStartPosition() + 1, offset - (node.getStartPosition() + 1)), offset - (node.getStartPosition() + 1));
 
 		int startOffset = offset - prefix.length();
@@ -164,6 +215,9 @@ public class ValueCompletionProcessor implements CompletionProvider {
 
 			completions.add(proposal);
 		}
+
+		String unfilteredPrefix = node.getLiteralValue().substring(0, offset - (node.getStartPosition() + 1));
+		addClasspathResourceProposals(project, doc, startOffset, endOffset, unfilteredPrefix, false, completions);
 	}
 
 	private boolean isClosingBracketMissing(String fullNodeContent) {
@@ -218,6 +272,22 @@ public class ValueCompletionProcessor implements CompletionProvider {
 			}
 		}
 		return matches;
+	}
+
+	private String[] findResources(IJavaProject project, String prefix) {
+		String[] resources = IClasspathUtil.getClasspathResources(project.getClasspath()).stream()
+			.distinct()
+			.sorted(new Comparator<String>() {
+				@Override
+				public int compare(String o1, String o2) {
+					return Paths.get(o1).compareTo(Paths.get(o2));
+				}
+			})
+			.map(r -> r.replaceAll("\\\\", "/"))
+			.filter(r -> ("classpath:" + r).contains(prefix))
+			.toArray(String[]::new);
+
+		return resources;
 	}
 
 }

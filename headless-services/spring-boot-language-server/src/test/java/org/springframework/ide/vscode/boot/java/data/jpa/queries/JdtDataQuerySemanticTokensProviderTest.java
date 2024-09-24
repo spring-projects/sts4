@@ -17,7 +17,6 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +44,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
 		
 	@BeforeEach
 	public void setup() throws Exception {
-		jp =  projects.mavenProject("spring-modulith-example-full");
+		jp =  projects.mavenProject("boot-mysql");
 	}
 	
 	private List<SemanticTokenData> computeTokens(CompilationUnit cu) {
@@ -342,21 +341,24 @@ public class JdtDataQuerySemanticTokensProviderTest {
         assertThat(token).isEqualTo(new SemanticTokenData(156, 157, "variable", new String[0]));
         
         token = tokens.get(7);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo(".status");
-        assertThat(token).isEqualTo(new SemanticTokenData(157, 164, "variable", new String[0]));
-
+        assertThat(source.substring(token.start(), token.end())).isEqualTo(".");
+        assertThat(token).isEqualTo(new SemanticTokenData(157, 158, "operator", new String[0]));
+        
         token = tokens.get(8);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("status");
+        assertThat(token).isEqualTo(new SemanticTokenData(158, 164, "property", new String[0]));
+
+        token = tokens.get(9);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("=");
         assertThat(token).isEqualTo(new SemanticTokenData(165, 166, "operator", new String[0]));
 
-        token = tokens.get(9);
+        token = tokens.get(10);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("1");
         assertThat(token).isEqualTo(new SemanticTokenData(167, 168, "number", new String[0]));
         
 	}
 
 	@Test
-	@Disabled("Needs proper SPEL support in SQL grammar")
 	void nativeQueryWithSpel() throws Exception {
 		String source = """
 		package my.package
@@ -406,27 +408,76 @@ public class JdtDataQuerySemanticTokensProviderTest {
         assertThat(token).isEqualTo(new SemanticTokenData(156, 157, "variable", new String[0]));
         
         token = tokens.get(7);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo(".status");
-        assertThat(token).isEqualTo(new SemanticTokenData(157, 164, "variable", new String[0]));
-
+        assertThat(source.substring(token.start(), token.end())).isEqualTo(".");
+        assertThat(token).isEqualTo(new SemanticTokenData(157, 158, "operator", new String[0]));
+        
         token = tokens.get(8);
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("status");
+        assertThat(token).isEqualTo(new SemanticTokenData(158, 164, "property", new String[0]));
+
+        token = tokens.get(9);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("=");
         assertThat(token).isEqualTo(new SemanticTokenData(165, 166, "operator", new String[0]));
 
-        token = tokens.get(9);
+        token = tokens.get(10);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("?");
         assertThat(token).isEqualTo(new SemanticTokenData(167, 168, "operator", new String[0]));
-        token = tokens.get(9);
         
+        token = tokens.get(11);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("#{");
         assertThat(token).isEqualTo(new SemanticTokenData(168, 170, "operator", new String[0]));
         
-        token = tokens.get(10);
+        token = tokens.get(12);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("status");
         assertThat(token).isEqualTo(new SemanticTokenData(170, 176, "variable", new String[0]));
 
-        token = tokens.get(11);
+        token = tokens.get(13);
         assertThat(source.substring(token.start(), token.end())).isEqualTo("}");
         assertThat(token).isEqualTo(new SemanticTokenData(176, 177, "operator", new String[0]));
 	}
+	
+	@Test
+	void namedQueryAnnotation() throws Exception {
+		String source = """
+		package my.package
+		
+		import jakarta.persistence.NamedQuery;
+
+		@NamedQuery(name = " my_query", query = "SELECT DISTINCT owner FROM Owner owner")
+		public interface OwnerRepository {
+		}
+		""";
+        
+        String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/OwnerRepository.java").toUri().toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "OwnerRepository.java", jp);
+        
+        assertThat(cu).isNotNull();
+        
+        List<SemanticTokenData> tokens = computeTokens(cu);
+        
+        SemanticTokenData token = tokens.get(0);
+        assertThat(token).isEqualTo(new SemanticTokenData(101, 107, "keyword", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        
+        token = tokens.get(1);
+        assertThat(token).isEqualTo(new SemanticTokenData(108, 116, "keyword", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("DISTINCT");
+        
+        token = tokens.get(2);
+        assertThat(token).isEqualTo(new SemanticTokenData(117, 122, "variable", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        
+        token = tokens.get(3);
+        assertThat(token).isEqualTo(new SemanticTokenData(123, 127, "keyword", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+
+        token = tokens.get(4);
+        assertThat(token).isEqualTo(new SemanticTokenData(128, 133, "class", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("Owner");
+
+        token = tokens.get(5);
+        assertThat(token).isEqualTo(new SemanticTokenData(134, 139, "variable", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+	}
+
 }

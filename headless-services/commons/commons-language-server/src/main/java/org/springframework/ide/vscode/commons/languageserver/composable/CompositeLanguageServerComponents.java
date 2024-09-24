@@ -31,7 +31,6 @@ import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.InlayHint;
-import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SemanticTokensLegend;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
@@ -175,15 +174,14 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		this.inlayHintHandler = new InlayHintHandler() {
 			
 			@Override
-			public List<InlayHint> handle(CancelChecker token, InlayHintParams params) {
-				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
+			public List<InlayHint> handle(TextDocument doc, Range r, CancelChecker token) {
 				LanguageId language = doc.getLanguageId();
 				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
 				if (subComponents != null) {
 					return subComponents.stream()
 							.map(sc -> sc.getInlayHintHandler())
 							.filter(h -> h.isPresent())
-							.flatMap(h -> h.get().handle(token, params).stream())
+							.flatMap(h -> h.get().handle(doc, r, token).stream())
 							.collect(Collectors.toList());
 				}
 				// No applicable subEngine...

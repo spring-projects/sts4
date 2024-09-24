@@ -15,6 +15,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Optional;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
@@ -26,7 +27,7 @@ public class JpqlSemanticTokensTest {
 	
 	@BeforeEach
 	void setup() {
-		provider = new JpqlSemanticTokens(Optional.empty());
+		provider = new JpqlSemanticTokens(Optional.empty(), Optional.of(Assertions::fail));
 	}
 	
 	@Test
@@ -72,7 +73,7 @@ public class JpqlSemanticTokensTest {
 	
 	@Test
 	void query_with_parameter() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT f from Student f LEFT JOIN f.classTbls s WHERE s.ClassName = :className%", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT f from Student f LEFT JOIN f.classTbls s WHERE s.ClassName = :className", 0);
 		
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "variable", new String[0])); // f
@@ -92,9 +93,8 @@ public class JpqlSemanticTokensTest {
 		assertThat(tokens.get(15)).isEqualTo(new SemanticTokenData(66, 67, "operator", new String[0])); // =
 		assertThat(tokens.get(16)).isEqualTo(new SemanticTokenData(68, 69, "operator", new String[0])); // :
 		assertThat(tokens.get(17)).isEqualTo(new SemanticTokenData(69, 78, "parameter", new String[0])); // className
-		assertThat(tokens.get(18)).isEqualTo(new SemanticTokenData(78, 79, "operator", new String[0])); // %
 		
-		assertThat(tokens.size()).isEqualTo(19);
+		assertThat(tokens.size()).isEqualTo(18);
 	}
 
 	@Test

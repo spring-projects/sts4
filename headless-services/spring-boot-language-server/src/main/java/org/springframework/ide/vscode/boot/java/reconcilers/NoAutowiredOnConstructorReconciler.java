@@ -36,7 +36,8 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 
-	private static final String LABEL = "Remove Unnecessary @Autowired";
+	private static final String PROBLEM_LABEL = "Unnecessary `@Autowired` annotation";
+	private static final String FIX_LABEL = "Remove unnecessary `@Autowired` annotation";
 
 	private QuickfixRegistry registry;
 
@@ -82,10 +83,10 @@ public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 						Annotation autowiredAnnotation = ReconcileUtils.findAnnotation(constructor,
 								Annotations.AUTOWIRED, false);
 						if (autowiredAnnotation != null) {
-							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL,
+							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL,
 									autowiredAnnotation.getStartPosition(), autowiredAnnotation.getLength());
 							ReconcileUtils.setRewriteFixes(registry, problem,
-									List.of(new FixDescriptor(NoAutowiredOnConstructor.class.getName(), List.of(docUri.toASCIIString()), LABEL)
+									List.of(new FixDescriptor(NoAutowiredOnConstructor.class.getName(), List.of(docUri.toASCIIString()), FIX_LABEL)
 											.withRecipeScope(RecipeScope.NODE)
 											.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl))));
 							problemCollector.accept(problem);

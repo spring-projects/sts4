@@ -17,10 +17,11 @@ import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.yaml.completion.CompletionFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.ISubCompletionEngine;
@@ -34,6 +35,8 @@ import com.google.common.collect.ImmutableList;
  * @author Kris De Volder
  */
 public class RouteContentAssistant implements ISubCompletionEngine {
+	
+	private static final Logger log = LoggerFactory.getLogger(RouteContentAssistant.class);
 
 	private static final Pattern STOP_AP = Pattern.compile("[#:/]");
 
@@ -72,7 +75,7 @@ public class RouteContentAssistant implements ISubCompletionEngine {
 				return proposals;
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 			//Ignore. This is somewhat expected. Stuff can go wrong resolving the domains
 			// and CA engine just doesn't provide CA in that case.
 		}

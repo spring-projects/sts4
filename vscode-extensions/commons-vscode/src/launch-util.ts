@@ -207,7 +207,7 @@ function createServerOptionsForPortComm(options: ActivatorOptions, context: VSCo
                             jvm.mainClassLaunch(explodedLsJarData.mainClass, classpath, args, processLaunchoptions);
                         } else {
                             // Start the child java process
-                            const launcher = findServerJar(Path.resolve(context.extensionPath, 'jars'));
+                            const launcher = findServerJar(Path.resolve(context.extensionPath, 'language-server'));
                             jvm.jarLaunch(launcher, args, processLaunchoptions);
                         }
                     });
@@ -281,7 +281,7 @@ function addCpAndLauncherToJvmArgs(args: string[], options: ActivatorOptions, co
     } else {
         // Start the child java process
         args.push('-jar');
-        const launcher = findServerJar(Path.resolve(context.extensionPath, 'jars'));
+        const launcher = findServerJar(Path.resolve(context.extensionPath, 'language-server'));
         args.push(launcher);
    }
 }

@@ -23,9 +23,13 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.beans.DependsOnCompletionProcessor;
-import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProcessor;
+import org.springframework.ide.vscode.boot.java.beans.NamedCompletionProvider;
+import org.springframework.ide.vscode.boot.java.beans.ProfileCompletionProvider;
+import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProvider;
+import org.springframework.ide.vscode.boot.java.beans.ResourceCompletionProvider;
 import org.springframework.ide.vscode.boot.java.data.DataRepositoryCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
@@ -36,6 +40,8 @@ import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
+import org.springframework.ide.vscode.boot.java.contextconfiguration.ContextConfigurationProcessor;
+import org.springframework.ide.vscode.boot.java.conditionalonresource.ConditionalOnResourceCompletionProcessor;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -111,11 +117,21 @@ public class BootJavaCompletionEngineConfigurer {
 		
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		
-		providers.put(Annotations.SCOPE, new ScopeCompletionProcessor());
 		providers.put(Annotations.VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
-		providers.put(Annotations.DEPENDS_ON, new DependsOnCompletionProcessor(javaProjectFinder, springIndex));
-		providers.put(Annotations.QUALIFIER, new QualifierCompletionProcessor(javaProjectFinder, springIndex));
+		providers.put(Annotations.CONTEXT_CONFIGURATION, new ContextConfigurationProcessor(javaProjectFinder));
+		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("resources", new ConditionalOnResourceCompletionProcessor())));
 		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
+		
+		providers.put(Annotations.SCOPE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new ScopeCompletionProcessor())));
+		providers.put(Annotations.DEPENDS_ON, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new DependsOnCompletionProcessor(springIndex))));
+		providers.put(Annotations.QUALIFIER, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new QualifierCompletionProvider(springIndex))));
+		providers.put(Annotations.PROFILE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new ProfileCompletionProvider(springIndex))));
+		
+		providers.put(Annotations.RESOURCE_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new ResourceCompletionProvider(springIndex))));
+		providers.put(Annotations.RESOURCE_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new ResourceCompletionProvider(springIndex))));
+
+		providers.put(Annotations.NAMED_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new NamedCompletionProvider(springIndex))));
+		providers.put(Annotations.NAMED_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new NamedCompletionProvider(springIndex))));
 
 		return new BootJavaCompletionEngine(cuCache, providers, snippetManager);
 	}

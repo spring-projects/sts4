@@ -5,10 +5,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.cloudfoundry.operations.routes.Route;
-import org.springframework.ide.vscode.commons.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 public class CFRouteBuilder {
+	
+	private static final Logger log = LoggerFactory.getLogger(CFRouteBuilder.class);
+	
 	private String domain;
 	private String host;
 	private String path;
@@ -129,7 +133,7 @@ public class CFRouteBuilder {
 				this.port = Integer.parseInt(portSegments[1]);
 			}
 		} catch (NumberFormatException e) {
-			Log.log(e);
+			log.error("", e);
 		}
 
 		this.domain = findDomain(hostAndDomain, domains);

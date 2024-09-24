@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Constants containing various fully-qualified annotation names.
  *
@@ -35,11 +38,11 @@ public class Annotations {
 	public static final String JPA_JAVAX_EMBEDDED_ID = "javax.persistence.EmbeddedId";
 	public static final String JPA_JAKARTA_ID_CLASS = "jakarta.persistence.IdClass"; 
 	public static final String JPA_JAVAX_ID_CLASS = "javax.persistence.IdClass";
+	public static final String JPA_JAKARTA_NAMED_QUERY = "jakarta.persistence.NamedQuery"; 
+	public static final String JPA_JAVAX_NAMED_QUERY = "javax.persistence.NamedQuery";
 	public static final String DATA_QUERY = "org.springframework.data.jpa.repository.Query";
 
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
-	public static final String INJECT = "javax.inject.Inject";
-
 	public static final String QUALIFIER = "org.springframework.beans.factory.annotation.Qualifier";
 
 	public static final String SPRING_REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping";
@@ -73,5 +76,30 @@ public class Annotations {
 	public static final String VALUE = "org.springframework.beans.factory.annotation.Value";
 	public static final String SCOPE = "org.springframework.context.annotation.Scope";
 	public static final String DEPENDS_ON = "org.springframework.context.annotation.DependsOn";
+	public static final String CONTEXT_CONFIGURATION = "org.springframework.test.context.ContextConfiguration";
+	
+	public static final String RESOURCE_JAVAX = "javax.annotation.Resource";
+	public static final String RESOURCE_JAKARTA = "jakarta.annotation.Resource";
+	
+	public static final String INJECT_JAVAX = "javax.inject.Inject";
+	public static final String INJECT_JAKARTA = "jakarta.inject.Inject";
+
+	public static final String NAMED_JAVAX = "javax.inject.Named";
+	public static final String NAMED_JAKARTA = "jakarta.inject.Named";
+	public static final Set<String> NAMED_ANNOTATIONS = Set.of(Annotations.NAMED_JAKARTA, Annotations.NAMED_JAVAX);
+	
+	public static final String SCHEDULED = "org.springframework.scheduling.annotation.Scheduled";
+	
+	public static final Map<String, String> AOP_ANNOTATIONS = Map.of(
+	        "org.aspectj.lang.annotation.Pointcut", "Pointcut",
+	        "org.aspectj.lang.annotation.Before", "Before",
+	        "org.aspectj.lang.annotation.Around", "Around",
+	        "org.aspectj.lang.annotation.After", "After",
+	        "org.aspectj.lang.annotation.AfterReturning", "AfterReturning",
+	        "org.aspectj.lang.annotation.AfterThrowing", "AfterThrowing",
+	        "org.aspectj.lang.annotation.DeclareParents", "DeclareParents"
+	);
+	
+	
 
 }

@@ -11,24 +11,26 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.io.IOException;
+import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
 import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.SocketAddress;
+import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Builder;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
-
-import okhttp3.Authenticator;
-import okhttp3.Credentials;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import okhttp3.Route;
 
 @Component
 public class RestTemplateFactory {
@@ -42,27 +44,49 @@ public class RestTemplateFactory {
 	}
 	
 	public RestTemplate createRestTemplate(String host) {
-		String proxyUrl = config.getRawSettings().getString("http", "proxy");
-		if (proxyUrl == null || proxyUrl.isBlank()) {
-			proxyUrl = getProxyUrlFromEnv();
+		String proxyUrlStr = config.getRawSettings().getString("http", "proxy");
+		if (proxyUrlStr == null || proxyUrlStr.isBlank()) {
+			proxyUrlStr = getProxyUrlFromEnv();
 		}
-		OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
-		if (proxyUrl != null && !proxyUrl.isBlank()) {
+		
+		Builder clientBuilder = HttpClient.newBuilder();
+		if (proxyUrlStr != null && !proxyUrlStr.isBlank()) {
 			Set<String> exclusions = config.getRawSettings().getStringSet("http", "proxy-exclusions");
 			if (!"localhost".equals(host) && !"127.0.0.1".equals(host) && !exclusions.contains(host)) {
 				try {
-					URL url = new URL(proxyUrl);
-					if (url.getProtocol().startsWith("http")) {
-						clientBuilder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(url.getHost(), url.getPort() < 0 ? "https".equals(url.getProtocol()) ? 443 : 80 : url.getPort() )));
-					} else if (url.getProtocol().startsWith("sock")) {
-						clientBuilder.proxy(new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(url.getHost(), url.getPort())));
-					}
+					URL proxyUrl = new URL(proxyUrlStr);
+					clientBuilder.proxy(new ProxySelector() {
+
+						@Override
+						public List<Proxy> select(URI uri) {
+							try {
+								URL url = uri.toURL();
+								if (url.getProtocol().startsWith("http")) {
+									return List.of(new Proxy(Proxy.Type.HTTP,
+											new InetSocketAddress(proxyUrl.getHost(),
+													proxyUrl.getPort() < 0
+															? "https".equals(proxyUrl.getProtocol()) ? 443 : 80
+															: proxyUrl.getPort())));
+								} else if (url.getProtocol().startsWith("sock")) {
+									return List.of(new Proxy(Proxy.Type.SOCKS,
+											new InetSocketAddress(proxyUrl.getHost(), proxyUrl.getPort())));
+								}
+							} catch (MalformedURLException e) {
+								log.error("", e);
+							}
+							return Collections.emptyList();
+						}
+
+						@Override
+						public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+						}
+					});
 					String username = null, password = null;
-					if (url.getUserInfo() == null || url.getUserInfo().isBlank()) {
+					if (proxyUrl.getUserInfo() == null || proxyUrl.getUserInfo().isBlank()) {
 						username = config.getRawSettings().getString("http", "proxy-user");
 						password = config.getRawSettings().getString("http", "proxy-password");
 					} else {
-						String userInfo = url.getUserInfo();
+						String userInfo = proxyUrl.getUserInfo();
 						int idx = userInfo.indexOf(':');
 						if (idx > 0 && idx < userInfo.length()) {
 							username = userInfo.substring(0, idx);
@@ -72,13 +96,12 @@ public class RestTemplateFactory {
 					if (username != null && password != null && !username.isEmpty()) {
 						final String user = username;
 						final String pass = password;
-						clientBuilder.proxyAuthenticator(new Authenticator() {
+						clientBuilder.authenticator(new Authenticator() {
 							@Override
-							public Request authenticate(Route route, Response response) throws IOException {
-								String credential = Credentials.basic(user, pass);
-								return response.request().newBuilder().header("Proxy-Authorization", credential)
-										.build();
+							protected PasswordAuthentication getPasswordAuthentication() {
+								return new PasswordAuthentication(user, pass.toCharArray());
 							}
+
 						});
 					}
 				} catch (MalformedURLException e) {
@@ -86,7 +109,7 @@ public class RestTemplateFactory {
 				}
 			}
 		}
-		return new RestTemplate(new OkHttp3ClientHttpRequestFactory(clientBuilder.build()));
+		return new RestTemplate(new JdkClientHttpRequestFactory(clientBuilder.build()));
 	}
 	
 	private static String getProxyUrlFromEnv() {

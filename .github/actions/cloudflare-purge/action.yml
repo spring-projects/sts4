@@ -1,0 +1,68 @@
+name: Cloudflare Purge
+description: Purge Cloudflare Cache
+inputs:
+  urls:
+    description: urls
+    required: true
+  cloudflare_zone_id:
+    description: CloudFlare zone id
+    required: true
+  cloudflare_cache_token:
+    description: CloudFlare cache token
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Purge
+      shell: bash
+      run: |
+        MAX=50000
+        urls="${{ inputs.urls }}"
+        echo "Size=${#urls}"
+        if [ ${#urls} -ge $MAX ]; then
+          echo "Too many URLs. Splitting URLS in batches..."  
+          indices=`echo $urls | grep -o -b " "`
+          offset=0
+          length=0
+          for idx in $indices
+          do
+            end=${idx%:*}
+            new_length=$((end - offset))
+            if [ $new_length -ge $MAX ]; then
+              echo "Batch from offset ${offset} of length ${length}"
+        
+              subarray=${urls:$offset:$length}
+              batch=`jq --compact-output --null-input '$ARGS.positional' --args -- $subarray`
+              json="{\"files\": ${batch}}"
+        
+              curl -v -X POST 'https://api.cloudflare.com/client/v4/zones/${{ inputs.cloudflare_zone_id }}/purge_cache' \
+              -H 'Content-Type:application/json' -H 'Authorization: Bearer ${{ inputs.cloudflare_cache_token }}' \
+              --data "${json}"
+        
+              offset=$((offset + length))
+              length=$((end - offset))
+            else
+              length=$new_length
+            fi
+          done
+          if [ $length -gt 0 ]; then
+            length=$((${#urls} - offset + 1))
+            echo "Last Batch from offset ${offset} of length ${length}"
+        
+            subarray=${urls:$offset:$length}
+            batch=`jq --compact-output --null-input '$ARGS.positional' --args -- $subarray`
+            json="{\"files\": ${batch}}"
+        
+            curl -v -X POST 'https://api.cloudflare.com/client/v4/zones/${{ inputs.cloudflare_zone_id }}/purge_cache' \
+            -H 'Content-Type:application/json' -H 'Authorization: Bearer ${{ inputs.cloudflare_cache_token }}' \
+            --data "${json}"
+          fi
+        else
+          echo "Executing single Purge command..."  
+          batch=`jq --compact-output --null-input '$ARGS.positional' --args -- $subarray`
+          json="{\"files\": ${batch}}"
+        
+          curl -v -X POST 'https://api.cloudflare.com/client/v4/zones/${{ inputs.cloudflare_zone_id }}/purge_cache' \
+          -H 'Content-Type:application/json' -H 'Authorization: Bearer ${{ inputs.cloudflare_cache_token }}' \
+          --data "${json}"
+        fi

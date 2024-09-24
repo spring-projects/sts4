@@ -10,17 +10,23 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlReconciler;
+import org.springframework.ide.vscode.boot.java.cron.CronReconciler;
+import org.springframework.ide.vscode.boot.java.cron.CronSemanticTokens;
+import org.springframework.ide.vscode.boot.java.cron.JdtCronReconciler;
+import org.springframework.ide.vscode.boot.java.cron.JdtCronSemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQueriesInlayHintsProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlReconciler;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryDocHighlightsProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryJdtAstReconciler;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlReconciler;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.SqlSemanticTokens;
+import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AddConfigurationIfBeansPresentReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AuthorizeHttpRequestsReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AutowiredFieldIntoConstructorParameterReconciler;
@@ -29,6 +35,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.BeanPostProcessingIg
 import org.springframework.ide.vscode.boot.java.reconcilers.Boot3NotSupportedTypeReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.EntityIdForRepoReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.HttpSecurityLambdaDslReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.ImplicitWebAnnotationNamesReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.ModulithTypeReferenceViolationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.NoAutowiredOnConstructorReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.NoRepoAnnotationReconciler;
@@ -121,12 +128,27 @@ public class JdtConfig {
 		return new JavaSemanticTokensProvider();
 	}
 	
-	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, SqlSemanticTokens sqlSemanticTokens, JpqlSupportState supportState) {
-		return new JdtDataQuerySemanticTokensProvider(jpqlProvider, hqlProvider, sqlSemanticTokens, supportState);
+	@Bean JdtDataQuerySemanticTokensProvider jpqlJdtSemanticTokensProvider(JpqlSemanticTokens jpqlProvider, HqlSemanticTokens hqlProvider, JpqlSupportState supportState, Optional<SpelSemanticTokens> spelSemanticTokens) {
+		return new JdtDataQuerySemanticTokensProvider(jpqlProvider, hqlProvider, supportState, spelSemanticTokens);
 	}
 	
-	@Bean QueryJdtAstReconciler dataQueryReconciler(HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler, SqlReconciler sqlReconciler) {
-		return new QueryJdtAstReconciler(hqlReconciler, jpqlReconciler, sqlReconciler);
+	@Bean JdtDataQueriesInlayHintsProvider jdtDataQueriesInlayHintsProvider(JdtDataQuerySemanticTokensProvider semanticTokensProvider) {
+		return new JdtDataQueriesInlayHintsProvider(semanticTokensProvider);
+	}
+	
+	@Bean JdtQueryDocHighlightsProvider jdtDocHighlightsProvider(JdtDataQuerySemanticTokensProvider semanticTokensProvider) {
+		return new JdtQueryDocHighlightsProvider(semanticTokensProvider);
+	}
+	
+	@Bean JdtCronSemanticTokensProvider jdtCronSemanticTokensProvider(CronSemanticTokens cronProvider) {
+		return new JdtCronSemanticTokensProvider(cronProvider);
+	}
+	
+	@Bean QueryJdtAstReconciler dataQueryReconciler(
+			@Qualifier("hqlReconciler") Reconciler hqlReconciler,
+			@Qualifier("jpqlReconciler") Reconciler jpqlReconciler,
+			Optional<SpelReconciler> spelReconciler) {
+		return new QueryJdtAstReconciler(hqlReconciler, jpqlReconciler, spelReconciler);
 	}
 
 	@Bean EmbeddedLanguagesSemanticTokensSupport embbededLanguagesSyntaxHighlighting(SimpleLanguageServer server, BootJavaConfig config) {
@@ -139,6 +161,14 @@ public class JdtConfig {
 	
 	@Bean JdtSpelReconciler jdtSpelReconciler(SpelReconciler spelReconciler) {
 		return new JdtSpelReconciler(spelReconciler);
+	}
+	
+	@Bean ImplicitWebAnnotationNamesReconciler implicitWebAnnotationNamesReconciler(SimpleLanguageServer server) {
+		return new ImplicitWebAnnotationNamesReconciler(server.getQuickfixRegistry());
+	}
+	
+	@Bean JdtCronReconciler jdtCronReconciler(CronReconciler cronReconciler) {
+		return new JdtCronReconciler(cronReconciler);
 	}
 
 }

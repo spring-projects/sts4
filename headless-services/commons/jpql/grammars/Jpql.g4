@@ -342,7 +342,7 @@ in_item
     ;
 
 like_expression
-    : string_expression (NOT)? LIKE pattern_value (ESCAPE escape_character)?
+    : string_expression (NOT)? LIKE ('%')? pattern_value ('%')? (ESCAPE escape_character)?
     ;
 
 null_comparison_expression
@@ -633,7 +633,7 @@ input_parameter
     : ':' SPEL
     | '?' SPEL
     | '?' INTLITERAL
-    | ':' identification_variable ('%')?
+    | ':' identification_variable
     ;
 
 pattern_value

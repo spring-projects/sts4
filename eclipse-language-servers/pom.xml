@@ -4,7 +4,7 @@
 
 	<groupId>org.springframework.boot.ide</groupId>
 	<artifactId>org.springframework.boot.ide.servers</artifactId>
-	<version>4.24.0-SNAPSHOT</version>
+	<version>4.26.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<organization>
@@ -79,7 +79,7 @@
 		<p2.qualifier>SNAPSHOT</p2.qualifier>
 		<p2.repository.name>Spring Boot IDE Language Server</p2.repository.name>
 
-		<tycho-version>4.0.7</tycho-version>
+		<tycho-version>4.0.8</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<dist.bucket>tools-spring-io</dist.bucket>
@@ -136,59 +136,6 @@
 				<p2.qualifier>CI-B${buildNumber}</p2.qualifier>
 				<p2.replaceQualifier>true</p2.replaceQualifier>
 			</properties>
-		</profile>
-
-		<profile>
-			<id>e431</id>
-			<properties>
-				<dist.target>e4.31.0</dist.target>
-				<dist.target.major>e4.31</dist.target.major>
-				<dist.platform.name>2024-03</dist.platform.name>
-				<dist.platform.name.long>2024-03 (4.31)</dist.platform.name.long>
-				<dist.platform.id>2024-03</dist.platform.id>
-				<dist.platform.version>4.31</dist.platform.version>
-				<package.qualifierPrefix>e431</package.qualifierPrefix>
-			</properties>
-			<repositories>
-				<repository>
-					<id>2023-12</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/releases/2024-03/</url>
-				</repository>
-				<repository>
-					<id>orbit</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/tools/orbit/simrel/orbit-aggregation/2024-03</url>
-				</repository>
-<!--				<repository>
-					<id>m2e</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/technology/m2e/snapshots/latest/</url>
-				</repository> -->
-				<repository>
-					<id>mylyn-markdown</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/mylyn/docs/releases/3.0.45/</url>
-				</repository>
-				<repository>
-					<id>lsp4e</id>
-					<layout>p2</layout>
-<!--					<url>https://download.eclipse.org/lsp4e/releases/0.24.1/</url> -->
-					<url>https://download.eclipse.org/lsp4e/snapshots</url>
-				</repository>
-				<repository>
-					<id>tm4e</id>
-					<layout>p2</layout>
-<!--					<url>https://download.eclipse.org/tm4e/releases/0.8.1/</url> -->
-					<url>https://download.eclipse.org/tm4e/snapshots</url>
-				</repository>
-				<repository>
-					<id>wwd</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/wildwebdeveloper/releases/latest/</url>
-<!--					<url>https://download.eclipse.org/wildwebdeveloper/snapshots/</url> -->
-				</repository>
-			</repositories>
 		</profile>
 
 		<profile>
@@ -254,7 +201,7 @@
 				<repository>
 					<id>2024-09</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/staging/2024-09/</url>
+					<url>https://download.eclipse.org/releases/2024-09/</url>
 				</repository>
 				<repository>
 					<id>orbit</id>
@@ -287,6 +234,53 @@
 			</repositories>
 		</profile>
 
+		<profile>
+			<id>e434</id>
+			<properties>
+				<dist.target>e4.34.0</dist.target>
+				<dist.target.major>e4.34</dist.target.major>
+				<dist.platform.name>2024-12</dist.platform.name>
+				<dist.platform.name.long>2024-12 (4.34)</dist.platform.name.long>
+				<dist.platform.id>2024-12</dist.platform.id>
+				<dist.platform.version>4.34</dist.platform.version>
+				<package.qualifierPrefix>e434</package.qualifierPrefix>
+			</properties>
+			<repositories>
+				<repository>
+					<id>2024-12</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/staging/2024-12/</url>
+				</repository>
+				<repository>
+					<id>orbit</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/tools/orbit/simrel/orbit-aggregation/2024-12</url>
+				</repository>
+<!--				<repository>
+					<id>mylyn-markdown</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/mylyn/docs/releases/3.0.48/</url>
+				</repository> -->
+				<repository>
+					<id>lsp4e</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/lsp4e/releases/0.26.0/</url>
+<!--					<url>https://download.eclipse.org/lsp4e/snapshots</url> -->
+				</repository>
+				<repository>
+					<id>tm4e</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/tm4e/releases/latest/</url>
+<!--					<url>https://download.eclipse.org/tm4e/snapshots</url> -->
+				</repository>
+				<repository>
+					<id>wwd</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/wildwebdeveloper/releases/latest/</url>
+<!--					<url>https://download.eclipse.org/wildwebdeveloper/snapshots/</url> -->
+				</repository>
+			</repositories>
+		</profile>
 	</profiles>
 
 	<repositories>

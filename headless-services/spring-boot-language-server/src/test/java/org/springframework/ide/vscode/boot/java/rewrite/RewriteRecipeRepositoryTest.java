@@ -35,10 +35,10 @@ public class RewriteRecipeRepositoryTest {
 	@Test
 	void listSubRecipe() throws Exception {
 		List<Recipe> recipes = recipeRepo.getSubRecipes("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1", List.of()).get();
-		assertEquals(8, recipes.size());
+		assertEquals(10, recipes.size());
 		
 		recipes = recipeRepo.getSubRecipes("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1", List.of(0, 2)).get();
-		assertEquals(20, recipes.size());
+		assertEquals(19, recipes.size());
 		
 		recipes = recipeRepo.getSubRecipes("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1",List.of(0, 345)).get();
 		assertEquals(0, recipes.size());
@@ -100,7 +100,9 @@ public class RewriteRecipeRepositoryTest {
 				new RecipeSelectionDescriptor(false, "", null),
 				new RecipeSelectionDescriptor(false, "", null),
 				new RecipeSelectionDescriptor(false, "", null),
-				new RecipeSelectionDescriptor(true, "", null),
+				new RecipeSelectionDescriptor(false, "", null),
+				new RecipeSelectionDescriptor(true, "org.openrewrite.java.spring.security6.UpgradeSpringSecurity_6_1", null),
+				new RecipeSelectionDescriptor(false, "", null),
 				new RecipeSelectionDescriptor(false, "", null),
 				new RecipeSelectionDescriptor(false, "", null)
 		});
@@ -112,7 +114,7 @@ public class RewriteRecipeRepositoryTest {
 		assertEquals(2, boot31.getRecipeList().size());
 		
 		Recipe security61 = boot31.getRecipeList().get(1);
-		assertThat(security61.getRecipeList().size()).isGreaterThan(5);
+		assertThat(security61.getRecipeList().size()).isGreaterThanOrEqualTo(5);
 		
 		Recipe boot30 = boot31.getRecipeList().get(0);
 		assertEquals("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0", boot30.getName());
@@ -127,7 +129,7 @@ public class RewriteRecipeRepositoryTest {
 		
 		assertThat(java17.getRecipeList().get(0).getName()).isEqualTo("org.openrewrite.java.migrate.Java8toJava11");
 		assertThat(java17.getRecipeList().get(1).getName()).isEqualTo("org.openrewrite.java.migrate.UpgradeBuildToJava17");
-		assertThat(java17.getRecipeList().get(2).getName()).isEqualTo("org.openrewrite.java.migrate.RemovedModifierAndConstantBootstrapsConstructors");
+		assertThat(java17.getRecipeList().get(2).getName()).isEqualTo("org.openrewrite.java.migrate.lang.UseTextBlocks");
 		
 	}
 

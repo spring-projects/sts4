@@ -28,9 +28,7 @@ import java.util.Optional;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintLabelPart;
-import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
@@ -79,7 +77,7 @@ public class PomInlayHintHandlerTest {
 		
 		PomInlayHintHandler inlayHanlder = new PomInlayHintHandler(server, projectFinder, ProjectObserver.NULL, projectProvider);
 		
-		List<InlayHint> hints = inlayHanlder.handle(mock(CancelChecker.class), new InlayHintParams(new TextDocumentIdentifier(doc.getUri()), doc.toRange(0, doc.getLength())));
+		List<InlayHint> hints = inlayHanlder.handle(doc, doc.toRange(0, doc.getLength()), mock(CancelChecker.class));
 		
 		assertEquals(1, hints.size());
 		
@@ -131,7 +129,7 @@ public class PomInlayHintHandlerTest {
 		
 		PomInlayHintHandler inlayHanlder = new PomInlayHintHandler(server, projectFinder, ProjectObserver.NULL, projectProvider);
 		
-		List<InlayHint> hints = inlayHanlder.handle(mock(CancelChecker.class), new InlayHintParams(new TextDocumentIdentifier(doc.getUri()), doc.toRange(0, doc.getLength())));
+		List<InlayHint> hints = inlayHanlder.handle(doc, doc.toRange(0, doc.getLength()), mock(CancelChecker.class));
 		
 		assertEquals(0, hints.size());
 		
@@ -169,7 +167,7 @@ public class PomInlayHintHandlerTest {
 		
 		PomInlayHintHandler inlayHanlder = new PomInlayHintHandler(server, projectFinder, ProjectObserver.NULL, projectProvider);
 		
-		List<InlayHint> hints = inlayHanlder.handle(mock(CancelChecker.class), new InlayHintParams(new TextDocumentIdentifier(doc.getUri()), doc.toRange(0, doc.getLength())));
+		List<InlayHint> hints = inlayHanlder.handle(doc, doc.toRange(0, doc.getLength()), mock(CancelChecker.class));
 		
 		assertEquals(1, hints.size());
 		
@@ -225,7 +223,7 @@ public class PomInlayHintHandlerTest {
 		
 		PomInlayHintHandler inlayHanlder = new PomInlayHintHandler(server, projectFinder, ProjectObserver.NULL, projectProvider);
 		
-		List<InlayHint> hints = inlayHanlder.handle(mock(CancelChecker.class), new InlayHintParams(new TextDocumentIdentifier(doc.getUri()), doc.toRange(0, doc.getLength())));
+		List<InlayHint> hints = inlayHanlder.handle(doc, doc.toRange(0, doc.getLength()), mock(CancelChecker.class));
 		
 		assertEquals(0, hints.size());		
 	}

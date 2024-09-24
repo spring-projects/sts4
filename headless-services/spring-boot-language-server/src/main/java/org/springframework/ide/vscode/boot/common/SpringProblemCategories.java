@@ -38,7 +38,10 @@ public class SpringProblemCategories {
 	public static final ProblemCategory VERSION_VALIDATION = new ProblemCategory("version-validation", "Versions and Support Ranges",
 			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.java.version-validation"));
 
-	public static final ProblemCategory DATA_QUERY = new ProblemCategory("data-query", "Data Query",
+	public static final ProblemCategory DATA_QUERY = new ProblemCategory("data-query", "Data Queries",
 			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.data-query"));
+	
+	public static final ProblemCategory CRON = new ProblemCategory("cron", "CRON Expressions",
+			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.cron"));
 	
 }

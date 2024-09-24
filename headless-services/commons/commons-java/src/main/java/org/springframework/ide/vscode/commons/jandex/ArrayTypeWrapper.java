@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016-2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -35,7 +35,7 @@ final class ArrayTypeWrapper extends TypeWrapper<ArrayType> implements IArrayTyp
 
 	@Override
 	public IJavaType component() {
-		return wrap(getType().component());
+		return wrap(getType().elementType());
 	}
 	
 }

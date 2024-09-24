@@ -373,7 +373,6 @@ class MavenBridge {
 			configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
 			configuration.setRepositorySession(createRepositorySession(request));
 			configuration.setResolveDependencies(true);
-			configuration.setResolveVersionRanges(true);
 			request.setGoals(Arrays.asList(new String[] { "compile", "javadoc:javadoc" }));
 			Properties userProperties = (Properties) request.getUserProperties().clone();
 			userProperties.put("show", "private");

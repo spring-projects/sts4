@@ -24,14 +24,14 @@ cd ${destination_folder_name}
 zip -r -q ../$file .
 cd ..
 echo "Successfully zipped ${destination_folder_name} into ${file}"
-java -jar $self_extr_jar $file
+#java -jar $self_extr_jar $file
 echo "Remove temporary ${destination_folder_name}"
 rm -rf ./${destination_folder_name}
 
 echo "Creating checksums sha-256 and md5 for ${file}"
 shasum -a 256 $file > ${file}.sha256
 md5sum $file > ${file}.md5
-self_jar_file=${file%.*}.self-extracting.jar
-echo "Creating checksums sha-256 and md5 for ${self_jar_file}"
-shasum -a 256 $self_jar_file > ${self_jar_file}.sha256
-md5sum $self_jar_file > ${self_jar_file}.md5
+#self_jar_file=${file%.*}.self-extracting.jar
+#echo "Creating checksums sha-256 and md5 for ${self_jar_file}"
+#shasum -a 256 $self_jar_file > ${self_jar_file}.sha256
+#md5sum $self_jar_file > ${self_jar_file}.md5

@@ -77,6 +77,7 @@ public class DependsOnDefinitionProviderTest {
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;
 
+        		import org.springframework.stereotype.Component;
 				import org.springframework.context.annotation.DependsOn;
 
 				@Component
@@ -103,6 +104,7 @@ public class DependsOnDefinitionProviderTest {
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;
 
+        		import org.springframework.stereotype.Component;
 				import org.springframework.context.annotation.DependsOn;
 
 				@Component
@@ -129,6 +131,7 @@ public class DependsOnDefinitionProviderTest {
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;
 
+        		import org.springframework.stereotype.Component;
 				import org.springframework.context.annotation.DependsOn;
 
 				@Component

@@ -25,10 +25,10 @@ import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Value
 public class NamedQueryPropertiesReconcileEngine implements IReconcileEngine {
 	
 	private final JavaProjectFinder projectFinder;
-	private final HqlReconciler hqlReconciler;
-	private final JpqlReconciler jpqlReconciler;
+	private final Reconciler hqlReconciler;
+	private final Reconciler jpqlReconciler;
 
-	public NamedQueryPropertiesReconcileEngine(JavaProjectFinder projectFinder, HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler) {
+	public NamedQueryPropertiesReconcileEngine(JavaProjectFinder projectFinder, Reconciler hqlReconciler, Reconciler jpqlReconciler) {
 		this.projectFinder = projectFinder;
 		this.hqlReconciler = hqlReconciler;
 		this.jpqlReconciler = jpqlReconciler;
@@ -43,7 +43,7 @@ public class NamedQueryPropertiesReconcileEngine implements IReconcileEngine {
 			
 			AntlrParser parser = new AntlrParser();
 			ParseResults parseResults = parser.parse(doc.get());
-			for (KeyValuePair pair : parseResults.ast.getNodes(KeyValuePair.class)) {
+			for (KeyValuePair pair : parseResults.ast.getPropertyValuePairs()) {
 				Value value = pair.getValue();
 				reconciler.reconcile(value.decode(), value.getOffset(), problemCollector);
 			}

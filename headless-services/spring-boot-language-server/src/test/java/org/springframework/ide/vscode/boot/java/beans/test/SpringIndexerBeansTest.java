@@ -10,20 +10,19 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
@@ -43,7 +42,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class SpringIndexerBeansTest {
 
 	@Autowired private BootLanguageServerHarness harness;
-	@Autowired private BootLanguageServerInitializer serverInit;
 	@Autowired private JavaProjectFinder projectFinder;
 
 	private File directory;

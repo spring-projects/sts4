@@ -36,31 +36,31 @@ import java.util.Iterator;
 public class XML {
 
     /** The Character '&amp;'. */
-    public static final Character AMP   = new Character('&');
+    public static final Character AMP   = Character.valueOf('&');
 
     /** The Character '''. */
-    public static final Character APOS  = new Character('\'');
+    public static final Character APOS  = Character.valueOf('\'');
 
     /** The Character '!'. */
-    public static final Character BANG  = new Character('!');
+    public static final Character BANG  = Character.valueOf('!');
 
     /** The Character '='. */
-    public static final Character EQ    = new Character('=');
+    public static final Character EQ    = Character.valueOf('=');
 
     /** The Character '>'. */
-    public static final Character GT    = new Character('>');
+    public static final Character GT    = Character.valueOf('>');
 
     /** The Character '&lt;'. */
-    public static final Character LT    = new Character('<');
+    public static final Character LT    = Character.valueOf('<');
 
     /** The Character '?'. */
-    public static final Character QUEST = new Character('?');
+    public static final Character QUEST = Character.valueOf('?');
 
     /** The Character '"'. */
-    public static final Character QUOT  = new Character('"');
+    public static final Character QUOT  = Character.valueOf('"');
 
     /** The Character '/'. */
-    public static final Character SLASH = new Character('/');
+    public static final Character SLASH = Character.valueOf('/');
 
     /**
      * Replace special characters with XML escapes:
@@ -317,14 +317,14 @@ public class XML {
         try {
             char initial = string.charAt(0);
             if (initial == '-' || (initial >= '0' && initial <= '9')) {
-                Long value = new Long(string);
+                Long value = Long.valueOf(string);
                 if (value.toString().equals(string)) {
                     return value;
                 }
             }
         }  catch (Exception ignore) {
             try {
-                Double value = new Double(string);
+                Double value = Double.valueOf(string);
                 if (value.toString().equals(string)) {
                     return value;
                 }

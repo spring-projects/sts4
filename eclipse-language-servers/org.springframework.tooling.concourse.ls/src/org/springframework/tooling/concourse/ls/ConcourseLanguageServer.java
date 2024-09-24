@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,11 +24,10 @@ public class ConcourseLanguageServer extends STS4LanguageServerProcessStreamConn
 
 	public ConcourseLanguageServer() {
 		super(CONCOURSE_SERVER);
-		
-		initExplodedJarCommand(
+
+		initExecutableJarCommand(
 				Paths.get("servers", "concourse-language-server"),
-				"org.springframework.ide.vscode.concourse.ConcourseLanguageServerBootApp",
-				"application.properties",
+				"concourse-language-server",
 				Arrays.asList(
 						"-Dlsp.lazy.completions.disable=true",
 						"-XX:TieredStopAtLevel=1"

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,8 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,7 +65,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class ValueCompletionTest {
 
 	@Autowired private BootLanguageServerHarness harness;
-	@Autowired private IJavaProject testProject;
 	@Autowired private JavaProjectFinder projectFinder;
 
 	private Editor editor;
@@ -132,10 +133,6 @@ public class ValueCompletionTest {
 		harness.intialize(null);
 	}
 
-	private IJavaProject getTestProject() {
-		return testProject;
-	}
-
     @Test
     void testPrefixIdentification() {
         ValueCompletionProcessor processor = new ValueCompletionProcessor(projectFinder, null, null);
@@ -157,10 +154,15 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(<*>)");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"${data.prop2}\"<*>)",
                 "@Value(\"${else.prop3}\"<*>)",
                 "@Value(\"${spring.prop1}\"<*>)");
+        
+        assertClasspathCompletions(
+        		"@Value(\"classpath:a-random-resource-root.md\"<*>)",
+        		"@Value(\"classpath:org/random-resource-org.md\"<*>)",
+        		"@Value(\"classpath:org/test/random-resource-org-test.txt\"<*>)");
     }
 
     @Test
@@ -168,17 +170,23 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(value=<*>)");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(value=\"${data.prop2}\"<*>)",
                 "@Value(value=\"${else.prop3}\"<*>)",
                 "@Value(value=\"${spring.prop1}\"<*>)");
+        
+        assertClasspathCompletions(
+        		"@Value(value=\"classpath:a-random-resource-root.md\"<*>)",
+        		"@Value(value=\"classpath:org/random-resource-org.md\"<*>)",
+        		"@Value(value=\"classpath:org/test/random-resource-org-test.txt\"<*>)");
     }
 
     @Test
     void testEmptyBracketsCompletionWithWrongParamName() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(another=<*>)");
         prepareDefaultIndexData();
-        assertAnnotationCompletions();
+        assertPropertyCompletions();
+        assertClasspathCompletions();
     }
 
     @Test
@@ -186,10 +194,12 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value($<*>)");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"${data.prop2}\"<*>)",
                 "@Value(\"${else.prop3}\"<*>)",
                 "@Value(\"${spring.prop1}\"<*>)");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -197,10 +207,12 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(value=$<*>)");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(value=\"${data.prop2}\"<*>)",
                 "@Value(value=\"${else.prop3}\"<*>)",
                 "@Value(value=\"${spring.prop1}\"<*>)");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -208,10 +220,12 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(\"$<*>\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"${data.prop2}<*>\")",
                 "@Value(\"${else.prop3}<*>\")",
                 "@Value(\"${spring.prop1}<*>\")");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -219,10 +233,12 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(value=\"$<*>\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(value=\"${data.prop2}<*>\")",
                 "@Value(value=\"${else.prop3}<*>\")",
                 "@Value(value=\"${spring.prop1}<*>\")");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -230,10 +246,12 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(\"${<*>}\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"${data.prop2<*>}\")",
                 "@Value(\"${else.prop3<*>}\")",
                 "@Value(\"${spring.prop1<*>}\")");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -241,10 +259,12 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(value=\"${<*>}\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(value=\"${data.prop2<*>}\")",
                 "@Value(value=\"${else.prop3<*>}\")",
                 "@Value(value=\"${spring.prop1<*>}\")");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -252,10 +272,15 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(\"<*>\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"${data.prop2}<*>\")",
                 "@Value(\"${else.prop3}<*>\")",
                 "@Value(\"${spring.prop1}<*>\")");
+
+        assertClasspathCompletions(
+        		"@Value(\"classpath:a-random-resource-root.md<*>\")",
+        		"@Value(\"classpath:org/random-resource-org.md<*>\")",
+        		"@Value(\"classpath:org/test/random-resource-org-test.txt<*>\")");
     }
 
     @Test
@@ -263,8 +288,124 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(spri<*>)");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"${spring.prop1}\"<*>)");
+
+        assertClasspathCompletions();
+    }
+
+    @Test
+    void testComplexPrefixCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(spring.pr<*>)");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions(
+                "@Value(\"${spring.prop1}\"<*>)");
+
+        assertClasspathCompletions();
+    }
+
+    @Test
+    void testPrefixCompletionWithParamName() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(value=sprin<*>)");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions(
+                "@Value(value=\"${spring.prop1}\"<*>)");
+        
+        assertClasspathCompletions();
+    }
+
+    @Test
+    void testComplexPrefixCompletionWithParamName() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(value=spring.pr<*>)");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions(
+                "@Value(value=\"${spring.prop1}\"<*>)");
+
+        assertClasspathCompletions();
+    }
+
+    @Test
+    void testClasspathPrefixCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(cla<*>)");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions();
+
+        assertClasspathCompletions(
+        		"@Value(\"classpath:a-random-resource-root.md\"<*>)",
+        		"@Value(\"classpath:org/random-resource-org.md\"<*>)",
+        		"@Value(\"classpath:org/test/random-resource-org-test.txt\"<*>)");
+    }
+
+    @Test
+    void testResourceNameInPrefixCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(root<*>)");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions();
+
+        assertClasspathCompletions(
+        		"@Value(\"classpath:a-random-resource-root.md\"<*>)");
+    }
+
+    @Test
+    void testComplexResourceNameInPrefixCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(root.md<*>)");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions();
+
+        assertClasspathCompletions(
+        		"@Value(\"classpath:a-random-resource-root.md\"<*>)");
+    }
+
+    @Test
+    void testComplexResourceNameInPrefixWithinQoutesCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"root.md<*>\")");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions();
+
+        assertClasspathCompletions(
+        		"@Value(\"classpath:a-random-resource-root.md<*>\")");
+    }
+
+    @Test
+    void testComplexResourceNameInPrefixWithParamNameCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(value=root.md<*>)");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions();
+
+        assertClasspathCompletions(
+        		"@Value(value=\"classpath:a-random-resource-root.md\"<*>)");
+    }
+
+    @Test
+    void testComplexResourceNameInPrefixWithinQoutesAndParamNameCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(value=\"root.md<*>\")");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions();
+
+        assertClasspathCompletions(
+        		"@Value(value=\"classpath:a-random-resource-root.md<*>\")");
+    }
+
+    @Test
+    void testClasspathPrefixCompletionWithParamName() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(value=cla<*>)");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions();
+
+        assertClasspathCompletions(
+        		"@Value(value=\"classpath:a-random-resource-root.md\"<*>)",
+        		"@Value(value=\"classpath:org/random-resource-org.md\"<*>)",
+        		"@Value(value=\"classpath:org/test/random-resource-org-test.txt\"<*>)");
     }
 
     @Test
@@ -272,8 +413,34 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(\"spri<*>\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"${spring.prop1}<*>\")");
+
+        assertClasspathCompletions();
+    }
+
+    @Test
+    void testComplexPrefixCompletionWithQuotes() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"spring.pr<*>\")");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions(
+                "@Value(\"${spring.prop1}<*>\")");
+
+        assertClasspathCompletions();
+    }
+
+    @Test
+    void testQuotedClasspathPrefixCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"cla<*>\")");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions();
+
+        assertClasspathCompletions(
+        		"@Value(\"classpath:a-random-resource-root.md<*>\")",
+        		"@Value(\"classpath:org/random-resource-org.md<*>\")",
+        		"@Value(\"classpath:org/test/random-resource-org-test.txt<*>\")");
     }
 
     @Test
@@ -281,10 +448,12 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(\"#{<*>}\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"#{${data.prop2}<*>}\")",
                 "@Value(\"#{${else.prop3}<*>}\")",
                 "@Value(\"#{${spring.prop1}<*>}\")");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -292,10 +461,12 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(\"#{345$<*>}\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"#{345${data.prop2}<*>}\")",
                 "@Value(\"#{345${else.prop3}<*>}\")",
                 "@Value(\"#{345${spring.prop1}<*>}\")");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -303,10 +474,12 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(\"#{345${<*>}\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"#{345${data.prop2}<*>}\")",
                 "@Value(\"#{345${else.prop3}<*>}\")",
                 "@Value(\"#{345${spring.prop1}<*>}\")");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -314,10 +487,12 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(\"#{345${<*>}}\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"#{345${data.prop2<*>}}\")",
                 "@Value(\"#{345${else.prop3<*>}}\")",
                 "@Value(\"#{345${spring.prop1<*>}}\")");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -325,8 +500,10 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(\"#{345${spri<*>}\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"#{345${spring.prop1}<*>}\")");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -334,8 +511,10 @@ public class ValueCompletionTest {
         prepareCase("@Value(\"onField\")", "@Value(\"#{345${spri<*>}}\")");
         prepareDefaultIndexData();
 
-        assertAnnotationCompletions(
+        assertPropertyCompletions(
                 "@Value(\"#{345${spring.prop1<*>}}\")");
+
+        assertClasspathCompletions();
     }
 
     @Test
@@ -357,6 +536,10 @@ public class ValueCompletionTest {
         editor.assertContextualCompletions(
                 "<*>"
         , //==>
+				"classpath:a-random-resource-root.md<*>",
+				"classpath:org/random-resource-org.md<*>",
+        		"classpath:org/test/random-resource-org-test.txt<*>",
+
                 "${data.prop2}<*>",
                 "${else.prop3}<*>",
                 "${spring.prop1}<*>"
@@ -368,7 +551,11 @@ public class ValueCompletionTest {
         editor.assertContextualCompletions(
                 "<*>"
         , //==>
-                "${data.prop2}<*>",
+				"classpath:a-random-resource-root.md<*>",
+				"classpath:org/random-resource-org.md<*>",
+				"classpath:org/test/random-resource-org-test.txt<*>",
+
+				"${data.prop2}<*>",
                 "${else.prop3}<*>",
                 "${spring.ad-hoc.other-thingy}<*>",
                 "${spring.ad-hoc.thingy}<*>",
@@ -392,24 +579,59 @@ public class ValueCompletionTest {
 
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-annotations/src/main/java/org/test/TestValueCompletion.java");
-		String content = IOUtils.toString(resource);
+		String content = IOUtils.toString(resource, Charset.defaultCharset());
 
 		content = content.replace(selectedAnnotation, annotationStatementBeforeTest);
 		editor = new Editor(harness, content, LanguageId.JAVA);
 	}
 
-	private void assertAnnotationCompletions(String... completedAnnotations) throws Exception {
+	private void assertPropertyCompletions(String... completedAnnotations) throws Exception {
 		List<CompletionItem> completions = editor.getCompletions();
-		int i = 0;
-		for (String expectedCompleted : completedAnnotations) {
+		
+		List<CompletionItem> filteredCompletions = completions.stream()
+			.filter(item -> !item.getTextEdit().getLeft().getNewText().contains("classpath"))
+			.toList();
+		
+		assertEquals(completedAnnotations.length, filteredCompletions.size());
+		
+		for (int i = 0; i < completedAnnotations.length; i++) {
+			CompletionItem completion = filteredCompletions.get(i);
+			
 			Editor clonedEditor = editor.clone();
-			clonedEditor.apply(completions.get(i++));
-			if (!clonedEditor.getText().contains(expectedCompleted)) {
-				fail("Not found '"+expectedCompleted+"' in \n"+clonedEditor.getText());
+			clonedEditor.apply(completion);
+
+			String expected = completedAnnotations[i];
+			if (!clonedEditor.getText().contains(expected)) {
+				fail("Not found '" + expected +"' in \n" + clonedEditor.getText());
 			}
 		}
-
-		assertEquals(i, completions.size());
 	}
 
+	private void assertClasspathCompletions(String... completedAnnotations) throws Exception {
+		List<CompletionItem> completions = editor.getCompletions();
+		
+		List<CompletionItem> filteredCompletions = completions.stream()
+				.filter(item -> item.getTextEdit().getLeft().getNewText().contains("classpath"))
+				.sorted(new Comparator<CompletionItem>() {
+					@Override
+					public int compare(CompletionItem o1, CompletionItem o2) {
+						return o1.getLabel().compareTo(o2.getLabel());
+					}
+				})
+				.toList();
+		
+		assertEquals(completedAnnotations.length, filteredCompletions.size());
+		
+		for (int i = 0; i < completedAnnotations.length; i++) {
+			CompletionItem completion = filteredCompletions.get(i);
+			
+			Editor clonedEditor = editor.clone();
+			clonedEditor.apply(completion);
+
+			String expected = completedAnnotations[i];
+			if (!clonedEditor.getText().contains(expected)) {
+				fail("Not found '" + expected +"' in \n" + clonedEditor.getText());
+			}
+		}
+	}
 }

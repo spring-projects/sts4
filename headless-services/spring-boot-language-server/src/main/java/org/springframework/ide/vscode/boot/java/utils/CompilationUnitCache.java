@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.utils;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -381,7 +382,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 				return document.get();
 			}
 		}
-		return IOUtils.toString(uri);
+		return IOUtils.toString(uri, StandardCharsets.UTF_8);
 	}
 
 }

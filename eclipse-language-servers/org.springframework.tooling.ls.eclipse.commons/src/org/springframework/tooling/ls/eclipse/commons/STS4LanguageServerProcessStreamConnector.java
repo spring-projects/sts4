@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,9 +14,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.FileLocator;
@@ -80,6 +82,73 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 		return JRE.currentJRE();
 	}
 
+	protected final void initExecutableJarCommand(Path lsDir, String jarPrefix, List<String> extraVmArgs) {
+		try {
+			Bundle bundle = Platform.getBundle(getPluginId());
+			JRE runtime = getJRE();
+
+			Assert.isNotNull(lsDir);
+
+			File bundleFile = FileLocator.getBundleFileLocation(bundle).orElse(null);
+			File bundleRoot = bundleFile.getAbsoluteFile();
+			Path languageServerRoot = bundleRoot.toPath().resolve(lsDir);
+
+			List<Path> jarFiles = Files.list(languageServerRoot).filter(Files::isRegularFile).filter(f -> {
+				String fileName = f.toFile().getName();
+				return fileName.endsWith(".jar") && fileName.startsWith(jarPrefix);
+			}).limit(2).collect(Collectors.toList());
+
+			if (jarFiles.size() > 1) {
+				throw new IllegalStateException("More than one LS JAR files found: '%s' and '%s'".formatted(jarFiles.get(0), jarFiles.get(1)));
+			} else if (jarFiles.isEmpty()) {
+				throw new IllegalStateException("No LS JAR files found!");
+			}
+
+			Path jarFile = jarFiles.get(0);
+
+			List<String> command = new ArrayList<>();
+
+			command.add(runtime.getJavaExecutable());
+
+			fillCommand(command, extraVmArgs);
+
+			command.add("-jar");
+
+			command.add(languageServerRoot.resolve(jarFile).toFile().toString());
+
+			setCommands(command);
+
+			LanguageServerCommonsActivator.getInstance().getLog().info("Command list starting LS: " + connectorId + "\nSTART:\n" + String.join("\n", command) + "\nEND");
+		} catch (Throwable t) {
+			LanguageServerCommonsActivator.logError(t, "Failed to assemble executable LS JAR launch command");
+		}
+
+	}
+
+	private void fillCommand(List<String> command, List<String> extraVmArgs) {
+		command.add("-Dsts.lsp.client=eclipse");
+
+		command.addAll(extraVmArgs);
+
+		if (!hasVmArgStartingWith(command, LOG_RESOLVE_VM_ARG_PREFIX)) {
+			command.add(LOG_RESOLVE_VM_ARG_PREFIX + "off");
+		}
+
+		LsPreferencesUtil.getServerInfo(getPluginId()).ifPresent(info -> {
+			IPreferenceStore preferenceStore = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
+			if (!preferenceStore.getBoolean(info.preferenceKeyConsoleLog)) {
+				String pathStr = preferenceStore.getString(info.preferenceKeyFileLog);
+				if (pathStr != null && !pathStr.isBlank()) {
+					command.add("-Dsts.log.file=" + pathStr);
+				}
+			}
+			command.add("-XX:ErrorFile=" + Platform.getStateLocation(Platform.getBundle(getPluginId())).append("fatal-error-" + info.label.replaceAll("\\s+", "-").toLowerCase() + "_" + System.currentTimeMillis()));
+		});
+
+		command.add("-Dlanguageserver.hover-timeout=225");
+
+	}
+
 	protected final void initExplodedJarCommand(Path lsFolder, String mainClass, String configFileName, List<String> extraVmArgs) {
 		try {
 			Bundle bundle = Platform.getBundle(getPluginId());
@@ -113,39 +182,20 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 
 			command.add(classpath.toString());
 
-			command.add("-Dsts.lsp.client=eclipse");
-
-			command.addAll(extraVmArgs);
-
-			if (!hasVmArgStartingWith(command, LOG_RESOLVE_VM_ARG_PREFIX)) {
-				command.add(LOG_RESOLVE_VM_ARG_PREFIX + "off");
-			}
-
 			if (configFileName != null) {
 				command.add("-Dspring.config.location=file:" + languageServerRoot.resolve("BOOT-INF/classes").resolve(configFileName).toFile());
 			}
 
-			LsPreferencesUtil.getServerInfo(getPluginId()).ifPresent(info -> {
-				IPreferenceStore preferenceStore = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
-				if (!preferenceStore.getBoolean(info.preferenceKeyConsoleLog)) {
-					String pathStr = preferenceStore.getString(info.preferenceKeyFileLog);
-					if (pathStr != null && !pathStr.isBlank()) {
-						command.add("-Dsts.log.file=" + pathStr);
-					}
-				}
-				command.add("-XX:ErrorFile=" + Platform.getStateLocation(bundle).append("fatal-error-" + info.label.replaceAll("\\s+", "-").toLowerCase() + "_" + System.currentTimeMillis()));
-			});
+			fillCommand(command, extraVmArgs);
 
 			command.add(mainClass);
-
-			command.add("--languageserver.hover-timeout=225");
 
 			setCommands(command);
 
 			LanguageServerCommonsActivator.getInstance().getLog().info("Command list starting LS: " + connectorId + "\nSTART:\n" + String.join("\n", command) + "\nEND");
 		}
-		catch (Exception e) {
-			LanguageServerCommonsActivator.logError(e, "Failed to assemble exploded LS JAR launch command");
+		catch (Throwable t) {
+			LanguageServerCommonsActivator.logError(t, "Failed to assemble exploded LS JAR launch command");
 		}
 	}
 

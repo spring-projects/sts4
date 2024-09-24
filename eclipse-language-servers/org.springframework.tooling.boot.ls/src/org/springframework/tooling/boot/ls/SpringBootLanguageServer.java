@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,10 +28,9 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 	public SpringBootLanguageServer() {
 		super(SPRING_BOOT_SERVER);
 		
-		initExplodedJarCommand(
+		initExecutableJarCommand(
 				Paths.get("servers", "spring-boot-language-server"),
-				"org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp",
-				"application.properties",
+				"spring-boot-language-server",
 				getJVMArgs()
 		);
 		

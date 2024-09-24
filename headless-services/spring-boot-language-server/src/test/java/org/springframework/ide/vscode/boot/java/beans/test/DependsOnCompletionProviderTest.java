@@ -92,9 +92,20 @@ public class DependsOnCompletionProviderTest {
 		assertCompletions("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
 	}
 
+	// TODO: not yet working, needs more groundwork due to the parser skipping these non-valid parts of the AST
+//	@Test
+//	public void testDependsOnCompletionWithoutQuotesWithoutPrefixWithoutClosingBracket() throws Exception {
+//		assertCompletions("@DependsOn(<*>", 2, "@DependsOn(\"bean1\")<*>");
+//	}
+
 	@Test
 	public void testDependsOnCompletionWithoutQuotesWithPrefix() throws Exception {
 		assertCompletions("@DependsOn(be<*>)", 2, "@DependsOn(\"bean1\"<*>)");
+	}
+
+	@Test
+	public void testDependsOnCompletionWithoutQuotesWithNotExactPrefix() throws Exception {
+		assertCompletions("@DependsOn(ea<*>)", 2, "@DependsOn(\"bean1\"<*>)");
 	}
 
 	@Test
@@ -103,9 +114,25 @@ public class DependsOnCompletionProviderTest {
 	}
 
 	@Test
+	public void testDependsOnCompletionWithoutQuotesWithAttributeNameAndDefaultSpaces() throws Exception {
+		assertCompletions("@DependsOn(value = <*>)", 2, "@DependsOn(value = \"bean1\"<*>)");
+	}
+
+	@Test
+	public void testDependsOnCompletionWithoutQuotesWithAttributeNameAndManySpaces() throws Exception {
+		assertCompletions("@DependsOn(value =    <*>  )", 2, "@DependsOn(value =    \"bean1\"<*>  )");
+	}
+
+	@Test
 	public void testDependsOnCompletionInsideOfQuotesWithoutPrefix() throws Exception {
 		assertCompletions("@DependsOn(\"<*>\")", 2, "@DependsOn(\"bean1<*>\")");
 	}
+
+	// TODO: not yet working, needs more groundwork due to the parser skipping these non-valid parts of the AST
+//	@Test
+//	public void testDependsOnCompletionOpeningQuoteOnlyWithoutPrefix() throws Exception {
+//		assertCompletions("@DependsOn(\"<*>)", 2, "@DependsOn(\"bean1<*>\")");
+//	}
 
 	@Test
 	public void testDependsOnCompletionWithoutQuotesWithoutPrefixInsideArray() throws Exception {
@@ -144,7 +171,7 @@ public class DependsOnCompletionProviderTest {
 
 	@Test
 	public void testDependsOnCompletionInsideOfQuotesWithPrefixAndReplacedPostfix() throws Exception {
-		assertCompletions("@DependsOn(\"be<*>xxx\")", 2, "@DependsOn(\"bean1<*>xxx\")");
+		assertCompletions("@DependsOn(\"be<*>xxx\")", 2, "@DependsOn(\"bean1<*>\")");
 	}
 	
 	@Test
@@ -169,6 +196,7 @@ public class DependsOnCompletionProviderTest {
 		String editorContent = """
 				package org.test;
 
+        		import org.springframework.stereotype.Component;
 				import org.springframework.context.annotation.DependsOn;
 
 				@Component
@@ -189,6 +217,7 @@ public class DependsOnCompletionProviderTest {
 	        assertEquals("""
 					package org.test;
 	
+	        		import org.springframework.stereotype.Component;
 					import org.springframework.context.annotation.DependsOn;
 	
 					@Component

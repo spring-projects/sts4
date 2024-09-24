@@ -44,7 +44,7 @@ SPACE              : [ \t\r\n]+     -> channel(HIDDEN);
 SPEC_MYSQL_COMMENT : '/*!' .+? '*/' -> channel(MYSQLCOMMENT);
 COMMENT_INPUT      : '/*' .*? '*/'  -> channel(HIDDEN);
 LINE_COMMENT:
-    (('--' [ \t]* | '#') ~[\r\n]* ('\r'? '\n' | EOF) | '--' ('\r'? '\n' | EOF)) -> channel(HIDDEN)
+    (('--' [ \t]*) ~[\r\n]* ('\r'? '\n' | EOF) | '--' ('\r'? '\n' | EOF)) -> channel(HIDDEN)
 ;
 
 // Keywords
@@ -1293,7 +1293,7 @@ HOST_IP_ADDRESS  : (AT_SIGN IP_ADDRESS);
 LOCAL_ID         : AT_SIGN ( STRING_LITERAL | [A-Z0-9._$\u0080-\uFFFF]+);
 GLOBAL_ID        : AT_SIGN AT_SIGN ( [A-Z0-9._$\u0080-\uFFFF]+ | BQUOTA_STRING);
 
-SPEL               : ('#')('{')(.)*?('}') ;
+SPEL               : '#{' ANYTHING '}';
 
 // Fragments for Literal primitives
 
@@ -1341,6 +1341,7 @@ fragment CHARSET_NAME:
     | UTF8MB4
 ;
 
+fragment ANYTHING          : (.)*?;
 fragment EXPONENT_NUM_PART : 'E' [-+]? DEC_DIGIT+;
 fragment ID_LITERAL        : [A-Z_$0-9\u0080-\uFFFF]*? [A-Z_$\u0080-\uFFFF]+? [A-Z_$0-9\u0080-\uFFFF]*;
 fragment DQUOTA_STRING     : '"' ( '\\' . | '""' | ~('"' | '\\'))* '"';

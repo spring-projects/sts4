@@ -21,7 +21,7 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 
-final class AnnotationParamSpelExtractor {
+public final class AnnotationParamSpelExtractor {
 	
 	private static final String SPRING_CACHEABLE = "org.springframework.cache.annotation.Cacheable";
 	private static final String SPRING_CACHE_EVICT = "org.springframework.cache.annotation.CacheEvict";
@@ -35,7 +35,7 @@ final class AnnotationParamSpelExtractor {
 	
 	private static final String SPRING_CONDITIONAL_ON_EXPRESSION = "org.springframework.boot.autoconfigure.condition.ConditionalOnExpression";
 	
-	final static AnnotationParamSpelExtractor[] SPEL_EXTRACTORS = new AnnotationParamSpelExtractor[] {
+	public final static AnnotationParamSpelExtractor[] SPEL_EXTRACTORS = new AnnotationParamSpelExtractor[] {
 			new AnnotationParamSpelExtractor(Annotations.VALUE, null, "#{", "}"),
 			new AnnotationParamSpelExtractor(Annotations.VALUE, "value", "#{", "}"),
 
@@ -57,27 +57,37 @@ final class AnnotationParamSpelExtractor {
 			new AnnotationParamSpelExtractor(SPRING_POST_FILTER, null, "", ""),
 			new AnnotationParamSpelExtractor(SPRING_POST_FILTER, "value", "", ""),
 
-			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, null, "", ""),
-			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "", "")
+			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, null, "#{", "}", true),
+			new AnnotationParamSpelExtractor(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "#{", "}", true),
+			
+			new AnnotationParamSpelExtractor(Annotations.SCHEDULED, "cron", "#{", "}"),
 	};
 	
 	
-	record Snippet(String text, int offset) {}
+	public record Snippet(String text, int offset) {}
+	
+	public record PrefixSuffix(String prefix, String suffix) {}
 	
 	private final String annotationType;
 	private final String paramName;
-	private final String paramValuePrefix;
-	private final String paramValuePostfix;
+	
+	private final List<PrefixSuffix> prefixSuffixes;
 	
 	public AnnotationParamSpelExtractor(String annotationType, String paramName, String paramValuePrefix,
-			String paramValuePostfix) {
+			String paramValueSuffix) {
 		this.annotationType = annotationType;
 		this.paramName = paramName;
-		this.paramValuePrefix = paramValuePrefix;
-		this.paramValuePostfix = paramValuePostfix;
+		this.prefixSuffixes = List.of(new PrefixSuffix(paramValuePrefix, paramValueSuffix));
 	}
 
-	Optional<Snippet> getSpelRegion(NormalAnnotation a) {
+	public AnnotationParamSpelExtractor(String annotationType, String paramName, String paramValuePrefix,
+			String paramValueSuffx, boolean optinalPrefixAndSuffix) {
+		this.annotationType = annotationType;
+		this.paramName = paramName;
+		this.prefixSuffixes = List.of(new PrefixSuffix(paramValuePrefix, paramValueSuffx), new PrefixSuffix("",  ""));
+	}
+	
+	public Optional<Snippet> getSpelRegion(NormalAnnotation a) {
 		if (paramName == null) {
 			return Optional.empty();
 		}
@@ -104,7 +114,7 @@ final class AnnotationParamSpelExtractor {
 		return Optional.empty();
 	}
 	
-	Optional<Snippet> getSpelRegion(SingleMemberAnnotation a) {
+	public Optional<Snippet> getSpelRegion(SingleMemberAnnotation a) {
 		if (this.paramName != null) {
 			return Optional.empty();
 		}
@@ -125,10 +135,18 @@ final class AnnotationParamSpelExtractor {
 	private Optional<Snippet> fromStringLiteral(StringLiteral valueExp) {
 		String value = valueExp.getEscapedValue();
 		value = value.substring(1, value.length() - 1);
-		if (value != null && value.startsWith(paramValuePrefix) && value.endsWith(paramValuePostfix)) {
-			String spelText = value.substring(paramValuePrefix.length(), value.length() - paramValuePostfix.length());
-			int offset = valueExp.getStartPosition() + paramValuePrefix.length() + 1;
-			return Optional.of(new Snippet(spelText, offset));
+		if (value != null) {
+			for (PrefixSuffix ps : prefixSuffixes) {
+				int startIdx = value.indexOf(ps.prefix);
+				if (startIdx >= 0) {
+					int endIdx = value.lastIndexOf(ps.suffix);
+					if (endIdx >= 0) {
+						String spelText = value.substring(startIdx + ps.prefix.length(), endIdx);
+						int offset = valueExp.getStartPosition() + startIdx + ps.prefix.length() + 1;
+						return Optional.of(new Snippet(spelText, offset));
+					}
+				}
+			}
 		}
 		return Optional.empty();
 	}

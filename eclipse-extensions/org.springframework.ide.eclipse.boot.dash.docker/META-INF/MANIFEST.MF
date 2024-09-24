@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: org.springframework.ide.eclipse.boot.dash.docker
 Bundle-SymbolicName: org.springframework.ide.eclipse.boot.dash.docker;singleton:=true
-Bundle-Version: 4.24.0.qualifier
+Bundle-Version: 4.26.0.qualifier
 Automatic-Module-Name: org.springframework.ide.eclipse.boot.dash.docker
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.springframework.ide.eclipse.boot.dash,
@@ -22,8 +22,8 @@ Require-Bundle: org.springframework.ide.eclipse.boot.dash,
  org.eclipse.jdt.launching,
  org.eclipse.jdt.core,
  org.springframework.ide.eclipse.docker.client;bundle-version="3.9.14",
- org.eclipse.linuxtools.docker.ui;resolution:=optional,
- org.eclipse.linuxtools.docker.core;resolution:=optional
+ org.eclipse.linuxtools.docker.ui,
+ org.eclipse.linuxtools.docker.core
 Import-Package: org.eclipse.core.runtime,
  org.eclipse.core.runtime.jobs,
  org.osgi.framework,

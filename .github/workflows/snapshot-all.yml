@@ -1,0 +1,72 @@
+name: Snapshot - Eclipse LS Extensions
+
+concurrency:
+  group: snapshot-all
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+
+  eclipse-ls-extensions:
+    uses: ./.github/workflows/eclipse-ls-extensions-build.yml
+    with:
+      eclipse_profile: 'e432'
+      build_type: 'snapshot'
+      skip_tests: false
+    secrets: inherit
+
+  e432-distro:
+    needs: [ eclipse-ls-extensions ]
+    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e432'
+      build_type: 'snapshot'
+      java_version: '21'
+    secrets: inherit
+
+  e433-distro:
+    needs: [ eclipse-ls-extensions ]
+    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e433'
+      build_type: 'snapshot'
+      java_version: '21'
+    secrets: inherit
+
+  e434-distro:
+    needs: [ eclipse-ls-extensions ]
+    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e434'
+      build_type: 'snapshot'
+      java_version: '21'
+    secrets: inherit
+
+  vscode-spring-boot:
+    uses: ./.github/workflows/snapshot-vscode-extension.yml
+    with:
+      extension-name: vscode-spring-boot
+    secrets: inherit
+
+  vscode-concourse:
+    uses: ./.github/workflows/snapshot-vscode-extension.yml
+    with:
+      extension-name: vscode-concourse
+    secrets: inherit
+
+  vscode-manifest-yaml:
+    uses: ./.github/workflows/snapshot-vscode-extension.yml
+    with:
+      extension-name: vscode-manifest-yaml
+    secrets: inherit
+
+  vscode-bosh:
+    uses: ./.github/workflows/snapshot-vscode-extension.yml
+    with:
+      extension-name: vscode-bosh
+    secrets: inherit

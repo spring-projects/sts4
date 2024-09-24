@@ -107,7 +107,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 		jmxServiceURL = new JMXServiceURL(jmxURL);
 		
 		Map<String, Object> environment = new HashMap<>();
-		environment.put(JMX_CLIENT_CONNECTION_CHECK_PERIOD_PROPERTY_KEY, new Long(JMX_HEARTBEAT_INTERVAL));
+		environment.put(JMX_CLIENT_CONNECTION_CHECK_PERIOD_PROPERTY_KEY, Long.valueOf(JMX_HEARTBEAT_INTERVAL));
 		jmxConnection = JMXConnectorFactory.connect(jmxServiceURL, environment);
 		
 		jmxConnection.addConnectionNotificationListener(notificationListener, null, null);

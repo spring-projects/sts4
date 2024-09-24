@@ -18,7 +18,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -76,6 +75,7 @@ public class QualifierReferencesProviderTest {
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;
 
+        		import org.springframework.stereotype.Component;
 				import org.springframework.beans.factory.annotation.Qualifier;
 
 				@Component
@@ -105,6 +105,7 @@ public class QualifierReferencesProviderTest {
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;
 
+        		import org.springframework.stereotype.Component;
 				import org.springframework.beans.factory.annotation.Qualifier;
 
 				@Component

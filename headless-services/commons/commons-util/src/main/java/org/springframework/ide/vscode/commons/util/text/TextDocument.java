@@ -18,14 +18,17 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.linetracker.DefaultLineTracker;
 import org.springframework.ide.vscode.commons.util.text.linetracker.ILineTracker;
 
 import javolution.text.Text;
 
 public class TextDocument implements IDocument {
+	
+	private static final Logger log = LoggerFactory.getLogger(TextDocument.class);
 
 	ILineTracker lineTracker = new DefaultLineTracker();
 	private static final Pattern NEWLINE = Pattern.compile("\\n|\\r\\n");
@@ -93,7 +96,7 @@ public class TextDocument implements IDocument {
 			}
 			this.version = newVersion;
 		} else {
-			Log.warn("Change event with bad version ignored");
+			log.warn("Change event with bad version ignored");
 		}
 	}
 

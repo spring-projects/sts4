@@ -79,6 +79,12 @@
         "label": "Invalid Domain ID Type for Spring Data Repository",
         "description": "Invalid Domain ID type for Spring Data Repository",
         "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "WEB_ANNOTATION_NAMES",
+        "label": "Implicit web annotations names",
+        "description": "Web annotation names are unnecessary when it is the same as method parameter name",
+        "defaultSeverity": "HINT"
       }
     ]
   },
@@ -328,6 +334,12 @@
         "label": "SpEL Expression Syntax",
         "description": "SpEL parser raised a ParseException",
         "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "PROPERTY_PLACE_HOLDER_SYNTAX",
+        "label": "Property Place Holder Syntax",
+        "description": "Property place holder raised a ParseException",
+        "defaultSeverity": "ERROR"
       }
     ]
   },
@@ -391,7 +403,7 @@
   },
   {
     "id": "data-query",
-    "label": "Data Query",
+    "label": "Data Queries",
     "toggle": {
       "label": "Enablement",
       "values": [
@@ -419,7 +431,35 @@
         "code": "SQL_SYNTAX",
         "label": "SQL Query Syntax",
         "description": "Syntax",
-        "defaultSeverity": "IGNORE"
+        "defaultSeverity": "ERROR"
+      }
+    ]
+  },
+  {
+    "id": "cron",
+    "label": "CRON Expressions",
+    "toggle": {
+      "label": "Enablement",
+      "values": [
+        "OFF",
+        "ON"
+      ],
+      "preferenceKey": "boot-java.validation.cron",
+      "defaultValue": "ON"
+    },
+    "order": 9,
+    "problemTypes": [
+      {
+        "code": "SYNTAX",
+        "label": "Cron Expression Syntax",
+        "description": "Syntax",
+        "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "FIELD",
+        "label": "Cron Expression field",
+        "description": "Field",
+        "defaultSeverity": "ERROR"
       }
     ]
   }

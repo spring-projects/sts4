@@ -1,0 +1,56 @@
+name: Backup Eclipse Releases to GCP
+
+on:
+  workflow_call:
+    inputs:
+      ls_version:
+        description: The suffix of the p2 repo URL in S3 (i.e. 2023-11-01)
+        required: true
+        type: string
+      release_version:
+        description: Release version (i.e. 4.20.1.RELEASE)
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      ls_version:
+        description: The suffix of the p2 repo URL in S3 (i.e. 2023-11-01)
+        required: true
+        type: string
+      release_version:
+        description: Release version (i.e. 4.20.1.RELEASE)
+        required: true
+        type: string
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.CDN_S3_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.CDN_S3_SECRET_KEY  }}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_ENDPOINT_URL_S3:  ${{ secrets.CDN_S3_ENDPOINT }}
+  AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}
+  DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
+  GCP_BUCKET: gs://cdn-spring-io
+
+jobs:
+  backup-eclipse-releases-to-gcp:
+    runs-on: ubuntu-latest
+    name: Backup Eclipse releases for version '${{ inputs.release_version }}'
+    steps:
+      - name: Authenticate to GCP
+        run: |
+          echo '${{ secrets.CDN_SPRING_IO_BACKUP_GCP_BUCKET_JSON }}' > ./gcp.json
+          gcloud auth activate-service-account --key-file=./gcp.json
+          rm -f gcp.json
+      - name: Copy from S3 to GCP
+        run: |
+          echo "Copying Eclipse LS extensions ${{ inputs.ls_version }} to GCP..."
+          url_path=spring-tools/release/TOOLS/sts4-language-server-integrations/${{ inputs.ls_version }}
+          gcloud storage cp s3://$AWS_S3_BUCKET/$url_path $GCP_BUCKET/$url_path --recursive
+
+          echo "Copying Eclipse Distro P2 repos ${{ inputs.release_version }} to GCP..."
+          url_path=spring-tools/release/TOOLS/sts4/update/${{ inputs.release_version }}
+          gcloud storage cp s3://$AWS_S3_BUCKET/$url_path $GCP_BUCKET/$url_path --recursive
+
+          echo "Copying Eclipse Distros ${{ inputs.release_version }} to GCP..."
+          url_path=spring-tools/release/STS4/${{ inputs.release_version }}/dist
+          gcloud storage cp s3://$AWS_S3_BUCKET/$url_path $GCP_BUCKET/$url_path --recursive

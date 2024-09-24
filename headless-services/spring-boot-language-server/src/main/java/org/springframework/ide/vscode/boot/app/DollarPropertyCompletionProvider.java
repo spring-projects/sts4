@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -51,7 +52,7 @@ public class DollarPropertyCompletionProvider implements ICompletionEngine, Lang
 	}
 	
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument doc, int offset) {
+	public InternalCompletionList getCompletions(TextDocument doc, int offset) {
 		ImmutableList.Builder<ICompletionProposal> proposals = ImmutableList.builder();
 		String prefix = PREFIX_FINDER.getPrefix(doc, offset);
 		int prefixStart = offset-prefix.length();
@@ -74,7 +75,7 @@ public class DollarPropertyCompletionProvider implements ICompletionEngine, Lang
 		} catch (BadLocationException e) {
 			//ignore. Didn't find the '${' 
 		}
-		return proposals.build();
+		return new InternalCompletionList(proposals.build(), false);
 	}
 
 	@Override

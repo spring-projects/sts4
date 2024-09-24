@@ -11,40 +11,47 @@
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import java.net.URI;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TextBlock;
-import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedQueryExpression;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
+import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.parser.mysql.MySqlLexer;
+import org.springframework.ide.vscode.parser.mysql.MySqlParser;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlLexer;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser;
 
 public class QueryJdtAstReconciler implements JdtAstReconciler {
 	
-	private final HqlReconciler hqlReconciler;
-	private final JpqlReconciler jpqlReconciler;
-	private final SqlReconciler sqlReconciler;
+	private final Reconciler hqlReconciler;
+	private final Reconciler jpqlReconciler;
+	private final Map<SqlType, Reconciler> sqlReconcilers;
 
 	
-	public QueryJdtAstReconciler(HqlReconciler hqlReconciler, JpqlReconciler jpqlReconciler,
-			SqlReconciler sqlReconciler) {
+	public QueryJdtAstReconciler(Reconciler hqlReconciler, Reconciler jpqlReconciler,
+			Optional<SpelReconciler> spelReconciler) {
 		this.hqlReconciler = hqlReconciler;
 		this.jpqlReconciler = jpqlReconciler;
-		this.sqlReconciler = sqlReconciler;
+		
+		this.sqlReconcilers = new LinkedHashMap<>();
+		this.sqlReconcilers.put(SqlType.MYSQL, new AntlrReconcilerWithSpel("MySQL", MySqlParser.class, MySqlLexer.class, "sqlStatements", QueryProblemType.SQL_SYNTAX, spelReconciler, MySqlLexer.SPEL));
+		this.sqlReconcilers.put(SqlType.POSTGRESQL, new AntlrReconcilerWithSpel("PostgreSQL", PostgreSqlParser.class, PostgreSqlLexer.class, "root", QueryProblemType.SQL_SYNTAX, spelReconciler, PostgreSqlLexer.SPEL));
 	}
 
 	@Override
@@ -53,68 +60,28 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 
 			@Override
 			public boolean visit(NormalAnnotation node) {
-				
-				if (!AnnotationHierarchies.hasTransitiveSuperAnnotationType(node.resolveTypeBinding(), Annotations.DATA_QUERY)) {
-					return false;
+				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
+				if (q != null) {
+					Optional<Reconciler> reconcilerOpt = q.isNative() ? getSqlReconciler(project) : Optional.of(getQueryReconciler(project));
+					reconcilerOpt.ifPresent(r -> r.reconcile(q.query().text(), q.query().offset(), problemCollector));
 				}
-				
-				List<?> values = node.values();
-				
-				Expression queryExpression = null;
-				boolean isNative = false;
-				for (Object value : values) {
-					if (value instanceof MemberValuePair) {
-						MemberValuePair pair = (MemberValuePair) value;
-						String name = pair.getName().getFullyQualifiedName();
-						if (name != null) {
-							switch (name) {
-							case "value":
-								queryExpression = pair.getValue();
-								break;
-							case "nativeQuery":
-								Expression expression = pair.getValue();
-								if (expression != null) {
-									Object o = expression.resolveConstantExpressionValue();
-									if (o instanceof Boolean b) {
-										isNative = b.booleanValue();
-									}
-								}
-								break;
-							}
-						}
-					}
-				}
-				
-				if (queryExpression != null) {
-					if (isNative) {
-						reconcileExpression(sqlReconciler, queryExpression, problemCollector);
-					} else {
-						reconcileExpression(getQueryReconciler(project), queryExpression, problemCollector);
-					}
-				}
-				
-				return false;
+				return super.visit(node);
 			}
 
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
-				if (!AnnotationHierarchies.hasTransitiveSuperAnnotationType(node.resolveTypeBinding(), Annotations.DATA_QUERY)) {
-					return false;
+				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
+				if (q != null) {
+					getQueryReconciler(project).reconcile(q.query().text(), q.query().offset(), problemCollector);
 				}
-
-				reconcileExpression(getQueryReconciler(project), node.getValue(), problemCollector);
-				return false;
+				return super.visit(node);
 			}
 
 			@Override
 			public boolean visit(MethodInvocation node) {
-				if ("createQuery".equals(node.getName().getIdentifier()) && node.arguments().size() <= 2 && node.arguments().get(0) instanceof Expression queryExpr) {
-					IMethodBinding methodBinding = node.resolveMethodBinding();
-					if ("jakarta.persistence.EntityManager".equals(methodBinding.getDeclaringClass().getQualifiedName())) {
-						if (methodBinding.getParameterTypes().length <= 2 && "java.lang.String".equals(methodBinding.getParameterTypes()[0].getQualifiedName())) {
-							reconcileExpression(getQueryReconciler(project), queryExpr, problemCollector);
-						}
-					}
+				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
+				if (q != null) {
+					getQueryReconciler(project).reconcile(q.query().text(), q.query().offset(), problemCollector);
 				}
 				return super.visit(node);
 			}
@@ -129,7 +96,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 		return SpringProjectUtil.hasDependencyStartingWith(project, "hibernate-core", null) ? hqlReconciler : jpqlReconciler;
 	}
 	
-	private void reconcileExpression(Reconciler reconciler, Expression valueExp, IProblemCollector problemCollector) {
+	public static void reconcileExpression(Reconciler reconciler, Expression valueExp, IProblemCollector problemCollector) {
 		String query = null;
 		int offset = 0;
 		if (valueExp instanceof StringLiteral sl) {
@@ -155,6 +122,15 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 	@Override
 	public ProblemType getProblemType() {
 		return QueryProblemType.JPQL_SYNTAX;
+	}
+	
+	private Optional<Reconciler> getSqlReconciler(IJavaProject project) {
+		if (SpringProjectUtil.hasDependencyStartingWith(project, "mysql-connector", null)) {
+			return Optional.of(sqlReconcilers.get(SqlType.MYSQL));
+		} else if (SpringProjectUtil.hasDependencyStartingWith(project, "postgresql", null)) {
+			return Optional.of(sqlReconcilers.get(SqlType.POSTGRESQL));
+		}
+		return Optional.empty();
 	}
 
 }

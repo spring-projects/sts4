@@ -26,12 +26,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.SimpleGlob;
 import org.springframework.ide.vscode.commons.util.SimpleGlob.Match;
 import org.springframework.ide.vscode.commons.util.Streams;
@@ -72,6 +73,8 @@ import com.google.common.collect.Multiset;
  * and completion engine).
  */
 public class ConcourseModel {
+	
+	private static final Logger log = LoggerFactory.getLogger(ConcourseModel.class);
 
 	/**
 	 * Verification of a 'isUsed' contraint. Basically this consults the ast-type cache, (which should be
@@ -455,7 +458,7 @@ public class ConcourseModel {
 		} catch (YAMLException e) {
 			// ignore: found garbage in the doc. Can't compute stuff and that's to be expected.
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return null;
 	}

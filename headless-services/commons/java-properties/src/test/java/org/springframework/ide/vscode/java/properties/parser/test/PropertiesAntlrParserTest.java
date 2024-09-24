@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -35,7 +35,7 @@ public class PropertiesAntlrParserTest {
 		assertTrue(results.problems.isEmpty());
 		assertEquals(1, results.ast.getAllNodes().size());
 		
-		List<Comment> commentLines = results.ast.getNodes(Comment.class);
+		List<Comment> commentLines = results.ast.getComments();
 		assertEquals(1, commentLines.size());
 		
 		Comment comment = commentLines.get(0);
@@ -52,7 +52,7 @@ public class PropertiesAntlrParserTest {
 		assertTrue(results.problems.isEmpty());
 		assertEquals(1, results.ast.getAllNodes().size());
 		
-		List<KeyValuePair> propertyLines = results.ast.getNodes(KeyValuePair.class);
+		List<KeyValuePair> propertyLines = results.ast.getPropertyValuePairs();
 		assertEquals(1, propertyLines.size());
 		
 		KeyValuePair line = propertyLines.get(0);
@@ -197,7 +197,7 @@ public class PropertiesAntlrParserTest {
 		assertTrue(results.problems.isEmpty());
 		// One property line recorded. With key and empty value 
 		assertEquals(3, results.ast.getAllNodes().size());
-		List<KeyValuePair> lines = results.ast.getNodes(KeyValuePair.class);
+		List<KeyValuePair> lines = results.ast.getPropertyValuePairs();
 		assertEquals(3, lines.size());
 		
 		// Test valid part

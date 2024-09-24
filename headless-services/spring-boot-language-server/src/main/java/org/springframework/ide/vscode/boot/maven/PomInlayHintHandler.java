@@ -28,8 +28,8 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintKind;
 import org.eclipse.lsp4j.InlayHintLabelPart;
-import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +55,10 @@ public class PomInlayHintHandler implements InlayHintHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(PomInlayHintHandler.class);
 	
-	final private SimpleLanguageServer server;
 	final private JavaProjectFinder projectFinder;
 	final private SpringProjectsProvider generationsProvider;
 	
 	public PomInlayHintHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder, ProjectObserver projectObserver, SpringProjectsProvider generationsProvider) {
-		this.server = server;
 		this.projectFinder = projectFinder;
 		this.generationsProvider = generationsProvider;
 		
@@ -99,13 +97,13 @@ public class PomInlayHintHandler implements InlayHintHandler {
 	}
 
 	@Override
-	public List<InlayHint> handle(CancelChecker token, InlayHintParams params) {
-		URI uri = URI.create(params.getTextDocument().getUri());
+	public List<InlayHint> handle(TextDocument doc, Range range, CancelChecker cancelChecker) {
+		URI uri = URI.create(doc.getUri());
 		if ("file".equals(uri.getScheme()) && POM_XML.equals(Paths.get(uri).getFileName().toString())) {
 			
 			List<InlayHintWithLazyPosition> inlayHintProviders = new ArrayList<>();
 
-			Optional<IJavaProject> projectOpt = projectFinder.find(params.getTextDocument());
+			Optional<IJavaProject> projectOpt = projectFinder.find(doc.getId());
 			if (projectOpt.isPresent()) {
 
 				IJavaProject jp = projectOpt.get();
@@ -194,20 +192,15 @@ public class PomInlayHintHandler implements InlayHintHandler {
 			}
 			
 			if (!inlayHintProviders.isEmpty()) {
-				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
-				
-				if (doc != null) {
-					String content = doc.get();
-					if (!content.isEmpty()) {
-						// if doc is not empty, dive into the details and provide more sophisticated content assist proposals
-						DOMParser parser = DOMParser.getInstance();
-						DOMDocument dom = parser.parse(content, "", null);
+				String content = doc.get();
+				if (!content.isEmpty()) {
+					DOMParser parser = DOMParser.getInstance();
+					DOMDocument dom = parser.parse(content, "", null);
 						
-						DOMElement project = dom.getDocumentElement();
+					DOMElement project = dom.getDocumentElement();
 						
-						if (project != null && "project".equals(project.getTagName())) {
-							return inlayHintProviders.stream().flatMap(provider -> provider.computeInlayHints(doc, project).stream()).collect(Collectors.toList());
-						}
+					if (project != null && "project".equals(project.getTagName())) {
+						return inlayHintProviders.stream().flatMap(provider -> provider.computeInlayHints(doc, project).stream()).collect(Collectors.toList());
 					}
 				}
 			}

@@ -27,6 +27,7 @@ import java.util.function.Consumer;
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionItemTag;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.InsertTextMode;
@@ -212,16 +213,17 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				int offset = doc.toOffset(params.getPosition());
 
 				// get completions
-				Collection<ICompletionProposal> rawCompletions = engine.getCompletions(doc, offset);
+				InternalCompletionList rawCompletionList = engine.getCompletions(doc, offset);
 				
 				cancelToken.checkCanceled();
 				
-				List<ICompletionProposal> completions = filter(rawCompletions);
+				List<ICompletionProposal> completions = filter(rawCompletionList.completionItems());
 				Collections.sort(completions, ScoreableProposal.COMPARATOR);
 				
 				cancelToken.checkCanceled();
 	
-				list.setIsIncomplete(false);
+				boolean isIncomplete = rawCompletionList.isIncomplete();
+				
 				List<CompletionItem> items = new ArrayList<>(completions.size());
 				SortKeys sortkeys = new SortKeys();
 				int count = 0;
@@ -229,8 +231,9 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				for (ICompletionProposal c : completions) {
 					count++;
 
-					if (maxCompletions > 0 && count>maxCompletions) {
-						list.setIsIncomplete(true);
+					if (maxCompletions > 0 && count > maxCompletions) {
+						// override whatever completion engines said about being incomplete
+						isIncomplete = true;
 						break;
 					}
 					try {
@@ -243,6 +246,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				cancelToken.checkCanceled();
 				
 				list.setItems(items);
+				list.setIsIncomplete(isIncomplete);
+				
 				//This is a hack is no  longer  needed but keeping it as  a reference:
 				// See: https://bugs.eclipse.org/bugs/show_bug.cgi?id=535823
 				// Reason  hack is not needed is because of the fix in: https://www.pivotaltracker.com/story/show/159667257
@@ -277,7 +282,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setFilterText(completion.getFilterText());
 		item.setInsertTextMode(InsertTextMode.AsIs);
 		if (completion.isDeprecated()) {
-			item.setDeprecated(completion.isDeprecated());
+			item.setTags(List.of(CompletionItemTag.Deprecated));
 		}
 		
 		resolveMainEdit(doc, completion, item);

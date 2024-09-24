@@ -16,8 +16,13 @@ on:
         required: true
         type: string
 
-jobs:
+env:
+  DOWNLOAD_URL_ROOT: https://cdn.spring.io
+  VSIX_FILE: ${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix
+  URL_PATH: spring-tools/release/vscode-extensions/${{ inputs.extension-name }}/${{ inputs.version }}
+  GCP_BUCKET: gs://cdn-spring-io
 
+jobs:
   publish-release:
     runs-on: ubuntu-latest
     name: Publish '${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix'
@@ -25,20 +30,23 @@ jobs:
       - name: Download Release VSIX
         id: download-release
         run: |
-          vsix_file=${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix
-          wget https://cdn.spring.io/spring-tools/vscode-extensions/${{ inputs.extension-name }}/${{ inputs.version }}/release/$vsix_file
+          wget $DOWNLOAD_URL_ROOT/$URL_PATH/$VSIX_FILE
       - name: Publish to VSCode Marketplace
         id: publish-vsce
         run: |
           npm install --global @vscode/vsce
-          vsix_file=${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix
-          vsce publish -p ${{ secrets.VSCE_PUBLISH_TOKEN }} --packagePath $vsix_file
+          vsce publish -p ${{ secrets.VSCE_PUBLISH_TOKEN }} --packagePath $VSIX_FILE
       - name: Publish to Eclipse Open VSX
         id: publish-ovsx
         run: |
           npm install --global ovsx
-          vsix_file=${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix
-          ovsx publish -p ${{ secrets.OVSX_PUBLISH_TOKEN }} $vsix_file
+          ovsx publish -p ${{ secrets.OVSX_PUBLISH_TOKEN }} $VSIX_FILE
+      - name: Upload to GCP
+        run: |
+          echo '${{ secrets.CDN_SPRING_IO_BACKUP_GCP_BUCKET_JSON }}' > ./gcp.json
+          gcloud auth activate-service-account --key-file=./gcp.json
+          rm -f gcp.json
+          gcloud storage cp $VSIX_FILE $GCP_BUCKET/$URL_PATH/$VSIX_FILE
       - id: tools-team-slack
         uses: slackapi/slack-github-action@v1.26
         env:
@@ -47,14 +55,48 @@ jobs:
           channel-id: "C0188MENU2J"
           payload: |
             {
-              "text": "Published release `${{ inputs.extension-name }}-${{ inputs.version }}-${{ inputs.postfix }}.vsix`",
+              "text": "Published release `$VSIX_FILE`",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Release is now available on VSCode Marketplace: <https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
+                    "text": "Published release `$VSIX_FILE`<https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
                   }
                 }
               ]
             }
+      - name: GChat spring-tools-team notification
+        run: |
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw "{
+              \"cards\": [
+                  {
+                    \"header\": {
+                      \"title\": \"Published `${VSIX_FILE}`\",
+                      \"imageUrl\": \"https://code.visualstudio.com/assets/images/code-stable.png\",
+                    },
+                    \"sections\": [
+                      {
+                        \"widgets\": [
+                          {
+                            \"keyValue\": {
+                              \"topLabel\": \"VSCode Marketplace\",
+                              \"content\": \"<a href=\"https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}\">${VSIX_FILE}</a>\",
+                              \"contentMultiline\": true
+                            }
+                          },
+                          {
+                            \"keyValue\": {
+                              \"topLabel\": \"Open VSX Registry\",
+                              \"content\": \"<a href=\"https://open-vsx.org/extension/VMware/${{ inputs.extension-name }}\">${VSIX_FILE}</a>\",
+                              \"contentMultiline\": true
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+              ]
+          }"

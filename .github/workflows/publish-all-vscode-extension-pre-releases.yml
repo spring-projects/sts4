@@ -1,0 +1,31 @@
+name: Pre-Release - Publish VSCode Extensions
+
+on:
+  schedule:
+    - cron: "0 0 * * 2,4,6"
+
+jobs:
+
+  vscode-spring-boot:
+    uses: ./.github/workflows/publish-vscode-extension-pre-release.yml
+    with:
+      extension-name: vscode-spring-boot
+    secrets: inherit
+
+  vscode-concourse:
+    uses: ./.github/workflows/publish-vscode-extension-pre-release.yml
+    with:
+      extension-name: vscode-concourse
+    secrets: inherit
+
+  vscode-manifest-yaml:
+    uses: ./.github/workflows/publish-vscode-extension-pre-release.yml
+    with:
+      extension-name: vscode-manifest-yaml
+    secrets: inherit
+
+  vscode-bosh:
+    uses: ./.github/workflows/publish-vscode-extension-pre-release.yml
+    with:
+      extension-name: vscode-bosh
+    secrets: inherit

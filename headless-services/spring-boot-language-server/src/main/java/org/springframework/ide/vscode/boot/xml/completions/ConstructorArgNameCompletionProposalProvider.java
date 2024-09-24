@@ -36,6 +36,7 @@ import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -54,7 +55,7 @@ public class ConstructorArgNameCompletionProposalProvider implements XMLCompleti
 	}
 
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt,
+	public InternalCompletionList getCompletions(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt,
 			Scanner scanner, int offset) {
 
 		int tokenOffset = scanner.getTokenOffset();
@@ -82,14 +83,16 @@ public class ConstructorArgNameCompletionProposalProvider implements XMLCompleti
 				log.info("Bean class '{}'", beanClass);
 
 				final String searchPrefix = prefix;
-				return constructorArgNameCandidates(project, beanClass)
+				List<ICompletionProposal> completionItems = constructorArgNameCandidates(project, beanClass)
 					.filter(constructorArg -> constructorArg.getRight().startsWith(searchPrefix))
 					.map(constructorArg -> createProposal(constructorArg, doc, offset, tokenOffset, tokenEnd))
 					.collect(Collectors.toList());
+				
+				return new InternalCompletionList(completionItems, false);
 			}
 		};
 
-		return Collections.emptyList();
+		return new InternalCompletionList(Collections.emptyList(), false);
 	}
 
 	public static String identifyBeanClass(DOMNode node) {

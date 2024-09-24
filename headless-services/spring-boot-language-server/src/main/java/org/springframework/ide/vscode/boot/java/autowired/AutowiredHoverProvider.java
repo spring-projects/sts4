@@ -392,7 +392,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 				ITypeBinding typeBinding = ((MarkerAnnotation) modifier).resolveTypeBinding();
 				if (typeBinding != null) {
 					String fqName = typeBinding.getQualifiedName();
-					return Annotations.AUTOWIRED.equals(fqName) || Annotations.INJECT.equals(fqName);
+					return Annotations.AUTOWIRED.equals(fqName) || Annotations.INJECT_JAVAX.equals(fqName) || Annotations.INJECT_JAKARTA.equals(fqName);
 				}
 			}
 		}

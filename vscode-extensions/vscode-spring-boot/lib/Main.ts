@@ -27,6 +27,7 @@ import { SpringCli } from './copilot/springCli';
 import { applyLspEdit } from "./copilot/guideApply";
 import { isLlmApiReady } from "./copilot/util";
 import CopilotRequest, { logger } from "./copilot/copilotRequest";
+import { activateCopilotFeatures } from "./copilot";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -66,11 +67,6 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
                     }
                 );
             }
-        },
-        explodedLsJarData: {
-            lsLocation: 'language-server',
-            mainClass: 'org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp',
-            configFileName: 'application.properties'
         },
         workspaceOptions: workspace.getConfiguration("spring-boot.ls"),
         clientOptions: {
@@ -158,6 +154,8 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
             // Boot LS is fully started
             registerClasspathService(client);
             registerJavaDataService(client);
+
+            activateCopilotFeatures(context);
 
             // Force classpath listener to be enabled. Boot LS can only be launched iff classpath is available and there Spring-Boot on the classpath somewhere.
             commands.executeCommand('sts.vscode-spring-boot.enableClasspathListening', true);

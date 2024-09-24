@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProvider;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProviders;
@@ -29,13 +31,15 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.boot.properties.reconcile.PropertyNavigator;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 
 public class CommonLanguageTools {
+	
+	private static final Logger log = LoggerFactory.getLogger(CommonLanguageTools.class);
+
 
 	public static final Pattern SPACES = Pattern.compile(
 			"(\\s|\\\\\\s)*"
@@ -63,7 +67,7 @@ public class CommonLanguageTools {
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return null;
 	}
@@ -91,7 +95,7 @@ public class CommonLanguageTools {
 					try {
 						hintProvider = hintProvider.traverse(YamlPathSegment.valueAt(0));
 					} catch (Exception e) {
-						Log.log(e);
+						log.error("", e);
 					}
 				}
 				if (!HintProviders.isNull(hintProvider)) {

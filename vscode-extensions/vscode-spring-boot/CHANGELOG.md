@@ -1,3 +1,60 @@
+## 2024-09-11 (4.25.0 RELEASE, incl. language servers version 1.57.0)
+
+#### important highlights
+
+* _(Spring Boot)_ Explain SPEL expressions and AOP annotations via CodeLens with Copilot
+* _(Spring Boot)_ Support language features for `@Named`, `@Resource`, `@Innject` and `@ConditionalOnResource` annotations
+* _(Spring Boot)_ Syntax highlighting and validation for CRON expressions inside `@Scheduled` annotation
+* _(Spring Boot)_ Navigating to definition for some elements of Data Queries embedded into `@Query` annotations
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ Refactor ConditionalOnResource attribute to be based on AnnotationAttributeCompletionProcessor [#1344](https://github.com/spring-projects/sts4/issues/1344)
+* _(Spring Boot)_ GH-1310: Add support for ConditionalOnResource annotation [#1343](https://github.com/spring-projects/sts4/pull/1343)
+* _(Spring Boot)_ GH-1330: Explain AOP annotations with copilot [#1338](https://github.com/spring-projects/sts4/pull/1338)
+* _(Spring Boot)_ [Spring Data Query] Navigate to parameter definitions in Java source [#1336](https://github.com/spring-projects/sts4/issues/1336)
+* _(Spring Boot)_ [Spring Data Queries] Show inline hint for query parameter [#1333](https://github.com/spring-projects/sts4/issues/1333)
+* _(Spring Boot)_ [Spring Data Queries] Show document highlights when the cursor is at query parameter AST node [#1332](https://github.com/spring-projects/sts4/issues/1332)
+* _(Spring Boot)_ add code lens to explain expressions using Copilot to AOP related annotations [#1330](https://github.com/spring-projects/sts4/issues/1330)
+* _(Spring Boot)_ Fix missing proposal if the prefix starts with "/" for `@ContextConfiguration` [#1327](https://github.com/spring-projects/sts4/pull/1327)
+* _(Spring Boot)_ Syntax Highlighting and Validation for embedded CRON expressions [#1322](https://github.com/spring-projects/sts4/issues/1322)
+* _(Spring Boot)_ add support for `@Named` annotation [#1313](https://github.com/spring-projects/sts4/issues/1313)
+* _(Spring Boot)_ create generic symbols for `@Resource` and `@Inject` [#1312](https://github.com/spring-projects/sts4/issues/1312)
+* _(Spring Boot)_ add support for `@ConditionalOnResource` annotation attributes [#1310](https://github.com/spring-projects/sts4/issues/1310)
+* _(Spring Boot)_ change name of "Remove Unnecessary `@Autowired`" validation marker description [#1302](https://github.com/spring-projects/sts4/issues/1302)
+* _(Spring Boot)_ change name of problem description for "unnecessary web annotation names" validation [#1301](https://github.com/spring-projects/sts4/issues/1301)
+* _(Spring Boot)_ content-assist for annotation attributes doesn't work when spaces are involved [#1299](https://github.com/spring-projects/sts4/issues/1299)
+* _(Spring Boot)_ [performance] explore options to deploy and run the language server from JAR files [#1293](https://github.com/spring-projects/sts4/issues/1293)
+* _(Spring Boot)_ Recognise `!---` as a document separator in properties files [#1129](https://github.com/spring-projects/sts4/issues/1129)
+* _(Spring Boot)_ Add file completion from classpath for `@ContextConfiguration` [#650](https://github.com/spring-projects/sts4/issues/650)
+* _(Spring Boot)_ SpEL parsing issue in Query annotation [#1320](https://github.com/spring-projects/sts4/issues/1320)
+* _(Spring Boot)_ When editing a Spring XML configuration file, the package names and class names do not appear accurately [#1317](https://github.com/spring-projects/sts4/issues/1317)
+* _(Spring Boot)_ No syntax highlighting and validation for data qieries inside `@NamedQuery` [#1314](https://github.com/spring-projects/sts4/issues/1314)
+* _(Spring Boot)_ False positive SQL error [#1304](https://github.com/spring-projects/sts4/issues/1304)
+* _(Spring Boot)_ Replace `OkHttp3ClientHttpRequestFactory` with `JdkClientHttpRequestFactory` [#1296](https://github.com/spring-projects/sts4/issues/1296)
+
+## 2024-07-24 (4.24.0 RELEASE, incl. language servers version 1.56.0)
+
+#### important highlights
+
+* _(Spring Boot)_ SPEL syntax highlighting and validation inside Java and embedded Spring Data queries. MySQL and PostgreSQL queries syntax highlighting and validation
+* _(Spring Boot)_ Improvements Content Assist, Navigation and/or Find References for `@Profile`, `@Resource`, `@Qualifier`, `@Value` annotations
+
+#### all fixes and improvements in detail
+* _(Spring Boot)_ add code completion and to go definition support for `@Resource` annotation (name attribute) [#1298](https://github.com/spring-projects/sts4/issues/1298)
+* _(Spring Boot)_ support `jakarta` version of `Inject` annotation (in addition to `javax` variant) [#1297](https://github.com/spring-projects/sts4/issues/1297)
+* _(Spring Boot)_ add content-assist and find references for `@Profile` annotation [#1294](https://github.com/spring-projects/sts4/issues/1294)
+* _(Spring Boot)_ allow navigation to classpath resources from `@Value` annotation [#1287](https://github.com/spring-projects/sts4/issues/1287)
+* _(Spring Boot)_ do not show hidden files as proposals for classpath resources (in `@Value` annotation) [#1286](https://github.com/spring-projects/sts4/issues/1286)
+* _(Spring Boot)_ support classpath resources in code completion for `@Value` annotation [#1285](https://github.com/spring-projects/sts4/issues/1285)
+* _(Spring Boot)_ add content-assist for `@Qualifier` annotation [#1261](https://github.com/spring-projects/sts4/issues/1261)
+* _(Spring Boot)_ improve parser-based validation for SpEL snippets [#1237](https://github.com/spring-projects/sts4/issues/1237)
+* _(Spring Boot)_ SpEL Syntax Highlighting [#1234](https://github.com/spring-projects/sts4/issues/1234)
+* _(Spring Boot)_ Error when edit spring xml bean  config file [#1295](https://github.com/spring-projects/sts4/issues/1295)
+* _(Spring Boot)_ avoid mapping content-assist proposals to show up at class level [#1280](https://github.com/spring-projects/sts4/issues/1280)
+* _(Spring Boot)_ weird vscode JPQL/HQL syntax error for `@Query` text block in Spring Boot [#1279](https://github.com/spring-projects/sts4/issues/1279)
+* _(Spring Boot)_ Support SPEL expressions inside SQL queries [#1270](https://github.com/spring-projects/sts4/issues/1270)
+
 ## 2024-06-17 (4.23.1 RELEASE, incl. language servers version 1.55.1)
 
 #### important highlights

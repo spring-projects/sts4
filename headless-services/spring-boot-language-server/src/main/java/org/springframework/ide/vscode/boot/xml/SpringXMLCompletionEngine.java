@@ -68,6 +68,7 @@ import org.springframework.ide.vscode.boot.xml.completions.TypeCompletionProposa
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -135,9 +136,9 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 	}
 
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument doc, int offset) throws Exception {
+	public InternalCompletionList getCompletions(TextDocument doc, int offset) throws Exception {
 		if (!config.isSpringXMLSupportEnabled() || !config.isXmlContentAssistEnabled()) {
-			return Collections.emptyList();
+			return new InternalCompletionList(Collections.emptyList(), false);
 		}
 		
 		String content = doc.get();
@@ -175,7 +176,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 
 							XMLCompletionProvider completionProvider = this.completionProviders.get(key);
 							if (completionProvider != null) {
-								Collection<ICompletionProposal> completions = completionProvider.getCompletions(doc, namespace, node, attributeAt, scanner, offset);
+								InternalCompletionList completions = completionProvider.getCompletions(doc, namespace, node, attributeAt, scanner, offset);
 								return completions;
 							}
 						}
@@ -185,7 +186,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 					if (scanner.getTokenOffset() <= offset && offset < scanner.getTokenEnd()) {
 						if (node.getParentNode() != null && node.getParentNode() instanceof DOMDocument
 								&& namespace.equals("http://www.springframework.org/schema/beans") && node.getLocalName().equals("beans")) {
-							return NamespaceCompletionProvider.createNamespaceCompletionProposals(doc, offset, token, node);
+							return new InternalCompletionList(NamespaceCompletionProvider.createNamespaceCompletionProposals(doc, offset, token, node), false);
 						}
 					}
 					break;
@@ -193,7 +194,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 					if (scanner.getTokenOffset() <= offset && offset < scanner.getTokenEnd()) {
 						if (node.getParentNode() != null && node.getParentNode() instanceof DOMDocument
 								&& namespace.equals("http://www.springframework.org/schema/beans") && node.getLocalName().equals("beans")) {
-							return NamespaceCompletionProvider.createNamespaceCompletionProposals(doc, offset, token, node);
+							return new InternalCompletionList(NamespaceCompletionProvider.createNamespaceCompletionProposals(doc, offset, token, node), false);
 						}
 					}
 					break;
@@ -203,10 +204,10 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 				token = scanner.scan();
 			}
 		}
-		return Collections.emptyList();
+		return new InternalCompletionList(Collections.emptyList(), false);
 	}
 
-	private Collection<ICompletionProposal> emptySpringXMLConfigSnippet(TextDocument doc) {
+	private InternalCompletionList emptySpringXMLConfigSnippet(TextDocument doc) {
 
 		CompletionItemKind kind = CompletionItemKind.Snippet;
 		
@@ -244,7 +245,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 		Collection<ICompletionProposal> completions = new ArrayList<>(1);
 		completions.add(proposal);
 		
-		return completions;
+		return new InternalCompletionList(completions, false);
 	}
 	
 	@Override

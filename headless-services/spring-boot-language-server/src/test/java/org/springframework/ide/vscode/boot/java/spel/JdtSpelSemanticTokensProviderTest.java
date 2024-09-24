@@ -154,5 +154,43 @@ public class JdtSpelSemanticTokensProviderTest {
         assertThat(source.substring(token.start(), token.end())).isEqualTo("'[a-zA-Z\\s]+'");
         
 	}
+	
+	@Test
+	void leadingAndTrailingSpaces() throws Exception {
+		String source = """
+				package my.package
+
+				import org.springframework.scheduling.annotation.Scheduled;
+
+				public class A {
+
+					@Scheduled(cron="  #{demo.cron} ")
+					void foo() {}
+
+				}
+				""";
+
+		String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/A.java").toUri()
+				.toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "A.java", jp);
+
+		assertThat(cu).isNotNull();
+
+		List<SemanticTokenData> tokens = computeTokens(cu);
+
+		assertThat(tokens.size()).isEqualTo(3);
+		
+        SemanticTokenData token = tokens.get(0);
+        assertThat(token).isEqualTo(new SemanticTokenData(121, 125, "variable", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("demo");
+        
+        token = tokens.get(1);
+        assertThat(token).isEqualTo(new SemanticTokenData(125, 126, "operator", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo(".");
+        
+        token = tokens.get(2);
+        assertThat(token).isEqualTo(new SemanticTokenData(126, 130, "property", new String[0]));
+        assertThat(source.substring(token.start(), token.end())).isEqualTo("cron");
+	}
 
 }

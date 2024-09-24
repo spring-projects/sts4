@@ -13,11 +13,12 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 import java.util.List;
 
 import org.eclipse.lsp4j.InlayHint;
-import org.eclipse.lsp4j.InlayHintParams;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public interface InlayHintHandler {
 	
-	List<InlayHint> handle(CancelChecker token, InlayHintParams params);
+	List<InlayHint> handle(TextDocument doc, Range range, CancelChecker cancelChecker);
 
 }

@@ -117,12 +117,6 @@ IDENTIFIER
     : (ALPHABETIC | '_') (ALPHABETIC | DIGIT | '_' | '$')*
     ;
 
-NUMERIC_LITERAL
-    : REAL_LITERAL
-    | INTEGER_LITERAL
-    ;
-
-
 REAL_LITERAL
     : '.' DECIMAL_DIGIT+ EXPONENT_PART? REAL_TYPE_SUFFIX?
     | DECIMAL_DIGIT+ '.' DECIMAL_DIGIT+ EXPONENT_PART? REAL_TYPE_SUFFIX?
@@ -146,6 +140,10 @@ SINGLE_QUOTED_STRING
 DOUBLE_QUOTED_STRING
     : '"' ( '""' | ~["\n] )* '"'
     ;
+
+PROPERTY_PLACE_HOLDER
+	: '${' (.)*? '}'
+	;
 
 fragment INTEGER_TYPE_SUFFIX : ( 'L' | 'l' );
 fragment HEX_DIGIT : [0-9A-Fa-f];

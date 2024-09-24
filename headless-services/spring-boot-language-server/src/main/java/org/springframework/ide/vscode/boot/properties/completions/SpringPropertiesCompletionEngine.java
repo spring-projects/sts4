@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -54,9 +55,11 @@ public class SpringPropertiesCompletionEngine implements ICompletionEngine, Lang
 	 * Create completions proposals in the context of a properties text editor.
 	 */
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument doc, int offset) throws BadLocationException {
-		return new PropertiesCompletionProposalsCalculator(indexProvider.getIndex(doc).getProperties(),
+	public InternalCompletionList getCompletions(TextDocument doc, int offset) throws BadLocationException {
+		Collection<ICompletionProposal> completionItems = new PropertiesCompletionProposalsCalculator(indexProvider.getIndex(doc).getProperties(),
 				typeUtilProvider.getTypeUtil(sourceLinks, doc), completionFactory, doc, offset, preferLowerCaseEnums).calculate();
+		
+		return new InternalCompletionList(completionItems, false);
 	}
 
 	public boolean getPreferLowerCaseEnums() {

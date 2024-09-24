@@ -25,6 +25,13 @@ on:
         description: version of sts4 ls extensions
         required: false
         type: string
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.CDN_S3_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.CDN_S3_SECRET_KEY  }}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_ENDPOINT_URL_S3:  ${{ secrets.CDN_S3_ENDPOINT }}
+  AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}/spring-tools
+  DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
 
 jobs:
 
@@ -74,65 +81,75 @@ jobs:
           else
             ./mvnw --batch-mode clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore
           fi
-      - name: Cloudgate S3 Configuration
-        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
-        with:
-          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
-          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
-          role-session-name: ${{ github.run_id }}
-          aws-region: us-east-1
-          role-duration-seconds: 900
-          role-skip-session-tagging: true
-      - name: Upload P2 Repo to S3 and Akamai
-        id: upload-p2-to-akamai
+      - name: Upload P2 Repo to S3
+        id: upload-p2
         run: |
           p2_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
           echo "p2_path=$p2_path" >> $GITHUB_OUTPUT
           echo "P2 path: ${p2_path}"
-          aws s3 rm s3://tools-spring-io/${p2_path}/ --recursive
-          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://tools-spring-io/${p2_path}/ --recursive --no-progress
-#      - name: Verify Uploaded P2 Repo
-#        id: verify-p2-on-akamai
-#        run: |
-#          p2_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
-#          echo "Verifying uploaded to Akamai files..."
-#          cd ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/plugins
-#          for f in `ls -p | grep -v '/$'`
-#          do
-#            wget --no-verbose -O /dev/null https://cdn.spring.io/spring-tools/$p2_path/plugins/$f
-#          done
+          aws s3 rm s3://$AWS_S3_BUCKET/${p2_path}/ --recursive
+          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://$AWS_S3_BUCKET/${p2_path}/ --recursive --no-progress
       - name: Compute invalid URLs
         if: ${{ inputs.build_type != 'snapshot' }}
         id: compute-invalid-urls
         run: |
-          invalid_urls=`aws s3 ls s3://tools-spring-io/${{ steps.upload-p2-to-akamai.outputs.p2_path }}/ --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
+          invalid_urls=`aws s3 ls s3://$AWS_S3_BUCKET/${{ steps.upload-p2.outputs.p2_path }}/ --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
           echo "invalid_urls=$invalid_urls" >> $GITHUB_OUTPUT
-      - name: Verify Eclipse LS Extensions on e433
+      - uses: ./.github/actions/cloudflare-purge
+        if: ${{ inputs.build_type != 'snapshot' }}
+        name: Invalidate URLs
+        with:
+          urls: ${{ steps.compute-invalid-urls.outputs.invalid_urls }}
+          cloudflare_zone_id: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          cloudflare_cache_token: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
+      - name: Verify Eclipse LS Extensions on e434
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
           cd eclipse-language-servers
           if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean package -Pe433 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            xvfb-run ./mvnw --batch-mode clean package -Pe434 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           else
-            ./mvnw --batch-mode clean package -Pe433 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            ./mvnw --batch-mode clean package -Pe434 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           fi
+      - name: GChat spring-tools-team notification
+        if: ${{ inputs.build_type == 'release' }}
+        run: |
+          cd eclipse-language-servers
+          current_version=`./mvnw help:evaluate -Dexpression="project.version" -q -DforceStdout`
+          version=${current_version%%-*}
+          
+          build_type=${{ inputs.build_type }}
+          build_type=${build_type^}
 
-  purge_cache:
-    needs: [ eclipse-language-servers-build ]
-    if: ${{ inputs.build_type != 'snapshot' }}
-    runs-on: [self-hosted]
-    steps:
-      - uses: ./.github/actions/akamai-purge-osx
-        name: Invalidate URLs
-        env:
-          EDGERC: ${{ secrets.EDGERC }}
-        with:
-          command: invalidate
-          urls: ${{ needs.eclipse-language-servers-build.outputs.invalid_urls }}
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw "{
+              \"cards\": [
+                  {
+                    \"header\": {
+                      \"title\": \"${build_type} Eclipse LS Extensions ${version}\",
+                      \"subtitle\": \"${{ inputs.sts4-language-servers-version }}\",
+                      \"imageUrl\": \"https://avatars.githubusercontent.com/u/317776?s=48&amp;v=4\",
+                    },
+                    \"sections\": [
+                      {
+                        \"widgets\": [
+                          {
+                            \"keyValue\": {
+                              \"topLabel\": \"P2 Update Site\",
+                              \"content\": \"<a href=${DOWNLOAD_URL_ROOT}/${{ steps.upload-p2.outputs.p2_path }}/>${DOWNLOAD_URL_ROOT}/${{ steps.upload-p2.outputs.p2_path }}</a>\",
+                              \"contentMultiline\": true
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+              ]
+          }"
 
   notify-failure:
-    needs: [ eclipse-language-servers-build, purge_cache ]
+    needs: [ eclipse-language-servers-build ]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
     uses: ./.github/workflows/notify-failed.yml
     with:

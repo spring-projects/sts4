@@ -27,6 +27,8 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
+import org.springframework.ide.vscode.boot.java.beans.NamedReferencesProvider;
+import org.springframework.ide.vscode.boot.java.beans.ProfileReferencesProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierReferencesProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
@@ -39,6 +41,7 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbol
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.handlers.CopilotCodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
@@ -54,6 +57,7 @@ import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolP
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerCodeLensProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouteHighlightProdivder;
+import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
@@ -69,6 +73,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandle
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.InlayHintHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -114,6 +119,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private BootJavaCodeActionProvider codeActionProvider;
 	private DocumentSymbolHandler docSymbolProvider;
 	private JdtSemanticTokensHandler semanticTokensHandler;
+	private JdtInlayHintsHandler inlayHintsHandler;
+	private SpelSemanticTokens spelSemanticTokens;
 
 	public BootJavaLanguageServerComponents(ApplicationContext appContext) {
 		this.server = appContext.getBean(SimpleLanguageServer.class);
@@ -171,15 +178,22 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 				projectFinder,
 				Duration.ofSeconds(5),
 				sourceLinks);
+		
+		spelSemanticTokens = appContext.getBean(SpelSemanticTokens.class);
 
-		codeLensHandler = createCodeLensEngine(springSymbolIndex);
+		codeLensHandler = createCodeLensEngine(springSymbolIndex, projectFinder, server, spelSemanticTokens);
 
-		highlightsEngine = createDocumentHighlightEngine(springSymbolIndex);
+		highlightsEngine = createDocumentHighlightEngine(appContext);
 		documents.onDocumentHighlight(highlightsEngine);
 		
 		Map<String, JdtSemanticTokensProvider> jdtSemanticTokensProviders = appContext.getBeansOfType(JdtSemanticTokensProvider.class);
 		if (!jdtSemanticTokensProviders.isEmpty()) {
 			semanticTokensHandler = new JdtSemanticTokensHandler(cuCache, projectFinder, jdtSemanticTokensProviders.values());
+		}
+		
+		Map<String, JdtInlayHintsProvider> jdtInlayHintsProviders = appContext.getBeansOfType(JdtInlayHintsProvider.class);
+		if (!jdtSemanticTokensProviders.isEmpty()) {
+			inlayHintsHandler = new JdtInlayHintsHandler(cuCache, projectFinder, jdtInlayHintsProviders.values());
 		}
 		
 		config.addListener(ignore -> {
@@ -265,7 +279,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		providers.put(Annotations.PROFILE, new ActiveProfilesProvider());
 
 		providers.put(Annotations.AUTOWIRED, autowiredHoverProvider);
-		providers.put(Annotations.INJECT, autowiredHoverProvider);
+		providers.put(Annotations.INJECT_JAVAX, autowiredHoverProvider);
+		providers.put(Annotations.INJECT_JAKARTA, autowiredHoverProvider);
+
 		providers.put(Annotations.COMPONENT, componentInjectionsHoverProvider);
 		providers.put(Annotations.BEAN, beanInjectedIntoHoverProvider);
 
@@ -293,23 +309,34 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder,
 			SpringMetamodelIndex index, SpringSymbolIndex symbolIndex, CompilationUnitCache cuCache) {
+		
 		Map<String, ReferenceProvider> providers = new HashMap<>();
-		providers.put(Annotations.VALUE, new ValuePropertyReferencesProvider(server));
+
+		providers.put(Annotations.VALUE, new ValuePropertyReferencesProvider(projectFinder));
 		providers.put(Annotations.QUALIFIER, new QualifierReferencesProvider(index, symbolIndex));
+		providers.put(Annotations.NAMED_JAKARTA, new NamedReferencesProvider(index, symbolIndex));
+		providers.put(Annotations.NAMED_JAVAX, new NamedReferencesProvider(index, symbolIndex));
+		providers.put(Annotations.PROFILE, new ProfileReferencesProvider(index, symbolIndex));
 
 		return new BootJavaReferencesHandler(this, cuCache, projectFinder, providers);
 	}
 
-	protected BootJavaCodeLensEngine createCodeLensEngine(SpringSymbolIndex index) {
+	protected BootJavaCodeLensEngine createCodeLensEngine(SpringSymbolIndex index, JavaProjectFinder projectFinder, SimpleLanguageServer server, SpelSemanticTokens spelSemanticTokens) {
 		Collection<CodeLensProvider> codeLensProvider = new ArrayList<>();
 		codeLensProvider.add(new WebfluxHandlerCodeLensProvider(index));
+		codeLensProvider.add(new CopilotCodeLensProvider(projectFinder, server, spelSemanticTokens));
 
 		return new BootJavaCodeLensEngine(this, codeLensProvider);
 	}
 
-	protected BootJavaDocumentHighlightEngine createDocumentHighlightEngine(SpringSymbolIndex indexer) {
+	protected BootJavaDocumentHighlightEngine createDocumentHighlightEngine(ApplicationContext appContext) {
 		Collection<HighlightProvider> highlightProvider = new ArrayList<>();
-		highlightProvider.add(new WebfluxRouteHighlightProdivder(indexer));
+		highlightProvider.add(new WebfluxRouteHighlightProdivder(appContext.getBean(SpringSymbolIndex.class)));
+		
+		Map<String, JdtAstDocHighlightsProvider> astHighlightProviders = appContext.getBeansOfType(JdtAstDocHighlightsProvider.class);
+		if (!astHighlightProviders.isEmpty()) {
+			highlightProvider.add(new JdtDocHighlightsProvider(projectFinder, cuCache, astHighlightProviders.values()));
+		}
 
 		return new BootJavaDocumentHighlightEngine(this, highlightProvider);
 	}
@@ -351,6 +378,11 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	@Override
 	public Optional<SemanticTokensHandler> getSemanticTokensHandler() {
 		return Optional.ofNullable(semanticTokensHandler);
+	}
+
+	@Override
+	public Optional<InlayHintHandler> getInlayHintHandler() {
+		return Optional.ofNullable(inlayHintsHandler);
 	}
 
 	

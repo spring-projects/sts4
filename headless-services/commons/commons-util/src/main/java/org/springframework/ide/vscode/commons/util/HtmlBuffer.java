@@ -13,12 +13,17 @@ package org.springframework.ide.vscode.commons.util;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Helper class to make it a little easier to create simple html page.
  *
  * @author Kris De Volder
  */
 public class HtmlBuffer {
+	
+	private static final Logger log = LoggerFactory.getLogger(HtmlBuffer.class);
 
 	private StringBuilder buffer = new StringBuilder();
 
@@ -44,7 +49,7 @@ public class HtmlBuffer {
 		try {
 			raw(URLEncoder.encode(string, "utf8"));
 		} catch (UnsupportedEncodingException e) {
-			Log.log(e);
+			log.error("", e);
 		}
 	}
 

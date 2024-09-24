@@ -95,7 +95,7 @@ public class QualifierCompletionProviderTest {
 	
 	@Test
 	public void testQualifierCompletionWithoutQuotesWithoutPrefix() throws Exception {
-		assertCompletions("@Qualifier(<*>)", 4, new String[] {"quali1", "quali2", "bean1", "bean2"}, 0, "@Qualifier(\"quali1\"<*>)");
+		assertCompletions("@Qualifier(<*>)", new String[] {"quali1", "quali2", "bean1", "bean2"}, 0, "@Qualifier(\"quali1\"<*>)");
 	}
 
 	@Test
@@ -105,7 +105,7 @@ public class QualifierCompletionProviderTest {
 
 	@Test
 	public void testQualifierCompletionWithoutQuotesWithPrefixFromExistingQualifier() throws Exception {
-		assertCompletions("@Qualifier(qu<*>)", 2, new String[] {"quali1", "quali2"}, 0, "@Qualifier(\"quali1\"<*>)");
+		assertCompletions("@Qualifier(qu<*>)", new String[] {"quali1", "quali2"}, 0, "@Qualifier(\"quali1\"<*>)");
 	}
 
 	@Test
@@ -140,17 +140,22 @@ public class QualifierCompletionProviderTest {
 
 	@Test
 	public void testQualifierCompletionInsideOfQuotesWithPrefixAndReplacedPostfix() throws Exception {
-		assertCompletions("@Qualifier(\"be<*>xxx\")", 2, "@Qualifier(\"bean1<*>xxx\")");
+		assertCompletions("@Qualifier(\"be<*>xxx\")", 2, "@Qualifier(\"bean1<*>\")");
 	}
 	
 	private void assertCompletions(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine) throws Exception {
 		assertCompletions(completionLine, noOfExpectedCompletions, null, 0, expectedCompletedLine);
 	}
 
+	private void assertCompletions(String completionLine, String[] expectedCompletions, int chosenCompletion, String expectedCompletedLine) throws Exception {
+		assertCompletions(completionLine, expectedCompletions.length, expectedCompletions, chosenCompletion, expectedCompletedLine);
+	}
+
 	private void assertCompletions(String completionLine, int noOfExcpectedCompletions, String[] expectedCompletions, int chosenCompletion, String expectedCompletedLine) throws Exception {
 		String editorContent = """
 				package org.test;
 
+        		import org.springframework.stereotype.Component;
 				import org.springframework.beans.factory.annotation.Qualifier;
 
 				@Component
@@ -179,6 +184,7 @@ public class QualifierCompletionProviderTest {
 	        assertEquals("""
 					package org.test;
 	
+	        		import org.springframework.stereotype.Component;
 					import org.springframework.beans.factory.annotation.Qualifier;
 	
 					@Component

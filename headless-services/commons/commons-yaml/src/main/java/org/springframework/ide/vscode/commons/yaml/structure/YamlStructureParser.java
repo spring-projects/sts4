@@ -22,9 +22,10 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Streams;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -71,6 +72,8 @@ import com.google.common.collect.MultimapBuilder;
  * @author Kris De Volder
  */
 public class YamlStructureParser {
+	
+	private static final Logger log = LoggerFactory.getLogger(YamlStructureParser.class);
 
 	/**
 	 * Pattern that matches a line starting with a 'simple key'
@@ -359,7 +362,7 @@ public class YamlStructureParser {
 					}
 				}
 			} catch (Exception e) {
-				Log.log(e);
+				log.error("", e);
 			}
 			return null;
 		}
@@ -574,7 +577,7 @@ public class YamlStructureParser {
 							index.put(key, seqNode);
 						}
 					} catch (Exception e) {
-						Log.log(e);
+						log.error("", e);
 					}
 				}
 				keyMap = index;
