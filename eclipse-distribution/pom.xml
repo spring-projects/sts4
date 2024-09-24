@@ -242,7 +242,7 @@
 				<dist.platform.name>2024-09</dist.platform.name>
 				<dist.platform.name.long>2024-09 (4.33)</dist.platform.name.long>
 				<dist.platform.id>2024-09</dist.platform.id>
-				<dist.platform.version>4.33</dist.platform.version>
+				<dist.platform.version>4.33.0</dist.platform.version>
 				<package.qualifierPrefix>e433</package.qualifierPrefix>
 			</properties>
 			<repositories>
