@@ -15,6 +15,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.java.cron.CronExpressionsInlayHintsProvider;
 import org.springframework.ide.vscode.boot.java.cron.CronReconciler;
 import org.springframework.ide.vscode.boot.java.cron.CronSemanticTokens;
 import org.springframework.ide.vscode.boot.java.cron.JdtCronReconciler;
@@ -134,6 +135,10 @@ public class JdtConfig {
 	
 	@Bean JdtDataQueriesInlayHintsProvider jdtDataQueriesInlayHintsProvider(JdtDataQuerySemanticTokensProvider semanticTokensProvider) {
 		return new JdtDataQueriesInlayHintsProvider(semanticTokensProvider);
+	}
+	
+	@Bean CronExpressionsInlayHintsProvider cronExpressionsInlayHintsProvider() {
+		return new CronExpressionsInlayHintsProvider();
 	}
 	
 	@Bean JdtQueryDocHighlightsProvider jdtDocHighlightsProvider(JdtDataQuerySemanticTokensProvider semanticTokensProvider) {

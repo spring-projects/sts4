@@ -79,6 +79,8 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.InlayHint;
+import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.MarkupContent;
@@ -680,6 +682,12 @@ public class LanguageServerHarness {
 		CodeLensParams params = new CodeLensParams();
 		params.setTextDocument(document.getId());
 		return getServer().getTextDocumentService().codeLens(params).get();
+	}
+	
+	public List<InlayHint> getInlayHints(TextDocumentInfo document) throws Exception {
+		InlayHintParams params = new InlayHintParams();
+		params.setTextDocument(document.getId());
+		return getServer().getTextDocumentService().inlayHint(params).get();
 	}
 
 	public List<? extends DocumentHighlight> getDocumentHighlights(TextDocumentIdentifier docId, Position cursor) throws InterruptedException, ExecutionException {
