@@ -1,5 +1,3 @@
-import { ActivatorOptions } from "@pivotal-tools/commons-vscode";
-import { LanguageClient } from "vscode-languageclient/node";
 import CopilotRequest from "./copilotRequest";
 import { CancellationToken, chat, ChatContext, ChatRequest, ChatResponseStream, ChatResult, commands, ExtensionContext, l10n, LanguageModelChatMessage, LanguageModelChatMessageRole, Uri, workspace } from "vscode";
 import { systemBoot2Prompt, systemBoot3Prompt, systemPrompt } from "./system-ai-prompt";
