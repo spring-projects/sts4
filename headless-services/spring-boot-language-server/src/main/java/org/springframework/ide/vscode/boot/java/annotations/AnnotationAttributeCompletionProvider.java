@@ -10,22 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.annotations;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 public interface AnnotationAttributeCompletionProvider {
 	
-	default List<String> getCompletionCandidates(IJavaProject project) {
-        return new ArrayList<>();
-    }
-
-	
-	default Map<String, String> getCompletionCandidatesWithLabels(IJavaProject project) {
-        return new HashMap<>();
-    }
+	Map<String, String> getCompletionCandidates(IJavaProject project);
 
 }

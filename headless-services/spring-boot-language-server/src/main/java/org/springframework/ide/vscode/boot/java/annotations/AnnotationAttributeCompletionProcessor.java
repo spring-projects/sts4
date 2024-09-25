@@ -28,7 +28,6 @@ import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
-import org.springframework.ide.vscode.boot.java.cron.CronExpressionCompletionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -123,40 +122,22 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 
 		AnnotationAttributeCompletionProvider completionProvider = this.completionProviders.get(attributeName);
 		if (completionProvider != null) {
-			List<String> candidates = completionProvider.getCompletionCandidates(project);
 
-			if (completionProvider instanceof CronExpressionCompletionProvider) {
-				Map<String, String> proposals = completionProvider.getCompletionCandidatesWithLabels(project);
-				Map<String, String> filteredProposals = proposals.entrySet().stream()
-						.filter(candidate -> candidate.getKey().toLowerCase().contains(filterPrefix.toLowerCase()))
-						.filter(candidate -> !alreadyMentionedValues.contains(candidate.getKey()))
-						.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-				double score = filteredProposals.size();
-				for (Map.Entry<String, String> entry : filteredProposals.entrySet()) {
-					String candidate = entry.getKey();
-					DocumentEdits edits = new DocumentEdits(doc, false);
-					edits.replace(startOffset, endOffset, createReplacementText.apply(candidate));
-					AnnotationAttributeCompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits,
-							candidate, entry.getValue(), null, score--);
-					completions.add(proposal);
+			Map<String, String> proposals = completionProvider.getCompletionCandidates(project);
+			Map<String, String> filteredProposals = proposals.entrySet().stream()
+					.filter(candidate -> candidate.getKey().toLowerCase().contains(filterPrefix.toLowerCase()))
+					.filter(candidate -> !alreadyMentionedValues.contains(candidate.getKey()))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+			double score = filteredProposals.size();
+			for (Map.Entry<String, String> entry : filteredProposals.entrySet()) {
+				String candidate = entry.getKey();
+				DocumentEdits edits = new DocumentEdits(doc, false);
+				edits.replace(startOffset, endOffset, createReplacementText.apply(candidate));
+				
+				AnnotationAttributeCompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits,
+						candidate, entry.getValue(), null, score--);
+				completions.add(proposal);
 
-				}
-			} else {
-
-				List<String> filteredCandidates = candidates.stream()
-//				.filter(candidate -> candidate.toLowerCase().startsWith(filterPrefix.toLowerCase()))
-						.filter(candidate -> candidate.toLowerCase().contains(filterPrefix.toLowerCase()))
-						.filter(candidate -> !alreadyMentionedValues.contains(candidate)).collect(Collectors.toList());
-				double score = filteredCandidates.size();
-				for (String candidate : filteredCandidates) {
-
-					DocumentEdits edits = new DocumentEdits(doc, false);
-					edits.replace(startOffset, endOffset, createReplacementText.apply(candidate));
-
-					AnnotationAttributeCompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits,
-							candidate, candidate, null, score--);
-					completions.add(proposal);
-				}
 			}
 		}
 	}

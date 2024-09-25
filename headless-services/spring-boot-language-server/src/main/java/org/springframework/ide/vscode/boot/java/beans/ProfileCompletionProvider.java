@@ -11,7 +11,8 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
@@ -32,13 +33,13 @@ public class ProfileCompletionProvider implements AnnotationAttributeCompletionP
 	}
 	
 	@Override
-	public List<String> getCompletionCandidates(IJavaProject project) {
+	public Map<String, String> getCompletionCandidates(IJavaProject project) {
 
 		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
 
 		return findAllProfiles(beans)
 				.distinct()
-				.toList();
+				.collect(Collectors.toMap(key -> key, value -> value));
 	}
 
 	private Stream<String> findAllProfiles(Bean[] beans) {

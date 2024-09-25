@@ -39,7 +39,7 @@ public class CronExpressionCompletionProvider implements AnnotationAttributeComp
 
 
     @Override
-    public Map<String, String> getCompletionCandidatesWithLabels(IJavaProject project) {
+    public Map<String, String> getCompletionCandidates(IJavaProject project) {
         return CRON_EXPRESSIONS_MAP;
     }
 }

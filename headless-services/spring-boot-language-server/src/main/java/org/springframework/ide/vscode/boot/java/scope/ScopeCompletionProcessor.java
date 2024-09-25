@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.scope;
 
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -20,18 +20,18 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
  */
 public class ScopeCompletionProcessor implements AnnotationAttributeCompletionProvider {
 	
-	private static final List<String> SCOPE_COMPLETIONS = List.of(
-		"application",
-		"globalSession",
-		"prototype",
-		"request",
-		"session",
-		"singleton",
-		"websocket"
-	);
+	private static final Map<String, String> SCOPE_COMPLETIONS = Map.of(
+	        "application", "application",
+	        "globalSession", "globalSession",
+	        "prototype", "prototype",
+	        "request", "request",
+	        "session", "session",
+	        "singleton", "singleton",
+	        "websocket", "websocket"
+	    );
 
 	@Override
-	public List<String> getCompletionCandidates(IJavaProject project) {
+	public Map<String, String> getCompletionCandidates(IJavaProject project) {
 		return SCOPE_COMPLETIONS;
 	}
 
