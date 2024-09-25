@@ -30,7 +30,24 @@
   "activationEvents": [
     "onCommand:vscode-spring-boot.ls.start"
   ],
+  "enabledApiProposals": [
+    "chatVariableResolver"
+  ],
   "contributes": {
+    "chatParticipants": [
+      {
+        "id": "springboot.agent",
+        "fullName": "Spring boot",
+        "name": "springboot",
+        "description": "Spring boot chat agent",
+        "commands": [
+          {
+            "name": "add",
+            "description": "Add a new spring module to the exisiting project"
+          }
+        ]
+      }
+    ],
     "javaExtensions": [
       "./jars/io.projectreactor.reactor-core.jar",
       "./jars/org.reactivestreams.reactive-streams.jar",
@@ -248,6 +265,12 @@
         "command": "vscode-spring-boot.query.explain",
         "title": "Explain Spel expressions, Spring Data queries, and AOP annotations (using Copilot)",
         "category": "Spring Boot"
+      },
+      {
+        "command": "vscode-spring-boot.agent.apply",
+        "title": "Apply Changes",
+        "category": "Spring Boot Agent",
+        "enablement": "false"
       }
     ],
     "configuration": [
@@ -430,6 +453,17 @@
               "type": "string"
             },
             "description": "JAR and YAML files to scan for recipes"
+          }
+        }
+      },
+      {
+        "id": "spring-cli",
+        "title": "Spring CLI",
+        "properties": {
+          "spring-cli.executable": {
+            "type": "string",
+            "default": "spring",
+            "description": "Spring CLI executable. Either name of the executable if it's on the PATH environment variable or absolute path to the spring CLI executable (or JAR for dev purposes)"
           }
         }
       },
@@ -1334,6 +1368,7 @@
     "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.4.tgz",
     "portfinder": "1.0.32",
     "ps-list": "^7.2.0",
+    "semver": "^7.6.2",
     "vscode-languageclient": "^9.0.1"
   },
   "devDependencies": {

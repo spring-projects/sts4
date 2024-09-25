@@ -95,10 +95,30 @@ public class ClasspathUtil {
 				}
 			}
 		}
-		Classpath classpath = new Classpath(cpEntries);
+		String javaVersion = extractJavaVersion(getJreContainer(javaProject.getRawClasspath()).getPath().lastSegment());
+		Classpath classpath = new Classpath(cpEntries, javaVersion);
 		logger.debug("classpath=" + classpath.getEntries().size() + " entries");
 		return classpath;
 	}
+	
+	private static String extractJavaVersion(String versionString) {
+        String[] parts = versionString.split("-");
+        if (parts.length > 1) {
+            return parts[1]; // for "JavaSE-17" style
+        } else if (versionString.contains(".")) {
+            parts = versionString.split("\\.");
+            if (parts[0] == "1") {
+    			if (parts.length > 1) {
+    				return parts[1];
+    			}
+    		} else {
+    			String version = parts[0];
+    			int idx = version.indexOf('+');
+    			return idx >= 0 ? version.substring(0, idx) : version;
+    		}
+        }
+        return versionString;      
+    }
 	
 	private static AtomicBoolean enabledDownloadSources = new AtomicBoolean(false);
 	
