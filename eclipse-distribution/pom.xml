@@ -137,7 +137,7 @@
 				<dist.platform.name>2024-06</dist.platform.name>
 				<dist.platform.name.long>2024-06 (4.32)</dist.platform.name.long>
 				<dist.platform.id>2024-06</dist.platform.id>
-				<dist.platform.version>4.32</dist.platform.version>
+				<dist.platform.version>4.32.0</dist.platform.version>
 				<package.qualifierPrefix>e432</package.qualifierPrefix>
 			</properties>
 			<repositories>
@@ -347,7 +347,7 @@
 				<dist.platform.name>2024-12</dist.platform.name>
 				<dist.platform.name.long>2024-12 (4.34)</dist.platform.name.long>
 				<dist.platform.id>2024-12</dist.platform.id>
-				<dist.platform.version>4.34</dist.platform.version>
+				<dist.platform.version>4.34.0</dist.platform.version>
 				<package.qualifierPrefix>e434</package.qualifierPrefix>
 			</properties>
 			<repositories>

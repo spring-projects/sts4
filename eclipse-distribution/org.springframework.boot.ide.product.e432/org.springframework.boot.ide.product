@@ -125,7 +125,7 @@
 </features>
 
    <configurations>
-   	  <property name="eclipse.buildId" value="${unqualifiedVersion}.${buildQualifier}"/>
+   	  <property name="eclipse.buildId" value="${dist.platform.version}.${buildQualifier}"/>
    	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}"/>
 
    	  <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
