@@ -59,7 +59,7 @@ public class SpringPropertiesCompletionEngine implements ICompletionEngine, Lang
 		Collection<ICompletionProposal> completionItems = new PropertiesCompletionProposalsCalculator(indexProvider.getIndex(doc).getProperties(),
 				typeUtilProvider.getTypeUtil(sourceLinks, doc), completionFactory, doc, offset, preferLowerCaseEnums).calculate();
 		
-		return new InternalCompletionList(completionItems, false);
+		return new InternalCompletionList(completionItems, true);
 	}
 
 	public boolean getPreferLowerCaseEnums() {
