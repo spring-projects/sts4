@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.conditionalonresource;
 
 import java.nio.file.Paths;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,7 @@ public class ConditionalOnResourceCompletionProcessor implements AnnotationAttri
                 })
                 .map(r -> r.replaceAll("\\\\", "/"))
                 .map(r -> "classpath:" + r)
-                .collect(Collectors.toMap(key -> key, value -> value));
+                .collect(Collectors.toMap(key -> key, value -> value, (u, v) -> u, LinkedHashMap::new));
 
         return resources;
     }

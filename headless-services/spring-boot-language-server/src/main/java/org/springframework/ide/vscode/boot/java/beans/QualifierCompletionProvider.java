@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,7 +42,7 @@ public class QualifierCompletionProvider implements AnnotationAttributeCompletio
 				findAllQualifiers(beans),
 				Arrays.stream(beans).map(bean -> bean.getName()))
 				.distinct()
-				.collect(Collectors.toMap(key -> key, value -> value));
+				.collect(Collectors.toMap(key -> key, value -> value, (u, v) -> u, LinkedHashMap::new));
 	}
 
 	private Stream<String> findAllQualifiers(Bean[] beans) {

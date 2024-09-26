@@ -11,11 +11,11 @@ public class CronExpressionCompletionProvider implements AnnotationAttributeComp
 	 private static final Map<String, String> CRON_EXPRESSIONS_MAP = new LinkedHashMap<>();
 
 	    static {
-	        CRON_EXPRESSIONS_MAP.put("0 0 * * * 1-5", "every hour every day between Monday and Friday");
-	        CRON_EXPRESSIONS_MAP.put("0 */5 * * * *", "every 5 minutes");
-	        CRON_EXPRESSIONS_MAP.put("0 * * * * *", "every minute");
-	        CRON_EXPRESSIONS_MAP.put("0 0 */6 * * *", "every 6 hours at minute 0");
 	        CRON_EXPRESSIONS_MAP.put("0 0 * * * *", "every hour");
+	        CRON_EXPRESSIONS_MAP.put("0 0 * * * 1-5", "every hour every day between Monday and Friday");
+	        CRON_EXPRESSIONS_MAP.put("0 * * * * *", "every minute");
+	        CRON_EXPRESSIONS_MAP.put("0 */5 * * * *", "every 5 minutes");
+	        CRON_EXPRESSIONS_MAP.put("0 0 */6 * * *", "every 6 hours at minute 0");
 	        CRON_EXPRESSIONS_MAP.put("0 0 * * * SUN", "every hour at Sunday day");
 	        CRON_EXPRESSIONS_MAP.put("0 0 0 * * *", "at 00:00");
 	        CRON_EXPRESSIONS_MAP.put("0 0 0 * * SAT,SUN", "at 00:00 on Saturday and Sunday");

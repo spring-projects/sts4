@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -240,7 +241,7 @@ public class DependsOnCompletionProcessor implements AnnotationAttributeCompleti
 		return Arrays.stream(this.springIndex.getBeansOfProject(project.getElementName()))
 				.map(bean -> bean.getName())
 				.distinct()
-				.collect(Collectors.toMap(key -> key, value -> value));
+				.collect(Collectors.toMap(key -> key, value -> value, (u, v) -> u, LinkedHashMap::new));
 	}
 
 
