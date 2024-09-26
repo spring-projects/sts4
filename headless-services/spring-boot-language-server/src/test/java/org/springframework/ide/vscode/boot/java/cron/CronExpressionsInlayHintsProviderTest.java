@@ -74,7 +74,7 @@ public class CronExpressionsInlayHintsProviderTest {
 	@Test
 	public void test_cronExpresionInlayHints() throws Exception {
 
-		String docUri = directory.toPath().resolve("src/main/java/org/test/CronSchedular.java").toUri().toString();
+		String docUri = directory.toPath().resolve("src/main/java/org/test/CronScheduler.java").toUri().toString();
 		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
 
