@@ -24,6 +24,7 @@ import org.springframework.ide.vscode.commons.util.Renderable;
 public class ValuePropertyKeyProposal extends ScoreableProposal {
 
 	private static final String EMPTY_DETAIL = "";
+	
 	private DocumentEdits edits;
 	private String label;
 	private String detail;

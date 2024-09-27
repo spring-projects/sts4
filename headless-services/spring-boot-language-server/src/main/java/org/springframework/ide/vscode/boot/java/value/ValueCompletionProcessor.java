@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
@@ -75,6 +76,11 @@ public class ValueCompletionProcessor implements CompletionProvider {
 			
 			IJavaProject project = optionalProject.get();
 			
+			// in case the node is embedded in an qualified name, e.g. "file.txt", use the fully qualified node instead just a part
+			if (node instanceof Name && node.getParent() instanceof QualifiedName) {
+				node = node.getParent();
+			}
+			
 			// case: @Value(<*>)
 			if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
 				List<Match<PropertyInfo>> matches = findMatches("", doc);
@@ -95,20 +101,16 @@ public class ValueCompletionProcessor implements CompletionProvider {
 				addClasspathResourceProposals(project, doc, offset, offset, "", true, completions);
 			}
 			// case: @Value(prefix<*>)
-			else if (node instanceof SimpleName && node.getParent() instanceof Annotation) {
+			else if (node instanceof Name && node.getParent() instanceof Annotation) {
 				computeProposalsForSimpleName(project, node, completions, offset, doc);
 			}
-			// case: @Value(file.ext<*>) - the "." causes a QualifierNode to be generated
-			else if (node instanceof SimpleName && node.getParent() instanceof QualifiedName && node.getParent().getParent() instanceof Annotation) {
-				computeProposalsForSimpleName(project, node.getParent(), completions, offset, doc);
-			}
 			// case: @Value(value=<*>)
-			else if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair
+			else if (node instanceof Name && node.getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
 				computeProposalsForSimpleName(project, node, completions, offset, doc);
 			}
 			// case: @Value(value=<*>)
-			else if (node instanceof SimpleName && node.getParent() instanceof QualifiedName && node.getParent().getParent() instanceof MemberValuePair
+			else if (node instanceof Name && node.getParent() instanceof QualifiedName && node.getParent().getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent().getParent()).getName().toString())) {
 				computeProposalsForSimpleName(project, node.getParent(), completions, offset, doc);
 			}
@@ -129,29 +131,6 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		catch (Exception e) {
 			log.error("problem while looking for value annotation proposals", e);
 		}
-	}
-
-	private void addClasspathResourceProposals(IJavaProject project, TextDocument doc, int startOffset, int endOffset, String prefix, boolean includeQuotes, Collection<ICompletionProposal> completions) {
-		String[] resources = findResources(project, prefix);
-
-		double score = resources.length + 1000;
-		for (String resource : resources) {
-
-			DocumentEdits edits = new DocumentEdits(doc, false);
-			
-			if (includeQuotes) {
-				edits.replace(startOffset, endOffset, "\"classpath:" + resource + "\"");
-			}
-			else {
-				edits.replace(startOffset, endOffset, "classpath:" + resource);
-			}
-			
-			String label = "classpath:" + resource;
-			
-			ICompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits, label, label, null, score--);
-			completions.add(proposal);
-		}
-
 	}
 
 	private void computeProposalsForSimpleName(IJavaProject project, ASTNode node, Collection<ICompletionProposal> completions, int offset, TextDocument doc) {
@@ -253,15 +232,15 @@ public class ValueCompletionProcessor implements CompletionProvider {
 
 	private List<Match<PropertyInfo>> findMatches(String prefix, IDocument doc) {
 		FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc).getProperties();
-		List<Match<PropertyInfo>> matches =index.find(camelCaseToHyphens(prefix));
+		List<Match<PropertyInfo>> matches = index.find(camelCaseToHyphens(prefix));
 
-		//First the 'real' properties.
+		// First the 'real' properties.
 		Set<String> suggestedKeys = new HashSet<>();
 		for (Match<PropertyInfo> m : matches) {
 			suggestedKeys.add(m.data.getId());
 		}
 
-		//Then also add 'ad-hoc' properties (see https://www.pivotaltracker.com/story/show/153107266).
+		// Then also add 'ad-hoc' properties
 		Optional<IJavaProject> p = projectFinder.find(new TextDocumentIdentifier(doc.getUri()));
 		if (p.isPresent()) {
 			index = adHocIndexProvider.getIndex(p.get());
@@ -272,6 +251,29 @@ public class ValueCompletionProcessor implements CompletionProvider {
 			}
 		}
 		return matches;
+	}
+
+	private void addClasspathResourceProposals(IJavaProject project, TextDocument doc, int startOffset, int endOffset, String prefix, boolean includeQuotes, Collection<ICompletionProposal> completions) {
+		String[] resources = findResources(project, prefix);
+
+		double score = resources.length + 1000;
+		for (String resource : resources) {
+
+			DocumentEdits edits = new DocumentEdits(doc, false);
+			
+			if (includeQuotes) {
+				edits.replace(startOffset, endOffset, "\"classpath:" + resource + "\"");
+			}
+			else {
+				edits.replace(startOffset, endOffset, "classpath:" + resource);
+			}
+			
+			String label = "classpath:" + resource;
+			
+			ICompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits, label, label, null, score--);
+			completions.add(proposal);
+		}
+
 	}
 
 	private String[] findResources(IJavaProject project, String prefix) {
