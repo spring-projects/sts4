@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.boot.java.copilot;
+package org.springframework.ide.vscode.boot.java.copilot.util;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -7,7 +7,6 @@ import java.time.format.FormatStyle;
 public class ResponseModifier {
 
 	public String modify(String response) {
-		System.out.println("In response modifier !!");
 		return modifyMsyqlDependency(modifyJavax(response));
 	}
 
@@ -53,8 +52,7 @@ public class ResponseModifier {
 	private String modifyMsyqlDependency(String response) {
 		if (!response.contains("<artifactId>mysql-connector-java</artifactId>")) {
 			return response;
-		}
-		else {
+		} else {
 			String s1 = response.replace("<groupId>mysql</groupId>", "<groupId>com.mysql</groupId>");
 			String s2 = s1.replace("<artifactId>mysql-connector-java</artifactId>",
 					"<artifactId>mysql-connector-j</artifactId>");

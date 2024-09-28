@@ -86,7 +86,7 @@ export default class SpringBootChatAgent {
         stream.markdown(chatResponse);
         stream.button({
             command: 'vscode-spring-boot.agent.apply',
-            title: l10n.t('Preview Changes')
+            title: l10n.t('Apply Changes')
         });
         return { metadata: { command: '' } };
     }

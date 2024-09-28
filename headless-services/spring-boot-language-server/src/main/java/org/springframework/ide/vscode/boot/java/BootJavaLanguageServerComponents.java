@@ -32,7 +32,7 @@ import org.springframework.ide.vscode.boot.java.beans.ProfileReferencesProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierReferencesProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
 import org.springframework.ide.vscode.boot.java.copilot.CopilotAgentCommandHandler;
-import org.springframework.ide.vscode.boot.java.copilot.ResponseModifier;
+import org.springframework.ide.vscode.boot.java.copilot.util.ResponseModifier;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentHighlightEngine;

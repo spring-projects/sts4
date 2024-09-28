@@ -10,13 +10,12 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.copilot.util.ResponseModifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.gson.JsonElement;
-import com.google.j2objc.annotations.Weak;
 
 public class CopilotAgentCommandHandler {
 
@@ -26,12 +25,12 @@ public class CopilotAgentCommandHandler {
 
 	private static final String CMD_COPILOT_AGENT_LSPEDITS = "sts/copilot/agent/lspEdits";
 
-    private final SimpleLanguageServer server;
-    private final JavaProjectFinder projectFinder;
+	private final SimpleLanguageServer server;
+	private final JavaProjectFinder projectFinder;
 	private final ResponseModifier responseModifier;
-	
 
-	public CopilotAgentCommandHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder, ResponseModifier responseModifier) {
+	public CopilotAgentCommandHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder,
+			ResponseModifier responseModifier) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.responseModifier = responseModifier;
@@ -42,7 +41,7 @@ public class CopilotAgentCommandHandler {
 		server.onCommand(CMD_COPILOT_AGENT_ENHANCERESPONSE, (params) -> {
 			return enhanceResponseHandler(params);
 		});
-		log.info("Registered command handler: {}",CMD_COPILOT_AGENT_ENHANCERESPONSE);
+		log.info("Registered command handler: {}", CMD_COPILOT_AGENT_ENHANCERESPONSE);
 
 		server.onCommand(CMD_COPILOT_AGENT_LSPEDITS, params -> {
 			try {
@@ -58,27 +57,23 @@ public class CopilotAgentCommandHandler {
 		log.info("Command Handler: ");
 		String response = ((JsonElement) params.getArguments().get(0)).getAsString();
 		String modifiedResp = responseModifier.modify(response);
-        return CompletableFuture.completedFuture(modifiedResp);
+		return CompletableFuture.completedFuture(modifiedResp);
 	}
-	
+
 	private CompletableFuture<WorkspaceEdit> createLspEdits(ExecuteCommandParams params) throws IOException {
 		log.info("Command Handler for lsp edits: ");
 		String docURI = ((JsonElement) params.getArguments().get(0)).getAsString();
 		String path = ((JsonElement) params.getArguments().get(0)).getAsString();
 		String content = ((JsonElement) params.getArguments().get(2)).getAsString();
-		TextDocument doc = server.getTextDocumentService().getLatestSnapshot("file:///Users/vudayani/Desktop/spring-petclinic/README-ai-spring-petclinic.md");
 
 		IJavaProject project = this.projectFinder.find(new TextDocumentIdentifier(docURI)).get();
-		System.out.println("Project path "+project.getLocationUri() + " "+project.getLocationUri().getPath().toString());
 		List<ProjectArtifact> projectArtifacts = computeProjectArtifacts(content);
-		ProjectArtifactEditGenerator editGenerator = new ProjectArtifactEditGenerator(server.getTextDocumentService(), projectArtifacts,
-				Paths.get(project.getLocationUri()), docURI);
-//				Paths.get(project.getLocationUri()), docURI);
+		ProjectArtifactEditGenerator editGenerator = new ProjectArtifactEditGenerator(server.getTextDocumentService(),
+				projectArtifacts, Paths.get(project.getLocationUri()), docURI);
 		WorkspaceEdit we = editGenerator.process().getResult();
-		System.out.println("Final: \n "+ we.toString());
-        return CompletableFuture.completedFuture(we);
+		return CompletableFuture.completedFuture(we);
 	}
-	
+
 	List<ProjectArtifact> computeProjectArtifacts(String response) {
 		ProjectArtifactCreator projectArtifactCreator = new ProjectArtifactCreator();
 		List<ProjectArtifact> projectArtifacts = projectArtifactCreator.create(response);

@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.boot.java.copilot;
+package org.springframework.ide.vscode.boot.java.copilot.util;
 
 import java.io.File;
 import java.io.FileInputStream;

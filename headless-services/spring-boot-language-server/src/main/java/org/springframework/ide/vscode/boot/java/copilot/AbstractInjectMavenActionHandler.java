@@ -21,6 +21,7 @@ import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.maven.MavenParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.copilot.util.SpringCliException;
 import org.springframework.util.StringUtils;
 
 public abstract class AbstractInjectMavenActionHandler {
@@ -76,8 +77,7 @@ public abstract class AbstractInjectMavenActionHandler {
 					sourceFileWriter.write(result.getAfter().printAllTrimmed());
 				}
 			}
-		}
-		catch (IOException ex) {
+		} catch (IOException ex) {
 			throw new SpringCliException("Error writing to " + pomPath.toAbsolutePath(), ex);
 		}
 	}
@@ -86,7 +86,7 @@ public abstract class AbstractInjectMavenActionHandler {
 		List<Path> paths = new ArrayList<>();
 		paths.add(getPomPath());
 		MavenParser mavenParser = MavenParser.builder().build();
-		List<SourceFile> parsedPomFiles = mavenParser.parse(paths, cwd, getExecutionContext()).toList();
+		List<SourceFile> parsedPomFiles = mavenParser.parse(paths, null, getExecutionContext()).toList();
 		return createRecipe().run(new InMemoryLargeSourceSet(parsedPomFiles), getExecutionContext());
 	}
 

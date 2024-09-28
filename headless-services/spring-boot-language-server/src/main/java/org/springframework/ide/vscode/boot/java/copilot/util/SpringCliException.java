@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.boot.java.copilot;
+package org.springframework.ide.vscode.boot.java.copilot.util;
 
 @SuppressWarnings("serial")
 public class SpringCliException extends RuntimeException {
