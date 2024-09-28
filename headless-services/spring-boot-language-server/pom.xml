@@ -148,6 +148,10 @@
 					<groupId>org.eclipse.lsp4j</groupId>
 					<artifactId>org.eclipse.lsp4j.jsonrpc</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		
@@ -200,6 +204,31 @@
 		    <groupId>com.cronutils</groupId>
 		    <artifactId>cron-utils</artifactId>
 		    <version>9.2.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.commonmark</groupId>
+		    <artifactId>commonmark</artifactId>
+		    <version>0.22.0</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.maven</groupId>
+		    <artifactId>maven-model</artifactId>
+		    <version>3.8.1</version>
+		    <exclusions>
+		        <exclusion>
+		            <groupId>javax.xml.bind</groupId>
+		            <artifactId>jaxb-api</artifactId>
+		        </exclusion>
+		    </exclusions>
+		</dependency>
+	<!--	<dependency>
+		    <groupId>javax.xml.bind</groupId>
+		    <artifactId>jaxb-api</artifactId>
+		    <version>2.3.1</version>
+		</dependency>-->
+		<dependency>
+		    <groupId>com.fasterxml.jackson.dataformat</groupId>
+		    <artifactId>jackson-dataformat-xml</artifactId>
 		</dependency>
 	</dependencies>
 

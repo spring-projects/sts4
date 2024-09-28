@@ -3,7 +3,6 @@ import { CancellationToken, chat, ChatContext, ChatRequest, ChatResponseStream, 
 import { systemBoot2Prompt, systemBoot3Prompt, systemPrompt } from "./system-ai-prompt";
 import { userPrompt } from "./user-ai-prompt";
 import { getWorkspaceRoot, writeResponseToFile } from "./util";
-import { SPRINGCLI } from "../Main";
 
 const PARTICIPANT_ID = 'springboot.agent';
 const SYSTEM_PROMPT = systemPrompt;
@@ -77,7 +76,7 @@ export default class SpringBootChatAgent {
         } else {
             // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
             if (bootProjInfo.springBootVersion.startsWith('3')) {
-                const enhancedResponse = await SPRINGCLI.enhanceResponse(targetMarkdownUri, selectedProject.fsPath);
+                const enhancedResponse = await commands.executeCommand("sts/copilot/agent/enhanceResponse", response) as string;
                 await writeResponseToFile(enhancedResponse, bootProjInfo.name, selectedProject.fsPath);
             }
             documentContent = await workspace.fs.readFile(targetMarkdownUri);

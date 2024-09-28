@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.jgit.diff.Edit;
+import org.eclipse.jgit.diff.EditList;
 import org.eclipse.lsp4j.AnnotatedTextEdit;
 import org.eclipse.lsp4j.CreateFile;
 import org.eclipse.lsp4j.DeleteFile;
@@ -25,8 +27,6 @@ import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.openrewrite.Result;
-import org.eclipse.jgit.diff.Edit;
-import org.eclipse.jgit.diff.EditList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -72,10 +72,10 @@ public class ORDocUtils {
 
 	}
 	
-	public static Optional<TextDocumentEdit> computeTextDocEdit(TextDocument doc, Result result, String changeAnnotationId) {
-		TextDocument newDoc = new TextDocument(null, LanguageId.PLAINTEXT, 0, result.getAfter().printAll());
+	public static Optional<TextDocumentEdit> computeTextDocEdit(TextDocument doc, String oldContent, String newContent, String changeAnnotationId) {
+		TextDocument newDoc = new TextDocument(null, LanguageId.PLAINTEXT, 0, newContent);
 
-		EditList diff = JGitUtils.getDiff(result.getBefore().printAll(), newDoc.get());
+		EditList diff = JGitUtils.getDiff(oldContent, newDoc.get());
 		if (!diff.isEmpty()) {
 			TextDocumentEdit edit = new TextDocumentEdit();
 			edit.setTextDocument(new VersionedTextDocumentIdentifier(doc.getUri(), doc.getVersion()));
@@ -117,6 +117,7 @@ public class ORDocUtils {
 					log.error("Diff conversion failed", ex);
 				}
 			}
+			System.out.println("edits "+ edit);
 			return Optional.of(edit);
 		}
 		return Optional.empty();
@@ -139,7 +140,7 @@ public class ORDocUtils {
 			edit.setEdits(List.of(te));
 			return Optional.of(edit);
 		}
-		return Optional.empty();		
+		return Optional.empty();
 	}
 	
 	private static int getStartOfLine(IDocument doc, int lineNumber) {
@@ -163,31 +164,56 @@ public class ORDocUtils {
 		for (Result result : results) {
 			if (result.getBefore() == null) {
 				String docUri = result.getAfter().getSourcePath().toUri().toASCIIString();
-				CreateFile ro = new CreateFile();
-				ro.setUri(docUri);
-				we.getDocumentChanges().add(Either.forRight(ro));
-				
-				TextDocumentEdit te = new TextDocumentEdit();
-				te.setTextDocument(new VersionedTextDocumentIdentifier(docUri, 0));
-				Position cursor = new Position(0,0);
-				te.setEdits(List.of(new AnnotatedTextEdit(new Range(cursor, cursor), result.getAfter().printAll(), changeAnnotationId)));
-				we.getDocumentChanges().add(Either.forLeft(te));
+				createNewFileEdit(docUri, result.getAfter().printAll(), changeAnnotationId, we);
 			} else if (result.getAfter() == null) {
 				String docUri = result.getBefore().getSourcePath().toUri().toASCIIString();
-				we.getDocumentChanges().add(Either.forRight(new DeleteFile(docUri)));
+				createDeleteFileEdit(docUri, we);
 			} else {
 				String docUri = result.getBefore().getSourcePath().toUri().toASCIIString();
-				TextDocument doc = documents.getLatestSnapshot(docUri);
-				if (doc == null) {
-					doc = new TextDocument(docUri, null, 0, result.getBefore().printAll());
-					ORDocUtils.computeTextDocEdit(doc, result, changeAnnotationId).ifPresent(te -> we.getDocumentChanges().add(Either.forLeft(te)));
-				} else {
-					ORDocUtils.computeTextDocEdit(doc, result, changeAnnotationId).ifPresent(te -> we.getDocumentChanges().add(Either.forLeft(te)));
-				}
+				System.out.println(result.getBefore().getSourcePath().toString());
+				createUpdateFileEdit(documents, docUri, result.getBefore().printAll(), result.getAfter().printAll(), changeAnnotationId, we);
 			}
 			
 		}
 		return Optional.of(we);
+	}
+	
+	public static void createWorkspaceEdit(SimpleTextDocumentService documents, String docUri, String oldContent, String newContent, String changeAnnotationId, WorkspaceEdit we) {
+		if(oldContent == null) {
+			createNewFileEdit(docUri, newContent, changeAnnotationId, we);
+		} else if (newContent == null) {
+			createDeleteFileEdit(docUri, we);
+		} else {
+			createUpdateFileEdit(documents, docUri, oldContent, newContent, changeAnnotationId, we);
+		}
+	}
+	
+	private static void createNewFileEdit(String docUri, String newContent, String changeAnnotationId,
+			WorkspaceEdit we) {
+		CreateFile ro = new CreateFile();
+		ro.setUri(docUri);
+		we.getDocumentChanges().add(Either.forRight(ro));
+		
+		TextDocumentEdit te = new TextDocumentEdit();
+		te.setTextDocument(new VersionedTextDocumentIdentifier(docUri, 0));
+		Position cursor = new Position(0,0);
+		te.setEdits(List.of(new AnnotatedTextEdit(new Range(cursor, cursor), newContent, changeAnnotationId)));
+		we.getDocumentChanges().add(Either.forLeft(te));
+	}
+	
+	private static void createDeleteFileEdit(String docUri, WorkspaceEdit we) {
+		we.getDocumentChanges().add(Either.forRight(new DeleteFile(docUri)));
+	}
+
+	private static void createUpdateFileEdit(SimpleTextDocumentService documents, String docUri, String oldContent,
+			String newContent, String changeAnnotationId, WorkspaceEdit we) {
+		TextDocument doc = documents.getLatestSnapshot(docUri);
+		if (doc == null) {
+			doc = new TextDocument(docUri, null, 0, oldContent);
+			ORDocUtils.computeTextDocEdit(doc, oldContent, newContent, changeAnnotationId).ifPresent(te -> we.getDocumentChanges().add(Either.forLeft(te)));
+		} else {
+			ORDocUtils.computeTextDocEdit(doc, oldContent, newContent, changeAnnotationId).ifPresent(te -> we.getDocumentChanges().add(Either.forLeft(te)));
+		}
 	}
 	
 }

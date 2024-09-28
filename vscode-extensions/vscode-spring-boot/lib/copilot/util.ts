@@ -3,10 +3,6 @@ import { Uri, WorkspaceFolder, version, window, workspace } from "vscode";
 import fs from "fs";
 import { SemVer } from "semver";
 
-export function getExecutable(): string {
-    return workspace.getConfiguration("spring-cli").get("executable") || "spring";
-}
-
 export async function getWorkspaceRoot(): Promise<Uri | undefined> {
     if (workspace.workspaceFolders && workspace.workspaceFolders.length) {
         if (workspace.workspaceFolders.length === 1) {
@@ -84,6 +80,10 @@ export async function writeResponseToFile(response: string, appName: string, sel
     } catch (ex) {
         throw new Error(`Could not write readme file: ${readmeFilePath}, ${ex}`);
     }
+}
+
+export async function readResponseFromFile(uri: Uri) {
+    return workspace.fs.readFile(uri);
 }
 
 export function isLlmApiReady(): boolean {

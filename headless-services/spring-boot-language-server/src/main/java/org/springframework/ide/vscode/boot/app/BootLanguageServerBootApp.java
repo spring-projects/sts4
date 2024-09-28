@@ -49,6 +49,8 @@ import org.springframework.ide.vscode.boot.java.beans.DependsOnDefinitionProvide
 import org.springframework.ide.vscode.boot.java.beans.NamedDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.beans.ResourceDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.conditionalonresource.ConditionalOnResourceDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.copilot.ResponseModifier;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.DataQueryParameterDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
@@ -72,7 +74,6 @@ import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.ValueDefinitionProvider;
-import org.springframework.ide.vscode.boot.java.conditionalonresource.ConditionalOnResourceDefinitionProvider;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
 import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
@@ -415,6 +416,10 @@ public class BootLanguageServerBootApp {
 			BootJavaReconcileEngine reconciler,
 			BootJavaConfig config) {
 		return new ModulithService(server, projectFinder, projectObserver, springIndex, reconciler, config);
+	}
+	
+	@Bean ResponseModifier responseModifier() {
+		return new ResponseModifier();
 	}
 	
 }

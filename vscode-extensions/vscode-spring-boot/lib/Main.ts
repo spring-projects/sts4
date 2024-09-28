@@ -24,7 +24,6 @@ import { startTestJarSupport } from "./test-jar-launch";
 import { startPropertiesConversionSupport } from "./convert-props-yaml";
 import { activateCopilotFeatures } from "./copilot";
 import * as springBootAgent from './copilot/springBootAgent';
-import { SpringCli } from './copilot/springCli';
 import { applyLspEdit } from "./copilot/guideApply";
 import { isLlmApiReady } from "./copilot/util";
 import CopilotRequest, { logger } from "./copilot/copilotRequest";
@@ -38,7 +37,6 @@ const JPA_QUERY_PROPERTIES_LANGUAGE_ID = "jpa-query-properties";
 
 const STOP_ASKING = "Stop Asking";
 
-export const SPRINGCLI = new SpringCli();
 /** Called when extension is activated */
 export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
 
