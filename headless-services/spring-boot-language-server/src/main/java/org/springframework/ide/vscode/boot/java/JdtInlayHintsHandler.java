@@ -56,7 +56,7 @@ public class JdtInlayHintsHandler implements InlayHintHandler {
 
 	private List<InlayHint> computeInlayHints(List<JdtInlayHintsProvider> applicableInlayHintsProviders, IJavaProject jp, CompilationUnit cu, Range r, TextDocument doc) {
 		if (cu == null) {
-			return null;
+			return Collections.emptyList();
 		}
 		Collector<InlayHint> collector = new Collector<>();
 		CompositeASTVisitor visitor = new CompositeASTVisitor();

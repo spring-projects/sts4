@@ -16,9 +16,10 @@ import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+import org.springframework.lang.NonNull;
 
 public interface InlayHintHandler {
 	
-	List<InlayHint> handle(TextDocument doc, Range range, CancelChecker cancelChecker);
+	@NonNull List<InlayHint> handle(TextDocument doc, Range range, CancelChecker cancelChecker);
 
 }
