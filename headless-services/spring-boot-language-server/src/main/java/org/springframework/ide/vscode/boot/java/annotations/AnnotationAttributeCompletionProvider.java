@@ -10,12 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.annotations;
 
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 public interface AnnotationAttributeCompletionProvider {
 	
-	List<String> getCompletionCandidates(IJavaProject project);
+	Map<String, String> getCompletionCandidates(IJavaProject project);
 
 }

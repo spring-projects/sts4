@@ -11,7 +11,9 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
@@ -30,13 +32,13 @@ public class ResourceCompletionProvider implements AnnotationAttributeCompletion
 	}
 	
 	@Override
-	public List<String> getCompletionCandidates(IJavaProject project) {
+	public Map<String, String> getCompletionCandidates(IJavaProject project) {
 
 		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
 
 		return Arrays.stream(beans).map(bean -> bean.getName())
 				.distinct()
-				.toList();
+				.collect(Collectors.toMap(key -> key, value -> value, (u, v) -> u, LinkedHashMap::new));
 	}
 
 }

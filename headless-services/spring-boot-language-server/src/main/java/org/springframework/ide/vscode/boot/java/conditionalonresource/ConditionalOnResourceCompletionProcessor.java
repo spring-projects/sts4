@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.boot.java.conditionalonresource;
 
 import java.nio.file.Paths;
 import java.util.Comparator;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -23,8 +25,8 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
  */
 public class ConditionalOnResourceCompletionProcessor implements AnnotationAttributeCompletionProvider {
 
-    private List<String> findResources(IJavaProject project) {
-        List<String> resources = IClasspathUtil.getClasspathResources(project.getClasspath()).stream()
+    private Map<String, String> findResources(IJavaProject project) {
+    	Map<String, String> resources = IClasspathUtil.getClasspathResources(project.getClasspath()).stream()
                 .distinct()
                 .sorted(new Comparator<String>() {
                     @Override
@@ -34,13 +36,13 @@ public class ConditionalOnResourceCompletionProcessor implements AnnotationAttri
                 })
                 .map(r -> r.replaceAll("\\\\", "/"))
                 .map(r -> "classpath:" + r)
-                .toList();
+                .collect(Collectors.toMap(key -> key, value -> value, (u, v) -> u, LinkedHashMap::new));
 
         return resources;
     }
 
 	@Override
-	public List<String> getCompletionCandidates(IJavaProject project) {
+	public Map<String, String> getCompletionCandidates(IJavaProject project) {
 		return findResources(project);
 	}
 

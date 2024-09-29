@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.annotations;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -114,33 +115,33 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 	/**
 	 * create the concrete completion proposal
 	 */
-	private void createCompletionProposals(IJavaProject project, TextDocument doc, ASTNode node, String attributeName, Collection<ICompletionProposal> completions, int startOffset, int endOffset,
-			String filterPrefix, Function<String, String> createReplacementText) {
+	private void createCompletionProposals(IJavaProject project, TextDocument doc, ASTNode node, String attributeName,
+			Collection<ICompletionProposal> completions, int startOffset, int endOffset, String filterPrefix,
+			Function<String, String> createReplacementText) {
 
 		Set<String> alreadyMentionedValues = alreadyMentionedValues(node);
 
 		AnnotationAttributeCompletionProvider completionProvider = this.completionProviders.get(attributeName);
 		if (completionProvider != null) {
-			List<String> candidates = completionProvider.getCompletionCandidates(project);
 
-			List<String> filteredCandidates = candidates.stream()
-//				.filter(candidate -> candidate.toLowerCase().startsWith(filterPrefix.toLowerCase()))
-				.filter(candidate -> candidate.toLowerCase().contains(filterPrefix.toLowerCase()))
-				.filter(candidate -> !alreadyMentionedValues.contains(candidate))
-				.collect(Collectors.toList());
-
-			double score = filteredCandidates.size();
-			for (String candidate : filteredCandidates) {
-	
+			Map<String, String> proposals = completionProvider.getCompletionCandidates(project);
+			Map<String, String> filteredProposals = proposals.entrySet().stream()
+					.filter(candidate -> candidate.getKey().toLowerCase().contains(filterPrefix.toLowerCase()))
+					.filter(candidate -> !alreadyMentionedValues.contains(candidate.getKey()))
+					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (u, v) -> u, LinkedHashMap::new));
+			double score = filteredProposals.size();
+			for (Map.Entry<String, String> entry : filteredProposals.entrySet()) {
+				String candidate = entry.getKey();
 				DocumentEdits edits = new DocumentEdits(doc, false);
 				edits.replace(startOffset, endOffset, createReplacementText.apply(candidate));
-	
-				AnnotationAttributeCompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits, candidate, candidate, null, score--);
+				
+				AnnotationAttributeCompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits,
+						candidate, entry.getValue(), null, score--);
 				completions.add(proposal);
+
 			}
 		}
 	}
-
 
 	//
 	// internal computation of the right positions, prefixes, etc.

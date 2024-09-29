@@ -294,6 +294,20 @@ public class ValueCompletionTest {
         assertClasspathCompletions();
     }
 
+// The parser removes the (spring.) piece from the AST in this case, so there is no way
+// to clearly identify this case
+//
+//    @Test
+//    void testComplexPrefixCompletionParamNameCursorRightAfterDot() throws Exception {
+//        prepareCase("@Value(\"onField\")", "@Value(spring.<*>)");
+//        prepareDefaultIndexData();
+//
+//        assertPropertyCompletions(
+//                "@Value(\"${spring.prop1}\"<*>)");
+//
+//        assertClasspathCompletions();
+//    }
+
     @Test
     void testComplexPrefixCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(spring.pr<*>)");
@@ -315,6 +329,20 @@ public class ValueCompletionTest {
         
         assertClasspathCompletions();
     }
+
+// The parser removes the (spring.) piece from the AST in this case, so there is no way
+// to clearly identify this case
+//
+//    @Test
+//    void testPrefixCompletionWithParamNameCursorRightAfterDot() throws Exception {
+//        prepareCase("@Value(\"onField\")", "@Value(value=spring.<*>)");
+//        prepareDefaultIndexData();
+//
+//        assertPropertyCompletions(
+//                "@Value(value=\"${spring.prop1}\"<*>)");
+//        
+//        assertClasspathCompletions();
+//    }
 
     @Test
     void testComplexPrefixCompletionWithParamName() throws Exception {
@@ -411,6 +439,17 @@ public class ValueCompletionTest {
     @Test
     void testQoutedPrefixCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"spri<*>\")");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions(
+                "@Value(\"${spring.prop1}<*>\")");
+
+        assertClasspathCompletions();
+    }
+
+    @Test
+    void testComplexPrefixCompletionWithQuotesAndDotRightAfterPrefix() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"spring.<*>\")");
         prepareDefaultIndexData();
 
         assertPropertyCompletions(
