@@ -78,7 +78,7 @@
 
 		<sts4-language-servers-p2-repo>https://cdn.spring.io/spring-tools/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 		
-		<tycho-version>4.0.8</tycho-version>
+		<tycho-version>4.0.9</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
