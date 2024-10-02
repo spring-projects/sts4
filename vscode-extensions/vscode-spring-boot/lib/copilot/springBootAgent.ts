@@ -40,7 +40,7 @@ export default class SpringBootChatAgent {
         }
         const selectedProjectUri = Uri.file(selectedProject?.fsPath).toString();
 
-        // Fetch project related information from the Spring boot language server
+        // Fetch project related information from the Spring Boot language server
         const bootProjInfo = await commands.executeCommand("sts/spring-boot/bootProjectInfo", selectedProjectUri) as BootProjectInfo;
         const projectContext = `
             Use the following project information for the solution: Please suggest code compatible with the project version.
@@ -48,7 +48,7 @@ export default class SpringBootChatAgent {
             Main Spring project name: ${bootProjInfo.name}
             Root Package name: ${bootProjInfo.mainClass.substring(0, bootProjInfo.mainClass.lastIndexOf('.'))}
             Build tool: ${bootProjInfo.buildTool}
-            Spring boot version: ${bootProjInfo.springBootVersion}
+            Spring Boot version: ${bootProjInfo.springBootVersion}
             Java version: ${bootProjInfo.javaVersion}
             User prompt: ${request.prompt}
         `;
@@ -105,5 +105,5 @@ export function activate(
     const agent = chat.createChatParticipant(PARTICIPANT_ID, async (request, context, progress, token) => {
         return springBootChatAgent.handlePrompts(request, context, progress, token);
     });
-    agent.iconPath = Uri.joinPath(context.extensionUri, 'readme-imgs', 'spring-tools-icon.png');
+    agent.iconPath = Uri.joinPath(context.extensionUri, 'readme-imgs', 'sts4-32.png');
 }

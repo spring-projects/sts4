@@ -1,6 +1,6 @@
 import CopilotRequest from "./copilotRequest"
 
-export const systemPrompt = `**Your task is to create Java source code for a Spring boot application. Follow these guidelines:**
+export const systemPrompt = `**Your task is to create Java source code for a Spring Boot application. Follow these guidelines:**
 - IMPORTANT: CONCLUDE YOUR RESPONSE WITH THE MARKER \"//${CopilotRequest.DEFAULT_END_MARK}\"  TO INDICATE END OF RESPONSE.
 - Generate a pom.xml snippet that includes the necessary Spring Boot Starter dependencies such as "spring-boot-starter-jpa".
 - Organize code into appropriate package. Use the Package name as the root package and place the files in sub-packages accordingly.
@@ -15,7 +15,7 @@ export const systemPrompt = `**Your task is to create Java source code for a Spr
 - Include an integration test if there are multiple architectural layers.
 `
 
-export const systemBoot3Prompt = `For Spring boot 3 and above:
+export const systemBoot3Prompt = `For Spring Boot 3 and above:
 - IMPORTANT: For JPA related applications, the 'javax' package has been replaced with 'jakarta' package. All JPA-related imports should use 'jakarta.persistence' instead of 'javax.persistence'.
 \`\`\`
 """

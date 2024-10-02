@@ -37,9 +37,9 @@
     "chatParticipants": [
       {
         "id": "springboot.agent",
-        "fullName": "Spring boot",
-        "name": "springboot",
-        "description": "Spring boot chat agent",
+        "fullName": "Spring Tools",
+        "name": "spring",
+        "description": "Spring Tools chat agent",
         "commands": [
           {
             "name": "add",
