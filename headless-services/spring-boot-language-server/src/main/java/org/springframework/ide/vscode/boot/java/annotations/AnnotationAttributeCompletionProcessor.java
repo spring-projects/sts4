@@ -88,9 +88,13 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 					computeProposalsForStringLiteral(project, node, "value", completions, offset, doc);
 				}
 			}
-			// case: @Qualifier({"prefix<*>"})
+			// case: @Qualifier({"prefix<*>"}) || @Qualifier(value={"prefix<*>"})
 			else if (node instanceof StringLiteral && node.getParent() instanceof ArrayInitializer) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
+					if (node.getParent().getParent() instanceof MemberValuePair) {
+						String attributeName = ((MemberValuePair)node.getParent().getParent()).getName().toString();
+						computeProposalsForInsideArrayInitializer(project, node, attributeName, completions, offset, doc);
+					}
 					computeProposalsForInsideArrayInitializer(project, node, "value", completions, offset, doc);
 				}
 			}
@@ -105,6 +109,12 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 			// case: @Qualifier({<*>})
 			else if (node instanceof ArrayInitializer && node.getParent() instanceof Annotation) {
 				computeProposalsForArrayInitializr(project, (ArrayInitializer) node, "value", completions, offset, doc);
+			}
+			// case: @Qualifier(value={<*>})
+			else if (node instanceof ArrayInitializer && node.getParent() instanceof MemberValuePair
+					&& completionProviders.containsKey(((MemberValuePair)node.getParent()).getName().toString())) {
+				String attributeName = ((MemberValuePair)node.getParent()).getName().toString();
+				computeProposalsForArrayInitializr(project, (ArrayInitializer) node, attributeName, completions, offset, doc);
 			}
 		}
 		catch (Exception e) {
