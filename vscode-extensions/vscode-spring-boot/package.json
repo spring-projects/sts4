@@ -30,9 +30,6 @@
   "activationEvents": [
     "onCommand:vscode-spring-boot.ls.start"
   ],
-  "enabledApiProposals": [
-    "chatVariableResolver"
-  ],
   "contributes": {
     "chatParticipants": [
       {
