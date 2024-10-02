@@ -1,6 +1,7 @@
 name: Pre-Release - Publish VSCode Extensions
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 0 * * 2,4,6"
 
