@@ -21,7 +21,7 @@ export async function applyLspEdit(uri: Uri) {
         }, async (progress, cancellation) => {
             progress.report({ message: "applying edits..." });
             const fileContent = (await readResponseFromFile(uri)).toString();
-            const lspEdit = await commands.executeCommand("sts/copilot/agent/lspEdits", uri.toString(), path.dirname(uri.fsPath), fileContent);
+            const lspEdit = await commands.executeCommand("sts/copilot/agent/lspEdits", uri.toString(), fileContent);
             const workspaceEdit = await CONVERTER.asWorkspaceEdit(lspEdit);
             
 

@@ -56,7 +56,6 @@ import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.config.YamlResourceLoader;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.maven.AddDependency;
 import org.openrewrite.maven.MavenParser;
 import org.openrewrite.tree.ParseError;
 import org.slf4j.Logger;
