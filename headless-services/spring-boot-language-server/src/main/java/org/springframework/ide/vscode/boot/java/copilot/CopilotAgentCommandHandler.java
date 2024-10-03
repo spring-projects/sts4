@@ -63,8 +63,7 @@ public class CopilotAgentCommandHandler {
 	private CompletableFuture<WorkspaceEdit> createLspEdits(ExecuteCommandParams params) throws IOException {
 		log.info("Command Handler for lsp edits: ");
 		String docURI = ((JsonElement) params.getArguments().get(0)).getAsString();
-		String path = ((JsonElement) params.getArguments().get(0)).getAsString();
-		String content = ((JsonElement) params.getArguments().get(2)).getAsString();
+		String content = ((JsonElement) params.getArguments().get(1)).getAsString();
 
 		IJavaProject project = this.projectFinder.find(new TextDocumentIdentifier(docURI)).get();
 		List<ProjectArtifact> projectArtifacts = computeProjectArtifacts(content);

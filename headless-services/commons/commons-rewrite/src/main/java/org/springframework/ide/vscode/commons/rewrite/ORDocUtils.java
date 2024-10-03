@@ -117,7 +117,6 @@ public class ORDocUtils {
 					log.error("Diff conversion failed", ex);
 				}
 			}
-			System.out.println("edits "+ edit);
 			return Optional.of(edit);
 		}
 		return Optional.empty();
@@ -170,7 +169,6 @@ public class ORDocUtils {
 				createDeleteFileEdit(docUri, we);
 			} else {
 				String docUri = result.getBefore().getSourcePath().toUri().toASCIIString();
-				System.out.println(result.getBefore().getSourcePath().toString());
 				createUpdateFileEdit(documents, docUri, result.getBefore().printAll(), result.getAfter().printAll(), changeAnnotationId, we);
 			}
 			

@@ -19,15 +19,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
 import org.eclipse.lsp4j.ChangeAnnotation;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.openrewrite.Result;
 import org.openrewrite.xml.tree.Xml;
 import org.springframework.ide.vscode.boot.java.copilot.InjectMavenActionHandler.MavenDependencyMetadata;
 import org.springframework.ide.vscode.boot.java.copilot.util.ClassNameExtractor;
-import org.springframework.ide.vscode.boot.java.copilot.util.PomReader;
 import org.springframework.ide.vscode.boot.java.copilot.util.PropertyFileUtils;
 import org.springframework.ide.vscode.boot.java.copilot.util.SpringCliException;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -40,12 +37,6 @@ public class ProjectArtifactEditGenerator {
 
 	private final Path projectPath;
 
-	private final String readmeFileName;
-
-	private final Pattern compiledGroupIdPattern;
-
-	private final Pattern compiledArtifactIdPattern;
-
 	private final SimpleTextDocumentService simpleTextDocumentService;
 
 	public ProjectArtifactEditGenerator(SimpleTextDocumentService simpleTextDocumentService,
@@ -53,9 +44,6 @@ public class ProjectArtifactEditGenerator {
 		this.simpleTextDocumentService = simpleTextDocumentService;
 		this.projectArtifacts = projectArtifacts;
 		this.projectPath = projectPath;
-		this.readmeFileName = readmeFileName;
-		compiledGroupIdPattern = Pattern.compile("<groupId>(.*?)</groupId>");
-		compiledArtifactIdPattern = Pattern.compile("<artifactId>(.*?)</artifactId>");
 	}
 
 	public ProcessArtifactResult<WorkspaceEdit> process() throws IOException {
@@ -136,24 +124,19 @@ public class ProjectArtifactEditGenerator {
 
 	private void writeMavenDependencies(ProjectArtifact projectArtifact, Path projectPath, String changeAnnotationId,
 			WorkspaceEdit we) {
-		PomReader pomReader = new PomReader();
 		Path currentProjectPomPath = this.projectPath.resolve("pom.xml");
 		if (Files.notExists(currentProjectPomPath)) {
 			throw new SpringCliException("Could not find pom.xml in " + this.projectPath
 					+ ".  Make sure you are running the command in the project's root directory.");
 		}
-		Model currentModel = pomReader.readPom(currentProjectPomPath.toFile());
-		List<Dependency> currentDependencies = currentModel.getDependencies();
 
 		InjectMavenActionHandler injectMavenActionHandler = new InjectMavenActionHandler(null, new HashMap<>(),
 				projectPath);
-
+		// Move the parsing to injectMavenActionHandler
 		List<Xml.Document> xmlDocuments = injectMavenActionHandler.parseToXml(projectArtifact.getText());
 		for (Xml.Document xmlDocument : xmlDocuments) {
 			MavenDependencyMetadata dep = injectMavenActionHandler.findMavenDependencyTags(xmlDocument);
-			if (!candidateDependencyAlreadyPresent(dep, currentDependencies)) {
-				injectMavenActionHandler.injectDependency(dep);
-			}
+			injectMavenActionHandler.injectDependency(dep);
 		}
 
 		List<Result> res = injectMavenActionHandler.run().getChangeset().getAllResults();
@@ -162,23 +145,6 @@ public class ProjectArtifactEditGenerator {
 					.createWorkspaceEdit(simpleTextDocumentService, res, changeAnnotationId).get();
 			we.getDocumentChanges().addAll(workspaceEdit.getDocumentChanges());
 		}
-	}
-
-	private boolean candidateDependencyAlreadyPresent(MavenDependencyMetadata dep,
-			List<Dependency> currentDependencies) {
-		String candidateGroupId = dep.groupId();
-		String candidateArtifactId = dep.artifactId();
-		boolean candidateDependencyAlreadyPresent = false;
-		for (Dependency currentDependency : currentDependencies) {
-			String currentGroupId = currentDependency.getGroupId();
-			String currentArtifactId = currentDependency.getArtifactId();
-			if (candidateGroupId.equals(currentGroupId) && candidateArtifactId.equals(currentArtifactId)) {
-				candidateDependencyAlreadyPresent = true;
-				break;
-			}
-		}
-		return candidateDependencyAlreadyPresent;
-
 	}
 
 	private void writeApplicationProperties(ProjectArtifact projectArtifact, Path projectPath,
