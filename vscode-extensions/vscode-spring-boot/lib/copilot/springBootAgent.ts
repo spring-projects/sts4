@@ -65,22 +65,20 @@ export default class SpringBootChatAgent {
 
         // Chat request to copilot LLM
         const response = await this.copilotRequest.chatRequest(messages, {}, cancellationToken);
-
-        // write the response to markdown file
-        const targetMarkdownUri = await writeResponseToFile(response, bootProjInfo.name, selectedProject.fsPath);
-
         let documentContent;
 
-        if (!targetMarkdownUri) {
-            documentContent = 'Note: The code provided is just an example and may not be suitable for production use. \n ' + response;
+        if (response == null || response === '') {
+            documentContent = 'Failed to process the request. Please try again.';
         } else {
-            // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
             if (bootProjInfo.springBootVersion.startsWith('3')) {
-                const enhancedResponse = await commands.executeCommand("sts/copilot/agent/enhanceResponse", response) as string;
-                await writeResponseToFile(enhancedResponse, bootProjInfo.name, selectedProject.fsPath);
+                documentContent = await commands.executeCommand("sts/copilot/agent/enhanceResponse", response) as string;
+            } else {
+                documentContent = 'Note: The code provided is just an example and may not be suitable for production use. \n ' + response;
             }
-            documentContent = await workspace.fs.readFile(targetMarkdownUri);
         }
+
+        // write the final response to markdown file
+        await writeResponseToFile(documentContent, bootProjInfo.name, selectedProject.fsPath);
 
         const chatResponse = Buffer.from(documentContent).toString();
         stream.markdown(chatResponse);
