@@ -77,8 +77,7 @@ public class InjectMavenActionHandler extends AbstractInjectMavenActionHandler {
 		for (InjectMavenBuildPlugin p : buildPlugins) {
 			List<Xml.Document> xmlDocuments = parseToXml(p.getText());
 			for (Xml.Document xmlDocument : xmlDocuments) {
-				MavenPluginMetadata pm = findMavenPluginTags(xmlDocument);
-				if (pm != null) {
+				for (MavenPluginMetadata pm : findMavenPluginTags(xmlDocument)) {
 					AddPlugin addPlugin = new AddPlugin(pm.groupId(), pm.artifactId(), pm.version(), pm.configuration(),
 							pm.dependencies(), pm.executions(), pm.filePattern());
 					aggregateRecipe.getRecipeList().add(addPlugin);
@@ -88,8 +87,7 @@ public class InjectMavenActionHandler extends AbstractInjectMavenActionHandler {
 		for (InjectMavenRepository r : repositories) {
 			List<Xml.Document> xmlDocuments = parseToXml(r.getText());
 			for (Xml.Document xmlDocument : xmlDocuments) {
-				MavenRepositoryMetadata rm = findRepositoryTags(xmlDocument);
-				if (rm != null) {
+				for (MavenRepositoryMetadata rm  : findRepositoryTags(xmlDocument)) {
 					AddRepository addRepository = new AddRepository(rm.id(), rm.url(), rm.repoName(), null,
 							rm.snapshotsEnabled(), null, null, rm.releasesEnabled(), null, null, null);
 					aggregateRecipe.getRecipeList().add(addRepository);
@@ -99,8 +97,7 @@ public class InjectMavenActionHandler extends AbstractInjectMavenActionHandler {
 		for (InjectMavenDependencyManagement dm : dependencyManagements) {
 			List<Xml.Document> xmlDocuments = parseToXml(dm.getText());
 			for (Xml.Document xmlDocument : xmlDocuments) {
-				MavenDependencyMetadata mdm = findMavenDependencyTags(xmlDocument);
-				if (mdm != null) {
+				for (MavenDependencyMetadata mdm : findMavenDependencyTags(xmlDocument)) {
 					AddManagedDependency addManagedDependency = new AddManagedDependency(mdm.groupId(), mdm.artifactId(),
 							mdm.version(), mdm.scope(), null, mdm.classifier(), null, null, null, null);
 					aggregateRecipe.getRecipeList().add(addManagedDependency);
@@ -118,8 +115,9 @@ public class InjectMavenActionHandler extends AbstractInjectMavenActionHandler {
 		return xmlDocuments;
 	}
 
-	public MavenDependencyMetadata findMavenDependencyTags(Xml.Document xmlDocument) {
+	public List<MavenDependencyMetadata> findMavenDependencyTags(Xml.Document xmlDocument) {
 		Set<Tag> dependencyTags = FindTags.find(xmlDocument, "//dependency");
+		List<MavenDependencyMetadata> deps = new ArrayList<>(dependencyTags.size());
 		for (Tag dependencyTag : dependencyTags) {
 			String groupId = dependencyTag.getChildValue("groupId").orElse(null);
 			String artifactId = dependencyTag.getChildValue("artifactId").orElse(null);
@@ -127,16 +125,16 @@ public class InjectMavenActionHandler extends AbstractInjectMavenActionHandler {
 			String scope = dependencyTag.getChildValue("scope").orElse(null);
 			String type = dependencyTag.getChildValue("type").orElse(null);
 			String classifier = dependencyTag.getChildValue("classifier").orElse(null);
-			if (groupId != null && artifactId != null && version != null)
-				return new MavenDependencyMetadata(groupId, artifactId, version, scope, type, classifier);
-
+			if (groupId != null && artifactId != null && version != null) {
+				deps.add(new MavenDependencyMetadata(groupId, artifactId, version, scope, type, classifier));
+			}
 		}
-		return null;
+		return deps;
 	}
 
-	public MavenPluginMetadata findMavenPluginTags(Xml.Document xmlDocument) {
+	public List<MavenPluginMetadata> findMavenPluginTags(Xml.Document xmlDocument) {
 		Set<Tag> pluginTags = FindTags.find(xmlDocument, "//plugin");
-
+		List<MavenPluginMetadata> plugins = new ArrayList<>(pluginTags.size());
 		for (Tag pluginTag : pluginTags) {
 			String groupId = pluginTag.getChildValue("groupId").orElse(null);
 			String artifactId = pluginTag.getChildValue("artifactId").orElse(null);
@@ -146,16 +144,17 @@ public class InjectMavenActionHandler extends AbstractInjectMavenActionHandler {
 			String executions = pluginTag.getChildValue("executions").orElse(null);
 			String filePattern = pluginTag.getChildValue("filePattern").orElse(null);
 
-			if (groupId != null && artifactId != null && version != null)
-				return new MavenPluginMetadata(groupId, artifactId, version, configuration, dependencies, executions,
-						filePattern);
+			if (groupId != null && artifactId != null && version != null) {
+				plugins.add(new MavenPluginMetadata(groupId, artifactId, version, configuration, dependencies, executions,
+						filePattern));
+			}
 		}
-		return null;
+		return plugins;
 	}
 
-	private MavenRepositoryMetadata findRepositoryTags(Document xmlDocument) {
+	private List<MavenRepositoryMetadata> findRepositoryTags(Document xmlDocument) {
 		Set<Tag> repoTags = FindTags.find(xmlDocument, "//plugin");
-
+		List<MavenRepositoryMetadata> repos = new ArrayList<>(repoTags.size());
 		for (Tag repoTag : repoTags) {
 			String id = repoTag.getChildValue("id").orElse(null);
 			String url = repoTag.getChildValue("url").orElse(null);
@@ -163,10 +162,11 @@ public class InjectMavenActionHandler extends AbstractInjectMavenActionHandler {
 			boolean snapshotsEnabled = Boolean.parseBoolean(repoTag.getChildValue("snapshotsEnabled").orElse(null));
 			boolean releasesEnabled = Boolean.parseBoolean(repoTag.getChildValue("releasesEnabled").orElse(null));
 
-			if (id != null && url != null)
-				return new MavenRepositoryMetadata(id, url, repoName, snapshotsEnabled, releasesEnabled);
+			if (id != null && url != null) {
+				repos.add(new MavenRepositoryMetadata(id, url, repoName, snapshotsEnabled, releasesEnabled));
+			}
 		}
-		return null;
+		return repos;
 	}
 
 }

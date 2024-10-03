@@ -135,8 +135,9 @@ public class ProjectArtifactEditGenerator {
 		// Move the parsing to injectMavenActionHandler
 		List<Xml.Document> xmlDocuments = injectMavenActionHandler.parseToXml(projectArtifact.getText());
 		for (Xml.Document xmlDocument : xmlDocuments) {
-			MavenDependencyMetadata dep = injectMavenActionHandler.findMavenDependencyTags(xmlDocument);
-			injectMavenActionHandler.injectDependency(dep);
+			for (MavenDependencyMetadata dep : injectMavenActionHandler.findMavenDependencyTags(xmlDocument)) {
+				injectMavenActionHandler.injectDependency(dep);
+			}
 		}
 
 		List<Result> res = injectMavenActionHandler.run().getChangeset().getAllResults();

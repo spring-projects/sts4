@@ -161,17 +161,10 @@ public class ORDocUtils {
 		WorkspaceEdit we = new WorkspaceEdit();
 		we.setDocumentChanges(new ArrayList<>());
 		for (Result result : results) {
-			if (result.getBefore() == null) {
-				String docUri = result.getAfter().getSourcePath().toUri().toASCIIString();
-				createNewFileEdit(docUri, result.getAfter().printAll(), changeAnnotationId, we);
-			} else if (result.getAfter() == null) {
-				String docUri = result.getBefore().getSourcePath().toUri().toASCIIString();
-				createDeleteFileEdit(docUri, we);
-			} else {
-				String docUri = result.getBefore().getSourcePath().toUri().toASCIIString();
-				createUpdateFileEdit(documents, docUri, result.getBefore().printAll(), result.getAfter().printAll(), changeAnnotationId, we);
-			}
-			
+			String docUri = result.getBefore() == null ? result.getAfter().getSourcePath().toUri().toASCIIString() : result.getBefore().getSourcePath().toUri().toASCIIString();
+			String oldContent = result.getBefore() == null ? null : result.getBefore().printAll();
+			String newContent = result.getAfter() == null ? null : result.getAfter().printAll();
+			createWorkspaceEdit(documents, docUri, oldContent, newContent, changeAnnotationId, we);
 		}
 		return Optional.of(we);
 	}
@@ -180,7 +173,7 @@ public class ORDocUtils {
 		if(oldContent == null) {
 			createNewFileEdit(docUri, newContent, changeAnnotationId, we);
 		} else if (newContent == null) {
-			createDeleteFileEdit(docUri, we);
+			createDeleteFileEdit(docUri, changeAnnotationId, we);
 		} else {
 			createUpdateFileEdit(documents, docUri, oldContent, newContent, changeAnnotationId, we);
 		}
@@ -190,6 +183,7 @@ public class ORDocUtils {
 			WorkspaceEdit we) {
 		CreateFile ro = new CreateFile();
 		ro.setUri(docUri);
+		ro.setAnnotationId(changeAnnotationId);
 		we.getDocumentChanges().add(Either.forRight(ro));
 		
 		TextDocumentEdit te = new TextDocumentEdit();
@@ -199,8 +193,10 @@ public class ORDocUtils {
 		we.getDocumentChanges().add(Either.forLeft(te));
 	}
 	
-	private static void createDeleteFileEdit(String docUri, WorkspaceEdit we) {
-		we.getDocumentChanges().add(Either.forRight(new DeleteFile(docUri)));
+	private static void createDeleteFileEdit(String docUri, String changeAnnotationId, WorkspaceEdit we) {
+		DeleteFile ro = new DeleteFile(docUri);
+		ro.setAnnotationId(changeAnnotationId);
+		we.getDocumentChanges().add(Either.forRight(ro));
 	}
 
 	private static void createUpdateFileEdit(SimpleTextDocumentService documents, String docUri, String oldContent,
