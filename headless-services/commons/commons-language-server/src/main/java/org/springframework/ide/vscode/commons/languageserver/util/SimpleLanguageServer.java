@@ -315,7 +315,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 		if (CODE_ACTION_COMMAND_ID.equals(params.getCommand())) {
 			Assert.isLegal(params.getArguments().size()==2);
 			QuickfixResolveParams quickfixParams = new QuickfixResolveParams(
-					((JsonPrimitive)params.getArguments().get(0)).getAsString(), params.getArguments().get(1)
+					params.getArguments().get(0) instanceof JsonPrimitive ? ((JsonPrimitive)params.getArguments().get(0)).getAsString() : params.getArguments().get(0).toString() , params.getArguments().get(1)
 			);
 			return quickfixResolve(quickfixParams)
 			.flatMap((QuickfixEdit edit) -> {

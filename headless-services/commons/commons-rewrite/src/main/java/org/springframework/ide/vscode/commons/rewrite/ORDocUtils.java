@@ -21,6 +21,7 @@ import org.eclipse.lsp4j.CreateFile;
 import org.eclipse.lsp4j.DeleteFile;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.ResourceOperation;
 import org.eclipse.lsp4j.TextDocumentEdit;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
@@ -69,6 +70,44 @@ public class ORDocUtils {
 				return Optional.of(edits);
 			}
 		return Optional.empty();	
+
+	}
+
+	public static Optional<DocumentEdits> computeDocumentEdits(WorkspaceEdit we, IDocument doc) {
+		if (!we.getDocumentChanges().isEmpty()) {
+			DocumentEdits edits = new DocumentEdits(doc, false);
+			List<Either<TextDocumentEdit, ResourceOperation>> changes = we.getDocumentChanges();
+			for (Either<TextDocumentEdit, ResourceOperation> change : changes) {
+				if (change.isLeft()) {
+					TextDocumentEdit textDocumentEdit = change.getLeft();
+					List<TextEdit> textEdits = textDocumentEdit.getEdits();
+					for (TextEdit textEdit : textEdits) {
+						Range range = textEdit.getRange();
+						Position start = range.getStart();
+						Position end = range.getEnd();
+						String newText = textEdit.getNewText();
+
+						try {
+							int startOffset = doc.getLineOffset(start.getLine()) + start.getCharacter();
+							int endOffset = doc.getLineOffset(end.getLine()) + end.getCharacter();
+
+							if (startOffset == endOffset) {
+								edits.insert(startOffset, newText);
+							} else if (newText.isEmpty()) {
+								edits.delete(startOffset, endOffset);
+							} else {
+								edits.replace(startOffset, endOffset, newText);
+							}
+						} catch (BadLocationException ex) {
+							log.error("Failed to apply text edit", ex);
+						}
+					}
+				}
+			}
+
+			return Optional.of(edits);
+		}
+		return Optional.empty();
 
 	}
 	
@@ -172,7 +211,7 @@ public class ORDocUtils {
 			addToWorkspaceEdit(documents, docUri, oldContent, newContent, changeAnnotationId, we);
 		}
 	}
-	
+
 	public static void addToWorkspaceEdit(SimpleTextDocumentService documents, String docUri, String oldContent, String newContent, String changeAnnotationId, WorkspaceEdit we) {
 		if(oldContent == null) {
 			createNewFileEdit(docUri, newContent, changeAnnotationId, we);

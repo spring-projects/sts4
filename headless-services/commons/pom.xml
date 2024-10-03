@@ -131,6 +131,14 @@
 
     <dependencyManagement>
         <dependencies>
+			<!-- https://mvnrepository.com/artifact/org.openrewrite/rewrite-bom -->
+			<dependency>
+			    <groupId>org.openrewrite</groupId>
+			    <artifactId>rewrite-bom</artifactId>
+			    <version>8.42.5</version>
+			    <type>pom</type>
+                <scope>import</scope>
+			</dependency>
             <dependency>
                 <groupId>org.openrewrite.recipe</groupId>
                 <artifactId>rewrite-recipe-bom</artifactId>

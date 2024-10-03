@@ -14,6 +14,7 @@ package org.springframework.ide.vscode.commons.languageserver.completion;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
@@ -57,4 +58,9 @@ public interface ICompletionProposal {
 			}
 		};
 	}
+	
+	default Optional<Command> getCommand() {
+		return Optional.empty();
+	}
+	
 }

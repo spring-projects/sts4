@@ -546,10 +546,23 @@ public class Editor {
 			}
 		}
 		
+		Position beforeCmdCursorPosition = getCursor();
+		String beforeCmd = doc.getText();
+		
 		// Apply command
 		if (completion.getCommand() != null) {
 			harness.executeCommand(completion.getCommand());
+			if (beforeCmd.length() != getRawText().length()) {
+				TextDocument beforeDoc = new TextDocument(doc.getUri(), doc.getLanguageId());
+				beforeDoc.setText(beforeCmd);
+				int beforeOffset = beforeDoc.toOffset(beforeCmdCursorPosition);
+				TextDocument changedDoc = new TextDocument(doc.getUri(), doc.getLanguageId());
+				changedDoc.setText(doc.getText());
+				int newOffset = beforeOffset + (getRawText().length() - beforeCmd.length());
+				setCursor(changedDoc.toPosition(newOffset));
+			}
 		}
+		
 	}
 
 	private String getInsertText(CompletionItem completion) {

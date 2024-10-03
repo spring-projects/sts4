@@ -300,6 +300,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		}
 		
 		List<Object> commands = new ArrayList<>(2);
+		completion.getCommand().ifPresent(commands::add);
 		if (LspClient.currentClient() != LspClient.Client.ECLIPSE) {
 			/*
 			 *  Eclipse client always send completionItem resolve request before applying completion. 
@@ -352,7 +353,9 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 					}
 				}
 				if (subCommands.size() == 1) {
-					item.setCommand((Command)subCommands.get(0));
+					Object o = subCommands.get(0);
+					Command subCommand = o instanceof Command ? (Command) o : GSON.fromJson(o instanceof JsonElement ? (JsonElement) o : GSON.toJsonTree(o), Command.class);
+					item.setCommand(subCommand);
 				} else if (subCommands.isEmpty()) {
 					item.setCommand(null);
 				}

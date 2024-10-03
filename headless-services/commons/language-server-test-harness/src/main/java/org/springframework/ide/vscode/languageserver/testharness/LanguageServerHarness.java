@@ -909,8 +909,8 @@ public class LanguageServerHarness {
 					for (TextEdit textEdit : docEdit.getEdits()) {
 						Range range = textEdit.getRange();
 						edits.replace(workingDocument.toOffset(range.getStart()), workingDocument.toOffset(range.getEnd()), textEdit.getNewText());
-						edits.apply(workingDocument);
 					}
+					edits.apply(workingDocument);
 					Editor editor = getOpenEditor(uri);
 					if (editor!=null) {
 						editor.setRawText(workingDocument.get());
