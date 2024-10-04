@@ -96,60 +96,41 @@ public class SpelDefinitionProvider implements IJavaDefinitionProvider {
 		if (n instanceof StringLiteral) {
 			StringLiteral valueNode = (StringLiteral) n;
 			ASTNode parent = ASTUtils.getNearestAnnotationParent(valueNode);
-
 			if (parent != null && parent instanceof Annotation) {
+
 				Annotation a = (Annotation) parent;
 				IAnnotationBinding binding = a.resolveAnnotationBinding();
 				if (binding != null && binding.getAnnotationType() != null
 						&& Annotations.VALUE.equals(binding.getAnnotationType().getQualifiedName())) {
-					return parseSpelAndFetchLocation(cancelToken, project, cu, offset);
+					return getLocationLinks(project, offset, a);
 				}
 			}
 		}
 		return Collections.emptyList();
 	}
 
-	private List<LocationLink> parseSpelAndFetchLocation(CancelChecker cancelToken, IJavaProject project,
-			CompilationUnit cu, int offset) {
+	private List<LocationLink> getLocationLinks(IJavaProject project, int offset, Annotation a) {
 		List<LocationLink> locationLink = new ArrayList<>();
-		cu.accept(new ASTVisitor() {
-			@Override
-			public boolean visit(SingleMemberAnnotation node) {
-				Arrays.stream(spelExtractors).map(e -> e.getSpelRegion(node)).filter(o -> o.isPresent())
-						.map(o -> o.get()).forEach(snippet -> {
-							List<TokenData> beanReferenceTokens = computeTokens(snippet, offset);
-							if (beanReferenceTokens != null && beanReferenceTokens.size() > 0) {
-								locationLink.addAll(findLocationLinksForBeanRef(project, offset, beanReferenceTokens));
-							}
-
-							Optional<Tuple2<String, String>> result = parseAndExtractMethodClassPairFromSpel(snippet,
-									offset);
-							result.ifPresent(tuple -> {
-								locationLink.addAll(findLocationLinksForMethodRef(tuple.getT1(), tuple.getT2(), project));
-							});
-						});
-				return super.visit(node);
+		Arrays.stream(spelExtractors).map(e -> {
+			if (a instanceof SingleMemberAnnotation)
+				return e.getSpelRegion((SingleMemberAnnotation) a);
+			else if (a instanceof NormalAnnotation)
+				return e.getSpelRegion((NormalAnnotation) a);
+			return Optional.<Snippet>empty();
+		}).filter(o -> o.isPresent()).map(o -> o.get())
+		.filter(snippet -> {
+			int tokenEndIndex = snippet.offset() + snippet.text().length();
+			return snippet.offset() <= (offset) && (offset) <= tokenEndIndex;
+		}).forEach(snippet -> {
+			List<TokenData> beanReferenceTokens = computeTokens(snippet, offset);
+			if (beanReferenceTokens != null && beanReferenceTokens.size() > 0) {
+				locationLink.addAll(findLocationLinksForBeanRef(project, offset, beanReferenceTokens));
 			}
 
-			@Override
-			public boolean visit(NormalAnnotation node) {
-				Arrays.stream(spelExtractors).map(e -> e.getSpelRegion(node)).filter(o -> o.isPresent())
-						.map(o -> o.get()).forEach(snippet -> {
-							List<TokenData> beanReferenceTokens = computeTokens(snippet, offset);
-							if (beanReferenceTokens != null && beanReferenceTokens.size() > 0) {
-								locationLink.addAll(findLocationLinksForBeanRef(project, offset, beanReferenceTokens));
-							}
-							parseAndExtractMethodClassPairFromSpel(snippet, offset);
-							Optional<Tuple2<String, String>> result = parseAndExtractMethodClassPairFromSpel(snippet,
-									offset);
-							result.ifPresent(tuple -> {
-								locationLink.addAll(findLocationLinksForMethodRef(tuple.getT1(), tuple.getT2(), project));
-							});
-						});
-
-				return super.visit(node);
-			}
-
+			Optional<Tuple2<String, String>> result = parseAndExtractMethodClassPairFromSpel(snippet, offset);
+			result.ifPresent(tuple -> {
+				locationLink.addAll(findLocationLinksForMethodRef(tuple.getT1(), tuple.getT2(), project));
+			});
 		});
 		return locationLink;
 	}
@@ -168,7 +149,6 @@ public class SpelDefinitionProvider implements IJavaDefinitionProvider {
 				String classFqName = className.substring(2, className.length() - 1);
 				Optional<URL> sourceUrl = SourceLinks.source(project, classFqName);
 				if (sourceUrl.isPresent()) {
-
 					docUri = sourceUrl.get().toURI();
 				}
 			} else if (className.startsWith("@")) {

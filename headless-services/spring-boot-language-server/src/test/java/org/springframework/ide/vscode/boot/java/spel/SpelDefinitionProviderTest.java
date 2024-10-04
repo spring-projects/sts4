@@ -240,12 +240,9 @@ public class SpelDefinitionProviderTest {
 				new Range(new Position(7, 23), new Position(7, 37)), new Range(new Position(7, 23), new Position(7, 37)), null);
 		LocationLink expectedLocation2 = new LocationLink(expectedDefinitionUriSpelClass,
 				new Range(new Position(37, 22), new Position(37, 28)), new Range(new Position(37, 22), new Position(37, 28)), null);
-//		LocationLink expectedLocation3 = new LocationLink(expectedDefinitionUriSpelClass,
-//				new Range(new Position(33, 22), new Position(33, 28)), new Range(new Position(33, 22), new Position(33, 28)), null);
 
 		editor.assertLinkTargets("isValidVersion", List.of(expectedLocation1));
 		editor.assertLinkTargets("concat", List.of(expectedLocation2));
-//		editor.assertLinkTargets("toUpperCase", List.of(expectedLocation3));
 	}
 
 }
