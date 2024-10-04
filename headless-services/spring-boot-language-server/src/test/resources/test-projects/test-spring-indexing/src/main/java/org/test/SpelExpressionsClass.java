@@ -11,10 +11,10 @@ public class SpelExpressionsClass {
 	@Value("${app.version}")
 	private String appVersion;
 
-	@Value("#{@visitController.isValidVersion('${app.version}') ? 'Valid Version' :'Invalid Version'}")
+	@Value("#{@visitService.isValidVersion('${app.version}') ? 'Valid Version' :'Invalid Version'}")
 	private String versionValidity;
 
-	@Value("value = #{@visitController.isValidVersion('${app.version}') ? @spelExpressionClass.toUpperCase('valid') :@spelExpressionClass.text2('invalid version)}")
+	@Value("value = #{@visitService.isValidVersion('${app.version}') ? @spelExpressionClass.toUpperCase('valid') :@spelExpressionClass.text2('invalid version')}")
 	private String fetchVersion;
 	
 	@Value("#{T(org.test.SpelExpressionClass).toUpperCase('hello') + ' ' + @spelExpressionsClass.concat('world', '!')}")
