@@ -53,7 +53,7 @@
       "./jars/sts-gradle-tooling.jar"
     ],
     "languages": [
-		  {
+      {
         "id": "spring-boot-properties-yaml",
         "aliases": [
           "Spring Boot Properties Yaml"
@@ -1318,28 +1318,28 @@
         "path": "./properties-support/spring-factories.tmLanguage.json"
       }
     ],
-		"configurationDefaults": {
-			"[spring-boot-properties-yaml]": {
-				"editor.quickSuggestions": {
-					"strings": true
-				}
-			},
-			"[spring-boot-properties]": {
-				"editor.quickSuggestions": {
-					"strings": true
-				}
-			},
-			"[jpa-query-properties]": {
-				"editor.quickSuggestions": {
-					"strings": true
-				}
-			},
-			"[spring-factories]": {
-				"editor.quickSuggestions": {
-					"strings": true
-				}
-			}
-		}
+    "configurationDefaults": {
+      "[spring-boot-properties-yaml]": {
+        "editor.quickSuggestions": {
+          "strings": true
+        }
+      },
+      "[spring-boot-properties]": {
+        "editor.quickSuggestions": {
+          "strings": true
+        }
+      },
+      "[jpa-query-properties]": {
+        "editor.quickSuggestions": {
+          "strings": true
+        }
+      },
+      "[spring-factories]": {
+        "editor.quickSuggestions": {
+          "strings": true
+        }
+      }
+    }
   },
   "main": "./out/lib/Main",
   "scripts": {

@@ -53,7 +53,7 @@ public class DataQueryParameterDefinitionProvider implements IJavaDefinitionProv
 			
 			TextDocument doc = documents.getLatestSnapshot(docId.getUri());
 				
-				if (a.getParent() instanceof MethodDeclaration m && !m.parameters().isEmpty()) {
+				if (a != null && a.getParent() instanceof MethodDeclaration m && !m.parameters().isEmpty()) {
 					Collector<SemanticTokenData> collector = new Collector<>();
 					a.accept(semanticTokensProvider.getTokensComputer(project, doc, cu, collector));
 					for (SemanticTokenData t : collector.get()) {

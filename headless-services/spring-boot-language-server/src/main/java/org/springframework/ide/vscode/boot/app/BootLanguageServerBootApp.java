@@ -72,6 +72,7 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDa
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
+import org.springframework.ide.vscode.boot.java.spel.SpelDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.ValueDefinitionProvider;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
@@ -407,7 +408,8 @@ public class BootLanguageServerBootApp {
 				new ResourceDefinitionProvider(springIndex),
 				new QualifierDefinitionProvider(springIndex),
 				new NamedDefinitionProvider(springIndex),
-				new DataQueryParameterDefinitionProvider(server.getTextDocumentService(), qurySemanticTokens)));
+				new DataQueryParameterDefinitionProvider(server.getTextDocumentService(), qurySemanticTokens),
+				new SpelDefinitionProvider(springIndex, cuCache)));
 	}
 	
 	@Bean
