@@ -131,6 +131,11 @@ public class BootJavaCompletionEngineConfigurer {
 
 		providers.put(Annotations.QUALIFIER, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new QualifierCompletionProvider(springIndex))));
 		providers.put(Annotations.PROFILE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new ProfileCompletionProvider(springIndex))));
+		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"name", new BeanNamesCompletionProcessor(springIndex),
+				"type", new BeanTypesCompletionProcessor(springIndex),
+				"ignoredType", new BeanTypesCompletionProcessor(springIndex))));
+
 		
 		providers.put(Annotations.RESOURCE_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new ResourceCompletionProvider(springIndex))));
 		providers.put(Annotations.RESOURCE_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new ResourceCompletionProvider(springIndex))));
