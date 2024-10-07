@@ -122,28 +122,46 @@ public class BootJavaCompletionEngineConfigurer {
 		
 		providers.put(Annotations.VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
 		providers.put(Annotations.CONTEXT_CONFIGURATION, new ContextConfigurationProcessor(javaProjectFinder));
-		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("resources", new ConditionalOnResourceCompletionProcessor())));
 		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
 		
-		providers.put(Annotations.SCOPE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new ScopeCompletionProcessor())));
-		providers.put(Annotations.DEPENDS_ON, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new DependsOnCompletionProcessor(springIndex))));
-		providers.put(Annotations.CONDITIONAL_ON_BEAN, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new BeanNamesCompletionProcessor(springIndex),"type", new BeanTypesCompletionProcessor(springIndex))));
+		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"resources", new ConditionalOnResourceCompletionProcessor())));
 
-		providers.put(Annotations.QUALIFIER, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new QualifierCompletionProvider(springIndex))));
-		providers.put(Annotations.PROFILE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new ProfileCompletionProvider(springIndex))));
+		providers.put(Annotations.SCOPE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"value", new ScopeCompletionProcessor())));
+
+		providers.put(Annotations.DEPENDS_ON, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"value", new DependsOnCompletionProcessor(springIndex))));
+
+		providers.put(Annotations.CONDITIONAL_ON_BEAN, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"name", new BeanNamesCompletionProcessor(springIndex),
+				"type", new BeanTypesCompletionProcessor(springIndex))));
+
 		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
 				"name", new BeanNamesCompletionProcessor(springIndex),
 				"type", new BeanTypesCompletionProcessor(springIndex),
 				"ignoredType", new BeanTypesCompletionProcessor(springIndex))));
 
+		providers.put(Annotations.QUALIFIER, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"value", new QualifierCompletionProvider(springIndex))));
 		
-		providers.put(Annotations.RESOURCE_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new ResourceCompletionProvider(springIndex))));
-		providers.put(Annotations.RESOURCE_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new ResourceCompletionProvider(springIndex))));
+		providers.put(Annotations.PROFILE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"value", new ProfileCompletionProvider(springIndex))));
+		
+		providers.put(Annotations.RESOURCE_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"name", new ResourceCompletionProvider(springIndex))));
+		
+		providers.put(Annotations.RESOURCE_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"name", new ResourceCompletionProvider(springIndex))));
 
-		providers.put(Annotations.NAMED_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new NamedCompletionProvider(springIndex))));
-		providers.put(Annotations.NAMED_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new NamedCompletionProvider(springIndex))));
+		providers.put(Annotations.NAMED_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"value", new NamedCompletionProvider(springIndex))));
 		
-		providers.put(Annotations.SCHEDULED, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("cron", new CronExpressionCompletionProvider())));
+		providers.put(Annotations.NAMED_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"value", new NamedCompletionProvider(springIndex))));
+		
+		providers.put(Annotations.SCHEDULED, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"cron", new CronExpressionCompletionProvider())));
 
 		return new BootJavaCompletionEngine(cuCache, providers, snippetManager);
 	}
