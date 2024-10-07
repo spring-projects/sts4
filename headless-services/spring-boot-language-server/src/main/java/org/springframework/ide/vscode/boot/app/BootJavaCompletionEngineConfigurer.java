@@ -25,6 +25,7 @@ import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.boot.java.beans.BeanCompletionProvider;
 import org.springframework.ide.vscode.boot.java.beans.DependsOnCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.beans.BeanNamesCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.beans.BeanTypesCompletionProcessor;
@@ -38,6 +39,7 @@ import org.springframework.ide.vscode.boot.java.cron.CronExpressionCompletionPro
 import org.springframework.ide.vscode.boot.java.data.DataRepositoryCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippet;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
@@ -113,7 +115,8 @@ public class BootJavaCompletionEngineConfigurer {
 			@Qualifier("adHocProperties") ProjectBasedPropertyIndexProvider adHocProperties,
 			JavaSnippetManager snippetManager, 
 			CompilationUnitCache cuCache,
-			SpringMetamodelIndex springIndex) {
+			SpringMetamodelIndex springIndex,
+			RewriteRefactorings rewriteRefactorings ) {
 		
 		SpringPropertyIndexProvider indexProvider = params.indexProvider;
 		JavaProjectFinder javaProjectFinder = params.projectFinder;
@@ -130,7 +133,8 @@ public class BootJavaCompletionEngineConfigurer {
 		providers.put(Annotations.CONDITIONAL_ON_BEAN, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new BeanNamesCompletionProcessor(springIndex),"type", new BeanTypesCompletionProcessor(springIndex))));
 
 		providers.put(Annotations.QUALIFIER, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new QualifierCompletionProvider(springIndex))));
-		providers.put(Annotations.PROFILE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("value", new ProfileCompletionProvider(springIndex))));
+		providers.put(Annotations.BEAN, new BeanCompletionProvider(javaProjectFinder, springIndex, rewriteRefactorings));
+
 		
 		providers.put(Annotations.RESOURCE_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new ResourceCompletionProvider(springIndex))));
 		providers.put(Annotations.RESOURCE_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of("name", new ResourceCompletionProvider(springIndex))));

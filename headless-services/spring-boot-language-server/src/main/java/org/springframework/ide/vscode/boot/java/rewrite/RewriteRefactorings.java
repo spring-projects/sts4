@@ -15,6 +15,7 @@ import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +28,7 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.openrewrite.Parser.Input;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
+import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.marker.Range;
@@ -154,16 +156,8 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 				.orElseGet(() -> recipeRepo.getRecipe(d.getRecipeId()).thenApply(opt -> opt.orElseThrow())))
 		.thenApply(r -> {
 			if (d.getParameters() != null) {
-				for (Entry<String, Object> entry : d.getParameters().entrySet()) {
-					try {
-						Field f = r.getClass().getDeclaredField(entry.getKey());
-						f.setAccessible(true);
-						f.set(r, entry.getValue());
-					} catch (Exception e) {
-						log.error("", e);;
-					}
-				}
-			}
+                setParameters(r, d.getParameters());
+            }
 			if (d.getRecipeScope() == RecipeScope.NODE) {
 				if (d.getRangeScope() == null) {
 					throw new IllegalArgumentException("Missing scope AST node!");
@@ -186,5 +180,42 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 			}
 			return r;
 		});
+	}
+	
+	/**
+	 * Sets the parameters for a given recipe. If the recipe is a DeclarativeRecipe,
+	 * it iterates over its sub-recipes and sets the parameters for each sub-recipe.
+	 */
+	private void setParameters(Recipe recipe, Map<String, Object> parameters) {
+	    if (recipe instanceof DeclarativeRecipe) {
+	        List<Recipe> subRecipes = ((DeclarativeRecipe) recipe).getRecipeList();
+	        for (Recipe subRecipe : subRecipes) {
+	            setParameters(subRecipe, parameters);
+	        }
+	    } else {
+	    	for (Entry<String, Object> entry : parameters.entrySet()) {
+				try {
+					Field field = findField(recipe, entry.getKey());
+	                if (field != null) {
+	                	field.setAccessible(true);
+	                	field.set(recipe, entry.getValue());
+	                }
+				} catch (Exception e) {
+					log.error("", e);;
+				}
+			}
+	    }
+	}
+
+	private Field findField(Object obj, String fieldName) {
+	    Class<?> clazz = obj.getClass();
+	    while (clazz != null) {
+	        try {
+	            return clazz.getDeclaredField(fieldName);
+	        } catch (NoSuchFieldException e) {
+	            clazz = clazz.getSuperclass();
+	        }
+	    }
+	    return null;
 	}
 }

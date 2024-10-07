@@ -111,6 +111,12 @@
 		</dependency>
 		
 		<dependency>
+            <groupId>org.openrewrite</groupId>
+            <artifactId>rewrite-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
+		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-maven</artifactId>
 			<version>${project.version}</version>
