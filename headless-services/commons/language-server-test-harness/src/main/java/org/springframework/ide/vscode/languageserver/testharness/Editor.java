@@ -248,7 +248,13 @@ public class Editor {
 			pos += afterString.length();
 		}
 		List<? extends DocumentHighlight> actual = harness.getDocumentHighlights(doc.getId(), doc.toPosition(pos));
-		assertEquals(ImmutableList.copyOf(expected), actual);
+		
+		if (actual == null) {
+			assertTrue(expected == null || expected.length == 0);
+		}
+		else {
+			assertEquals(ImmutableList.copyOf(expected), actual);
+		}
 	}
 
 	/**
