@@ -1323,7 +1323,7 @@ values_stmt
     ;
 
 selector_clause
-    :(ALL | (DISTINCT (ON expr_list)?))? column_list
+    :(ALL | (DISTINCT (ON expr_list)?) | TOP INTEGER_LITERAL)? column_list
     ;
 
 from_clause
@@ -1477,7 +1477,7 @@ expr
              ) expr
     | expr (NOT LIKE | LIKE) expr //(STRING_LITERAL_SINGLE_Q | REGEX_STRING)
     | expr NOT? BETWEEN expr AND expr
-    | expr IN expr
+    | expr (NOT IN | IN) expr
     | expr op=(LT | GT | EQUAL | LTE | GTE | LT_GT | BANG_EQUAL) expr
     | expr op=IS (bool_expr | NULL | NOT NULL)
     | expr IS NOT? DISTINCT FROM expr
@@ -1889,7 +1889,7 @@ non_reserved_keyword
     |  SUBCLASS_ORIGIN |  SUBMULTISET |  SUBSTRING |  SUM |  SYSID
     |  SYSTEM |  SYSTEM_USER | TABLESPACE |  TABLE_NAME
     |  TEMP |  TEMPLATE |  TEMPORARY | TEXT | TIES |  TIME
-    |  TIMESTAMP |  TIMEZONE_HOUR |  TIMEZONE_MINUTE |  TOP_LEVEL_COUNT |  TRANSACTION
+    |  TIMESTAMP |  TIMEZONE_HOUR |  TIMEZONE_MINUTE |  TOP  |  TOP_LEVEL_COUNT |  TRANSACTION
     |  TRANSACTIONS_COMMITTED |  TRANSACTIONS_ROLLED_BACK |  TRANSACTION_ACTIVE |  TRANSFORM |  TRANSFORMS
     |  TRANSLATE |  TRANSLATION |  TREAT |  TRIGGER |  TRIGGER_CATALOG
     |  TRIGGER_NAME |  TRIGGER_SCHEMA |  TRIM | TRUE | TRUNCATE |  TRUSTED
@@ -1898,7 +1898,7 @@ non_reserved_keyword
     |  UNTIL |  UPDATE |  UPPER |  USAGE |  USER_DEFINED_TYPE_CATALOG
     |  USER_DEFINED_TYPE_CODE |  USER_DEFINED_TYPE_NAME |  USER_DEFINED_TYPE_SCHEMA |  VACUUM |  VALID
     |  VALIDATOR |  VALUE |  VALUES |  VARCHAR |  VARYING
-    |  VAR_POP |  VAR_SAMP |  VIEW |  VOLATILE |  WHENEVER
+    |  VAR_POP |  VAR_SAMP |  VERSION  |  VIEW |  VOLATILE |  WHENEVER
     |  WHITESPACE |  WIDTH_BUCKET |  WITHIN |  WITHOUT |  WORK
     |  WRITE |  YEAR |  ZONE
     ;

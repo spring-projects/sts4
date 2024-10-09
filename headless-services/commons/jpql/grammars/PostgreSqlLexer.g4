@@ -643,6 +643,7 @@ TIMEZONE_MINUTE                      : T I M E Z O N E '_' M I N U T E;
 TIMING                               : T I M I N G;
 TO                                   : T O;
 TOAST                                : T O A S T;
+TOP                                  : T O P;
 TOP_LEVEL_COUNT                      : T O P '_' L E V E L '_' C O U N T;
 TRAILING                             : T R A I L I N G;
 TRANSACTION                          : T R A N S A C T I O N;

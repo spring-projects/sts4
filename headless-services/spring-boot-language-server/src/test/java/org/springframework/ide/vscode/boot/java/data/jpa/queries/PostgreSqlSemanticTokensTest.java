@@ -178,4 +178,34 @@ public class PostgreSqlSemanticTokensTest {
 		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(44, 45, "operator", new String[0]));
 		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(45, 50, "parameter", new String[0]));
 	}
+	
+	@Test
+	void notInInsideWhereClausePredicate() {
+		List<SemanticTokenData> tokens = provider.computeTokens("delete from SAMPLE_TABLE where id not in (select top 1 id from SAMPLE_TABLE order by TABLE_NAME desc)", 0);
+		assertThat(tokens.size()).isEqualTo(19);
+	}
+
+	@Test
+	void keywordAsIdentifier() {
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT SCHEMA_NAME, TABLE_NAME, VERSION from SAMPLE_TABLE", 0);
+		assertThat(tokens.size()).isEqualTo(8);
+	}
+	
+	@Test
+	void topInSelectClause() {
+		List<SemanticTokenData> tokens = provider.computeTokens("select top 1 * from SAMPLE_TABLE where SCHEMA_NAME = ?1", 0);
+		assertThat(tokens.size()).isEqualTo(11);
+		
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 10, "keyword", new String[0]));
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(11, 12, "number", new String[0]));
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(13, 14, "operator", new String[0]));
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(15, 19, "keyword", new String[0]));
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(20, 32, "variable", new String[0]));
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(33, 38, "keyword", new String[0]));
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(39, 50, "keyword", new String[0]));
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(51, 52, "operator", new String[0]));
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(53, 54, "operator", new String[0]));
+		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(54, 55, "parameter", new String[0]));
+	}
 }
