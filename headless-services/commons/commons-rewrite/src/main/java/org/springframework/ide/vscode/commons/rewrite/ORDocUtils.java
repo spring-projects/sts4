@@ -160,16 +160,20 @@ public class ORDocUtils {
 		}
 		WorkspaceEdit we = new WorkspaceEdit();
 		we.setDocumentChanges(new ArrayList<>());
+		addToWorkspaceEdit(documents, results, changeAnnotationId, we);
+		return Optional.of(we);
+	}
+	
+	public static void addToWorkspaceEdit(SimpleTextDocumentService documents, List<Result> results, String changeAnnotationId, WorkspaceEdit we) {
 		for (Result result : results) {
 			String docUri = result.getBefore() == null ? result.getAfter().getSourcePath().toUri().toASCIIString() : result.getBefore().getSourcePath().toUri().toASCIIString();
 			String oldContent = result.getBefore() == null ? null : result.getBefore().printAll();
 			String newContent = result.getAfter() == null ? null : result.getAfter().printAll();
-			createWorkspaceEdit(documents, docUri, oldContent, newContent, changeAnnotationId, we);
+			addToWorkspaceEdit(documents, docUri, oldContent, newContent, changeAnnotationId, we);
 		}
-		return Optional.of(we);
 	}
 	
-	public static void createWorkspaceEdit(SimpleTextDocumentService documents, String docUri, String oldContent, String newContent, String changeAnnotationId, WorkspaceEdit we) {
+	public static void addToWorkspaceEdit(SimpleTextDocumentService documents, String docUri, String oldContent, String newContent, String changeAnnotationId, WorkspaceEdit we) {
 		if(oldContent == null) {
 			createNewFileEdit(docUri, newContent, changeAnnotationId, we);
 		} else if (newContent == null) {

@@ -1,33 +1,55 @@
+/*******************************************************************************
+ * Copyright (c) 2024 Broadcom, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Broadcom, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.copilot;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.ChangeAnnotation;
 import org.eclipse.lsp4j.WorkspaceEdit;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Result;
+import org.openrewrite.config.DeclarativeRecipe;
+import org.openrewrite.internal.InMemoryLargeSourceSet;
+import org.openrewrite.java.spring.AddSpringProperty;
+import org.openrewrite.java.spring.ChangeSpringPropertyValue;
+import org.openrewrite.properties.PropertiesParser;
 import org.openrewrite.xml.tree.Xml;
+import org.openrewrite.yaml.YamlParser;
 import org.springframework.ide.vscode.boot.java.copilot.InjectMavenActionHandler.MavenDependencyMetadata;
 import org.springframework.ide.vscode.boot.java.copilot.util.ClassNameExtractor;
-import org.springframework.ide.vscode.boot.java.copilot.util.PropertyFileUtils;
 import org.springframework.ide.vscode.boot.java.copilot.util.SpringCliException;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -35,23 +57,23 @@ public class ProjectArtifactEditGenerator {
 
 	private final List<ProjectArtifact> projectArtifacts;
 
-	private final Path projectPath;
+	private final IJavaProject project;
 
 	private final SimpleTextDocumentService simpleTextDocumentService;
 
 	public ProjectArtifactEditGenerator(SimpleTextDocumentService simpleTextDocumentService,
-			List<ProjectArtifact> projectArtifacts, Path projectPath, String readmeFileName) {
+			List<ProjectArtifact> projectArtifacts, IJavaProject project, String readmeFileName) {
 		this.simpleTextDocumentService = simpleTextDocumentService;
 		this.projectArtifacts = projectArtifacts;
-		this.projectPath = projectPath;
+		this.project = project;
 	}
 
-	public ProcessArtifactResult<WorkspaceEdit> process() throws IOException {
-		return processArtifacts(projectArtifacts, projectPath);
+	public ProcessArtifactResult<WorkspaceEdit> process() throws Exception {
+		return processArtifacts(projectArtifacts, Paths.get(project.getLocationUri()));
 	}
 
 	private ProcessArtifactResult<WorkspaceEdit> processArtifacts(List<ProjectArtifact> projectArtifacts,
-			Path projectPath) throws IOException {
+			Path projectPath) throws Exception {
 		ProcessArtifactResult<WorkspaceEdit> processArtifactResult = new ProcessArtifactResult<>();
 		String changeAnnotationId = UUID.randomUUID().toString();
 		WorkspaceEdit we = new WorkspaceEdit();
@@ -96,7 +118,7 @@ public class ProjectArtifactEditGenerator {
 		Optional<String> className = classNameExtractor.extractClassName(projectArtifact.getText());
 		if (className.isPresent()) {
 			Path output = resolveSourceFile(projectPath, packageName, className.get() + ".java");
-			ORDocUtils.createWorkspaceEdit(simpleTextDocumentService, output.toUri().toASCIIString(),
+			ORDocUtils.addToWorkspaceEdit(simpleTextDocumentService, output.toUri().toASCIIString(),
 					getFileContent(output), projectArtifact.getText(), changeAnnotationId, we);
 		}
 	}
@@ -117,16 +139,16 @@ public class ProjectArtifactEditGenerator {
 		Optional<String> className = classNameExtractor.extractClassName(projectArtifact.getText());
 		if (className.isPresent()) {
 			Path output = resolveTestFile(projectPath, packageName, className.get() + ".java");
-			ORDocUtils.createWorkspaceEdit(simpleTextDocumentService, output.toUri().toASCIIString(),
+			ORDocUtils.addToWorkspaceEdit(simpleTextDocumentService, output.toUri().toASCIIString(),
 					getFileContent(output), projectArtifact.getText(), changeAnnotationId, we);
 		}
 	}
 
 	private void writeMavenDependencies(ProjectArtifact projectArtifact, Path projectPath, String changeAnnotationId,
 			WorkspaceEdit we) {
-		Path currentProjectPomPath = this.projectPath.resolve("pom.xml");
+		Path currentProjectPomPath = Paths.get(project.getLocationUri()).resolve("pom.xml");
 		if (Files.notExists(currentProjectPomPath)) {
-			throw new SpringCliException("Could not find pom.xml in " + this.projectPath
+			throw new SpringCliException("Could not find pom.xml in " + Paths.get(project.getLocationUri())
 					+ ".  Make sure you are running the command in the project's root directory.");
 		}
 
@@ -149,24 +171,60 @@ public class ProjectArtifactEditGenerator {
 	}
 
 	private void writeApplicationProperties(ProjectArtifact projectArtifact, Path projectPath,
-			String changeAnnotationId, WorkspaceEdit we) throws IOException {
-		Path applicationPropertiesPath = projectPath.resolve("src").resolve("main").resolve("resources")
-				.resolve("application.properties");
+			String changeAnnotationId, WorkspaceEdit we) throws Exception {
+		
+		List<Path> propFiles = new ArrayList<>();
+		List<Path> yamlFiles = new ArrayList<>();
+		AtomicReference<Path> sourceFolder = new AtomicReference<>();
+			project.getClasspath().getClasspathEntries().stream().filter(Classpath::isSource)
+				.filter(cpe -> !cpe.isSystem() && !cpe.isTest() && cpe.isOwn() && !cpe.isJavaContent())
+				.map(cpe -> new File(cpe.getPath()).toPath())
+				.flatMap(folder -> {
+					sourceFolder.compareAndSet(null, folder);
+					try {
+						return Files.list(folder);
+					} catch (IOException e) {
+						return Stream.empty();
+					}
+				}).forEach(p -> {
+					String fileName = p.getFileName().toString();
+					if (propFiles.isEmpty() && "application.properties".equals(fileName)) {
+						propFiles.add(p);
+					} else if (yamlFiles.isEmpty() && ("application.yml".equals(fileName) || "application.yaml".equals(fileName))) {
+						yamlFiles.add(p);
+					}
+				});
 
-		Properties srcProperties = new Properties();
-		Properties destProperties = new Properties();
-		srcProperties.load(IOUtils.toInputStream(projectArtifact.getText(), StandardCharsets.UTF_8));
-		if (Files.exists(applicationPropertiesPath)) {
-			destProperties.load(new FileInputStream(applicationPropertiesPath.toFile()));
+		if (propFiles.isEmpty() && yamlFiles.isEmpty()) {
+			Path propsFile = (sourceFolder.get() == null ? Paths.get(project.getLocationUri()).resolve("src/main/resources") : sourceFolder.get()).resolve("application.properties");
+			ORDocUtils.addToWorkspaceEdit(simpleTextDocumentService, propsFile.toUri().toASCIIString(),
+					null, projectArtifact.getText(), changeAnnotationId, we);
+		} else {
+			DeclarativeRecipe aggregateRecipe = new DeclarativeRecipe("spring-tools.ai.PropertiesUpdates",
+					"Add property files changes from AI", "", Collections.emptySet(), null, null, false, Collections.emptyList());
+			Properties srcProperties = new Properties();
+			srcProperties.load(IOUtils.toInputStream(projectArtifact.getText(), StandardCharsets.UTF_8));
+			for (Map.Entry<?, ?> e : srcProperties.entrySet()) {
+				aggregateRecipe.getRecipeList().add(new AddSpringProperty(e.getKey().toString(), e.getValue().toString(), null, List.of()));
+				aggregateRecipe.getRecipeList().add(new ChangeSpringPropertyValue(e.getKey().toString(), e.getValue().toString(), null, null, null));
+			}
+			ORDocUtils.addToWorkspaceEdit(
+					simpleTextDocumentService,
+					aggregateRecipe.run(
+							new InMemoryLargeSourceSet(PropertiesParser.builder().build().parse(propFiles, null, new InMemoryExecutionContext()).collect(Collectors.toList())),
+							new InMemoryExecutionContext())
+					.getChangeset().getAllResults(),
+					changeAnnotationId,
+					we);
+			ORDocUtils.addToWorkspaceEdit(
+					simpleTextDocumentService,
+					aggregateRecipe.run(
+							new InMemoryLargeSourceSet(YamlParser.builder().build().parse(yamlFiles, null, new InMemoryExecutionContext()).collect(Collectors.toList())),
+							new InMemoryExecutionContext())
+					.getChangeset().getAllResults(),
+					changeAnnotationId,
+					we);
 		}
-		Properties mergedProperties = PropertyFileUtils.mergeProperties(srcProperties, destProperties);
-
-		StringWriter sw = new StringWriter();
-		mergedProperties.store(sw, "updated by spring ai add");
-		sw.flush();
-		String newContent = sw.getBuffer().toString();
-		ORDocUtils.createWorkspaceEdit(simpleTextDocumentService, applicationPropertiesPath.toUri().toASCIIString(),
-				getFileContent(applicationPropertiesPath), newContent, changeAnnotationId, we);
 	}
 
 	private void updateMainApplicationClassAnnotations(ProjectArtifact projectArtifact, Path projectPath,
@@ -181,7 +239,7 @@ public class ProjectArtifactEditGenerator {
 		String fileName = extractFilenameFromComment(html);
 		if (fileName != null) {
 			Path htmlFile = projectPath.resolve(fileName);
-			ORDocUtils.createWorkspaceEdit(simpleTextDocumentService, fileName, getFileContent(htmlFile),
+			ORDocUtils.addToWorkspaceEdit(simpleTextDocumentService, fileName, getFileContent(htmlFile),
 					projectArtifact.getText(), changeAnnotationId, we);
 		}
 	}
@@ -195,7 +253,7 @@ public class ProjectArtifactEditGenerator {
 				Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
 				Matcher matcher = pattern.matcher(firstLine);
 				// Find the package statement and extract the package name
-				String packageName = "";
+//				String packageName = "";
 				if (matcher.find()) {
 					packageToUse = matcher.group(1);
 				}

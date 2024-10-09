@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.copilot;
 
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -61,7 +59,7 @@ public class CopilotAgentCommandHandler {
 			return CompletableFuture.supplyAsync(() -> {
 				try {
 					return createLspEdits(params);
-				} catch (IOException e) {
+				} catch (Exception e) {
 					throw new CompletionException(e);
 				}
 			}).thenCompose(we -> {
@@ -86,7 +84,7 @@ public class CopilotAgentCommandHandler {
 		return CompletableFuture.completedFuture(modifiedResp);
 	}
 
-	private WorkspaceEdit createLspEdits(ExecuteCommandParams params) throws IOException {
+	private WorkspaceEdit createLspEdits(ExecuteCommandParams params) throws Exception {
 		log.info("Command Handler for lsp edits: ");
 		String docURI = ((JsonElement) params.getArguments().get(0)).getAsString();
 		String content = ((JsonElement) params.getArguments().get(1)).getAsString();
@@ -94,7 +92,7 @@ public class CopilotAgentCommandHandler {
 		IJavaProject project = this.projectFinder.find(new TextDocumentIdentifier(docURI)).get();
 		List<ProjectArtifact> projectArtifacts = computeProjectArtifacts(content);
 		ProjectArtifactEditGenerator editGenerator = new ProjectArtifactEditGenerator(server.getTextDocumentService(),
-				projectArtifacts, Paths.get(project.getLocationUri()), docURI);
+				projectArtifacts, project, docURI);
 		return editGenerator.process().getResult();
 	}
 
