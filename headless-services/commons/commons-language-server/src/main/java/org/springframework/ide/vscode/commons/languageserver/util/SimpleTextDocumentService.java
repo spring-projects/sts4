@@ -654,12 +654,13 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		DocumentHighlightHandler handler = this.documentHighlightHandler;
 		if (handler != null) {
 			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
-				return handler.handle(cancelToken, highlightParams);
+				List<? extends DocumentHighlight> result = handler.handle(cancelToken, highlightParams);
+				return result != null && result.size() > 0 ? result : null;
 
 			});
 		}
 		else {
-			return CompletableFuture.completedFuture(Collections.emptyList());
+			return CompletableFuture.completedFuture(null);
 		}
 	}
 
