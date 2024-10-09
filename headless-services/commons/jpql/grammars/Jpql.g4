@@ -598,18 +598,22 @@ trim_character
 
 identification_variable
     : IDENTIFICATION_VARIABLE
-    | f=(COUNT
+    | f=(AVG
+    | COUNT
     | DATE
     | FROM
     | INNER
     | KEY
     | LEFT
+    | MAX
+    | MIN
     | NEW
     | ORDER
     | OUTER
     | POWER
     | FLOOR
     | SIGN
+    | SUM
     | TIME
     | TYPE
     | VALUE)
