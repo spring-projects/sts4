@@ -208,4 +208,81 @@ public class PostgreSqlSemanticTokensTest {
 		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(53, 54, "operator", new String[0]));
 		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(54, 55, "parameter", new String[0]));
 	}
+	
+	@Test
+	void over_clause_1() {
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT depname, empno, salary, avg(salary) OVER (PARTITION BY depname) FROM empsalary;\n"
+				+ "", 0);
+		assertThat(tokens.size()).isEqualTo(20);
+	}
+
+	@Test
+	void over_clause_2() {
+		List<SemanticTokenData> tokens = provider.computeTokens("""
+				SELECT depname, empno, salary,
+				       rank() OVER (PARTITION BY depname ORDER BY salary DESC)
+				FROM empsalary;
+				""", 0);
+		assertThat(tokens.size()).isEqualTo(23);
+	}
+	
+	@Test
+	void over_clause_3() {
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT salary, sum(salary) OVER () FROM empsalary;"
+				+ "", 0);
+		assertThat(tokens.size()).isEqualTo(13);
+	}
+
+	@Test
+	void over_clause_4() {
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT salary, sum(salary) OVER (ORDER BY salary) FROM empsalary;"
+				+ "", 0);
+		assertThat(tokens.size()).isEqualTo(16);
+	}
+
+	@Test
+	void over_clause_5() {
+		List<SemanticTokenData> tokens = provider.computeTokens("""
+				SELECT depname, empno, salary, enroll_date
+				FROM
+				  (SELECT depname, empno, salary, enroll_date,
+				          rank() OVER (PARTITION BY depname ORDER BY salary DESC, empno) AS pos
+				     FROM empsalary
+				  ) AS ss
+				WHERE pos < 3;
+				""", 0);
+		assertThat(tokens.size()).isEqualTo(46);
+	}
+
+	@Test
+	void over_clause_6() {
+		List<SemanticTokenData> tokens = provider.computeTokens("""
+				SELECT sum(salary) OVER w, avg(salary) OVER w
+				  FROM empsalary
+				  WINDOW w AS (PARTITION BY depname ORDER BY salary DESC);
+  				""", 0);
+		assertThat(tokens.size()).isEqualTo(29);
+	}
+
+	@Test
+	void over_clause_7() {
+		List<SemanticTokenData> tokens = provider.computeTokens("""
+            WITH cte AS (
+                SELECT
+                    q.*,
+                    ROW_NUMBER() OVER (PARTITION BY q.database_id ORDER BY q.order_id) AS rn
+                FROM
+                    SAMPLE_TABLE AS q
+                WHERE
+                    q.status IN (0, 1, 5, 10)
+            )
+            SELECT *
+            FROM cte
+            WHERE
+                (rn = 1 OR status = 10)
+                AND (scenario = 11 OR scenario = 8)
+            ORDER BY status DESC
+            """, 0);
+		assertThat(tokens.size()).isEqualTo(74);
+	}
 }

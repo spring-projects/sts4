@@ -1384,15 +1384,29 @@ frame_clause
     : (RANGE | ROWS) frame_start
     | (RANGE | ROWS) BETWEEN frame_start AND frame_end
     ;
-
+    
+window_definition_list
+    : window_definition (COMMA window_definition)*
+    ;
+    
 window_definition
-    : window_name
-    | PARTITION BY expr (COMMA expr)*
-    | order_by_clause
+    : window_name AS window_specification
     ;
 
 window_clause
-    : WINDOW window_name AS OPEN_PAREN window_definition CLOSE_PAREN
+    : WINDOW window_definition_list
+    ;
+    
+window_specification
+    : OPEN_PAREN window_name? partition_clause? order_by_clause? frame_clause? CLOSE_PAREN
+    ;
+    
+partition_clause
+    : PARTITION BY expr (COMMA expr)*
+    ;
+    
+over_clause
+    : OVER (window_specification | window_name)
     ;
 
 combine_clause
@@ -1482,7 +1496,7 @@ expr
     | expr op=IS (bool_expr | NULL | NOT NULL)
     | expr IS NOT? DISTINCT FROM expr
     | op=(NOT | ALL ) expr
-    | func_call
+    | func_call over_clause?
     | identifier
     | CAST OPEN_PAREN expr AS data_type CLOSE_PAREN
     | correlation_name DOT column_name

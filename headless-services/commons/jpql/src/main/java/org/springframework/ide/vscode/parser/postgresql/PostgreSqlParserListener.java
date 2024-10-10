@@ -2048,6 +2048,16 @@ public interface PostgreSqlParserListener extends ParseTreeListener {
 	 */
 	void exitFrame_clause(PostgreSqlParser.Frame_clauseContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link PostgreSqlParser#window_definition_list}.
+	 * @param ctx the parse tree
+	 */
+	void enterWindow_definition_list(PostgreSqlParser.Window_definition_listContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSqlParser#window_definition_list}.
+	 * @param ctx the parse tree
+	 */
+	void exitWindow_definition_list(PostgreSqlParser.Window_definition_listContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PostgreSqlParser#window_definition}.
 	 * @param ctx the parse tree
 	 */
@@ -2067,6 +2077,36 @@ public interface PostgreSqlParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitWindow_clause(PostgreSqlParser.Window_clauseContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSqlParser#window_specification}.
+	 * @param ctx the parse tree
+	 */
+	void enterWindow_specification(PostgreSqlParser.Window_specificationContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSqlParser#window_specification}.
+	 * @param ctx the parse tree
+	 */
+	void exitWindow_specification(PostgreSqlParser.Window_specificationContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSqlParser#partition_clause}.
+	 * @param ctx the parse tree
+	 */
+	void enterPartition_clause(PostgreSqlParser.Partition_clauseContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSqlParser#partition_clause}.
+	 * @param ctx the parse tree
+	 */
+	void exitPartition_clause(PostgreSqlParser.Partition_clauseContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSqlParser#over_clause}.
+	 * @param ctx the parse tree
+	 */
+	void enterOver_clause(PostgreSqlParser.Over_clauseContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSqlParser#over_clause}.
+	 * @param ctx the parse tree
+	 */
+	void exitOver_clause(PostgreSqlParser.Over_clauseContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PostgreSqlParser#combine_clause}.
 	 * @param ctx the parse tree

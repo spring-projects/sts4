@@ -2465,6 +2465,18 @@ public class PostgreSqlParserBaseListener implements PostgreSqlParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterWindow_definition_list(PostgreSqlParser.Window_definition_listContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitWindow_definition_list(PostgreSqlParser.Window_definition_listContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterWindow_definition(PostgreSqlParser.Window_definitionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -2484,6 +2496,42 @@ public class PostgreSqlParserBaseListener implements PostgreSqlParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitWindow_clause(PostgreSqlParser.Window_clauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterWindow_specification(PostgreSqlParser.Window_specificationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitWindow_specification(PostgreSqlParser.Window_specificationContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPartition_clause(PostgreSqlParser.Partition_clauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPartition_clause(PostgreSqlParser.Partition_clauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterOver_clause(PostgreSqlParser.Over_clauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOver_clause(PostgreSqlParser.Over_clauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
