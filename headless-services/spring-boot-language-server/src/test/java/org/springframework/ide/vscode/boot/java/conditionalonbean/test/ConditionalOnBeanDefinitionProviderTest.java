@@ -79,22 +79,107 @@ public class ConditionalOnBeanDefinitionProviderTest {
 
 				@Configuration
                 public class TestConditionalOnBeanCompletion {
-                @ConditionalOnBean(name="bean1")
+                @ConditionalOnBean(name = "bean1")
                 @Bean
                 public void method() {
                 }
 				}""", tempJavaDocUri);
 
-        String expectedDefinitionUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
-
         Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean1");
         assertEquals(1, beans.length);
 
-        LocationLink expectedLocation = new LocationLink(expectedDefinitionUri,
+        LocationLink expectedLocation = new LocationLink(beans[0].getLocation().getUri(),
                 beans[0].getLocation().getRange(), beans[0].getLocation().getRange(),
                 null);
 
         editor.assertLinkTargets("bean1", List.of(expectedLocation));
+    }
+
+    @Test
+    public void testConditionalOnMissingBeanWithNameRefersToBeanDefinitionLink() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+                import org.springframework.context.annotation.Bean;
+                import org.springframework.context.annotation.Configuration;
+
+				@Configuration
+                public class TestConditionalOnBeanCompletion {
+                @ConditionalOnMissingBean(name = "bean1")
+                @Bean
+                public void method() {
+                }
+				}""", tempJavaDocUri);
+
+        Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean1");
+        assertEquals(1, beans.length);
+
+        LocationLink expectedLocation = new LocationLink(beans[0].getLocation().getUri(),
+                beans[0].getLocation().getRange(), beans[0].getLocation().getRange(),
+                null);
+
+        editor.assertLinkTargets("bean1", List.of(expectedLocation));
+    }
+
+    @Test
+    public void testConditionalOnBeanWithNameArrayRefersToBeanDefinitionLink() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+                import org.springframework.context.annotation.Bean;
+                import org.springframework.context.annotation.Configuration;
+
+				@Configuration
+                public class TestConditionalOnBeanCompletion {
+                @ConditionalOnBean(name = {"bean1", "bean2"})
+                @Bean
+                public void method() {
+                }
+				}""", tempJavaDocUri);
+
+        Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean2");
+        assertEquals(1, beans.length);
+
+        LocationLink expectedLocation = new LocationLink(beans[0].getLocation().getUri(),
+                beans[0].getLocation().getRange(), beans[0].getLocation().getRange(),
+                null);
+
+        editor.assertLinkTargets("bean2", List.of(expectedLocation));
+    }
+
+    @Test
+    public void testConditionalOnMissingBeanWithNameArrayRefersToBeanDefinitionLink() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+                import org.springframework.context.annotation.Bean;
+                import org.springframework.context.annotation.Configuration;
+
+				@Configuration
+                public class TestConditionalOnBeanCompletion {
+                @ConditionalOnMissingBean(name = {"bean1", "bean2"})
+                @Bean
+                public void method() {
+                }
+				}""", tempJavaDocUri);
+
+        Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean2");
+        assertEquals(1, beans.length);
+
+        LocationLink expectedLocation = new LocationLink(beans[0].getLocation().getUri(),
+                beans[0].getLocation().getRange(), beans[0].getLocation().getRange(),
+                null);
+
+        editor.assertLinkTargets("bean2", List.of(expectedLocation));
     }
 
     @Test
@@ -110,13 +195,79 @@ public class ConditionalOnBeanDefinitionProviderTest {
 
 				@Configuration
                 public class TestConditionalOnBeanCompletion {
-                @ConditionalOnBean(name="bean5")
+                @ConditionalOnBean(name = "bean5")
                 @Bean
                 public void method() {
                 }
 				}""", tempJavaDocUri);
 
         editor.assertNoLinkTargets("bean5");
+    }
+
+    @Test
+    public void testConditionalOnMissingBeanRefersToRandomBeanWithoutDefinitionLink() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+                import org.springframework.context.annotation.Bean;
+                import org.springframework.context.annotation.Configuration;
+
+				@Configuration
+                public class TestConditionalOnBeanCompletion {
+                @ConditionalOnMissingBean(name = "bean5")
+                @Bean
+                public void method() {
+                }
+				}""", tempJavaDocUri);
+
+        editor.assertNoLinkTargets("bean5");
+    }
+
+    @Test
+    public void testConditionalOnBeanUsesTypeInsteadOfBeanNameSoNoDefinitionLink() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+                import org.springframework.context.annotation.Bean;
+                import org.springframework.context.annotation.Configuration;
+
+				@Configuration
+                public class TestConditionalOnBeanCompletion {
+                @ConditionalOnBean(type = "bean1")
+                @Bean
+                public void method() {
+                }
+				}""", tempJavaDocUri);
+
+        editor.assertNoLinkTargets("bean1");
+    }
+
+    @Test
+    public void testConditionalOnMissingBeanUsesTypeInsteadOfBeanNameSoNoDefinitionLink() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+                import org.springframework.context.annotation.Bean;
+                import org.springframework.context.annotation.Configuration;
+
+				@Configuration
+                public class TestConditionalOnBeanCompletion {
+                @ConditionalOnMissingBean(type = "bean1")
+                @Bean
+                public void method() {
+                }
+				}""", tempJavaDocUri);
+
+        editor.assertNoLinkTargets("bean1");
     }
 
 }

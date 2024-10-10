@@ -19,6 +19,8 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -51,19 +53,62 @@ public class ConditionalOnBeanDefinitionProvider implements IJavaDefinitionProvi
             if (parent != null && parent instanceof Annotation) {
                 Annotation a = (Annotation) parent;
                 IAnnotationBinding binding = a.resolveAnnotationBinding();
-                if (binding != null && binding.getAnnotationType() != null && Annotations.CONDITIONAL_ON_BEAN.equals(binding.getAnnotationType().getQualifiedName())) {
-                    String beanName = valueNode.getLiteralValue();
 
-                    if (beanName != null && beanName.length() > 0) {
-                        return findBeansWithName(project, beanName);
-                    }
+                if (binding != null) {
+	                ITypeBinding annotationType = binding.getAnnotationType();
+	                if (annotationType != null) {
+	                	String annotationTypeQualifiedName = annotationType.getQualifiedName();
+                
+	                	if (Annotations.CONDITIONAL_ON_BEAN.equals(annotationTypeQualifiedName)
+	                			|| Annotations.CONDITIONAL_ON_MISSING_BEAN.equals(annotationTypeQualifiedName))  {
+	                		
+	                		return getDefinitions(project, valueNode);
+	                	}
+	                }
                 }
             }
         }
         return Collections.emptyList();
     }
 
-    private List<LocationLink> findBeansWithName(IJavaProject project, String beanName) {
+    private List<LocationLink> getDefinitions(IJavaProject project, StringLiteral valueNode) {
+		String value = valueNode.getLiteralValue();
+
+		if (value != null && value.length() > 0) {
+			return getDefinitionsForValue(project, valueNode, value);
+		}
+		else {
+			return Collections.emptyList();
+		}
+	}
+
+	private List<LocationLink> getDefinitionsForValue(IJavaProject project, StringLiteral valueNode, String value) {
+		ASTNode parent = valueNode.getParent();
+		if (parent != null && !(parent instanceof MemberValuePair)) {
+			parent = parent.getParent();
+		}
+		
+		if (parent != null && parent instanceof MemberValuePair) {
+			MemberValuePair pair = (MemberValuePair) parent;
+			String name = pair.getName().toString();
+			
+			if ("name".equals(name)) {
+				return findBeansWithName(project, value);
+			}
+			else if ("type".equals(name) ||"ignoredType".equals(name)) {
+				return findBeanTypesWithName(project, value);
+			}
+		}
+
+		return Collections.emptyList();
+	}
+
+	private List<LocationLink> findBeanTypesWithName(IJavaProject project, String value) {
+		// TODO
+		return Collections.emptyList();
+	}
+
+	private List<LocationLink> findBeansWithName(IJavaProject project, String beanName) {
         Bean[] beans = this.springIndex.getBeansWithName(project.getElementName(), beanName);
 
         return Arrays.stream(beans)
