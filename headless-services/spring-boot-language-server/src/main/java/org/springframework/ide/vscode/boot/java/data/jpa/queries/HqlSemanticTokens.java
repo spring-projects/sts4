@@ -40,13 +40,14 @@ import org.springframework.ide.vscode.parser.hql.HqlLexer;
 import org.springframework.ide.vscode.parser.hql.HqlParser;
 import org.springframework.ide.vscode.parser.hql.HqlParser.EntityNameContext;
 import org.springframework.ide.vscode.parser.hql.HqlParser.IdentifierContext;
+import org.springframework.ide.vscode.parser.hql.HqlParser.InstantiationTargetContext;
 import org.springframework.ide.vscode.parser.hql.HqlParser.ParameterContext;
 import org.springframework.ide.vscode.parser.hql.HqlParser.SimplePathElementContext;
 
 public class HqlSemanticTokens implements SemanticTokensDataProvider {
 
 	private static List<String> TOKEN_TYPES = List.of("keyword", "type", "class", "string", "number", "operator",
-			"variable", "method", "parameter");
+			"variable", "method", "parameter", "property");
 	
 	private final Optional<SpelSemanticTokens> optSpelTokens;
 
@@ -128,10 +129,18 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 			public void visitErrorNode(ErrorNode node) {
 				processTerminalNode(node);
 			}
-						
+			
+			@Override
+			public void exitInstantiationTarget(InstantiationTargetContext ctx) {
+				int offset = initialOffset + ctx.getStart().getStartIndex();
+				int length = ctx.getText().length();
+				tokens.add(new SemanticTokenData(offset, offset + length , "method", new String[0]));
+				AntlrUtils.getAllLeafs(ctx).forEach(semantics::remove);
+			}
+
 			@Override
 			public void exitSimplePathElement(SimplePathElementContext ctx) {
-				semantics.put(ctx.identifier().getStart(), "method");
+				semantics.put(ctx.identifier().getStart(), "property");
 			}
 
 			@Override
