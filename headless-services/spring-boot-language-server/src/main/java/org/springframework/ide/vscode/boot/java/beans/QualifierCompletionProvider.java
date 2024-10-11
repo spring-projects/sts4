@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
@@ -39,16 +40,21 @@ public class QualifierCompletionProvider implements AnnotationAttributeCompletio
 	public Map<String, String> getCompletionCandidates(IJavaProject project, ASTNode node) {
 
 		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
+		
+		boolean isOnType = isAnnotationOnType(node);
 
-		return Stream.concat(
-				findAllQualifiers(beans),
-				Arrays.stream(beans).map(bean -> bean.getName()))
+		Stream<String> candidates = findAllQualifiers(beans);
+		if (!isOnType) {
+			candidates = Stream.concat(candidates, Arrays.stream(beans).map(bean -> bean.getName()));
+		}
+		
+		return candidates
 				.distinct()
 				.collect(Collectors.toMap(key -> key, value -> value, (u, v) -> u, LinkedHashMap::new));
 	}
 
 	private Stream<String> findAllQualifiers(Bean[] beans) {
-
+		
 		Stream<String> qualifiersFromBeans = Arrays.stream(beans)
 				// annotations from beans themselves
 				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
@@ -67,6 +73,21 @@ public class QualifierCompletionProvider implements AnnotationAttributeCompletio
 				.map(annotation -> annotation.getAttributes().get("value")[0]);
 		
 		return Stream.concat(qualifiersFromBeans, qualifiersFromInjectionPoints);
+	}
+
+	private boolean isAnnotationOnType(ASTNode node) {
+		while (node != null) {
+			if (node instanceof MethodDeclaration) {
+				return false;
+			}
+			else if (node instanceof TypeDeclaration) {
+				return true;
+			}
+			
+			node = node.getParent();
+		}
+		
+		return false;
 	}
 
 }
