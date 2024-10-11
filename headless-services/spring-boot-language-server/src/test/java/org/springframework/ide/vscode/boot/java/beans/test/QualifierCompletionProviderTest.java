@@ -96,86 +96,106 @@ public class QualifierCompletionProviderTest {
 	
 	@Test
 	public void testQualifierCompletionWithoutQuotesWithoutPrefixAtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier(<*>)", new String[] {"quali1", "quali2", "bean1", "bean2"}, 0, "@Qualifier(\"quali1\"<*>)", false);
+		assertCompletions("@Qualifier(<*>)", new String[] {"quali1", "quali2", "bean1", "bean2"}, 0, "@Qualifier(\"quali1\"<*>)", PositionInCode.ON_INJECTION_POINT);
 	}
 
 	@Test
 	public void testQualifierCompletionWithoutQuotesWithoutPrefixAtTypeDeclaration() throws Exception {
-		assertCompletions("@Qualifier(<*>)", new String[] {"quali1", "quali2"}, 0, "@Qualifier(\"quali1\"<*>)", true);
+		assertCompletions("@Qualifier(<*>)", new String[] {"quali1", "quali2"}, 0, "@Qualifier(\"quali1\"<*>)", PositionInCode.ON_TYPE);
+	}
+
+	@Test
+	public void testQualifierCompletionWithoutQuotesWithoutPrefixAtBeanMethod() throws Exception {
+		assertCompletions("@Qualifier(<*>)", new String[] {"quali1", "quali2"}, 0, "@Qualifier(\"quali1\"<*>)", PositionInCode.ON_BEAN_METHOD);
 	}
 
 	@Test
 	public void testQualifierCompletionWithoutQuotesWithPrefixAtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier(be<*>)", 2, "@Qualifier(\"bean1\"<*>)", false);
+		assertCompletions("@Qualifier(be<*>)", 2, "@Qualifier(\"bean1\"<*>)", PositionInCode.ON_INJECTION_POINT);
+	}
+
+	@Test
+	public void testQualifierCompletionWithoutQuotesWithPrefixAtTypeDeclaration() throws Exception {
+		assertCompletions("@Qualifier(be<*>)", 0, null, PositionInCode.ON_TYPE);
+	}
+
+	@Test
+	public void testQualifierCompletionWithoutQuotesWithPrefixAtBeanMethod() throws Exception {
+		assertCompletions("@Qualifier(be<*>)", 0, null, PositionInCode.ON_BEAN_METHOD);
 	}
 
 	@Test
 	public void testQualifierCompletionWithoutQuotesWithPrefixFromExistingQualifierAtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier(qu<*>)", new String[] {"quali1", "quali2"}, 0, "@Qualifier(\"quali1\"<*>)", false);
+		assertCompletions("@Qualifier(qu<*>)", new String[] {"quali1", "quali2"}, 0, "@Qualifier(\"quali1\"<*>)", PositionInCode.ON_INJECTION_POINT);
 	}
 
 	@Test
 	@Disabled // TODO: implement this case
 	public void testQualifierCompletionWithoutQuotesWithAttributeNameAtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier(value=<*>)", 4, "@Qualifier(value=\"quali1\"<*>)", false);
+		assertCompletions("@Qualifier(value=<*>)", 4, "@Qualifier(value=\"quali1\"<*>)", PositionInCode.ON_INJECTION_POINT);
 	}
 
 	@Test
 	public void testQualifierCompletionWithoutQuotesWithAttributeNameAtTypeDeclaration() throws Exception {
-		assertCompletions("@Qualifier(value=<*>)", 2, "@Qualifier(value=\"quali1\"<*>)", true);
+		assertCompletions("@Qualifier(value=<*>)", 2, "@Qualifier(value=\"quali1\"<*>)", PositionInCode.ON_TYPE);
+	}
+
+	@Test
+	public void testQualifierCompletionWithoutQuotesWithAttributeNameAtBeanMethod() throws Exception {
+		assertCompletions("@Qualifier(value=<*>)", 2, "@Qualifier(value=\"quali1\"<*>)", PositionInCode.ON_BEAN_METHOD);
 	}
 
 	@Test
 	@Disabled // TODO: implement this case
 	public void testQualifierCompletionWithoutQuotesWithAttributeNameAndSpacesAtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier(value = <*>)", 4, "@Qualifier(value = \"quali1\"<*>)", false);
+		assertCompletions("@Qualifier(value = <*>)", 4, "@Qualifier(value = \"quali1\"<*>)", PositionInCode.ON_INJECTION_POINT);
 	}
 
 	@Test
 	public void testQualifierCompletionWithoutQuotesWithAttributeNameAndSpacesAtTypeDeclaration() throws Exception {
-		assertCompletions("@Qualifier(value = <*>)", 2, "@Qualifier(value = \"quali1\"<*>)", true);
+		assertCompletions("@Qualifier(value = <*>)", 2, "@Qualifier(value = \"quali1\"<*>)", PositionInCode.ON_TYPE);
 	}
 
 	@Test
 	public void testQualifierCompletionInsideOfQuotesWithoutPrefixAtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier(\"<*>\")", 4, "@Qualifier(\"quali1<*>\")", false);
+		assertCompletions("@Qualifier(\"<*>\")", 4, "@Qualifier(\"quali1<*>\")", PositionInCode.ON_INJECTION_POINT);
 	}
 
 	@Test
 	public void testQualifierCompletionInsideOfQuotesWithPrefixAtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier(\"be<*>\")", 2, "@Qualifier(\"bean1<*>\")", false);
+		assertCompletions("@Qualifier(\"be<*>\")", 2, "@Qualifier(\"bean1<*>\")", PositionInCode.ON_INJECTION_POINT);
 	}
 
 	@Test
 	public void testQualifierCompletionInsideOfQuotesWithPrefixButWithoutMatchesAtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier(\"XXX<*>\")", 0, null, false);
+		assertCompletions("@Qualifier(\"XXX<*>\")", 0, null, PositionInCode.ON_INJECTION_POINT);
 	}
 
 	@Test
 	public void testQualifierCompletionOutsideOfAnnotation1AtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier(\"XXX\")<*>", 0, null, false);
+		assertCompletions("@Qualifier(\"XXX\")<*>", 0, null, PositionInCode.ON_INJECTION_POINT);
 	}
 
 	@Test
 	public void testQualifierCompletionOutsideOfAnnotation2AtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier<*>(\"XXX\")", 0, null, false);
+		assertCompletions("@Qualifier<*>(\"XXX\")", 0, null, PositionInCode.ON_INJECTION_POINT);
 	}
 
 	@Test
 	public void testQualifierCompletionInsideOfQuotesWithPrefixAndReplacedPostfixAtInjecitonPoint() throws Exception {
-		assertCompletions("@Qualifier(\"be<*>xxx\")", 2, "@Qualifier(\"bean1<*>\")", false);
+		assertCompletions("@Qualifier(\"be<*>xxx\")", 2, "@Qualifier(\"bean1<*>\")", PositionInCode.ON_INJECTION_POINT);
 	}
 	
-	private void assertCompletions(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine, boolean onType) throws Exception {
-		assertCompletions(completionLine, noOfExpectedCompletions, null, 0, expectedCompletedLine, onType);
+	private void assertCompletions(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine, PositionInCode position) throws Exception {
+		assertCompletions(completionLine, noOfExpectedCompletions, null, 0, expectedCompletedLine, position);
 	}
 
-	private void assertCompletions(String completionLine, String[] expectedCompletions, int chosenCompletion, String expectedCompletedLine, boolean onType) throws Exception {
-		assertCompletions(completionLine, expectedCompletions.length, expectedCompletions, chosenCompletion, expectedCompletedLine, onType);
+	private void assertCompletions(String completionLine, String[] expectedCompletions, int chosenCompletion, String expectedCompletedLine, PositionInCode position) throws Exception {
+		assertCompletions(completionLine, expectedCompletions.length, expectedCompletions, chosenCompletion, expectedCompletedLine, position);
 	}
 
-	private void assertCompletions(String completionLine, int noOfExcpectedCompletions, String[] expectedCompletions, int chosenCompletion, String expectedCompletedLine, boolean onType) throws Exception {
-		String editorContent = createEditorContent(completionLine, onType);
+	private void assertCompletions(String completionLine, int noOfExcpectedCompletions, String[] expectedCompletions, int chosenCompletion, String expectedCompletedLine, PositionInCode position) throws Exception {
+		String editorContent = createEditorContent(completionLine, position);
 		Editor editor = harness.newEditor(LanguageId.JAVA, editorContent, tempJavaDocUri);
 
         List<CompletionItem> completions = editor.getCompletions();
@@ -191,12 +211,13 @@ public class QualifierCompletionProviderTest {
         
         if (noOfExcpectedCompletions > 0) {
 	        editor.apply(completions.get(chosenCompletion));
-	        assertEquals(createEditorContent(expectedCompletedLine, onType), editor.getText());
+	        assertEquals(createEditorContent(expectedCompletedLine, position), editor.getText());
         }
 	}
 	
-	private String createEditorContent(String placeholderValue, boolean onType) {
-		if (onType) {
+	private String createEditorContent(String placeholderValue, PositionInCode position) {
+		switch (position) {
+		case ON_TYPE:
 			return """
 					package org.test;
 
@@ -210,8 +231,7 @@ public class QualifierCompletionProviderTest {
 					public class TestDependsOnClass {
 					}
 					""";
-		}
-		else {
+		case ON_INJECTION_POINT:
 			return """
 					package org.test;
 
@@ -227,7 +247,33 @@ public class QualifierCompletionProviderTest {
 					
 					}
 					""";
+		case ON_BEAN_METHOD:
+			return """
+					package org.test;
+
+	        		import org.springframework.context.annotation.Bean;
+	        		import org.springframework.context.annotation.Configuration;
+					import org.springframework.beans.factory.annotation.Qualifier;
+
+					@Configuration
+					public class TestDependsOnClass {
+
+						@Bean
+						""" +
+						placeholderValue + "\n" +
+						"""
+						public Object myBean() {
+							return new Object();
+						}
+					
+					}
+					""";
+		default: return null;
 		}
+	}
+	
+	private static enum PositionInCode {
+		ON_TYPE, ON_BEAN_METHOD, ON_INJECTION_POINT
 	}
 
 
