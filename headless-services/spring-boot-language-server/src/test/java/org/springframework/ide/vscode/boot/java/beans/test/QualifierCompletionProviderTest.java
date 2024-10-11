@@ -130,7 +130,7 @@ public class QualifierCompletionProviderTest {
 	}
 
 	@Test
-	@Disabled // TODO: implement this case
+	@Disabled // impossible to implement, AST does not contain any nodes at all for the parameter in this case 
 	public void testQualifierCompletionWithoutQuotesWithAttributeNameAtInjecitonPoint() throws Exception {
 		assertCompletions("@Qualifier(value=<*>)", 4, "@Qualifier(value=\"quali1\"<*>)", PositionInCode.ON_INJECTION_POINT);
 	}
@@ -146,7 +146,7 @@ public class QualifierCompletionProviderTest {
 	}
 
 	@Test
-	@Disabled // TODO: implement this case
+	@Disabled // impossible to implement, AST does not contain any nodes at all for the parameter in this case 
 	public void testQualifierCompletionWithoutQuotesWithAttributeNameAndSpacesAtInjecitonPoint() throws Exception {
 		assertCompletions("@Qualifier(value = <*>)", 4, "@Qualifier(value = \"quali1\"<*>)", PositionInCode.ON_INJECTION_POINT);
 	}
