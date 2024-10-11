@@ -28,6 +28,9 @@ export function activate(context: VSCode.ExtensionContext) {
         extensionId: 'vscode-manifest-yaml',
         workspaceOptions: VSCode.workspace.getConfiguration("cloudfoundry-manifest.ls"),
         jvmHeap: '64m',
+        vmArgs: [
+            "-Dspring.config.location=classpath:/application.properties"
+        ],
         clientOptions: {
             documentSelector: [
                 {

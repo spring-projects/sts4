@@ -44,6 +44,7 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 //		args.add("-Xrunjdwp:server=y,transport=dt_socket,address=1044,suspend=n");
 		args.add("-Xmx1024m");
 		args.add("-XX:TieredStopAtLevel=1");
+		args.add("-Dspring.config.location=classpath:/application.properties");
 		
 		addCustomJVMArgs(args);
 		

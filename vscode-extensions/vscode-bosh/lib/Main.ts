@@ -27,6 +27,9 @@ export function activate(context: VSCode.ExtensionContext) {
         CONNECT_TO_LS: false,
         extensionId: 'vscode-bosh',
         jvmHeap: "48m",
+        vmArgs: [
+            "-Dspring.config.location=classpath:/application.properties"
+        ],
         workspaceOptions: VSCode.workspace.getConfiguration("bosh.ls"),
         clientOptions: {
             documentSelector: [

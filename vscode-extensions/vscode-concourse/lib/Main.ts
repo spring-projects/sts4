@@ -30,6 +30,9 @@ export function activate(context: VSCode.ExtensionContext) {
         CONNECT_TO_LS: false,
         extensionId: 'vscode-concourse',
         jvmHeap: "48m",
+        vmArgs: [
+            "-Dspring.config.location=classpath:/application.properties"
+        ],
         workspaceOptions: VSCode.workspace.getConfiguration("concourse.ls"),
         clientOptions: {
             documentSelector: [

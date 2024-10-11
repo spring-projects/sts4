@@ -48,6 +48,7 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
         preferJdk: true,
         jvmHeap: '1024m',
         vmArgs: [
+            "-Dspring.config.location=classpath:/application.properties"
         ],
         checkjvm: (context: ExtensionContext, jvm: commons.JVM) => {
             let version = jvm.getMajorVersion();
