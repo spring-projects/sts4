@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -237,7 +238,7 @@ public class DependsOnCompletionProcessor implements AnnotationAttributeCompleti
 //	}
 
 	@Override
-	public Map<String, String> getCompletionCandidates(IJavaProject project) {
+	public Map<String, String> getCompletionCandidates(IJavaProject project, ASTNode node) {
 		return Arrays.stream(this.springIndex.getBeansOfProject(project.getElementName()))
 				.map(bean -> bean.getName())
 				.distinct()

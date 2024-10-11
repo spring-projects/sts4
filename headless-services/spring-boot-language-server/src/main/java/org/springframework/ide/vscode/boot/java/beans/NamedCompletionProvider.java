@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
@@ -34,7 +35,7 @@ public class NamedCompletionProvider implements AnnotationAttributeCompletionPro
 	}
 	
 	@Override
-	public Map<String, String> getCompletionCandidates(IJavaProject project) {
+	public Map<String, String> getCompletionCandidates(IJavaProject project, ASTNode node) {
 
 		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
 

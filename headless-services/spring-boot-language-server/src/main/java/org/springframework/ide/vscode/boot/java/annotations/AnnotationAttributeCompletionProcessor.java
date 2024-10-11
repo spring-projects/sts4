@@ -134,7 +134,7 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 		AnnotationAttributeCompletionProvider completionProvider = this.completionProviders.get(attributeName);
 		if (completionProvider != null) {
 
-			Map<String, String> proposals = completionProvider.getCompletionCandidates(project);
+			Map<String, String> proposals = completionProvider.getCompletionCandidates(project, node);
 			Map<String, String> filteredProposals = proposals.entrySet().stream()
 					.filter(candidate -> candidate.getKey().toLowerCase().contains(filterPrefix.toLowerCase()))
 					.filter(candidate -> !alreadyMentionedValues.contains(candidate.getKey()))

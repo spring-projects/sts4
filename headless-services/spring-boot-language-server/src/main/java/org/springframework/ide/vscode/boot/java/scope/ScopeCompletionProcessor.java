@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.scope;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
@@ -34,7 +35,7 @@ public class ScopeCompletionProcessor implements AnnotationAttributeCompletionPr
 	} 
 
 	@Override
-	public Map<String, String> getCompletionCandidates(IJavaProject project) {
+	public Map<String, String> getCompletionCandidates(IJavaProject project, ASTNode node) {
 		return SCOPE_COMPLETIONS;
 	}
 

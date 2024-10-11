@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -32,7 +33,7 @@ public class BeanTypesCompletionProcessor implements AnnotationAttributeCompleti
     }
 
     @Override
-    public Map<String, String> getCompletionCandidates(IJavaProject project) {
+    public Map<String, String> getCompletionCandidates(IJavaProject project, ASTNode node) {
         Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
         return Arrays.stream(beans)
                 .map(Bean::getType)
