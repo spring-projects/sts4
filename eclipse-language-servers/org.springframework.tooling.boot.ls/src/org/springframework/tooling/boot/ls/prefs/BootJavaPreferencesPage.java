@@ -45,6 +45,9 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 
 		// JPQL Support switch
 		addField(new BooleanFieldEditor(Constants.PREF_JPQL, "JPA Query language support", fieldEditorParent));
+		
+		// Properties Completions - Elide common prefix
+		addField(new BooleanFieldEditor(Constants.PREF_PROPS_COMPLETIONS_ELIDE_PREFIX, "Elide common prefix in property key auto completions", fieldEditorParent));
 
 		// Experimental Modulith support
 		addField(new BooleanFieldEditor(Constants.PREF_MODULITH, "Spring Boot Modulith automatic project tracking and metadata update", fieldEditorParent));

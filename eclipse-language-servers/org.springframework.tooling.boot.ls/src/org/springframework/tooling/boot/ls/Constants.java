@@ -48,4 +48,6 @@ public class Constants {
 	
 	public static final String PREF_JPQL = "boot-java.jpql";
 	
+	public static final String PREF_PROPS_COMPLETIONS_ELIDE_PREFIX = "boot-java.properties.completions.elide-prefix";
+	
 }

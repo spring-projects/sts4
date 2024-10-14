@@ -286,11 +286,11 @@ public class BootLanguageServerBootApp {
 		return new SpringXMLCompletionEngine(server, projectFinder, symbolIndex, config);
 	}
 	
-	@Bean SpringPropertiesCompletionEngine propertiesCompletionEngine(BootLanguageServerParams params, JavaProjectFinder projectFinder, SourceLinks sourceLinks) {
+	@Bean SpringPropertiesCompletionEngine propertiesCompletionEngine(BootLanguageServerParams params, JavaProjectFinder projectFinder, SourceLinks sourceLinks, BootJavaConfig config) {
 		return new SpringPropertiesCompletionEngine(
 				params.indexProvider, 
 				params.typeUtilProvider, 
-				projectFinder, sourceLinks);
+				projectFinder, sourceLinks, config);
 	}
 
 	@Bean YamlCompletionEngine yamlCompletionEngine(YamlStructureProvider structureProvider, YamlAssistContextProvider contextProvider) {

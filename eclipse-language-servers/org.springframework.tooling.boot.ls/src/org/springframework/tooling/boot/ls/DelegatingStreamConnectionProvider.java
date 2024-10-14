@@ -223,6 +223,12 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				"properties-metadata", preferenceStore.getString(Constants.PREF_COMMON_PROPS_METADATA)
 		));
 		
+		bootJavaObj.put("properties", Map.of(
+				"completions", Map.of(
+						"elide-prefix", preferenceStore.getBoolean(Constants.PREF_PROPS_COMPLETIONS_ELIDE_PREFIX)
+				)
+		));
+		
 		settings.put("boot-java", bootJavaObj);
 		
 		settings.put("http", createHttpProxySettings());

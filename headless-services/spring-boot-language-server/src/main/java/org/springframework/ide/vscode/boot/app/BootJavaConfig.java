@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
+import org.springframework.ide.vscode.boot.properties.completions.PropertyCompletionSettings;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory.Toggle;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
@@ -233,6 +234,13 @@ public class BootJavaConfig implements InitializingBean {
 			log.error("", e);
 		}
 		return Toggle.Option.AUTO;
+	}
+	
+	public PropertyCompletionSettings getPropertyCompletionSettings() {
+		Boolean elidePrefix = settings.getBoolean("boot-java", "properties", "completions", "elide-prefix");
+		return new PropertyCompletionSettings(
+				elidePrefix != null && elidePrefix.booleanValue()
+		);
 	}
 	
 	public JsonObject getJavaValidationSettingsJson() {

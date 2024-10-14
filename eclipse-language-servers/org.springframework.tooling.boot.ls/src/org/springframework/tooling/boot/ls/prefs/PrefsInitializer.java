@@ -66,6 +66,8 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		
 		preferenceStore.setDefault(Constants.PREF_JPQL, true);
 		
+		preferenceStore.setDefault(Constants.PREF_PROPS_COMPLETIONS_ELIDE_PREFIX, false);
+		
 	}
 
 }

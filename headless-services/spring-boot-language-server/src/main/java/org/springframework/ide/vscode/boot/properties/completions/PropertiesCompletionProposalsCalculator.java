@@ -116,9 +116,12 @@ public class PropertiesCompletionProposalsCalculator {
 	private int offset;
 	private boolean preferLowerCaseEnums;
 	private AntlrParser parser;
+	private final PropertyCompletionSettings propertyCompletionSettings;
 
-	public PropertiesCompletionProposalsCalculator(FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, PropertyCompletionFactory completionFactory, IDocument doc, int offset, boolean preferLowerCaseEnums) {
+	public PropertiesCompletionProposalsCalculator(FuzzyMap<PropertyInfo> index, PropertyCompletionSettings propertyCompletionSettings,
+			TypeUtil typeUtil, PropertyCompletionFactory completionFactory, IDocument doc, int offset, boolean preferLowerCaseEnums) {
 		this.index = index;
+		this.propertyCompletionSettings = propertyCompletionSettings;
 		this.typeUtil = typeUtil;
 		this.completionFactory = completionFactory;
 		this.doc = doc;
@@ -365,7 +368,7 @@ public class PropertiesCompletionProposalsCalculator {
 	}
 
 	private Collection<ICompletionProposal> elideCommonPrefix(String basePrefix, ArrayList<ICompletionProposal> proposals) {
-		if (false) { // TODO: check for preference setting
+		if (propertyCompletionSettings.elidePrefix()) {
 			String prefix = StringUtil.commonPrefix(Stream.concat(Stream.of(basePrefix), proposals.stream().map(ICompletionProposal::getLabel)));
 			int lastDot = prefix.lastIndexOf('.');
 			if (lastDot>=0) {

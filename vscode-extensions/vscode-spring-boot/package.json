@@ -343,6 +343,11 @@
             ],
             "description": "The path to a shared properties metadata JSON file."
           },
+          "boot-java.properties.completions.elide-prefix": {
+            "type": "boolean",
+            "default": false,
+            "description": "Elide common prefix in property key auto completions"
+          },
           "boot-java.jpql": {
             "type": "boolean",
             "default": true,

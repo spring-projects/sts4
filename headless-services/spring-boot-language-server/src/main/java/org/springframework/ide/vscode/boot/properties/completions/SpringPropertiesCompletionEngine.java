@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.properties.completions;
 
 import java.util.Collection;
 
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -35,18 +36,21 @@ public class SpringPropertiesCompletionEngine implements ICompletionEngine, Lang
 
 	private boolean preferLowerCaseEnums = true; //might make sense to make this user configurable
 
-	private SpringPropertyIndexProvider indexProvider;
-	private TypeUtilProvider typeUtilProvider;
-	private PropertyCompletionFactory completionFactory = null;
-	private SourceLinks sourceLinks;
+	private final SpringPropertyIndexProvider indexProvider;
+	private final TypeUtilProvider typeUtilProvider;
+	private final PropertyCompletionFactory completionFactory;
+	private final SourceLinks sourceLinks;
+	private final BootJavaConfig config;
 
 	/**
 	 * Constructor used in 'production'. Wires up stuff properly for running inside a normal
 	 * Eclipse runtime.
 	 */
-	public SpringPropertiesCompletionEngine(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder projectFinder, SourceLinks sourceLinks) {
+	public SpringPropertiesCompletionEngine(SpringPropertyIndexProvider indexProvider, TypeUtilProvider typeUtilProvider, JavaProjectFinder projectFinder,
+			SourceLinks sourceLinks, BootJavaConfig config) {
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
+		this.config = config;
 		this.completionFactory = new PropertyCompletionFactory();
 		this.sourceLinks = sourceLinks;
 	}
@@ -56,7 +60,7 @@ public class SpringPropertiesCompletionEngine implements ICompletionEngine, Lang
 	 */
 	@Override
 	public InternalCompletionList getCompletions(TextDocument doc, int offset) throws BadLocationException {
-		Collection<ICompletionProposal> completionItems = new PropertiesCompletionProposalsCalculator(indexProvider.getIndex(doc).getProperties(),
+		Collection<ICompletionProposal> completionItems = new PropertiesCompletionProposalsCalculator(indexProvider.getIndex(doc).getProperties(), config.getPropertyCompletionSettings(),
 				typeUtilProvider.getTypeUtil(sourceLinks, doc), completionFactory, doc, offset, preferLowerCaseEnums).calculate();
 		
 		return new InternalCompletionList(completionItems, true);
