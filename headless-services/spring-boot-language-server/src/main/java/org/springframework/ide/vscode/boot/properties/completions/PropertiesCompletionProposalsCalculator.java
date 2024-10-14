@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2023 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,6 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.boot.properties.completions;
 
 import static org.springframework.ide.vscode.boot.common.CommonLanguageTools.SPACES;
@@ -366,12 +365,14 @@ public class PropertiesCompletionProposalsCalculator {
 	}
 
 	private Collection<ICompletionProposal> elideCommonPrefix(String basePrefix, ArrayList<ICompletionProposal> proposals) {
-		String prefix = StringUtil.commonPrefix(Stream.concat(Stream.of(basePrefix), proposals.stream().map(ICompletionProposal::getLabel)));
-		int lastDot = prefix.lastIndexOf('.');
-		if (lastDot>=0) {
-			for (int i = 0; i < proposals.size(); i++) {
-				ICompletionProposal p = proposals.get(i);
-				proposals.set(i, p.dropLabelPrefix(lastDot+1));
+		if (false) { // TODO: check for preference setting
+			String prefix = StringUtil.commonPrefix(Stream.concat(Stream.of(basePrefix), proposals.stream().map(ICompletionProposal::getLabel)));
+			int lastDot = prefix.lastIndexOf('.');
+			if (lastDot>=0) {
+				for (int i = 0; i < proposals.size(); i++) {
+					ICompletionProposal p = proposals.get(i);
+					proposals.set(i, p.dropLabelPrefix(lastDot+1));
+				}
 			}
 		}
 		return proposals;
