@@ -140,8 +140,8 @@ public class JdtConfig {
 		return new JdtDataQueriesInlayHintsProvider(semanticTokensProvider);
 	}
 	
-	@Bean CronExpressionsInlayHintsProvider cronExpressionsInlayHintsProvider() {
-		return new CronExpressionsInlayHintsProvider();
+	@Bean CronExpressionsInlayHintsProvider cronExpressionsInlayHintsProvider(BootJavaConfig config) {
+		return new CronExpressionsInlayHintsProvider(config);
 	}
 	
 	@Bean JdtQueryDocHighlightsProvider jdtDocHighlightsProvider(JdtDataQuerySemanticTokensProvider semanticTokensProvider) {

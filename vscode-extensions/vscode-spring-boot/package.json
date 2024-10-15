@@ -353,6 +353,11 @@
             "default": true,
             "description": "JPA Query language support"
           },
+          "boot-java.cron.inlay-hints": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show CRON expressions inlay-hints"
+          },
           "boot-java.change-detection.on": {
             "type": "boolean",
             "default": false,

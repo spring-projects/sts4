@@ -68,6 +68,7 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		
 		preferenceStore.setDefault(Constants.PREF_PROPS_COMPLETIONS_ELIDE_PREFIX, false);
 		
+		preferenceStore.setDefault(Constants.PREF_CRON_INLAY_HINTS, true);
 	}
 
 }

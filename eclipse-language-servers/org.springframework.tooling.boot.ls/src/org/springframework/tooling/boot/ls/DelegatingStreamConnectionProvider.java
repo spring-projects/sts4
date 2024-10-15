@@ -229,6 +229,11 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				)
 		));
 		
+		bootJavaObj.put("cron", Map.of(
+				"inlay-hints", preferenceStore.getBoolean(Constants.PREF_CRON_INLAY_HINTS)
+			)
+		);
+		
 		settings.put("boot-java", bootJavaObj);
 		
 		settings.put("http", createHttpProxySettings());

@@ -84,6 +84,10 @@ public class BootJavaConfig implements InitializingBean {
 		return enabled != null && enabled.booleanValue();
 	}
 	
+	public boolean isCronInlayHintsEnabled() {
+		return Boolean.TRUE.equals(settings.getBoolean("boot-java", "cron", "inlay-hints"));
+	}
+	
 	public boolean isShowingAllJvmProcesses() {
 		Boolean isAll = settings.getBoolean("boot-java", "live-information", "all-local-java-processes");
 		return isAll != null && isAll.booleanValue();

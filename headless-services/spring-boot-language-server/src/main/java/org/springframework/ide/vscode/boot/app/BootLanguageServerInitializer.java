@@ -163,7 +163,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		components.getSemanticTokensHandler().ifPresent(documents::onSemanticTokens);
 
-		startListeningToPerformReconcile();
+		startListening();
 
 		server.onCommand("sts/show/document", p -> {
 			ShowDocumentParams showDocParams = new Gson().fromJson((JsonElement)p.getArguments().get(0), ShowDocumentParams.class);
@@ -184,7 +184,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 	}
 	
-	private void startListeningToPerformReconcile() {
+	private void startListening() {
 		components.getReconcileEngine().ifPresent(reconcileEngine -> {
 			server.getTextDocumentService().onDidChangeContent(params -> {
 				TextDocument doc = params.getDocument();
@@ -193,7 +193,10 @@ public class BootLanguageServerInitializer implements InitializingBean {
 
 //			ServerUtils.listenToClassFileChanges(server.getWorkspaceService().getFileObserver(), projectFinder, project -> validateAll(components, server, project));
 		});
-		config.addListener(evt -> reconcile());
+		config.addListener(evt -> {
+			server.getClient().refreshInlayHints();
+			reconcile();
+		});
 		params.projectObserver.addListener(reconcileDocumentsForProjectChange(server, components, params.projectFinder));
 		
 //		// TODO: index update even happens on every file save. Very expensive to blindly reconcile all projects.

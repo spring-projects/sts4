@@ -26,6 +26,7 @@ import org.eclipse.lsp4j.InlayHintKind;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.JdtInlayHintsProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -46,12 +47,18 @@ public class CronExpressionsInlayHintsProvider implements JdtInlayHintsProvider 
 
 	private static final String SCHEDULED = "Scheduled";
 
+	private final BootJavaConfig config;
+
 	public record EmbeddedCronExpression(Expression expression, String text, int offset) {
 	};
 
+	public CronExpressionsInlayHintsProvider(BootJavaConfig config) {
+		this.config = config;
+	}
+
 	@Override
 	public boolean isApplicable(IJavaProject project) {
-		return true;
+		return config.isCronInlayHintsEnabled();
 	}
 
 	@Override

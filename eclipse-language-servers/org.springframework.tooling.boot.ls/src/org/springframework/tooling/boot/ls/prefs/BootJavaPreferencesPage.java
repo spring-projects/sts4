@@ -46,6 +46,9 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		// JPQL Support switch
 		addField(new BooleanFieldEditor(Constants.PREF_JPQL, "JPA Query language support", fieldEditorParent));
 		
+		// CRON expressions inlay-hints on/off
+		addField(new BooleanFieldEditor(Constants.PREF_CRON_INLAY_HINTS, "Show CRON expressions inlay-hints", fieldEditorParent));
+		
 		// Properties Completions - Elide common prefix
 		addField(new BooleanFieldEditor(Constants.PREF_PROPS_COMPLETIONS_ELIDE_PREFIX, "Elide common prefix in property key auto completions", fieldEditorParent));
 
