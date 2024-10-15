@@ -23,6 +23,7 @@ import org.eclipse.lsp4j.SemanticTokensLegend;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.boot.java.reconcilers.CompositeASTVisitor;
+import org.springframework.ide.vscode.boot.java.semantictokens.JavaSemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -76,7 +77,8 @@ public class JdtSemanticTokensHandler implements SemanticTokensHandler {
 		if (optProject.isPresent()) {
 			IJavaProject jp = optProject.get();
 			List<JdtSemanticTokensProvider> applicableTokenProviders = tokenProviders.stream().filter(tp -> tp.isApplicable(jp)).collect(Collectors.toList());
-			if (!applicableTokenProviders.isEmpty()) {
+			// If only the JavaSemanticTokensProvider going to compute tokens then don't compute tokens at all - let JDT LS compute them. 
+			if (!applicableTokenProviders.isEmpty() && !(applicableTokenProviders.size() == 1 && applicableTokenProviders.get(0) instanceof JavaSemanticTokensProvider)) {
 				return cuCache.withCompilationUnit(jp, URI.create(doc.getUri()), cu -> computeTokens(applicableTokenProviders, jp, cu, r, doc));
 			}
 		}

@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.ReturnStatement;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -175,7 +176,22 @@ public class CompositeASTVisitor extends ASTVisitor {
 		}
 		return result;
 	}
-	
+
+	/*
+	 * Needed for the JDT LS semantic tokens workaround
+	 */
+	@Override
+	public boolean visit(SimpleName node) {
+		boolean result = true;
+		if (!checkOffset(node)) {
+			return false;
+		}
+		for (ASTVisitor astVisitor : visitors) {
+			result |= astVisitor.visit(node);
+		}
+		return result;
+	}
+
 	private boolean checkOffset(ASTNode n) {
 		return (startOffset < 0 || n.getStartPosition() >= startOffset)
 				|| (endOffset <0 || n.getStartPosition() + n.getLength() < endOffset);
