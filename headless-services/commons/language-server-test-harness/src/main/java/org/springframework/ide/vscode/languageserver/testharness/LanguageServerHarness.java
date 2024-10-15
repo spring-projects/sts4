@@ -481,6 +481,11 @@ public class LanguageServerHarness {
 					return CompletableFuture.completedFuture(gavs);
 				}
 
+				@Override
+				public CompletableFuture<Void> refreshInlayHints() {
+					// TODO: perhaps at some point the client would need to ask the server for new inlay-hints for opened documents.
+					return CompletableFuture.completedFuture(null);
+				}
 			});
 
 		}
