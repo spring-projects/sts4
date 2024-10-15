@@ -31,16 +31,16 @@
     "onCommand:vscode-spring-boot.ls.start"
   ],
   "contributes": {
-    "chatParticipants": [
+    "//chatParticipants": [
       {
-        "id": "springboot.agent",
-        "fullName": "Spring Tools",
-        "name": "spring",
-        "description": "Spring Tools chat agent",
-        "commands": [
+        "//id": "springboot.agent",
+        "//fullName": "Spring Tools",
+        "//name": "spring",
+        "//description": "Spring Tools chat agent",
+        "//commands": [
           {
-            "name": "add",
-            "description": "Add a new spring module to the exisiting project"
+            "//name": "add",
+            "//description": "Add a new spring module to the exisiting project"
           }
         ]
       }
