@@ -1,3 +1,38 @@
+## 2024-10-23 (4.26.0 RELEASE, incl. language servers version 1.58.0)
+
+#### important highlights
+
+* _(Spring Boot)_ CRON expression description inlay-hint and completion proposals support
+* _(Spring Boot)_ `@ConditionalOnBean` and `@ConditinalOnMissingBean` completion proposals, go to bean definitions support
+* _(Spring Boot)_ SPEL expressions bean and method references go to definition in Java support
+* _(Spring Boot)_ Improvements to completion proposals ordering
+* _(Spring Boot)_ Fixes to PostgreSql validation
+
+#### all fixes and improvements in detail
+* _(Spring Boot)_ improve Go To Definition to bean definitions in `@ConditionalOnBean` and `@ConditionalOnMissingBean` [#1381](https://github.com/spring-projects/sts4/issues/1381)
+* _(Spring Boot)_ do not show bean name proposals for qualifier annotations on bean definitions [#1375](https://github.com/spring-projects/sts4/issues/1375)
+* _(Spring Boot)_ Slight refactorings and remove maven-model dependency (#1365) [#1366](https://github.com/spring-projects/sts4/pull/1366)
+* _(Spring Boot)_ GH-1307: add support for `@ConditionalOnBean` annotation attributes [#1361](https://github.com/spring-projects/sts4/pull/1361)
+* _(Spring Boot)_ goto definition for beans and methods references in spel expressions [#1360](https://github.com/spring-projects/sts4/pull/1360)
+* _(Spring Boot)_ GH-1323, GH-1324: Cron Expressions completion proposals and inlay hints [#1357](https://github.com/spring-projects/sts4/pull/1357)
+* _(Spring Boot)_ Duplicate spring symbol cannot be found [#1346](https://github.com/spring-projects/sts4/issues/1346)
+* _(Spring Boot)_ Order precise matches over fuzzy ones in application property suggestions [#1342](https://github.com/spring-projects/sts4/issues/1342)
+* _(Spring Boot)_ Makes auto-completion in application.yml consistent with application.properties. [#1341](https://github.com/spring-projects/sts4/issues/1341)
+* _(Spring Boot)_ CodeLens or Inline values for embedded CRON expressions [#1324](https://github.com/spring-projects/sts4/issues/1324)
+* _(Spring Boot)_ Completion Proposals for embedded CRON expressions [#1323](https://github.com/spring-projects/sts4/issues/1323)
+* _(Spring Boot)_ add support for `@ConditionalOnMissingBean` annotation attributes [#1309](https://github.com/spring-projects/sts4/issues/1309)
+* _(Spring Boot)_ add support for `@ConditionalOnBean` annotation attributes [#1307](https://github.com/spring-projects/sts4/issues/1307)
+* _(Spring Boot)_ Semantic Token Lost with Lombok Annotations in Enum Due to Conflict with Eclipse Java Plugin in VS Code [#1383](https://github.com/spring-projects/sts4/issues/1383)
+* _(Spring Boot)_ regular Java document highlighting broken in VSCode when extension is active [#1380](https://github.com/spring-projects/sts4/issues/1380)
+* _(Spring Boot)_ The JPQL validation in Spring Tool Suite (STS) is showing several errors for valid JPQL/PostgreSQL syntax in combination with Eclipselink [#1369](https://github.com/spring-projects/sts4/issues/1369)
+* _(Spring Boot)_ Spring Boot language server doesn't start when spring.config.location variable is set with custom location in environment [#1367](https://github.com/spring-projects/sts4/issues/1367)
+* _(Spring Boot)_ Request textDocument/inlayHint failed [#1359](https://github.com/spring-projects/sts4/issues/1359)
+* _(Spring Boot)_ Crash after updating vscode extension to 1.57.0  [#1355](https://github.com/spring-projects/sts4/issues/1355)
+* _(Spring Boot)_ Not auto prompt application-dev.properties config [#1354](https://github.com/spring-projects/sts4/issues/1354)
+* _(Spring Boot)_ SPEL: no viable alternative at input '#{' [JAVA\_SPEL\_EXPRESSION\_SYNTAX] [#1353](https://github.com/spring-projects/sts4/issues/1353)
+* _(Spring Boot)_ 4.24/4.25 cannot view JMX beans in dashboard [#1350](https://github.com/spring-projects/sts4/issues/1350)
+* _(Spring Boot)_ Error on `@ConditionalOnExpression` [#1349](https://github.com/spring-projects/sts4/issues/1349)
+ 
 ## 2024-09-11 (4.25.0 RELEASE, incl. language servers version 1.57.0)
 
 #### important highlights
