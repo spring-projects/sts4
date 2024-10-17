@@ -35,11 +35,11 @@ jobs:
         id: download-release
         run: |
           wget $DOWNLOAD_URL_ROOT/$URL_PATH/$VSIX_FILE
-#      - name: Publish to VSCode Marketplace
-#        id: publish-vsce
-#        run: |
-#          npm install --global @vscode/vsce
-#          vsce publish -p ${{ secrets.VSCE_PUBLISH_TOKEN }} --packagePath $VSIX_FILE
+      - name: Publish to VSCode Marketplace
+        id: publish-vsce
+        run: |
+          npm install --global @vscode/vsce
+          vsce publish -p ${{ secrets.VSCE_PUBLISH_TOKEN }} --packagePath $VSIX_FILE
       - name: Publish to Eclipse Open VSX
         id: publish-ovsx
         run: |
