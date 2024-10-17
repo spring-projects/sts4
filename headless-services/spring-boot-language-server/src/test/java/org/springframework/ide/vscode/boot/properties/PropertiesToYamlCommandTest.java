@@ -91,7 +91,7 @@ public class PropertiesToYamlCommandTest {
 		Command cmd = new Command();
 		cmd.setCommand(PropertiesToYamlCommand.CMD_PROPS_TO_YAML);
 		cmd.setArguments(List.of(propsFilePath.toUri().toASCIIString(), yamlFilePath.toUri().toASCIIString(), replace));
-		cmd.setTitle("Convert .propeties to .yaml");
+		cmd.setTitle("Convert .properties to .yaml");
 		
 		ShowDocumentResult res = (ShowDocumentResult) harness.perform(cmd);
 		

@@ -242,10 +242,10 @@ public abstract class AbstractBootLaunchConfigurationDelegate extends AdvancedJa
 	}
 
 	public static Properties getApplicationProperties(ILaunchConfiguration conf) {
-		String propetiesString = getRawApplicationProperties(conf);
+		String propertiesString = getRawApplicationProperties(conf);
 		Properties properties = new Properties();
 		try {
-			properties.load(new ByteArrayInputStream(propetiesString.getBytes()));
+			properties.load(new ByteArrayInputStream(propertiesString.getBytes()));
 		} catch (IOException e) {
 			Log.log(e);
 		}
