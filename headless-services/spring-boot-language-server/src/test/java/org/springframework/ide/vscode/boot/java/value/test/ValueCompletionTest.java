@@ -26,6 +26,7 @@ import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -295,18 +296,18 @@ public class ValueCompletionTest {
     }
 
 // The parser removes the (spring.) piece from the AST in this case, so there is no way
-// to clearly identify this case
-//
-//    @Test
-//    void testComplexPrefixCompletionParamNameCursorRightAfterDot() throws Exception {
-//        prepareCase("@Value(\"onField\")", "@Value(spring.<*>)");
-//        prepareDefaultIndexData();
-//
-//        assertPropertyCompletions(
-//                "@Value(\"${spring.prop1}\"<*>)");
-//
-//        assertClasspathCompletions();
-//    }
+// to clearly identify this case    
+    @Test
+    @Disabled
+    void testComplexPrefixCompletionParamNameCursorRightAfterDot() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(spring.<*>)");
+        prepareDefaultIndexData();
+
+        assertPropertyCompletions(
+                "@Value(\"${spring.prop1}\"<*>)");
+
+        assertClasspathCompletions();
+    }
 
     @Test
     void testComplexPrefixCompletion() throws Exception {
