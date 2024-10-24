@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.scope;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeProposal;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 /**
@@ -22,20 +22,18 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
  */
 public class ScopeCompletionProcessor implements AnnotationAttributeCompletionProvider {
 	
-	private static final Map<String, String> SCOPE_COMPLETIONS = new LinkedHashMap<>();
+	private static final List<AnnotationAttributeProposal> SCOPE_COMPLETIONS = List.of(
+			new AnnotationAttributeProposal("application"),
+			new AnnotationAttributeProposal("globalSession"),
+			new AnnotationAttributeProposal("prototype"),
+			new AnnotationAttributeProposal("request"),
+			new AnnotationAttributeProposal("session"),
+			new AnnotationAttributeProposal("singleton"),
+			new AnnotationAttributeProposal("websocket")
+			);
 	
-	static {
-		SCOPE_COMPLETIONS.put("application", "application");
-		SCOPE_COMPLETIONS.put("globalSession", "globalSession");
-		SCOPE_COMPLETIONS.put("prototype", "prototype");
-		SCOPE_COMPLETIONS.put("request", "request");
-		SCOPE_COMPLETIONS.put("session", "session");
-		SCOPE_COMPLETIONS.put("singleton", "singleton");
-		SCOPE_COMPLETIONS.put("websocket", "websocket");
-	} 
-
 	@Override
-	public Map<String, String> getCompletionCandidates(IJavaProject project, ASTNode node) {
+	public List<AnnotationAttributeProposal> getCompletionCandidates(IJavaProject project, ASTNode node) {
 		return SCOPE_COMPLETIONS;
 	}
 

@@ -10,13 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.annotations;
 
-import java.util.Map;
+import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 public interface AnnotationAttributeCompletionProvider {
 	
-	Map<String, String> getCompletionCandidates(IJavaProject project, ASTNode node);
+	List<AnnotationAttributeProposal> getCompletionCandidates(IJavaProject project, ASTNode node);
 
 }

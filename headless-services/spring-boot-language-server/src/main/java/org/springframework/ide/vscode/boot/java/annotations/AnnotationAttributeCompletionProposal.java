@@ -20,25 +20,26 @@ import org.springframework.ide.vscode.commons.util.Renderable;
  */
 public class AnnotationAttributeCompletionProposal extends ScoreableProposal {
 
-	private static final String EMPTY_DETAIL = "";
+	private final AnnotationAttributeProposal coreProposal;
 
 	private final DocumentEdits edits;
-	private final String label;
-	private final String detail;
 	private final Renderable documentation;
 	private final double score;
 
-	public AnnotationAttributeCompletionProposal(DocumentEdits edits, String label, String detail, Renderable documentation, double score) {
+	public AnnotationAttributeCompletionProposal(DocumentEdits edits, AnnotationAttributeProposal coreProposal, Renderable documentation, double score) {
 		this.edits = edits;
-		this.label = label;
-		this.detail = detail == null ? EMPTY_DETAIL : detail;
+		this.coreProposal = coreProposal;
 		this.documentation = documentation;
 		this.score = score;
 	}
 
+//	public AnnotationAttributeCompletionProposal(DocumentEdits edits, String label, String detail, Renderable documentation, double score) {
+//		this(edits, new AnnotationAttributeProposal(label, detail), documentation, score);
+//	}
+
 	@Override
 	public String getLabel() {
-		return this.label;
+		return this.coreProposal.getLabel();
 	}
 
 	@Override
@@ -53,7 +54,7 @@ public class AnnotationAttributeCompletionProposal extends ScoreableProposal {
 
 	@Override
 	public String getDetail() {
-		return this.detail;
+		return this.coreProposal.getDetail();
 	}
 
 	@Override

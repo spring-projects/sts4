@@ -26,12 +26,12 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.QualifiedName;
-import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProposal;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeProposal;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -270,7 +270,8 @@ public class ValueCompletionProcessor implements CompletionProvider {
 			
 			String label = "classpath:" + resource;
 			
-			ICompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits, label, label, null, score--);
+			AnnotationAttributeProposal coreProposal = new AnnotationAttributeProposal(label);
+			ICompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits, coreProposal, null, score--);
 			completions.add(proposal);
 		}
 

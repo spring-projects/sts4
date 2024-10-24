@@ -12,12 +12,12 @@ package org.springframework.ide.vscode.boot.java.conditionalonresource;
 
 import java.nio.file.Paths;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeProposal;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
@@ -26,8 +26,8 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
  */
 public class ConditionalOnResourceCompletionProcessor implements AnnotationAttributeCompletionProvider {
 
-    private Map<String, String> findResources(IJavaProject project) {
-    	Map<String, String> resources = IClasspathUtil.getClasspathResources(project.getClasspath()).stream()
+    private List<AnnotationAttributeProposal> findResources(IJavaProject project) {
+    	List<AnnotationAttributeProposal> resources = IClasspathUtil.getClasspathResources(project.getClasspath()).stream()
                 .distinct()
                 .sorted(new Comparator<String>() {
                     @Override
@@ -37,13 +37,14 @@ public class ConditionalOnResourceCompletionProcessor implements AnnotationAttri
                 })
                 .map(r -> r.replaceAll("\\\\", "/"))
                 .map(r -> "classpath:" + r)
-                .collect(Collectors.toMap(key -> key, value -> value, (u, v) -> u, LinkedHashMap::new));
+                .map(resource -> new AnnotationAttributeProposal(resource))
+                .collect(Collectors.toList());
 
         return resources;
     }
 
 	@Override
-	public Map<String, String> getCompletionCandidates(IJavaProject project, ASTNode node) {
+	public List<AnnotationAttributeProposal> getCompletionCandidates(IJavaProject project, ASTNode node) {
 		return findResources(project);
 	}
 

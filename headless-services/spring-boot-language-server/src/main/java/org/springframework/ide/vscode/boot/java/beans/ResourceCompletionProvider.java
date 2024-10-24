@@ -11,13 +11,13 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProvider;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeProposal;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 
@@ -33,13 +33,14 @@ public class ResourceCompletionProvider implements AnnotationAttributeCompletion
 	}
 	
 	@Override
-	public Map<String, String> getCompletionCandidates(IJavaProject project, ASTNode node) {
+	public List<AnnotationAttributeProposal> getCompletionCandidates(IJavaProject project, ASTNode node) {
 
 		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
 
 		return Arrays.stream(beans).map(bean -> bean.getName())
 				.distinct()
-				.collect(Collectors.toMap(key -> key, value -> value, (u, v) -> u, LinkedHashMap::new));
+				.map(beanName -> new AnnotationAttributeProposal(beanName))
+				.collect(Collectors.toList());
 	}
 
 }

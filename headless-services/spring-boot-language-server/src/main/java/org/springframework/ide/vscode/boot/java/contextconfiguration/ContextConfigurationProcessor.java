@@ -10,11 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.contextconfiguration;
 
-import static org.springframework.ide.vscode.commons.util.StringUtil.camelCaseToHyphens;
-
 import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -23,24 +24,17 @@ import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.openrewrite.yaml.internal.grammar.JsonPathParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProposal;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeProposal;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
-import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.FuzzyMap;
-import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -128,7 +122,8 @@ public class ContextConfigurationProcessor implements CompletionProvider {
 
             String label = "/" + resource;
 
-            ICompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits, label, label, null, score--);
+            AnnotationAttributeProposal coreProposal = new AnnotationAttributeProposal(label);
+            ICompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits, coreProposal, null, score--);
             completions.add(proposal);
         }
 

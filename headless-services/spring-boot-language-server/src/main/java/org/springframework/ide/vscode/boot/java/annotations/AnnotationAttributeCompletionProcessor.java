@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.annotations;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -134,21 +133,22 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 		AnnotationAttributeCompletionProvider completionProvider = this.completionProviders.get(attributeName);
 		if (completionProvider != null) {
 
-			Map<String, String> proposals = completionProvider.getCompletionCandidates(project, node);
-			Map<String, String> filteredProposals = proposals.entrySet().stream()
-					.filter(candidate -> candidate.getKey().toLowerCase().contains(filterPrefix.toLowerCase()))
-					.filter(candidate -> !alreadyMentionedValues.contains(candidate.getKey()))
-					.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (u, v) -> u, LinkedHashMap::new));
+			List<AnnotationAttributeProposal> proposals = completionProvider.getCompletionCandidates(project, node);
+
+			List<AnnotationAttributeProposal> filteredProposals = proposals.stream()
+					.filter(proposal -> proposal.getLabel().toLowerCase().contains(filterPrefix.toLowerCase()))
+					.filter(proposal -> !alreadyMentionedValues.contains(proposal.getLabel()))
+					.collect(Collectors.toList());
+
 			double score = filteredProposals.size();
-			for (Map.Entry<String, String> entry : filteredProposals.entrySet()) {
-				String candidate = entry.getKey();
+			for (AnnotationAttributeProposal candidate : filteredProposals) {
 				DocumentEdits edits = new DocumentEdits(doc, false);
-				edits.replace(startOffset, endOffset, createReplacementText.apply(candidate));
+				edits.replace(startOffset, endOffset, createReplacementText.apply(candidate.getLabel()));
 				
 				AnnotationAttributeCompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits,
-						candidate, entry.getValue(), null, score--);
-				completions.add(proposal);
+						candidate, null, score--);
 
+				completions.add(proposal);
 			}
 		}
 	}

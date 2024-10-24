@@ -76,8 +76,8 @@ public class ConditionalOnBeanCompletionTest {
         indexedBeans = springIndex.getBeansOfProject(project.getElementName());
 
         tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
-        bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);
-        bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);
+        bean1 = new Bean("bean1", "org.example.type1", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);
+        bean2 = new Bean("bean2", "org.example.type2", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);
 
         springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
     }
@@ -89,7 +89,7 @@ public class ConditionalOnBeanCompletionTest {
 
     @Test
     public void testConditionalOnBeanCompletionWithoutQuotesWithoutPrefixWithTypeAttribute() throws Exception {
-        assertCompletions("@ConditionalOnBean(type=<*>)", 2, "@ConditionalOnBean(type=\"type1\"<*>)");
+        assertCompletions("@ConditionalOnBean(type=<*>)", 2, "@ConditionalOnBean(type=\"org.example.type1\"<*>)");
     }
 
     @Test
@@ -99,7 +99,7 @@ public class ConditionalOnBeanCompletionTest {
 
     @Test
     public void testConditionalOnBeanCompletionWithoutQuotesWithPrefixWithTypeAttribute() throws Exception {
-        assertCompletions("@ConditionalOnBean(type=ty<*>)", 2, "@ConditionalOnBean(type=\"type1\"<*>)");
+        assertCompletions("@ConditionalOnBean(type=ty<*>)", 2, "@ConditionalOnBean(type=\"org.example.type1\"<*>)");
     }
 
     @Test
@@ -119,7 +119,7 @@ public class ConditionalOnBeanCompletionTest {
 
     @Test
     public void testConditionalOnBeanCompletionWithoutQuotesWithAttributeTypeAndDefaultSpaces() throws Exception {
-        assertCompletions("@ConditionalOnBean(type = <*>)", 2, "@ConditionalOnBean(type = \"type1\"<*>)");
+        assertCompletions("@ConditionalOnBean(type = <*>)", 2, "@ConditionalOnBean(type = \"org.example.type1\"<*>)");
     }
 
     @Test
@@ -139,7 +139,7 @@ public class ConditionalOnBeanCompletionTest {
 
     @Test
     public void testConditionalOnBeanCompletionWithoutQuotesWithTypeWithoutPrefixInsideArray() throws Exception {
-        assertCompletions("@ConditionalOnBean(type={<*>})", 2, "@ConditionalOnBean(type={\"type1\"<*>})");
+        assertCompletions("@ConditionalOnBean(type={<*>})", 2, "@ConditionalOnBean(type={\"org.example.type1\"<*>})");
     }
 
     @Test
@@ -149,7 +149,7 @@ public class ConditionalOnBeanCompletionTest {
 
     @Test
     public void testConditionalOnBeanCompletionInsideOfArrayBehindExistingElementWithType() throws Exception {
-        assertCompletions("@ConditionalOnBean(type={\"type1\",<*>})", 1, "@ConditionalOnBean(type={\"type1\",\"type2\"<*>})");
+        assertCompletions("@ConditionalOnBean(type={\"org.example.type1\",<*>})", 1, "@ConditionalOnBean(type={\"org.example.type1\",\"org.example.type2\"<*>})");
     }
 
     @Test
@@ -159,12 +159,12 @@ public class ConditionalOnBeanCompletionTest {
 
     @Test
     public void testConditionalOnBeanCompletionInsideOfArrayInFrontOfExistingElementWithType() throws Exception {
-        assertCompletions("@ConditionalOnBean(type={<*>\"type1\"})", 1, "@ConditionalOnBean(type={\"type2\",<*>\"type1\"})");
+        assertCompletions("@ConditionalOnBean(type={<*>\"org.example.type1\"})", 1, "@ConditionalOnBean(type={\"org.example.type2\",<*>\"org.example.type1\"})");
     }
 
     @Test
     public void testConditionalOnBeanCompletionInsideOfArrayBetweenExistingElements() throws Exception {
-        Bean bean3 = new Bean("bean3", "type3", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);
+        Bean bean3 = new Bean("bean3", "org.example.type3", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);
         springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, bean3});
 
         assertCompletions("@ConditionalOnBean(name={\"bean1\",<*>\"bean2\"})", 1, "@ConditionalOnBean(name={\"bean1\",\"bean3\",<*>\"bean2\"})");
