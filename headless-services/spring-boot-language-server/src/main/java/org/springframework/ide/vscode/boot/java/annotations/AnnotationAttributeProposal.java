@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.annotations;
 
+import java.util.Objects;
+
 /**
  * @author Martin Lippert
  */
@@ -45,6 +47,24 @@ public class AnnotationAttributeProposal {
 	
 	public String getFilterText() {
 		return filterText;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(detail, filterText, label);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AnnotationAttributeProposal other = (AnnotationAttributeProposal) obj;
+		return Objects.equals(detail, other.detail) && Objects.equals(filterText, other.filterText)
+				&& Objects.equals(label, other.label);
 	}
 
 }

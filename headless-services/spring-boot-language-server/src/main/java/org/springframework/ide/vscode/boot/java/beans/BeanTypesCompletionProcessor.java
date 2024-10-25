@@ -36,9 +36,15 @@ public class BeanTypesCompletionProcessor implements AnnotationAttributeCompleti
     public List<AnnotationAttributeProposal> getCompletionCandidates(IJavaProject project, ASTNode node) {
         Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
         return Arrays.stream(beans)
-                .map(Bean::getType)
+                .map(bean -> new AnnotationAttributeProposal(getClass(bean.getType()), bean.getType(), bean.getType()))
                 .distinct()
-                .map(beanType -> new AnnotationAttributeProposal(beanType))
                 .collect(Collectors.toList());
+    }
+    
+    private String getClass(String type) {
+    	if (type != null && type.lastIndexOf('.') >= 0) {
+    		return type.substring(type.lastIndexOf('.') + 1);
+    	}
+    	return type;
     }
 }

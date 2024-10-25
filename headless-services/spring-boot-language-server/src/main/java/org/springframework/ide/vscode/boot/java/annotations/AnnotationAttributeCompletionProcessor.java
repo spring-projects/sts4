@@ -136,14 +136,14 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 			List<AnnotationAttributeProposal> proposals = completionProvider.getCompletionCandidates(project, node);
 
 			List<AnnotationAttributeProposal> filteredProposals = proposals.stream()
-					.filter(proposal -> proposal.getLabel().toLowerCase().contains(filterPrefix.toLowerCase()))
-					.filter(proposal -> !alreadyMentionedValues.contains(proposal.getLabel()))
+					.filter(proposal -> proposal.getFilterText().toLowerCase().contains(filterPrefix.toLowerCase()))
+					.filter(proposal -> !alreadyMentionedValues.contains(proposal.getFilterText()))
 					.collect(Collectors.toList());
 
 			double score = filteredProposals.size();
 			for (AnnotationAttributeProposal candidate : filteredProposals) {
 				DocumentEdits edits = new DocumentEdits(doc, false);
-				edits.replace(startOffset, endOffset, createReplacementText.apply(candidate.getLabel()));
+				edits.replace(startOffset, endOffset, createReplacementText.apply(candidate.getFilterText()));
 				
 				AnnotationAttributeCompletionProposal proposal = new AnnotationAttributeCompletionProposal(edits,
 						candidate, null, score--);

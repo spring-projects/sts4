@@ -103,6 +103,11 @@ public class ConditionalOnBeanCompletionTest {
     }
 
     @Test
+    public void testConditionalOnBeanCompletionWithoutQuotesWithComplexPrefixForTypeAttribute() throws Exception {
+        assertCompletions("@ConditionalOnBean(type=org.exam<*>)", 2, "@ConditionalOnBean(type=\"org.example.type1\"<*>)");
+    }
+
+    @Test
     public void testConditionalOnBeanCompletionWithoutQuotesWithPrefixWithoutMatches() throws Exception {
         assertCompletions("@ConditionalOnBean(\"XXX<*>\")", 0, null);
     }
@@ -169,6 +174,20 @@ public class ConditionalOnBeanCompletionTest {
 
         assertCompletions("@ConditionalOnBean(name={\"bean1\",<*>\"bean2\"})", 1, "@ConditionalOnBean(name={\"bean1\",\"bean3\",<*>\"bean2\"})");
     }
+    
+    @Test
+    public void testConditionalOnBeanTypeCompletions() throws Exception {
+        List<CompletionItem> completions = getCompletions("@ConditionalOnBean(type=<*>)");
+        
+        assertEquals(2, completions.size());
+        
+        CompletionItem completionItem = completions.get(0);
+        
+        completionItem = harness.resolveCompletionItem(completionItem);
+        assertEquals("type1", completionItem.getLabel());
+        assertEquals("org.example.type1", completionItem.getDetail());
+        assertEquals("org.example.type1", completionItem.getFilterText());
+    }
 
     private void assertCompletions(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine) throws Exception {
         String editorContent = """
@@ -215,4 +234,25 @@ public class ConditionalOnBeanCompletionTest {
         }
     }
 
+    private List<CompletionItem> getCompletions(String completionLine) throws Exception {
+        String editorContent = """
+				package org.test;
+
+        		import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+                import org.springframework.context.annotation.Bean;
+                import org.springframework.context.annotation.Configuration;
+
+                @Configuration
+                public class TestConditionalOnBeanCompletion {
+				""" +
+                completionLine + "\n" +
+                """
+                @Bean
+                public void method() {
+                }
+                """;
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, editorContent, tempJavaDocUri);
+        return editor.getCompletions();
+    }
 }

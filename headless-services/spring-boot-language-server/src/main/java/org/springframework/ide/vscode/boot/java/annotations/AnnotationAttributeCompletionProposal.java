@@ -33,13 +33,14 @@ public class AnnotationAttributeCompletionProposal extends ScoreableProposal {
 		this.score = score;
 	}
 
-//	public AnnotationAttributeCompletionProposal(DocumentEdits edits, String label, String detail, Renderable documentation, double score) {
-//		this(edits, new AnnotationAttributeProposal(label, detail), documentation, score);
-//	}
-
 	@Override
 	public String getLabel() {
 		return this.coreProposal.getLabel();
+	}
+	
+	@Override
+	public String getFilterText() {
+		return this.coreProposal.getFilterText();
 	}
 
 	@Override
