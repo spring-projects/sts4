@@ -132,6 +132,7 @@ public class ValueCompletionTest {
 	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
+        prepareDefaultIndexData();
 	}
 
     @Test
@@ -153,7 +154,6 @@ public class ValueCompletionTest {
     @Test
     void testEmptyBracketsCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${data.prop2}\"<*>)",
@@ -169,7 +169,6 @@ public class ValueCompletionTest {
     @Test
     void testEmptyBracketsCompletionWithParamName() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(value=<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(value=\"${data.prop2}\"<*>)",
@@ -185,7 +184,6 @@ public class ValueCompletionTest {
     @Test
     void testEmptyBracketsCompletionWithWrongParamName() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(another=<*>)");
-        prepareDefaultIndexData();
         assertPropertyCompletions();
         assertClasspathCompletions();
     }
@@ -193,7 +191,6 @@ public class ValueCompletionTest {
     @Test
     void testOnlyDollarNoQoutesCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value($<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${data.prop2}\"<*>)",
@@ -206,7 +203,6 @@ public class ValueCompletionTest {
     @Test
     void testOnlyDollarNoQoutesWithParamCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(value=$<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(value=\"${data.prop2}\"<*>)",
@@ -219,7 +215,6 @@ public class ValueCompletionTest {
     @Test
     void testOnlyDollarCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"$<*>\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${data.prop2}<*>\")",
@@ -232,7 +227,6 @@ public class ValueCompletionTest {
     @Test
     void testOnlyDollarWithParamCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(value=\"$<*>\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(value=\"${data.prop2}<*>\")",
@@ -245,7 +239,6 @@ public class ValueCompletionTest {
     @Test
     void testDollarWithBracketsCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"${<*>}\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${data.prop2<*>}\")",
@@ -258,7 +251,6 @@ public class ValueCompletionTest {
     @Test
     void testDollarWithBracketsWithParamCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(value=\"${<*>}\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(value=\"${data.prop2<*>}\")",
@@ -271,7 +263,6 @@ public class ValueCompletionTest {
     @Test
     void testEmptyStringLiteralCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"<*>\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${data.prop2}<*>\")",
@@ -287,7 +278,6 @@ public class ValueCompletionTest {
     @Test
     void testPlainPrefixCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(spri<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${spring.prop1}\"<*>)");
@@ -301,7 +291,6 @@ public class ValueCompletionTest {
     @Disabled
     void testComplexPrefixCompletionParamNameCursorRightAfterDot() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(spring.<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${spring.prop1}\"<*>)");
@@ -312,7 +301,6 @@ public class ValueCompletionTest {
     @Test
     void testComplexPrefixCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(spring.pr<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${spring.prop1}\"<*>)");
@@ -323,7 +311,6 @@ public class ValueCompletionTest {
     @Test
     void testPrefixCompletionWithParamName() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(value=sprin<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(value=\"${spring.prop1}\"<*>)");
@@ -348,7 +335,6 @@ public class ValueCompletionTest {
     @Test
     void testComplexPrefixCompletionWithParamName() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(value=spring.pr<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(value=\"${spring.prop1}\"<*>)");
@@ -359,7 +345,6 @@ public class ValueCompletionTest {
     @Test
     void testClasspathPrefixCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(cla<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions();
 
@@ -372,7 +357,6 @@ public class ValueCompletionTest {
     @Test
     void testResourceNameInPrefixCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(root<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions();
 
@@ -383,7 +367,6 @@ public class ValueCompletionTest {
     @Test
     void testComplexResourceNameInPrefixCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(root.md<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions();
 
@@ -394,7 +377,6 @@ public class ValueCompletionTest {
     @Test
     void testComplexResourceNameInPrefixWithinQoutesCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"root.md<*>\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions();
 
@@ -405,7 +387,6 @@ public class ValueCompletionTest {
     @Test
     void testComplexResourceNameInPrefixWithParamNameCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(value=root.md<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions();
 
@@ -416,7 +397,6 @@ public class ValueCompletionTest {
     @Test
     void testComplexResourceNameInPrefixWithinQoutesAndParamNameCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(value=\"root.md<*>\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions();
 
@@ -427,7 +407,6 @@ public class ValueCompletionTest {
     @Test
     void testClasspathPrefixCompletionWithParamName() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(value=cla<*>)");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions();
 
@@ -440,7 +419,6 @@ public class ValueCompletionTest {
     @Test
     void testQoutedPrefixCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"spri<*>\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${spring.prop1}<*>\")");
@@ -451,7 +429,6 @@ public class ValueCompletionTest {
     @Test
     void testComplexPrefixCompletionWithQuotesAndDotRightAfterPrefix() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"spring.<*>\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${spring.prop1}<*>\")");
@@ -462,7 +439,6 @@ public class ValueCompletionTest {
     @Test
     void testComplexPrefixCompletionWithQuotes() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"spring.pr<*>\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"${spring.prop1}<*>\")");
@@ -473,7 +449,6 @@ public class ValueCompletionTest {
     @Test
     void testQuotedClasspathPrefixCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"cla<*>\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions();
 
@@ -486,7 +461,6 @@ public class ValueCompletionTest {
     @Test
     void testRandomSpelExpressionNoCompletion() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"#{<*>}\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"#{${data.prop2}<*>}\")",
@@ -499,7 +473,6 @@ public class ValueCompletionTest {
     @Test
     void testRandomSpelExpressionWithPropertyDollar() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"#{345$<*>}\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"#{345${data.prop2}<*>}\")",
@@ -512,7 +485,6 @@ public class ValueCompletionTest {
     @Test
     void testRandomSpelExpressionWithPropertyDollerWithoutClosindBracket() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"#{345${<*>}\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"#{345${data.prop2}<*>}\")",
@@ -525,7 +497,6 @@ public class ValueCompletionTest {
     @Test
     void testRandomSpelExpressionWithPropertyDollerWithClosingBracket() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"#{345${<*>}}\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"#{345${data.prop2<*>}}\")",
@@ -538,7 +509,6 @@ public class ValueCompletionTest {
     @Test
     void testRandomSpelExpressionWithPropertyPrefixWithoutClosingBracket() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"#{345${spri<*>}\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"#{345${spring.prop1}<*>}\")");
@@ -549,7 +519,6 @@ public class ValueCompletionTest {
     @Test
     void testRandomSpelExpressionWithPropertyPrefixWithClosingBracket() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(\"#{345${spri<*>}}\")");
-        prepareDefaultIndexData();
 
         assertPropertyCompletions(
                 "@Value(\"#{345${spring.prop1<*>}}\")");
@@ -559,7 +528,6 @@ public class ValueCompletionTest {
 
     @Test
     void adHoc() throws Exception {
-        prepareDefaultIndexData();
         Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package org.test;\n" +
                         "\n" +
