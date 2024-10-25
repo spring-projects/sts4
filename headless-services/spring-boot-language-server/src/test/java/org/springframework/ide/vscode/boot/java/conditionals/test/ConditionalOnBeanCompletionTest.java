@@ -8,7 +8,7 @@
  * Contributors:
  *     Broadcom - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.conditionalonbean.test;
+package org.springframework.ide.vscode.boot.java.conditionals.test;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,7 +22,6 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -56,7 +55,6 @@ public class ConditionalOnBeanCompletionTest {
 
     private File directory;
     private IJavaProject project;
-    private Bean[] indexedBeans;
     private String tempJavaDocUri;
     private Bean bean1;
     private Bean bean2;
@@ -72,8 +70,6 @@ public class ConditionalOnBeanCompletionTest {
 
         CompletableFuture<Void> initProject = indexer.waitOperation();
         initProject.get(5, TimeUnit.SECONDS);
-
-        indexedBeans = springIndex.getBeansOfProject(project.getElementName());
 
         tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
         bean1 = new Bean("bean1", "org.example.type1", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);

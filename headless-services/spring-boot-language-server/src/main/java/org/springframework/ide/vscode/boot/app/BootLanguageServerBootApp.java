@@ -49,9 +49,9 @@ import org.springframework.ide.vscode.boot.java.beans.DependsOnDefinitionProvide
 import org.springframework.ide.vscode.boot.java.beans.NamedDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.beans.ResourceDefinitionProvider;
-import org.springframework.ide.vscode.boot.java.conditionalonresource.ConditionalOnResourceDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.conditionals.ConditionalOnBeanDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.conditionals.ConditionalOnResourceDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.copilot.util.ResponseModifier;
-import org.springframework.ide.vscode.boot.java.beans.ConditionalOnBeanDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.DataQueryParameterDefinitionProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;

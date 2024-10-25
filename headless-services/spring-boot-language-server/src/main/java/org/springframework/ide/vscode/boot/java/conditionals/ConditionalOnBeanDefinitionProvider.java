@@ -8,7 +8,7 @@
  * Contributors:
  *     Broadcom - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.beans;
+package org.springframework.ide.vscode.boot.java.conditionals;
 
 import java.util.Arrays;
 import java.util.Collections;

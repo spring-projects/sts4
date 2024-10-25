@@ -32,7 +32,7 @@ import org.springframework.ide.vscode.boot.java.beans.NamedCompletionProvider;
 import org.springframework.ide.vscode.boot.java.beans.ProfileCompletionProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProvider;
 import org.springframework.ide.vscode.boot.java.beans.ResourceCompletionProvider;
-import org.springframework.ide.vscode.boot.java.conditionalonresource.ConditionalOnResourceCompletionProcessor;
+import org.springframework.ide.vscode.boot.java.conditionals.ConditionalOnResourceCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.contextconfiguration.ContextConfigurationProcessor;
 import org.springframework.ide.vscode.boot.java.cron.CronExpressionCompletionProvider;
 import org.springframework.ide.vscode.boot.java.data.DataRepositoryCompletionProcessor;

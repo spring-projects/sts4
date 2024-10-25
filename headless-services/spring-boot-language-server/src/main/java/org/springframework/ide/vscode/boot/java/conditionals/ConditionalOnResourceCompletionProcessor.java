@@ -8,7 +8,7 @@
  * Contributors:
  *     Broadcom, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.conditionalonresource;
+package org.springframework.ide.vscode.boot.java.conditionals;
 
 import java.nio.file.Paths;
 import java.util.Comparator;

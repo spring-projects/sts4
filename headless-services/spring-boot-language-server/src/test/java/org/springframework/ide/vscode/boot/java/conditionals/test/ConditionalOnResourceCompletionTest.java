@@ -8,7 +8,7 @@
  * Contributors:
  *     Broadcom, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.conditionalonresource.test;
+package org.springframework.ide.vscode.boot.java.conditionals.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;

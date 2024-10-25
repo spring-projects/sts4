@@ -8,7 +8,7 @@
  * Contributors:
  *     Broadcom - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.conditionalonbean.test;
+package org.springframework.ide.vscode.boot.java.conditionals.test;
 
 import static org.junit.Assert.assertEquals;
 
