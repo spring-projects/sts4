@@ -146,7 +146,7 @@ jobs:
       - name: Upload Win Zip to S3 for Signing via JFrog
         run: |
           aws s3 rm s3://$AWS_S3_BUCKET/sts4-distro-win-sign/${{ inputs.eclipse_profile }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --exclude "*/*"
-          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ inputs.eclipse_profile }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --exclude "*/*" --no-progress
+          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://$AWS_S3_BUCKET/sts4-distro-win-sign/${{ inputs.eclipse_profile }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --exclude "*/*" --no-progress
     outputs:
       id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
       dist_path: ${{ steps.s3-paths.outputs.dist_path }}
