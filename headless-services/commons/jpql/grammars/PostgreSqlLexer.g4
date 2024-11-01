@@ -35,7 +35,7 @@ https://github.com/tunnelvisionlabs/antlr4-grammar-postgresql/blob/master/src/co
 
 lexer grammar PostgreSqlLexer;
 /* Reference:
- * http://www.postgresql.org/docs/9.3/static/sql-syntax-lexical.html
+ * https://www.postgresql.org/docs/9.3/static/sql-syntax-lexical.html
  */
 
 options {
@@ -1592,7 +1592,7 @@ UnterminatedBlockComment:
 
 //
 
-// http://www.postgresql.org/docs/9.3/static/app-psql.html
+// https://www.postgresql.org/docs/9.3/static/app-psql.html
 
 MetaCommand: '\\' (~ [\r\n\\"] | '"' ~ [\r\n"]* '"')* ('"' ~ [\r\n"]*)?;
 
