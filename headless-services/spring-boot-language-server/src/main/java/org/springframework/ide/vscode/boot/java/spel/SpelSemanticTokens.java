@@ -10,7 +10,66 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.spel;
 
-import static org.springframework.ide.vscode.parser.spel.SpelLexer.*;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.AND;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.ASSIGN;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.BACKTICK;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.BEAN_REF;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.COLON;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.COMMA;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.DEC;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.DIV;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.DOT;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.DOUBLE_QUOTED_STRING;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.ELVIS;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.EQ;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.EQ_KEYWORD;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.FACTORY_BEAN_REF;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.FALSE;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.GE;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.GE_KEYWORD;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.GT;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.GT_KEYWORD;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.HASH;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.IDENTIFIER;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.INC;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.INTEGER_LITERAL;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.LCURLY;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.LE;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.LE_KEYWORD;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.LPAREN;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.LSQUARE;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.LT;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.LT_KEYWORD;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.MATCHES;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.MINUS;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.MOD;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.NE;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.NEW;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.NE_KEYWORD;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.NOT;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.NULL;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.OR;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.PLUS;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.POWER;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.PROJECT;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.PROPERTY_PLACE_HOLDER;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.QMARK;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.RCURLY;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.REAL_LITERAL;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.RPAREN;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.RSQUARE;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.SAFE_NAVI;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.SELECT;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.SELECT_FIRST;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.SELECT_LAST;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.SEMICOLON;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.SINGLE_QUOTED_STRING;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.STAR;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.STRING_LITERAL;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.SYMBOLIC_AND;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.SYMBOLIC_OR;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.T;
+import static org.springframework.ide.vscode.parser.spel.SpelLexer.TRUE;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -38,6 +97,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
+import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.parser.spel.SpelLexer;
 import org.springframework.ide.vscode.parser.spel.SpelParser;
 import org.springframework.ide.vscode.parser.spel.SpelParser.BeanReferenceContext;
@@ -71,7 +131,7 @@ public class SpelSemanticTokens implements SemanticTokensDataProvider {
 	}
 
 	@Override
-	public List<SemanticTokenData> computeTokens(String text, int initialOffset) {
+	public List<SemanticTokenData> computeTokens(String text) {
 		SpelLexer lexer = new SpelLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		SpelParser parser = new SpelParser(antlrTokens);
@@ -158,7 +218,7 @@ public class SpelSemanticTokens implements SemanticTokensDataProvider {
 					semantics.put(node.getSymbol(), "string");
 					break;
 				case PROPERTY_PLACE_HOLDER:
-					tokens.addAll(computeTokensFromPropertyPlaceHolderNode(node, initialOffset));
+					tokens.addAll(computeTokensFromPropertyPlaceHolderNode(node));
 					break;
 				}
 			}
@@ -215,7 +275,7 @@ public class SpelSemanticTokens implements SemanticTokensDataProvider {
 				semantics.remove(ctx.INTEGER_LITERAL().getSymbol());
 				semantics.remove(ctx.RSQUARE().getSymbol());
 				
-				int start = ctx.getStart().getStartIndex() + initialOffset;
+				int start = ctx.getStart().getStartIndex();
 				int end = start + ctx.getText().length(); 
 				tokens.add(new SemanticTokenData(start, end, "parameter", new String[0]));
 			}
@@ -260,8 +320,8 @@ public class SpelSemanticTokens implements SemanticTokensDataProvider {
 		parser.spelExpr();
 
 		tokens.addAll(semantics.entrySet().stream()
-				.map(e -> new SemanticTokenData(e.getKey().getStartIndex() + initialOffset,
-						e.getKey().getStartIndex() + e.getKey().getText().length() + initialOffset, e.getValue(),
+				.map(e -> new SemanticTokenData(e.getKey().getStartIndex(),
+						e.getKey().getStartIndex() + e.getKey().getText().length(), e.getValue(),
 						new String[0]))
 				.collect(Collectors.toList()));
 		
@@ -270,18 +330,19 @@ public class SpelSemanticTokens implements SemanticTokensDataProvider {
 		return tokens;
 	}
 	
-	private Collection<? extends SemanticTokenData> computeTokensFromPropertyPlaceHolderNode(TerminalNode node,
-			int initialOffset) {
+	private Collection<? extends SemanticTokenData> computeTokensFromPropertyPlaceHolderNode(TerminalNode node) {
 		List<SemanticTokenData> placeHolderTokens = new ArrayList<>();
 
-		int startPosition = initialOffset + node.getSymbol().getStartIndex();
+		int startPosition = node.getSymbol().getStartIndex();
 		int placeHolderStartPosition = startPosition + 2;
 		int endPosition = startPosition + node.getText().length();
 		int placeHolderEndPosition = endPosition - 1;
 		// '${' operator
 		placeHolderTokens.add(new SemanticTokenData(startPosition, placeHolderStartPosition, "operator", new String[0]));
 		// Property Place Holder contents
-		placeHolderTokens.addAll(propertyPlaceHolderSemanticTokens.computeTokens(node.getText().substring(2, node.getText().length() - 1), placeHolderStartPosition));		
+		propertyPlaceHolderSemanticTokens.computeTokens(node.getText().substring(2, node.getText().length() - 1))
+				.stream().map(td -> new SemanticTokenData(new Region(td.range().getOffset() + placeHolderStartPosition, td.range().getLength()), td.type(), td.modifiers()))
+				.forEach(placeHolderTokens::add);
 		// '}' operator
 		placeHolderTokens.add(new SemanticTokenData(placeHolderEndPosition, endPosition, "operator", new String[0]));
 		return placeHolderTokens;

@@ -10,14 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.spel;
 
+import java.util.function.Function;
+
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.AntlrReconciler;
+import org.springframework.ide.vscode.boot.java.embadded.lang.AntlrReconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
+import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.parser.placeholder.PropertyPlaceHolderLexer;
 import org.springframework.ide.vscode.parser.placeholder.PropertyPlaceHolderParser;
 import org.springframework.ide.vscode.parser.spel.SpelLexer;
@@ -40,25 +44,27 @@ public class SpelReconciler extends AntlrReconciler {
 	}
 
 	@Override
-	public void reconcile(String text, int startPosition, IProblemCollector problemCollector) {
+	public void reconcile(String text, Function<IRegion, IRegion> mapper, IProblemCollector problemCollector) {
 		if (!enabled) {
 			return;
 		}
-		super.reconcile(text, startPosition, problemCollector);
+		super.reconcile(text, mapper, problemCollector);
 	}
 
 	@Override
-	protected Parser createParser(String text, int startPosition, IProblemCollector problemCollector) throws Exception {
-		Parser parser = super.createParser(text, startPosition, problemCollector);
+	protected Parser createParser(String text, Function<IRegion, IRegion> mapper, IProblemCollector problemCollector) throws Exception {
+		Parser parser = super.createParser(text, mapper, problemCollector);
 		
 		// Reconcile embedded SPEL
 		parser.addParseListener(new ParseTreeListener() {
 			
 			private void processTerminal(TerminalNode node) {
 				if (node.getSymbol().getType() == SpelLexer.PROPERTY_PLACE_HOLDER) {
-					int placeHolderStartPosition = startPosition + node.getSymbol().getStartIndex() + 2;
 					String content = node.getSymbol().getText().substring(2, node.getSymbol().getText().length() - 1);
-					propertyHolderReconciler.reconcile(content, placeHolderStartPosition, problemCollector);
+					propertyHolderReconciler.reconcile(content, r -> {
+						IRegion n = mapper.apply(r);
+						return new Region(n.getOffset() + node.getSymbol().getStartIndex() + 2, n.getLength());
+					}, problemCollector);
 				}
 			}
 

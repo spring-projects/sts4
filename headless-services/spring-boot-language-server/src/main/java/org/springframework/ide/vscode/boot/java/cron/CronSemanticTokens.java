@@ -58,7 +58,7 @@ public class CronSemanticTokens implements SemanticTokensDataProvider {
 	}
 
 	@Override
-	public List<SemanticTokenData> computeTokens(String text, int initialOffset) {
+	public List<SemanticTokenData> computeTokens(String text) {
 		CronLexer lexer = new CronLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		CronParser parser = new CronParser(antlrTokens);
@@ -157,8 +157,8 @@ public class CronSemanticTokens implements SemanticTokensDataProvider {
 		parser.cronExpression();
 
 		tokens.addAll(semantics.entrySet().stream()
-				.map(e -> new SemanticTokenData(e.getKey().getStartIndex() + initialOffset,
-						e.getKey().getStartIndex() + e.getKey().getText().length() + initialOffset, e.getValue(),
+				.map(e -> new SemanticTokenData(e.getKey().getStartIndex(),
+						e.getKey().getStartIndex() + e.getKey().getText().length(), e.getValue(),
 						new String[0]))
 				.collect(Collectors.toList()));
 		

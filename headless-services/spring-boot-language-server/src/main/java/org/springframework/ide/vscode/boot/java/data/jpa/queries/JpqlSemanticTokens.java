@@ -35,6 +35,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
+import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.parser.jpql.JpqlBaseListener;
 import org.springframework.ide.vscode.parser.jpql.JpqlLexer;
 import org.springframework.ide.vscode.parser.jpql.JpqlParser;
@@ -77,7 +78,7 @@ public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 	}
 	
 	@Override
-	public List<SemanticTokenData> computeTokens(String text, int initialOffset) {
+	public List<SemanticTokenData> computeTokens(String text) {
 		JpqlLexer lexer = new JpqlLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		JpqlParser parser = new JpqlParser(antlrTokens);
@@ -114,7 +115,7 @@ public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 				case JpqlParser.WS:
 					break;
 				case JpqlParser.SPEL:
-					tokens.addAll(computeTokensFromSpelNode(node, initialOffset, optSpelTokens));
+					tokens.addAll(computeTokensFromSpelNode(node, 0, optSpelTokens));
 					break;
 				default:
 					if (JpqlParser.WS < type && type <= JpqlParser.WHERE) {
@@ -201,8 +202,8 @@ public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 		parser.ql_statement();
 		
 		semantics.entrySet().stream()
-				.map(e -> new SemanticTokenData(e.getKey().getStartIndex() + initialOffset,
-						e.getKey().getStartIndex() + e.getKey().getText().length() + initialOffset, e.getValue(),
+				.map(e -> new SemanticTokenData(e.getKey().getStartIndex(),
+						e.getKey().getStartIndex() + e.getKey().getText().length(), e.getValue(),
 						new String[0]))
 				.forEach(tokens::add);
 		
@@ -222,10 +223,14 @@ public class JpqlSemanticTokens implements SemanticTokensDataProvider {
 		spelTokens.add(new SemanticTokenData(startPosition, spelStartPosition, "operator", new String[0]));
 		// SPEL contents
 		optSpelTokens.ifPresentOrElse(
-				spelTokenProvider -> spelTokens
-						.addAll(spelTokenProvider.computeTokens(node.getText().substring(2, node.getText().length() - 1), spelStartPosition)),
-				() -> spelTokens.add(new SemanticTokenData(spelStartPosition, spelEndPosition, "string", new String[0])));
-		
+				spelTokenProvider -> spelTokens.addAll(spelTokenProvider
+						.computeTokens(node.getText().substring(2, node.getText().length() - 1)).stream()
+						.map(td -> new SemanticTokenData(new Region(td.range().getOffset() + spelStartPosition, td.range().getLength()),
+								td.type(), td.modifiers()))
+						.toList()),
+				() -> spelTokens
+						.add(new SemanticTokenData(spelStartPosition, spelEndPosition, "string", new String[0])));
+
 		// '}' operator
 		spelTokens.add(new SemanticTokenData(spelEndPosition, endPosition, "operator", new String[0]));
 		return spelTokens;

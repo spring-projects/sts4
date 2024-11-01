@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.Sem
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensHandler;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.ParseResults;
@@ -76,7 +77,9 @@ public class QueryPropertiesSemanticTokensHandler implements SemanticTokensHandl
 				for (PropertiesAst.KeyValuePair node : result.ast.getPropertyValuePairs()) {
 					Value value = node.getValue();
 					if (value != null) {
-						data.addAll(tokensProvider.computeTokens(value.decode(), value.getOffset()));
+						tokensProvider.computeTokens(value.decode()).stream()
+								.map(td -> new SemanticTokenData(new Region(td.range().getOffset() + value.getOffset(), td.range().getLength()), td.type(), td.modifiers()))
+								.forEach(data::add);
 					}
 				}
 				return data;

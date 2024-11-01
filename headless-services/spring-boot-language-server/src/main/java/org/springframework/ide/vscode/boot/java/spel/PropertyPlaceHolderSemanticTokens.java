@@ -32,7 +32,7 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.AntlrUtils;
+import org.springframework.ide.vscode.boot.java.embadded.lang.AntlrUtils;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
 import org.springframework.ide.vscode.parser.placeholder.PropertyPlaceHolderBaseListener;
@@ -56,7 +56,7 @@ public class PropertyPlaceHolderSemanticTokens implements SemanticTokensDataProv
 	}
 
 	@Override
-	public List<SemanticTokenData> computeTokens(String text, int initialOffset) {
+	public List<SemanticTokenData> computeTokens(String text) {
 		PropertyPlaceHolderLexer lexer = new PropertyPlaceHolderLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		PropertyPlaceHolderParser parser = new PropertyPlaceHolderParser(antlrTokens);
@@ -74,7 +74,7 @@ public class PropertyPlaceHolderSemanticTokens implements SemanticTokensDataProv
 			public void exitKey(KeyContext ctx) {
 				// Remove all children nodes semantics as they will be replaced by a single token spanning multiple AST nodes
 				AntlrUtils.getAllLeafs(ctx).forEach(semantics::remove);
-				int start = ctx.getStart().getStartIndex() + initialOffset;
+				int start = ctx.getStart().getStartIndex();
 				int end = start + ctx.getText().length();
 				tokens.add(new SemanticTokenData(start, end, "property", new String[0]));
 			}
@@ -87,7 +87,7 @@ public class PropertyPlaceHolderSemanticTokens implements SemanticTokensDataProv
 				}
 				if (ctx.value() != null) {
 					ValueContext valueCtx = ctx.value();
-					int start = valueCtx.getStart().getStartIndex() + initialOffset;
+					int start = valueCtx.getStart().getStartIndex();
 					int end = start + valueCtx.getText().length();
 					tokens.add(new SemanticTokenData(start, end, "string", new String[0]));
 				}
@@ -148,8 +148,8 @@ public class PropertyPlaceHolderSemanticTokens implements SemanticTokensDataProv
 		parser.start();
 
 		tokens.addAll(semantics.entrySet().stream()
-				.map(e -> new SemanticTokenData(e.getKey().getStartIndex() + initialOffset,
-						e.getKey().getStartIndex() + e.getKey().getText().length() + initialOffset, e.getValue(),
+				.map(e -> new SemanticTokenData(e.getKey().getStartIndex(),
+						e.getKey().getStartIndex() + e.getKey().getText().length(), e.getValue(),
 						new String[0]))
 				.collect(Collectors.toList()));
 		

@@ -38,8 +38,8 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLanguageSnippet;
 import org.springframework.ide.vscode.boot.java.spel.AnnotationParamSpelExtractor;
-import org.springframework.ide.vscode.boot.java.spel.AnnotationParamSpelExtractor.Snippet;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -47,6 +47,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -99,7 +100,7 @@ public class CopilotCodeLensProvider implements CodeLensProvider {
 			public boolean visit(SingleMemberAnnotation node) {
 				Arrays.stream(spelExtractors).map(e -> e.getSpelRegion(node)).filter(o -> o.isPresent())
 						.map(o -> o.get()).forEach(snippet -> {
-							String additionalContext = parseSpelAndFetchContext(cu, snippet.text());
+							String additionalContext = parseSpelAndFetchContext(cu, snippet.getText());
 							provideCodeLensForSpelExpression(cancelToken, node, document, snippet, additionalContext, resultAccumulator);
 						});
 
@@ -119,7 +120,7 @@ public class CopilotCodeLensProvider implements CodeLensProvider {
 
 				Arrays.stream(spelExtractors).map(e -> e.getSpelRegion(node)).filter(o -> o.isPresent())
 						.map(o -> o.get()).forEach(snippet -> {
-							String additionalContext = parseSpelAndFetchContext(cu, snippet.text());
+							String additionalContext = parseSpelAndFetchContext(cu, snippet.getText());
 							provideCodeLensForSpelExpression(cancelToken, node, document, snippet, additionalContext, resultAccumulator);
 						});
 
@@ -154,7 +155,7 @@ public class CopilotCodeLensProvider implements CodeLensProvider {
 	}
 
 	protected void provideCodeLensForSpelExpression(CancelChecker cancelToken, Annotation node, TextDocument document,
-			Snippet snippet, String additionalContext, List<CodeLens> resultAccumulator) {
+			EmbeddedLanguageSnippet snippet, String additionalContext, List<CodeLens> resultAccumulator) {
 		cancelToken.checkCanceled();
 
 		if (snippet != null) {
@@ -167,12 +168,13 @@ public class CopilotCodeLensProvider implements CodeLensProvider {
 								""",additionalContext) : "";
 
 				CodeLens codeLens = new CodeLens();
-				codeLens.setRange(document.toRange(snippet.offset(), snippet.text().length()));
+				IRegion totalRange = snippet.getTotalRange();
+				codeLens.setRange(document.toRange(totalRange.getStart(), totalRange.getLength()));
 
 				Command cmd = new Command();
 				cmd.setTitle(QueryType.SPEL.getTitle());
 				cmd.setCommand(CMD);
-				cmd.setArguments(ImmutableList.of(QueryType.SPEL.getPrompt() + snippet.text() + "\n\n" + context));
+				cmd.setArguments(ImmutableList.of(QueryType.SPEL.getPrompt() + snippet.getText() + "\n\n" + context));
 				codeLens.setCommand(cmd);
 
 				resultAccumulator.add(codeLens);
@@ -235,7 +237,7 @@ public class CopilotCodeLensProvider implements CodeLensProvider {
 
 	private List<SemanticTokenData> parseSpelExpression(String spelText) {
 		try {
-			return spelSemanticTokens.computeTokens(spelText, 0);
+			return spelSemanticTokens.computeTokens(spelText);
 		} catch (Exception e) {
 			logger.error("Error computing tokens: " + e.getMessage());
 			return Collections.emptyList();
@@ -244,7 +246,7 @@ public class CopilotCodeLensProvider implements CodeLensProvider {
 
 	private static Set<String> extractMethodNames(List<SemanticTokenData> tokens, String spelText) {
 		return tokens.stream().filter(token -> "method".equals(token.type()))
-				.map(token -> spelText.substring(token.start(), token.end())).collect(Collectors.toSet());
+				.map(token -> spelText.substring(token.range().getStart(), token.range().getEnd())).collect(Collectors.toSet());
 	}
 
 	private List<String> collectMethodContexts(Set<String> methodNames, CompilationUnit cu) {

@@ -32,6 +32,7 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.springframework.ide.vscode.boot.java.embadded.lang.AntlrUtils;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
@@ -75,7 +76,7 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 	}
 
 	@Override
-	public List<SemanticTokenData> computeTokens(String text, int initialOffset) {
+	public List<SemanticTokenData> computeTokens(String text) {
 		HqlLexer lexer = new HqlLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		HqlParser parser = new HqlParser(antlrTokens);		
@@ -109,7 +110,7 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 				case HqlParser.WS:
 					break;
 				case HqlParser.SPEL:
-					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, initialOffset, optSpelTokens));
+					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, 0, optSpelTokens));
 					break;
 				default:
 					if (HqlParser.WS < type && type <= HqlParser.YEAR) {
@@ -132,7 +133,7 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 			
 			@Override
 			public void exitInstantiationTarget(InstantiationTargetContext ctx) {
-				int offset = initialOffset + ctx.getStart().getStartIndex();
+				int offset = ctx.getStart().getStartIndex();
 				int length = ctx.getText().length();
 				tokens.add(new SemanticTokenData(offset, offset + length , "method", new String[0]));
 				AntlrUtils.getAllLeafs(ctx).forEach(semantics::remove);
@@ -189,8 +190,8 @@ public class HqlSemanticTokens implements SemanticTokensDataProvider {
 		parser.ql_statement();
 		
 		semantics.entrySet().stream()
-				.map(e -> new SemanticTokenData(e.getKey().getStartIndex() + initialOffset,
-						e.getKey().getStartIndex() + e.getKey().getText().length() + initialOffset, e.getValue(),
+				.map(e -> new SemanticTokenData(e.getKey().getStartIndex(),
+						e.getKey().getStartIndex() + e.getKey().getText().length(), e.getValue(),
 						new String[0]))
 				.forEach(tokens::add);
 		

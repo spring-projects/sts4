@@ -32,7 +32,7 @@ public class MySqlSemanticTokensTest {
 	
 	@Test
 	void simple() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * from Document document WHERE document.id=fn_module_candidates()", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * from Document document WHERE document.id=fn_module_candidates()");
 		assertThat(tokens.size()).isEqualTo(13);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "operator", new String[0]));
@@ -52,7 +52,7 @@ public class MySqlSemanticTokensTest {
 	
 	@Test
 	void parametersInQuery() {
-		List<SemanticTokenData> tokens = provider.computeTokens("DELETE FROM component_document WHERE item_document_id = :itemDocumentId", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("DELETE FROM component_document WHERE item_document_id = :itemDocumentId");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 11, "keyword", new String[0]));
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(12, 30, "variable", new String[0]));
@@ -67,7 +67,7 @@ public class MySqlSemanticTokensTest {
 	
 	@Test
 	void spelInQuery() {
-		List<SemanticTokenData> tokens = provider.computeTokens("DELETE FROM component_document WHERE item_document_id = :#{someBean}", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("DELETE FROM component_document WHERE item_document_id = :#{someBean}");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 11, "keyword", new String[0]));
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(12, 30, "variable", new String[0]));
@@ -84,7 +84,7 @@ public class MySqlSemanticTokensTest {
 	
 	@Test
 	void complexSpelInQuery() {
-		List<SemanticTokenData> tokens = provider.computeTokens("DELETE FROM component_document WHERE item_document_id = :#{someBean.someProperty != null ? someBean.someProperty : 'default'}", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("DELETE FROM component_document WHERE item_document_id = :#{someBean.someProperty != null ? someBean.someProperty : 'default'}");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 11, "keyword", new String[0]));
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(12, 30, "variable", new String[0]));

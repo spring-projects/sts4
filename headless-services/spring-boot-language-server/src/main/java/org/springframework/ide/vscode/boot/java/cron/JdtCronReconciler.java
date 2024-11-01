@@ -15,7 +15,7 @@ import java.net.URI;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedExpression;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLanguageSnippet;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -46,9 +46,9 @@ public class JdtCronReconciler implements JdtAstReconciler {
 		return new ASTVisitor() {
 			@Override
 			public boolean visit(NormalAnnotation node) {
-				EmbeddedExpression e = JdtCronVisitorUtils.extractCron(node);
+				EmbeddedLanguageSnippet e = JdtCronVisitorUtils.extractCron(node);
 				if (e != null) {
-					cronReconciler.reconcile(e.text(), e.offset(), problemCollector);
+					cronReconciler.reconcile(e.getText(), e::toSingleJavaRange, problemCollector);
 				}
 				return super.visit(node);
 			}

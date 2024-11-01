@@ -33,6 +33,7 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.springframework.ide.vscode.boot.java.embadded.lang.AntlrUtils;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
@@ -72,7 +73,7 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 	}
 
 	@Override
-	public List<SemanticTokenData> computeTokens(String text, int initialOffset) {
+	public List<SemanticTokenData> computeTokens(String text) {
 		MySqlLexer lexer = new MySqlLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		MySqlParser parser = new MySqlParser(antlrTokens);
@@ -90,7 +91,7 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 				int type = node.getSymbol().getType();
 				switch (type) {
 				case MySqlParser.SPEL:
-					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, initialOffset, optSpelTokens));
+					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, 0, optSpelTokens));
 					break;
 				case MySqlParser.ID:
 					semantics.put(node.getSymbol(), "variable");
@@ -255,17 +256,17 @@ public class MySqlSemanticTokens implements SemanticTokensDataProvider {
 					if (e.getKey().getType() == MySqlLexer.DOT_ID) {
 						return Stream.of(
 								// the prefix '.' is an operator
-								new SemanticTokenData(startIndex + initialOffset,
-										startIndex + 1 + initialOffset, "operator",
+								new SemanticTokenData(startIndex,
+										startIndex + 1, "operator",
 										new String[0]),
 								// the rest whatever it was meant to be initially
-								new SemanticTokenData(startIndex + 1 + initialOffset,
-										startIndex + e.getKey().getText().length() + initialOffset, e.getValue(),
+								new SemanticTokenData(startIndex + 1,
+										startIndex + e.getKey().getText().length(), e.getValue(),
 										new String[0])
 						);
 					} else {
-						return Stream.of(new SemanticTokenData(startIndex + initialOffset,
-								startIndex + e.getKey().getText().length() + initialOffset, e.getValue(),
+						return Stream.of(new SemanticTokenData(startIndex,
+								startIndex + e.getKey().getText().length(), e.getValue(),
 								new String[0]));
 					}
 				})

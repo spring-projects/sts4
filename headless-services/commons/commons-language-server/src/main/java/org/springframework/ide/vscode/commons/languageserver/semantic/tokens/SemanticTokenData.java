@@ -13,19 +13,25 @@ package org.springframework.ide.vscode.commons.languageserver.semantic.tokens;
 import java.util.Arrays;
 import java.util.Objects;
 
+import org.springframework.ide.vscode.commons.util.text.IRegion;
+import org.springframework.ide.vscode.commons.util.text.Region;
+
 public record SemanticTokenData(
-		int start,
-		int end,
+		IRegion range,
 		String type,
 		String[] modifiers
 	) implements Comparable<SemanticTokenData> {
+	
+	public SemanticTokenData(int start, int end, String type, String[] modifiers) {
+		this(new Region(start, end -start), type, modifiers);
+	}
 
 	@Override
 	public int compareTo(SemanticTokenData o) {
-		if (start == o.start) {
-			return end - o.end;
+		if (range.getOffset() == o.range().getOffset()) {
+			return range.getLength() - o.range().getLength();
 		}
-		return start - o.start;
+		return range.getOffset() - o.range().getOffset();
 	}
 
 	@Override
@@ -33,7 +39,7 @@ public record SemanticTokenData(
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + Arrays.hashCode(modifiers);
-		result = prime * result + Objects.hash(end, start, type);
+		result = prime * result + Objects.hash(range, type);
 		return result;
 	}
 
@@ -46,8 +52,16 @@ public record SemanticTokenData(
 		if (getClass() != obj.getClass())
 			return false;
 		SemanticTokenData other = (SemanticTokenData) obj;
-		return end == other.end && Arrays.equals(modifiers, other.modifiers) && start == other.start
+		return range.getLength() == other.range.getLength() && Arrays.equals(modifiers, other.modifiers) && range.getOffset() == other.range().getOffset()
 				&& Objects.equals(type, other.type);
+	}
+	
+	public int getStart() {
+		return range.getStart();
+	}
+	
+	public int getEnd() {
+		return range.getEnd();
 	}
 	
 }

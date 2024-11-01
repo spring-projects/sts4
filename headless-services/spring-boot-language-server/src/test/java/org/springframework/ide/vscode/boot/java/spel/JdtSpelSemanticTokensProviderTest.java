@@ -81,39 +81,39 @@ public class JdtSpelSemanticTokensProviderTest {
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(119, 122, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("new");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("new");
         
         token = tokens.get(1);
         assertThat(token).isEqualTo(new SemanticTokenData(123, 129, "method", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("String");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("String");
         
         token = tokens.get(2);
         assertThat(token).isEqualTo(new SemanticTokenData(129, 130, "operator", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("(");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("(");
         
         token = tokens.get(3);
         assertThat(token).isEqualTo(new SemanticTokenData(130, 143, "string", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("'hello world'");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("'hello world'");
 
         token = tokens.get(4);
         assertThat(token).isEqualTo(new SemanticTokenData(143, 144, "operator", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo(")");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo(")");
 
         token = tokens.get(5);
         assertThat(token).isEqualTo(new SemanticTokenData(144, 145, "operator", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo(".");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo(".");
 
         token = tokens.get(6);
         assertThat(token).isEqualTo(new SemanticTokenData(145, 156, "method", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("toUpperCase");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("toUpperCase");
 
         token = tokens.get(7);
         assertThat(token).isEqualTo(new SemanticTokenData(156, 157, "operator", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("(");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("(");
 
         token = tokens.get(8);
         assertThat(token).isEqualTo(new SemanticTokenData(157, 158, "operator", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo(")");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo(")");
 
 	}
  
@@ -142,16 +142,16 @@ public class JdtSpelSemanticTokensProviderTest {
         assertThat(tokens.size()).isEqualTo(3);
         
         SemanticTokenData token = tokens.get(0);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("'invalid alphabetic string #$1'");
         assertThat(token).isEqualTo(new SemanticTokenData(113, 144, "string", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("'invalid alphabetic string #$1'");
         
         token = tokens.get(1);
         assertThat(token).isEqualTo(new SemanticTokenData(145, 152, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("matches");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("matches");
         
         token = tokens.get(2);
         assertThat(token).isEqualTo(new SemanticTokenData(153, 166, "string", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("'[a-zA-Z\\s]+'");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("'[a-zA-Z\\s]+'");
         
 	}
 	
@@ -182,15 +182,108 @@ public class JdtSpelSemanticTokensProviderTest {
 		
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(121, 125, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("demo");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("demo");
         
         token = tokens.get(1);
         assertThat(token).isEqualTo(new SemanticTokenData(125, 126, "operator", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo(".");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo(".");
         
         token = tokens.get(2);
         assertThat(token).isEqualTo(new SemanticTokenData(126, 130, "property", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("cron");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("cron");
+	}
+	
+	@Test
+	void concatenatedString() throws Exception {
+		String source = """
+		package my.package
+		
+		import org.springframework.beans.factory.annotation.Value;
+		
+		public class Owner {
+
+			@Value("#{'inval" + "id alphabetic s" + "tring #$1' mat" + "ches '[a-z" + "A-Z\\s]+' }")
+			String s;
+			
+		}
+		""";
+        
+        String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/OwnerRepository.java").toUri().toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "OwnerRepository.java", jp);
+        
+        assertThat(cu).isNotNull();
+        
+        List<SemanticTokenData> tokens = computeTokens(cu);
+        
+        assertThat(tokens.size()).isEqualTo(7);
+      //id alphabetic string #$1'
+        SemanticTokenData token = tokens.get(0);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("'inval"); 
+        assertThat(token).isEqualTo(new SemanticTokenData(113, 119, "string", new String[0]));
+        
+        token = tokens.get(1);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("id alphabetic s"); 
+        assertThat(token).isEqualTo(new SemanticTokenData(124, 139, "string", new String[0]));
+
+        token = tokens.get(2);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("tring #$1'"); 
+        assertThat(token).isEqualTo(new SemanticTokenData(144, 154, "string", new String[0]));
+
+        token = tokens.get(3);
+        assertThat(token).isEqualTo(new SemanticTokenData(155, 158, "keyword", new String[0]));
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("mat");
+        
+        token = tokens.get(4);
+        assertThat(token).isEqualTo(new SemanticTokenData(163, 167, "keyword", new String[0]));
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("ches");
+
+        token = tokens.get(5);
+        assertThat(token).isEqualTo(new SemanticTokenData(168, 173, "string", new String[0]));
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("'[a-z");
+        
+        token = tokens.get(6);
+        assertThat(token).isEqualTo(new SemanticTokenData(178, 186, "string", new String[0]));
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("A-Z\\s]+'");
+	}
+
+	@Test
+	void textBlock() throws Exception {
+		String source = """
+		package my.package
+		
+		import org.springframework.beans.factory.annotation.Value;
+		
+		public class Owner {
+
+			@Value(\"""
+				#{'invalid alphabetic string #$1' matches '[a-zA-Z\\s]+' }
+				\""")
+			String s;
+			
+		}
+		""";
+        
+        String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/OwnerRepository.java").toUri().toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "OwnerRepository.java", jp);
+        
+        assertThat(cu).isNotNull();
+        
+        List<SemanticTokenData> tokens = computeTokens(cu);
+        
+        assertThat(tokens.size()).isEqualTo(3);
+        
+        SemanticTokenData token = tokens.get(0);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("'invalid alphabetic string #$1'");
+        assertThat(token).isEqualTo(new SemanticTokenData(118, 149, "string", new String[0]));
+        
+        token = tokens.get(1);
+        assertThat(token).isEqualTo(new SemanticTokenData(150, 157, "keyword", new String[0]));
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("matches");
+        
+        token = tokens.get(2);
+        assertThat(token).isEqualTo(new SemanticTokenData(158, 171, "string", new String[0]));
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("'[a-zA-Z\\s]+'");
+        
 	}
 
 }

@@ -32,7 +32,7 @@ public class PostgreSqlSemanticTokensTest {
 	
 	@Test
 	void simple() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * from fn_module_candidates", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * from fn_module_candidates");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "operator", new String[0]));
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0]));
@@ -51,7 +51,7 @@ public class PostgreSqlSemanticTokensTest {
 					WHERE document.project_id=?1 
 					AND json_path_exists(document.content::jsonb, ('strict $.content.**.id ? (@ == "\\' || representation.targetobjectid || \\'")')::jsonpath)
 				)
-				""", 0);
+				""");
 		assertThat(tokens.size()).isEqualTo(43);
 		
 		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(74, 75, "parameter", new String[0])); // 1 from ?1
@@ -66,7 +66,7 @@ public class PostgreSqlSemanticTokensTest {
 	
 	@Test
 	void spelInQuery() {
-		List<SemanticTokenData> tokens = provider.computeTokens("DELETE FROM component_document WHERE item_document_id = :#{someBean}", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("DELETE FROM component_document WHERE item_document_id = :#{someBean}");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 11, "keyword", new String[0]));
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(12, 30, "variable", new String[0]));
@@ -83,7 +83,7 @@ public class PostgreSqlSemanticTokensTest {
 	
 	@Test
 	void semiColonAtEnd() {
-		List<SemanticTokenData> tokens = provider.computeTokens(" select count(*) from anecdote where anecdote_id=:anecdote ; ", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens(" select count(*) from anecdote where anecdote_id=:anecdote ; ");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(1, 7, "keyword", new String[0])); // select
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(8, 13, "method", new String[0])); // count
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 14, "operator", new String[0])); // (
@@ -103,7 +103,7 @@ public class PostgreSqlSemanticTokensTest {
 	
 	@Test
 	void parameterInLimitClause_1() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT ?2", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT ?2");
 		assertThat(tokens.size()).isEqualTo(12);
 		
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
@@ -122,7 +122,7 @@ public class PostgreSqlSemanticTokensTest {
 
 	@Test
 	void parameterInLimitClause_2() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT ?2", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT ?2");
 		assertThat(tokens.size()).isEqualTo(12);
 		
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
@@ -141,7 +141,7 @@ public class PostgreSqlSemanticTokensTest {
 	
 	@Test
 	void parameterInLimitClause_3() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT :#{qq}", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT :#{qq}");
 		assertThat(tokens.size()).isEqualTo(14);
 		
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
@@ -162,7 +162,7 @@ public class PostgreSqlSemanticTokensTest {
 
 	@Test
 	void parameterInLimitClause_4() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT :limit", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT :limit");
 		assertThat(tokens.size()).isEqualTo(12);
 		
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
@@ -181,19 +181,19 @@ public class PostgreSqlSemanticTokensTest {
 	
 	@Test
 	void notInInsideWhereClausePredicate() {
-		List<SemanticTokenData> tokens = provider.computeTokens("delete from SAMPLE_TABLE where id not in (select top 1 id from SAMPLE_TABLE order by TABLE_NAME desc)", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("delete from SAMPLE_TABLE where id not in (select top 1 id from SAMPLE_TABLE order by TABLE_NAME desc)");
 		assertThat(tokens.size()).isEqualTo(19);
 	}
 
 	@Test
 	void keywordAsIdentifier() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT SCHEMA_NAME, TABLE_NAME, VERSION from SAMPLE_TABLE", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT SCHEMA_NAME, TABLE_NAME, VERSION from SAMPLE_TABLE");
 		assertThat(tokens.size()).isEqualTo(8);
 	}
 	
 	@Test
 	void topInSelectClause() {
-		List<SemanticTokenData> tokens = provider.computeTokens("select top 1 * from SAMPLE_TABLE where SCHEMA_NAME = ?1", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("select top 1 * from SAMPLE_TABLE where SCHEMA_NAME = ?1");
 		assertThat(tokens.size()).isEqualTo(11);
 		
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
@@ -212,7 +212,7 @@ public class PostgreSqlSemanticTokensTest {
 	@Test
 	void over_clause_1() {
 		List<SemanticTokenData> tokens = provider.computeTokens("SELECT depname, empno, salary, avg(salary) OVER (PARTITION BY depname) FROM empsalary;\n"
-				+ "", 0);
+				+ "");
 		assertThat(tokens.size()).isEqualTo(20);
 	}
 
@@ -222,21 +222,21 @@ public class PostgreSqlSemanticTokensTest {
 				SELECT depname, empno, salary,
 				       rank() OVER (PARTITION BY depname ORDER BY salary DESC)
 				FROM empsalary;
-				""", 0);
+				""");
 		assertThat(tokens.size()).isEqualTo(23);
 	}
 	
 	@Test
 	void over_clause_3() {
 		List<SemanticTokenData> tokens = provider.computeTokens("SELECT salary, sum(salary) OVER () FROM empsalary;"
-				+ "", 0);
+				+ "");
 		assertThat(tokens.size()).isEqualTo(13);
 	}
 
 	@Test
 	void over_clause_4() {
 		List<SemanticTokenData> tokens = provider.computeTokens("SELECT salary, sum(salary) OVER (ORDER BY salary) FROM empsalary;"
-				+ "", 0);
+				+ "");
 		assertThat(tokens.size()).isEqualTo(16);
 	}
 
@@ -250,7 +250,7 @@ public class PostgreSqlSemanticTokensTest {
 				     FROM empsalary
 				  ) AS ss
 				WHERE pos < 3;
-				""", 0);
+				""");
 		assertThat(tokens.size()).isEqualTo(46);
 	}
 
@@ -260,7 +260,7 @@ public class PostgreSqlSemanticTokensTest {
 				SELECT sum(salary) OVER w, avg(salary) OVER w
 				  FROM empsalary
 				  WINDOW w AS (PARTITION BY depname ORDER BY salary DESC);
-  				""", 0);
+  				""");
 		assertThat(tokens.size()).isEqualTo(29);
 	}
 
@@ -282,7 +282,7 @@ public class PostgreSqlSemanticTokensTest {
                 (rn = 1 OR status = 10)
                 AND (scenario = 11 OR scenario = 8)
             ORDER BY status DESC
-            """, 0);
+            """);
 		assertThat(tokens.size()).isEqualTo(74);
 	}
 	
@@ -290,7 +290,7 @@ public class PostgreSqlSemanticTokensTest {
 	void collate_1() {
 		List<SemanticTokenData> tokens = provider.computeTokens("""
 				SELECT DISTINCT test COLLATE "numeric" FROM Test
-				""", 0);
+				""");
 		assertThat(tokens.size()).isEqualTo(7);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 15, "keyword", new String[0])); // DISTICT
@@ -304,8 +304,23 @@ public class PostgreSqlSemanticTokensTest {
 	@Test
 	void collate_2() {
 		List<SemanticTokenData> tokens = provider.computeTokens("""
+				SELECT DISTINCT test COLLATE \"numeric\" FROM Test
+				""");
+		assertThat(tokens.size()).isEqualTo(7);
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 15, "keyword", new String[0])); // DISTICT
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(16, 20, "variable", new String[0])); // test
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(21, 28, "keyword", new String[0])); // COLLATE
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(29, 38, "variable", new String[0])); // \"numeric\"
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(39, 43, "keyword", new String[0])); // FROM
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(44, 48, "variable", new String[0])); // Test
+	}
+	
+	@Test
+	void collate_3() {
+		List<SemanticTokenData> tokens = provider.computeTokens("""
 				SELECT a COLLATE "de_DE" < b FROM test1
-				""", 0);
+				""");
 		assertThat(tokens.size()).isEqualTo(8);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "variable", new String[0])); // a

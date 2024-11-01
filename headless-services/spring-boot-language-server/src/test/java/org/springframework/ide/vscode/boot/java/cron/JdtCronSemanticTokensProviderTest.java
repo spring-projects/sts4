@@ -83,35 +83,35 @@ public class JdtCronSemanticTokensProviderTest {
 
 		SemanticTokenData token = tokens.get(0);
 		assertThat(token).isEqualTo(new SemanticTokenData(117, 118, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(1);
 		assertThat(token).isEqualTo(new SemanticTokenData(119, 120, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(2);
 		assertThat(token).isEqualTo(new SemanticTokenData(121, 122, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(3);
 		assertThat(token).isEqualTo(new SemanticTokenData(123, 124, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("?");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("?");
 
 		token = tokens.get(4);
 		assertThat(token).isEqualTo(new SemanticTokenData(125, 126, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("*");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
 
 		token = tokens.get(5);
 		assertThat(token).isEqualTo(new SemanticTokenData(127, 128, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("5");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("5");
 
 		token = tokens.get(6);
 		assertThat(token).isEqualTo(new SemanticTokenData(128, 129, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("#");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("#");
 
 		token = tokens.get(7);
 		assertThat(token).isEqualTo(new SemanticTokenData(129, 130, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("2");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("2");
 
 	}
 
@@ -142,31 +142,31 @@ public class JdtCronSemanticTokensProviderTest {
 
 		SemanticTokenData token = tokens.get(0);
 		assertThat(token).isEqualTo(new SemanticTokenData(117, 118, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(1);
 		assertThat(token).isEqualTo(new SemanticTokenData(119, 120, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(2);
 		assertThat(token).isEqualTo(new SemanticTokenData(121, 122, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(3);
 		assertThat(token).isEqualTo(new SemanticTokenData(123, 124, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("*");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
 
 		token = tokens.get(4);
 		assertThat(token).isEqualTo(new SemanticTokenData(125, 126, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("*");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
 
 		token = tokens.get(5);
 		assertThat(token).isEqualTo(new SemanticTokenData(127, 130, "enum", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("THU");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("THU");
 
 		token = tokens.get(6);
 		assertThat(token).isEqualTo(new SemanticTokenData(130, 131, "method", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("L");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("L");
 
 	}
 
@@ -197,35 +197,35 @@ public class JdtCronSemanticTokensProviderTest {
 
 		SemanticTokenData token = tokens.get(0);
 		assertThat(token).isEqualTo(new SemanticTokenData(117, 118, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(1);
 		assertThat(token).isEqualTo(new SemanticTokenData(119, 120, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(2);
 		assertThat(token).isEqualTo(new SemanticTokenData(121, 122, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(3);
 		assertThat(token).isEqualTo(new SemanticTokenData(123, 124, "method", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("L");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("L");
 
 		token = tokens.get(4);
 		assertThat(token).isEqualTo(new SemanticTokenData(124, 125, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("-");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("-");
 
 		token = tokens.get(5);
 		assertThat(token).isEqualTo(new SemanticTokenData(125, 126, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("3");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("3");
 
 		token = tokens.get(6);
 		assertThat(token).isEqualTo(new SemanticTokenData(127, 128, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("*");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
 
 		token = tokens.get(7);
 		assertThat(token).isEqualTo(new SemanticTokenData(129, 130, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("*");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
 	}
 
 	@Test
@@ -255,39 +255,39 @@ public class JdtCronSemanticTokensProviderTest {
 
 		SemanticTokenData token = tokens.get(0);
 		assertThat(token).isEqualTo(new SemanticTokenData(117, 118, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(1);
 		assertThat(token).isEqualTo(new SemanticTokenData(119, 120, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(2);
 		assertThat(token).isEqualTo(new SemanticTokenData(121, 122, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(3);
 		assertThat(token).isEqualTo(new SemanticTokenData(123, 124, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("8");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("8");
 
 		token = tokens.get(4);
 		assertThat(token).isEqualTo(new SemanticTokenData(124, 126, "method", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("LW");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("LW");
 
 		token = tokens.get(5);
 		assertThat(token).isEqualTo(new SemanticTokenData(127, 128, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("*");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
 
 		token = tokens.get(6);
 		assertThat(token).isEqualTo(new SemanticTokenData(129, 132, "enum", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("Foo");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("Foo");
 
 		token = tokens.get(7);
 		assertThat(token).isEqualTo(new SemanticTokenData(132, 133, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("#");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("#");
 
 		token = tokens.get(8);
 		assertThat(token).isEqualTo(new SemanticTokenData(133, 136, "enum", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("bar");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("bar");
 	}
 
 	@Test
@@ -317,55 +317,55 @@ public class JdtCronSemanticTokensProviderTest {
 
 		SemanticTokenData token = tokens.get(0);
 		assertThat(token).isEqualTo(new SemanticTokenData(117, 119, "enum", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("qq");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("qq");
 
 		token = tokens.get(1);
 		assertThat(token).isEqualTo(new SemanticTokenData(119, 120, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("#");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("#");
 
 		token = tokens.get(2);
 		assertThat(token).isEqualTo(new SemanticTokenData(120, 121, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("3");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("3");
 
 		token = tokens.get(3);
 		assertThat(token).isEqualTo(new SemanticTokenData(122, 123, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("0");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("0");
 
 		token = tokens.get(4);
 		assertThat(token).isEqualTo(new SemanticTokenData(124, 128, "enum", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("Blah");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("Blah");
 
 		token = tokens.get(5);
 		assertThat(token).isEqualTo(new SemanticTokenData(129, 130, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("1");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("1");
 
 		token = tokens.get(6);
 		assertThat(token).isEqualTo(new SemanticTokenData(130, 131, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("-");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("-");
 
 		token = tokens.get(7);
 		assertThat(token).isEqualTo(new SemanticTokenData(131, 133, "number", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("88");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("88");
 
 		token = tokens.get(8);
 		assertThat(token).isEqualTo(new SemanticTokenData(133, 135, "method", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("LW");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("LW");
 
 		token = tokens.get(9);
 		assertThat(token).isEqualTo(new SemanticTokenData(136, 137, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("*");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
 
 		token = tokens.get(10);
 		assertThat(token).isEqualTo(new SemanticTokenData(138, 141, "enum", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("JUL");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("JUL");
 
 		token = tokens.get(11);
 		assertThat(token).isEqualTo(new SemanticTokenData(141, 142, "operator", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("-");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("-");
 
 		token = tokens.get(12);
 		assertThat(token).isEqualTo(new SemanticTokenData(142, 147, "enum", new String[0]));
-		assertThat(source.substring(token.start(), token.end())).isEqualTo("MARCH");
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("MARCH");
 	}
 	
 	@Test

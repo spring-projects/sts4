@@ -57,14 +57,14 @@ public class DataQueryParameterDefinitionProvider implements IJavaDefinitionProv
 					Collector<SemanticTokenData> collector = new Collector<>();
 					a.accept(semanticTokensProvider.getTokensComputer(project, doc, cu, collector));
 					for (SemanticTokenData t : collector.get()) {
-						if ("parameter".equals(t.type()) && t.start() <= offset && offset <= t.end()) {
+						if ("parameter".equals(t.type()) && t.range().getOffset() <= offset && offset <= t.range().getEnd()) {
 							try {
-								String parameterDescriptor = doc.get(t.start(), t.end() - t.start());
+								String parameterDescriptor = doc.get(t.range().getOffset(), t.range().getLength());
 								SimpleName paramName = JdtQueryDocHighlightsProvider.findParameter(m, parameterDescriptor);
 								if (paramName != null) {
 									LocationLink link = new LocationLink();
 									link.setTargetUri(docId.getUri());
-									link.setOriginSelectionRange(doc.toRange(t.start(), t.end() - t.start()));
+									link.setOriginSelectionRange(doc.toRange(t.range().getOffset(), t.range().getLength()));
 									link.setTargetSelectionRange(doc.toRange(paramName.getStartPosition(), paramName.getLength()));
 									link.setTargetRange(link.getTargetSelectionRange());
 									return List.of(link);

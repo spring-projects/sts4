@@ -16,7 +16,7 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.springframework.ide.vscode.boot.java.JdtSemanticTokensProvider;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedExpression;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLanguageSnippet;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
@@ -56,9 +56,12 @@ public class JdtCronSemanticTokensProvider implements JdtSemanticTokensProvider 
 
 			@Override
 			public boolean visit(NormalAnnotation node) {
-				EmbeddedExpression e = JdtCronVisitorUtils.extractCron(node);
+				EmbeddedLanguageSnippet e = JdtCronVisitorUtils.extractCron(node);
 				if (e != null) {
-					tokensProvider.computeTokens(e.text(), e.offset()).forEach(collector::accept);
+					tokensProvider.computeTokens(e.getText()).stream()
+						.flatMap(td -> e.toJavaRanges(td.range()).stream().map(r -> new SemanticTokenData(r,
+								td.type(), td.modifiers())))
+							.forEach(collector::accept);
 				}
 				return super.visit(node);
 			}

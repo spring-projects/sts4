@@ -31,7 +31,7 @@ public class CronSemanticTokensTest {
 	
 	@Test
 	void topHoueEveryDayEveryWeek() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 * * * *", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 * * * *");
 		assertThat(tokens.size()).isEqualTo(6);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0]));
@@ -43,7 +43,7 @@ public class CronSemanticTokensTest {
 	
 	@Test
 	void everyTenSeconds() {
-		List<SemanticTokenData> tokens = provider.computeTokens("*/10 * * * * *", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("*/10 * * * * *");
 		assertThat(tokens.size()).isEqualTo(8);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "operator", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(1, 2, "operator", new String[0]));
@@ -57,7 +57,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void betweenEightAndTenEveryDay() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 8-10 * * *", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 8-10 * * *");
 		assertThat(tokens.size()).isEqualTo(8);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -71,7 +71,7 @@ public class CronSemanticTokensTest {
 	
 	@Test
 	void everyDayBetweenSixAndSeven() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 6,19 * * *", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 6,19 * * *");
 		assertThat(tokens.size()).isEqualTo(8);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -85,7 +85,7 @@ public class CronSemanticTokensTest {
 	
 	@Test
 	void everyHalfHourBetweenEightAndEleven() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0/30 8-10 * * *", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0/30 8-10 * * *");
 		assertThat(tokens.size()).isEqualTo(10);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -101,7 +101,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void nineToFiveOnWeekdays() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 9-17 * * MON-FRI", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 9-17 * * MON-FRI");
 		assertThat(tokens.size()).isEqualTo(10);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -117,7 +117,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void christmas() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 25 12 ?", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 25 12 ?");
 		assertThat(tokens.size()).isEqualTo(6);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -129,7 +129,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void lastDayOfMonthAtMidnight() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 L * *", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 L * *");
 		assertThat(tokens.size()).isEqualTo(6);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -141,7 +141,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void thirdToLasttDayOfMonthAtMidnight() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 L-3 * *", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 L-3 * *");
 		assertThat(tokens.size()).isEqualTo(8);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -155,7 +155,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void firstWeekDayOfMonthAtMidnight() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 1W * *", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 1W * *");
 		assertThat(tokens.size()).isEqualTo(7);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -168,7 +168,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void lastWeekDayOfMonthAtMidnight() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 LW * *", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 LW * *");
 		assertThat(tokens.size()).isEqualTo(6);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -180,7 +180,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void lastFridayOfMonthAtMidnight() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 * * 5L", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 * * 5L");
 		assertThat(tokens.size()).isEqualTo(7);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -193,7 +193,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void lastThursdayOfMonthAtMidnight() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 * * THUL", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 * * THUL");
 		assertThat(tokens.size()).isEqualTo(7);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -206,7 +206,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void secondFridayOfMonthAtMidnight() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 ? * 5#2", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 ? * 5#2");
 		assertThat(tokens.size()).isEqualTo(8);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -220,7 +220,7 @@ public class CronSemanticTokensTest {
 
 	@Test
 	void firstMondayOfMonthAtMidnight() {
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 ? * MON#1", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 ? * MON#1");
 		assertThat(tokens.size()).isEqualTo(8);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -234,7 +234,7 @@ public class CronSemanticTokensTest {
 	
 	@Test
 	void macro() {
-		List<SemanticTokenData> tokens = provider.computeTokens("@yearly", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("@yearly");
 		assertThat(tokens.size()).isEqualTo(1);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 7, "macro", new String[0])); // @yearly
 	}
@@ -242,7 +242,7 @@ public class CronSemanticTokensTest {
 	@Test
 	void errors_1() {
 		provider = new CronSemanticTokens();
-		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 8LW * Foo#bar", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("0 0 0 8LW * Foo#bar");
 		assertThat(tokens.size()).isEqualTo(9);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0])); // 0
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "number", new String[0])); // 0
@@ -258,7 +258,7 @@ public class CronSemanticTokensTest {
 	@Test
 	void errors_2() {
 		provider = new CronSemanticTokens();
-		List<SemanticTokenData> tokens = provider.computeTokens("qq#3 0 Blah 1-88LW * JUL-MARCH", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("qq#3 0 Blah 1-88LW * JUL-MARCH");
 		assertThat(tokens.size()).isEqualTo(13);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 2, "enum", new String[0])); // qq
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "operator", new String[0])); // #

@@ -17,6 +17,6 @@ public interface SemanticTokensDataProvider {
 	
 	List<String> getTokenTypes();
 	default List<String> getTypeModifiers() { return Collections.emptyList(); }
-	List<SemanticTokenData> computeTokens(String text, int initialOffset);
+	List<SemanticTokenData> computeTokens(String text);
 
 }

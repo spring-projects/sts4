@@ -18,5 +18,11 @@ public interface IRegion {
 
 	int getOffset();
 	int getLength();
+	default int getEnd() {
+		return getOffset() + getLength();
+	}
+	default int getStart() {
+		return getOffset();
+	}
 
 }

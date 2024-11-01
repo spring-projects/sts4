@@ -52,15 +52,17 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.IJavaDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLanguageSnippet;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
-import org.springframework.ide.vscode.boot.java.spel.AnnotationParamSpelExtractor.Snippet;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.parser.spel.SpelLexer;
 import org.springframework.ide.vscode.parser.spel.SpelParser;
@@ -116,11 +118,11 @@ public class SpelDefinitionProvider implements IJavaDefinitionProvider {
 				return e.getSpelRegion((SingleMemberAnnotation) a);
 			else if (a instanceof NormalAnnotation)
 				return e.getSpelRegion((NormalAnnotation) a);
-			return Optional.<Snippet>empty();
+			return Optional.<EmbeddedLanguageSnippet>empty();
 		}).filter(o -> o.isPresent()).map(o -> o.get())
 		.filter(snippet -> {
-			int tokenEndIndex = snippet.offset() + snippet.text().length();
-			return snippet.offset() <= (offset) && (offset) <= tokenEndIndex;
+			IRegion snippetRegion = snippet.getTotalRange();
+			return snippetRegion.getStart() <= (offset) && (offset) <= snippetRegion.getEnd();
 		}).forEach(snippet -> {
 			List<TokenData> beanReferenceTokens = computeTokens(snippet, offset);
 			if (beanReferenceTokens != null && beanReferenceTokens.size() > 0) {
@@ -213,8 +215,8 @@ public class SpelDefinitionProvider implements IJavaDefinitionProvider {
 		}).collect(Collectors.toList());
 	}
 
-	private List<TokenData> computeTokens(Snippet snippet, int offset) {
-		SpelLexer lexer = new SpelLexer(CharStreams.fromString(snippet.text()));
+	private List<TokenData> computeTokens(EmbeddedLanguageSnippet snippet, int offset) {
+		SpelLexer lexer = new SpelLexer(CharStreams.fromString(snippet.getText()));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		SpelParser parser = new SpelParser(antlrTokens);
 
@@ -236,8 +238,9 @@ public class SpelDefinitionProvider implements IJavaDefinitionProvider {
 			}
 
 			private void addTokenData(Token sym, int offset) {
-				int start = sym.getStartIndex() + snippet.offset();
-				int end = sym.getStartIndex() + sym.getText().length() + snippet.offset();
+				List<IRegion> symbolRegions = snippet.toJavaRanges(new Region(sym.getStartIndex(), sym.getText().length()));
+				int start = symbolRegions.get(0).getStart();
+				int end = symbolRegions.get(symbolRegions.size() - 1).getEnd();
 				if (isOffsetWithinToken(start, end, offset)) {
 					beanReferenceTokens.add(new TokenData(sym.getText(), start, end));
 				}
@@ -254,10 +257,10 @@ public class SpelDefinitionProvider implements IJavaDefinitionProvider {
 		return beanReferenceTokens;
 	}
 
-	private Optional<Tuple2<String, String>> parseAndExtractMethodClassPairFromSpel(Snippet snippet, int offset) {
+	private Optional<Tuple2<String, String>> parseAndExtractMethodClassPairFromSpel(EmbeddedLanguageSnippet snippet, int offset) {
 		SpelExpressionParser parser = new SpelExpressionParser();
 		try {
-			org.springframework.expression.Expression expression = parser.parseExpression(snippet.text());
+			org.springframework.expression.Expression expression = parser.parseExpression(snippet.getText());
 
 			SpelExpression spelExpressionAST = (SpelExpression) expression;
 			SpelNode rootNode = spelExpressionAST.getAST();
@@ -269,8 +272,8 @@ public class SpelDefinitionProvider implements IJavaDefinitionProvider {
 	}
 
 	private Optional<Tuple2<String, String>> extractMethodClassPairFromSpelNodes(SpelNode node, SpelNode parent,
-			Snippet snippet, int offset) {
-		if (node instanceof MethodReference && checkOffsetInMethodName(node, snippet.offset(), offset)) {
+			EmbeddedLanguageSnippet snippet, int offset) {
+		if (node instanceof MethodReference && checkOffsetInMethodName(node, snippet.toJavaOffset(0), offset)) {
 			MethodReference methodRef = (MethodReference) node;
 			String methodName = methodRef.getName();
 			String className = extractClassNameFromParent(parent);

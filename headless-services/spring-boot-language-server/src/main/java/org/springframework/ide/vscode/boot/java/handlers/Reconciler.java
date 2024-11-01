@@ -10,13 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
+import java.util.function.Function;
+
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
 
 /**
  * @author Martin Lippert
  */
 public interface Reconciler {
 
-	void reconcile(String value, int startPosition, IProblemCollector problemCollector);
+	void reconcile(String value, Function<IRegion, IRegion> offsetMapper, IProblemCollector problemCollector);
 
 }

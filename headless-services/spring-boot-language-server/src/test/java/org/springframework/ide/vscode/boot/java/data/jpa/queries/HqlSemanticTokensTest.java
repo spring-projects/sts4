@@ -32,7 +32,7 @@ public class HqlSemanticTokensTest {
 	
 	@Test
 	void simpleQuery_1() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 12, "variable", new String[0]));
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 17, "keyword", new String[0]));
@@ -43,20 +43,8 @@ public class HqlSemanticTokensTest {
 	}
 
 	@Test
-	void initialOffset() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner", 3);
-		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(3, 9, "keyword", new String[0]));
-		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(10, 15, "variable", new String[0]));
-		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(16, 20, "keyword", new String[0]));
-		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(21, 26, "class", new String[0]));
-		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(27, 32, "variable", new String[0]));
-		
-		assertThat(tokens.size()).isEqualTo(5);
-	}
-
-	@Test
 	void query_with_conflicting_groupby() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT g FROM Group g GROUP BY g.name", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT g FROM Group g GROUP BY g.name");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "variable", new String[0]));
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0]));
@@ -73,7 +61,7 @@ public class HqlSemanticTokensTest {
 	
 	@Test
 	void query_with_parameter() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT DISTINCT owner FROM Owner owner left join  owner.pets WHERE owner.lastName LIKE :lastName%", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT DISTINCT owner FROM Owner owner left join  owner.pets WHERE owner.lastName LIKE :lastName%");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 15, "keyword", new String[0])); // DISTINCT
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(16, 21, "variable", new String[0])); // owner
@@ -99,7 +87,7 @@ public class HqlSemanticTokensTest {
 
 	@Test
 	void query_with_SPEL() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{id}", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{id}");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 12, "variable", new String[0])); // owner
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 17, "keyword", new String[0])); // FROM
@@ -127,7 +115,7 @@ public class HqlSemanticTokensTest {
 	@Test
 	void query_with_SPEL_Tokens() {
 		provider = new HqlSemanticTokens(Optional.of(new SpelSemanticTokens()));
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{id}", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{id}");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 12, "variable", new String[0])); // owner
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 17, "keyword", new String[0])); // FROM
@@ -155,7 +143,7 @@ public class HqlSemanticTokensTest {
 	@Test
 	void query_with_complex_SPEL_Tokens() {
 		provider = new HqlSemanticTokens(Optional.of(new SpelSemanticTokens()));
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{someBean.someProperty != null ? someBean.someProperty : 'default'}", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{someBean.someProperty != null ? someBean.someProperty : 'default'}");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 12, "variable", new String[0])); // owner
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 17, "keyword", new String[0])); // FROM
@@ -193,7 +181,7 @@ public class HqlSemanticTokensTest {
 	@Test
 	void instatiotation_1() {
 		provider = new HqlSemanticTokens(Optional.of(new SpelSemanticTokens()));
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT new com.example.ls.issue.SampleTableSizePojo(t.schemaName, sum(t.tableSize) ) FROM MTables t GROUP BY t.schemaName ORDER BY sum(t.tableSize) DESC", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT new com.example.ls.issue.SampleTableSizePojo(t.schemaName, sum(t.tableSize) ) FROM MTables t GROUP BY t.schemaName ORDER BY sum(t.tableSize) DESC");
 		assertThat(tokens.size()).isEqualTo(32);
 		
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT

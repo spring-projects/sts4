@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.springframework.ide.vscode.boot.java.JdtSemanticTokensProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedQueryExpression;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLanguageSnippet;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -68,7 +69,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 			public boolean visit(NormalAnnotation a) {
 				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(a);
 				if (q != null) {
-					computeSemanticTokens(jp, q.query().text(), q.query().offset(), q.isNative()).forEach(tokensData::accept);
+					computeSemanticTokens(jp, q.query(), q.isNative()).forEach(tokensData::accept);
 				}
 				return super.visit(a);
 			}
@@ -77,7 +78,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 			public boolean visit(SingleMemberAnnotation a) {
 				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(a);
 				if (q != null) {
-					computeSemanticTokens(jp, q.query().text(), q.query().offset(), q.isNative()).forEach(tokensData::accept);
+					computeSemanticTokens(jp, q.query(), q.isNative()).forEach(tokensData::accept);
 				}
 				return super.visit(a);
 			}
@@ -86,17 +87,22 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 			public boolean visit(MethodInvocation node) {
 				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
 				if (q != null) {
-					computeSemanticTokens(jp, q.query().text(), q.query().offset(), q.isNative()).forEach(tokensData::accept);
+					computeSemanticTokens(jp, q.query(), q.isNative()).forEach(tokensData::accept);
 				}
 				return super.visit(node);
 			}
 		};
 	}
 	
-	public List<SemanticTokenData> computeSemanticTokens(IJavaProject jp, String query, int offset, boolean isNative) {
-		SemanticTokensDataProvider provider = isNative ? getSqlSemanticTokensProvider(jp) : (SpringProjectUtil.hasDependencyStartingWith(jp, "hibernate-core", null) ? hqlProvider : jpqlProvider);
+	public List<SemanticTokenData> computeSemanticTokens(IJavaProject jp, EmbeddedLanguageSnippet s, boolean isNative) {
+		SemanticTokensDataProvider provider = isNative ? getSqlSemanticTokensProvider(jp)
+				: (SpringProjectUtil.hasDependencyStartingWith(jp, "hibernate-core", null) ? hqlProvider
+						: jpqlProvider);
 		if (provider != null) {
-			return provider.computeTokens(query, offset);
+			return provider.computeTokens(s.getText()).stream()
+					.flatMap(td -> s.toJavaRanges(td.range()).stream().map(r -> new SemanticTokenData(r,
+							td.type(), td.modifiers())))
+					.toList();
 		}
 		return Collections.emptyList();
 	}

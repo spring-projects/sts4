@@ -14,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.BitSet;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStreams;
@@ -35,6 +36,8 @@ import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
+import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.commons.util.text.linetracker.DefaultLineTracker;
 import org.springframework.ide.vscode.parser.cron.CronLexer;
 import org.springframework.ide.vscode.parser.cron.CronParser;
@@ -62,7 +65,7 @@ public class CronReconciler implements Reconciler {
 	}
 
 	@Override
-	public void reconcile(String text, int startPosition, IProblemCollector problemCollector) {
+	public void reconcile(String text, Function<IRegion, IRegion> mapping, IProblemCollector problemCollector) {
 		CronLexer lexer = new CronLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		CronParser parser = new CronParser(antlrTokens);
@@ -117,7 +120,8 @@ public class CronReconciler implements Reconciler {
 						if (message.startsWith("For input string:")) {
 							markProblemsForNumberFormatException(ctx, message);
 						} else {
-							problemCollector.accept(new ReconcileProblemImpl(CronProblemType.FIELD, "CRON: %s".formatted(message), startPosition + ctx.getStart().getStartIndex(), ctx.getText().length()));
+							IRegion r = mapping.apply(new Region(ctx.getStart().getStartIndex(), ctx.getText().length()));
+							problemCollector.accept(new ReconcileProblemImpl(CronProblemType.FIELD, "CRON: %s".formatted(message), r.getOffset(), r.getLength()));
 						}
 					}	
 				}
@@ -132,12 +136,14 @@ public class CronReconciler implements Reconciler {
 						String problemText = message.substring(start + 1, end);
 						int offset = text.indexOf(problemText);
 						if (offset >= 0) {
-							problemCollector.accept(new ReconcileProblemImpl(CronProblemType.FIELD, "CRON: Number expected", startPosition + ctx.getStart().getStartIndex() + offset, problemText.length()));
+							IRegion r = mapping.apply(new Region(ctx.getStart().getStartIndex() + offset, problemText.length()));
+							problemCollector.accept(new ReconcileProblemImpl(CronProblemType.FIELD, "CRON: Number expected", r.getOffset(), r.getLength()));
 							return;
 						}
 					}
 				}
-				problemCollector.accept(new ReconcileProblemImpl(CronProblemType.FIELD, "CRON: %s".formatted(message), startPosition + ctx.getStart().getStartIndex(), ctx.getText().length()));
+				IRegion r = mapping.apply(new Region(ctx.getStart().getStartIndex(), ctx.getText().length()));
+				problemCollector.accept(new ReconcileProblemImpl(CronProblemType.FIELD, "CRON: %s".formatted(message), r.getOffset(), r.getLength()));
 			}
 
 			
@@ -169,7 +175,8 @@ public class CronReconciler implements Reconciler {
 						log.error("", e1);
 					}
 				}
-				problemCollector.accept(new ReconcileProblemImpl(CronProblemType.SYNTAX, "CRON: " + msg, startPosition + offset, length));
+				IRegion r = mapping.apply(new Region(offset, length));
+				problemCollector.accept(new ReconcileProblemImpl(CronProblemType.SYNTAX, "CRON: " + msg, r.getOffset(), r.getLength()));
 			}
 			
 			@Override

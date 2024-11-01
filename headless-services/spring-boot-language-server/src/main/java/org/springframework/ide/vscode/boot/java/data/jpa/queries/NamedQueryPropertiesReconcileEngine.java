@@ -17,6 +17,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.ParseResults;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.KeyValuePair;
@@ -45,7 +46,7 @@ public class NamedQueryPropertiesReconcileEngine implements IReconcileEngine {
 			ParseResults parseResults = parser.parse(doc.get());
 			for (KeyValuePair pair : parseResults.ast.getPropertyValuePairs()) {
 				Value value = pair.getValue();
-				reconciler.reconcile(value.decode(), value.getOffset(), problemCollector);
+				reconciler.reconcile(value.decode(), r -> new Region(r.getOffset() + value.getOffset(), r.getLength()), problemCollector);
 			}
 		} finally {
 			problemCollector.endCollecting();

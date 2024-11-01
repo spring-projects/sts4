@@ -17,9 +17,11 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLangAstUtils;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLanguageSnippet;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLanguageSnippetWithPrefixAndSuffix;
 
 public final class AnnotationParamSpelExtractor {
 	
@@ -87,7 +89,7 @@ public final class AnnotationParamSpelExtractor {
 		this.prefixSuffixes = List.of(new PrefixSuffix(paramValuePrefix, paramValueSuffx), new PrefixSuffix("",  ""));
 	}
 	
-	public Optional<Snippet> getSpelRegion(NormalAnnotation a) {
+	public Optional<EmbeddedLanguageSnippet> getSpelRegion(NormalAnnotation a) {
 		if (paramName == null) {
 			return Optional.empty();
 		}
@@ -104,8 +106,9 @@ public final class AnnotationParamSpelExtractor {
 				String name = pair.getName().getFullyQualifiedName();
 				if (name != null && name.equals(paramName)) {
 					Expression expression = pair.getValue();
-					if (expression instanceof StringLiteral) {
-						return fromStringLiteral((StringLiteral) expression);
+					EmbeddedLanguageSnippet embeddedSnippet = EmbeddedLangAstUtils.extractEmbeddedExpression(expression);
+					if (embeddedSnippet != null) {
+						return fromEmbeddedSnippet(embeddedSnippet);
 					}
 				}
 			}
@@ -114,7 +117,7 @@ public final class AnnotationParamSpelExtractor {
 		return Optional.empty();
 	}
 	
-	public Optional<Snippet> getSpelRegion(SingleMemberAnnotation a) {
+	public Optional<EmbeddedLanguageSnippet> getSpelRegion(SingleMemberAnnotation a) {
 		if (this.paramName != null) {
 			return Optional.empty();
 		}
@@ -124,26 +127,24 @@ public final class AnnotationParamSpelExtractor {
 		}
 		
 		Expression valueExp = a.getValue();
-
-		if (valueExp instanceof StringLiteral) {
-			return fromStringLiteral((StringLiteral) valueExp);
-		}
 		
+		EmbeddedLanguageSnippet embeddedSnippet = EmbeddedLangAstUtils.extractEmbeddedExpression(valueExp);
+		if (embeddedSnippet != null) {
+			return fromEmbeddedSnippet(embeddedSnippet);
+		}
+
 		return Optional.empty();
 	}
 	
-	private Optional<Snippet> fromStringLiteral(StringLiteral valueExp) {
-		String value = valueExp.getEscapedValue();
-		value = value.substring(1, value.length() - 1);
-		if (value != null) {
+	private Optional<EmbeddedLanguageSnippet> fromEmbeddedSnippet(EmbeddedLanguageSnippet embeddedSnippet) {
+		String value = embeddedSnippet.getText();
+		if (value != null && !value.isBlank()) {
 			for (PrefixSuffix ps : prefixSuffixes) {
 				int startIdx = value.indexOf(ps.prefix);
 				if (startIdx >= 0) {
 					int endIdx = value.lastIndexOf(ps.suffix);
 					if (endIdx >= 0) {
-						String spelText = value.substring(startIdx + ps.prefix.length(), endIdx);
-						int offset = valueExp.getStartPosition() + startIdx + ps.prefix.length() + 1;
-						return Optional.of(new Snippet(spelText, offset));
+						return Optional.of(new EmbeddedLanguageSnippetWithPrefixAndSuffix(embeddedSnippet, startIdx + ps.prefix.length(), endIdx));
 					}
 				}
 			}

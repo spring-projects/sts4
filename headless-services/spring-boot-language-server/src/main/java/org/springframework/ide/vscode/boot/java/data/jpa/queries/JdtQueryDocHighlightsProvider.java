@@ -54,9 +54,9 @@ public class JdtQueryDocHighlightsProvider implements JdtAstDocHighlightsProvide
 				Collector<SemanticTokenData> collector = new Collector<>();
 				a.accept(semanticTokensProvider.getTokensComputer(project, doc, cu, collector));
 				for (SemanticTokenData t : collector.get()) {
-					if ("parameter".equals(t.type()) && t.start() <= offset && offset <= t.end()) {
+					if ("parameter".equals(t.type()) && t.range().getStart() <= offset && offset <= t.range().getEnd()) {
 						try {
-							String parameterDescriptor = doc.get(t.start(), t.end() - t.start());
+							String parameterDescriptor = doc.get(t.range().getOffset(), t.range().getLength());
 							SimpleName paramName = findParameter(m, parameterDescriptor);
 							if (paramName != null) {
 								DocumentHighlight highlight = new DocumentHighlight();

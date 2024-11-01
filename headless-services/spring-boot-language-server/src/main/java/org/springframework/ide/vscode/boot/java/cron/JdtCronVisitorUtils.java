@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.cron;
 
-import static org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.extractEmbeddedExpression;
-
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
@@ -19,13 +17,14 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TextBlock;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedExpression;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLangAstUtils;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLanguageSnippet;
 
 public class JdtCronVisitorUtils {
 	
 	static final String SCHEDULED_SIMPLE_NAME = "Scheduled";
 	
-	public static EmbeddedExpression extractCron(NormalAnnotation node) {
+	public static EmbeddedLanguageSnippet extractCron(NormalAnnotation node) {
 		if (node.getTypeName() != null) {
 			String fqn = node.getTypeName().getFullyQualifiedName();
 			if (SCHEDULED_SIMPLE_NAME.equals(fqn) || Annotations.SCHEDULED.equals(fqn)) {
@@ -36,7 +35,7 @@ public class JdtCronVisitorUtils {
 							MemberValuePair pair = (MemberValuePair) value;
 							String name = pair.getName().getFullyQualifiedName();
 							if (name != null && "cron".equals(name) && isCronExpression(pair.getValue())) {
-								return extractEmbeddedExpression(pair.getValue());
+								return EmbeddedLangAstUtils.extractEmbeddedExpression(pair.getValue());
 							}
 						}
 					}

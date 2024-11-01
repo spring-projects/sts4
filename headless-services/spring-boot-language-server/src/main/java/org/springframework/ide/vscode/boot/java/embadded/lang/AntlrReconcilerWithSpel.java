@@ -8,9 +8,10 @@
  * Contributors:
  *     Broadcom, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.data.jpa.queries;
+package org.springframework.ide.vscode.boot.java.embadded.lang;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
@@ -21,6 +22,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
+import org.springframework.ide.vscode.commons.util.text.Region;
 
 public class AntlrReconcilerWithSpel extends AntlrReconciler {
 	
@@ -35,15 +38,15 @@ public class AntlrReconcilerWithSpel extends AntlrReconciler {
 	}
 
 	@Override
-	protected Parser createParser(String text, int startPosition, IProblemCollector problemCollector) throws Exception {
-		Parser parser = super.createParser(text, startPosition, problemCollector);
+	protected Parser createParser(String text, Function<IRegion, IRegion> mapping, IProblemCollector problemCollector) throws Exception {
+		Parser parser = super.createParser(text, mapping, problemCollector);
 		
 		// Reconcile embedded SPEL
 		spelReconciler.ifPresent(r -> parser.addParseListener(new ParseTreeListener() {
 			
 			private void processTerminal(TerminalNode node) {
 				if (node.getSymbol().getType() == spelTokenType) {
-					AntlrReconcilerWithSpel.reconcileEmbeddedSpelNode(node, startPosition, r, problemCollector);
+					AntlrReconcilerWithSpel.reconcileEmbeddedSpelNode(node, mapping, r, problemCollector);
 				}
 			}
 
@@ -70,10 +73,9 @@ public class AntlrReconcilerWithSpel extends AntlrReconciler {
 		return parser;
 	}
 
-	private static void reconcileEmbeddedSpelNode(TerminalNode node, int initialOffset, SpelReconciler spelReconciler, IProblemCollector problemCollector) {
-		int startPosition = initialOffset + node.getSymbol().getStartIndex();
+	private static void reconcileEmbeddedSpelNode(TerminalNode node, Function<IRegion, IRegion> mapping, SpelReconciler spelReconciler, IProblemCollector problemCollector) {
 		String spelContent = node.getSymbol().getText().substring(2, node.getSymbol().getText().length() - 1);
-		spelReconciler.reconcile(spelContent, startPosition, problemCollector);
+		spelReconciler.reconcile(spelContent, r -> new Region(r.getOffset() + node.getSymbol().getStartIndex(), r.getLength())/*i -> mapping.apply(i + node.getSymbol().getStartIndex())*/, problemCollector);
 	}
 
 }

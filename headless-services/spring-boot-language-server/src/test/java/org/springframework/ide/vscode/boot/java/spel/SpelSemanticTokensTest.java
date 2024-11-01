@@ -25,7 +25,7 @@ public class SpelSemanticTokensTest {
 	
 	@Test
 	void simpleCompare() {
-		List<SemanticTokenData> tokens = provider.computeTokens("1 >= 1", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("1 >= 1");
 		assertThat(tokens.size()).isEqualTo(3);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 4, "operator", new String[0]));
@@ -34,7 +34,7 @@ public class SpelSemanticTokensTest {
 	
 	@Test
 	void simpleCompareWithOp() {
-		List<SemanticTokenData> tokens = provider.computeTokens("1 ge 1", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("1 ge 1");
 		assertThat(tokens.size()).isEqualTo(3);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 4, "keyword", new String[0]));
@@ -43,7 +43,7 @@ public class SpelSemanticTokensTest {
 	
 	@Test
 	void logicalOperators() {
-		List<SemanticTokenData> tokens = provider.computeTokens("4 > 3 or 15 < 10", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("4 > 3 or 15 < 10");
 		assertThat(tokens.size()).isEqualTo(7);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "number", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 3, "operator", new String[0]));
@@ -56,7 +56,7 @@ public class SpelSemanticTokensTest {
 	
 	@Test
 	void conditionalOperators() {
-		List<SemanticTokenData> tokens = provider.computeTokens("someBean.someProperty != null ? someBean.someProperty : 'default'", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("someBean.someProperty != null ? someBean.someProperty : 'default'");
 		assertThat(tokens.size()).isEqualTo(11);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 8, "variable", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(8, 9, "operator", new String[0]));
@@ -73,7 +73,7 @@ public class SpelSemanticTokensTest {
 
 	@Test
 	void regex() {
-		List<SemanticTokenData> tokens = provider.computeTokens("'invalid alphabetic string #$1' matches '[a-zA-Z\\s]+' ", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("'invalid alphabetic string #$1' matches '[a-zA-Z\\s]+' ");
 		assertThat(tokens.size()).isEqualTo(3);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 31, "string", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(32, 39, "keyword", new String[0]));
@@ -82,7 +82,7 @@ public class SpelSemanticTokensTest {
 	
 	@Test
 	void accessMapObj() {
-		List<SemanticTokenData> tokens = provider.computeTokens("carPark.carsByDriver['Driver1']", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("carPark.carsByDriver['Driver1']");
 		assertThat(tokens.size()).isEqualTo(6);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 7, "variable", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "operator", new String[0]));
@@ -94,7 +94,7 @@ public class SpelSemanticTokensTest {
 
 	@Test
 	void accessListItems() {
-		List<SemanticTokenData> tokens = provider.computeTokens("carPark.cars[0]", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("carPark.cars[0]");
 		assertThat(tokens.size()).isEqualTo(6);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 7, "variable", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "operator", new String[0]));
@@ -106,7 +106,7 @@ public class SpelSemanticTokensTest {
 
 	@Test
 	void beanReference() {
-		List<SemanticTokenData> tokens = provider.computeTokens("@vetRepo", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("@vetRepo");
 		assertThat(tokens.size()).isEqualTo(2);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 1, "operator", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(1, 8, "type", new String[0]));
@@ -114,7 +114,7 @@ public class SpelSemanticTokensTest {
 
 	@Test
 	void contructorAndMethod() {
-		List<SemanticTokenData> tokens = provider.computeTokens("new String('hello world').toUpperCase()", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("new String('hello world').toUpperCase()");
 		assertThat(tokens.size()).isEqualTo(9);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 3, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(4, 10, "method", new String[0]));
@@ -130,7 +130,7 @@ public class SpelSemanticTokensTest {
 	//https://github.com/spring-projects/sts4/issues/1320
 	@Test
 	void inputParameter() {
-		List<SemanticTokenData> tokens = provider.computeTokens("[1].size().longValue()", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("[1].size().longValue()");
 		assertThat(tokens.size()).isEqualTo(9);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 3, "parameter", new String[0])); // [1]
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(3, 4, "operator", new String[0])); // .
@@ -145,7 +145,7 @@ public class SpelSemanticTokensTest {
 
 	@Test
 	void withPropertyPlaceHolder() {
-		List<SemanticTokenData> tokens = provider.computeTokens("${server.port:8080} == 8080", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("${server.port:8080} == 8080");
 		assertThat(tokens.size()).isEqualTo(7);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 2, "operator", new String[0])); // ${
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(2, 13, "property", new String[0])); // server.port

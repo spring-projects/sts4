@@ -1489,7 +1489,7 @@ InvalidUnterminatedUnicodeQuotedIdentifier: 'U' '&' InvalidUnterminatedQuotedIde
 
 StringConstant: UnterminatedStringConstant '\'';
 
-UnterminatedStringConstant: '\'' ('\'\'' | ~ '\'' | '\\\\\'' | '\\\'')*;
+UnterminatedStringConstant: '\'' ('\'\'' | ~ '\'' | '\\\'')*;
 // String Constants with C-style Escapes (4.1.2.2)
 
 BeginEscapeStringConstant: 'E' '\'' -> more, pushMode (EscapeStringConstantMode);
@@ -1625,7 +1625,6 @@ fragment EscapeStringText options {
 }:
     (
         '\\\''
-        | '\'\'\''
         | '\\' (
             // two-digit hex escapes are still valid when treated as single-digit escapes
             'x' [0-9a-fA-F]

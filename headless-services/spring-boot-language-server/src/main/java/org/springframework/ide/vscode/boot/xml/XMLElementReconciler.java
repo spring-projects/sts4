@@ -17,6 +17,7 @@ import org.eclipse.lemminx.dom.DOMNode;
 import org.eclipse.lemminx.dom.DOMRange;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.util.text.Region;
 
 /**
  * @author mlippert
@@ -68,7 +69,7 @@ public class XMLElementReconciler {
 		
 		if (value != null && value.startsWith(prefix) && value.endsWith(postfix)) {
 			String valueToReconcile = value.substring(prefix.length(), value.length() - postfix.length());
-			reconciler.reconcile(valueToReconcile, start + prefix.length() + 1, problemCollector);
+			reconciler.reconcile(valueToReconcile, r -> new Region(r.getOffset() + start + prefix.length() + 1, r.getLength()), problemCollector);
 		}
 	}
 

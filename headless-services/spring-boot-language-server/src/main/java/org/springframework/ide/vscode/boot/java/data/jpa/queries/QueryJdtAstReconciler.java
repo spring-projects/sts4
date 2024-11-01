@@ -17,13 +17,11 @@ import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.jdt.core.dom.TextBlock;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedQueryExpression;
+import org.springframework.ide.vscode.boot.java.embadded.lang.AntlrReconcilerWithSpel;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
@@ -63,7 +61,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
 				if (q != null) {
 					Optional<Reconciler> reconcilerOpt = q.isNative() ? getSqlReconciler(project) : Optional.of(getQueryReconciler(project));
-					reconcilerOpt.ifPresent(r -> r.reconcile(q.query().text(), q.query().offset(), problemCollector));
+					reconcilerOpt.ifPresent(r -> r.reconcile(q.query().getText(), q.query()::toSingleJavaRange, problemCollector));
 				}
 				return super.visit(node);
 			}
@@ -72,7 +70,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 			public boolean visit(SingleMemberAnnotation node) {
 				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
 				if (q != null) {
-					getQueryReconciler(project).reconcile(q.query().text(), q.query().offset(), problemCollector);
+					getQueryReconciler(project).reconcile(q.query().getText(), q.query()::toSingleJavaRange, problemCollector);
 				}
 				return super.visit(node);
 			}
@@ -81,7 +79,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 			public boolean visit(MethodInvocation node) {
 				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
 				if (q != null) {
-					getQueryReconciler(project).reconcile(q.query().text(), q.query().offset(), problemCollector);
+					getQueryReconciler(project).reconcile(q.query().getText(), q.query()::toSingleJavaRange, problemCollector);
 				}
 				return super.visit(node);
 			}
@@ -96,23 +94,23 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 		return SpringProjectUtil.hasDependencyStartingWith(project, "hibernate-core", null) ? hqlReconciler : jpqlReconciler;
 	}
 	
-	public static void reconcileExpression(Reconciler reconciler, Expression valueExp, IProblemCollector problemCollector) {
-		String query = null;
-		int offset = 0;
-		if (valueExp instanceof StringLiteral sl) {
-			query = sl.getEscapedValue();
-			query = query.substring(1, query.length() - 1);
-			offset = sl.getStartPosition() + 1; // +1 to skip over opening "
-		} else if (valueExp instanceof TextBlock tb) {
-			query = tb.getEscapedValue();
-			query = query.substring(3, query.length() - 3);
-			offset = tb.getStartPosition() + 3; // +3 to skip over opening """ 
-		}
-		
-		if (query != null) {
-			reconciler.reconcile(query, offset, problemCollector);
-		}
-	}
+//	public static void reconcileExpression(Reconciler reconciler, Expression valueExp, IProblemCollector problemCollector) {
+//		String query = null;
+//		int offset = 0;
+//		if (valueExp instanceof StringLiteral sl) {
+//			query = sl.getEscapedValue();
+//			query = query.substring(1, query.length() - 1);
+//			offset = sl.getStartPosition() + 1; // +1 to skip over opening "
+//		} else if (valueExp instanceof TextBlock tb) {
+//			query = tb.getEscapedValue();
+//			query = query.substring(3, query.length() - 3);
+//			offset = tb.getStartPosition() + 3; // +3 to skip over opening """ 
+//		}
+//		
+//		if (query != null) {
+//			reconciler.reconcile(query, offset, problemCollector);
+//		}
+//	}
 
 	@Override
 	public boolean isApplicable(IJavaProject project) {

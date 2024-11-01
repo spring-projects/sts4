@@ -10,12 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
+import java.util.function.Function;
+
 import org.springframework.expression.ParseException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
+import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.util.SystemPropertyUtils;
 
 /**
@@ -34,7 +38,7 @@ public class SpelExpressionReconciler implements Reconciler {
 	}
 	
 	@Override
-	public void reconcile(String spelExpression, int startPosition, IProblemCollector problemCollector) {
+	public void reconcile(String spelExpression, Function<IRegion, IRegion> mapper, IProblemCollector problemCollector) {
 		if (!this.spelExpressionValidationEnabled) {
 			return;
 		}
@@ -47,17 +51,11 @@ public class SpelExpressionReconciler implements Reconciler {
 			catch (ParseException e) {
 				String message = e.getSimpleMessage();
 				int position = e.getPosition();
-				
-				createProblem(spelExpression, message, startPosition, position, problemCollector);
+				IRegion r = mapper.apply(new Region(0, position)); 
+				ReconcileProblem problem = new ReconcileProblemImpl(SpelProblemType.JAVA_SPEL_EXPRESSION_SYNTAX, message, r.getOffset(), r.getLength());
+				problemCollector.accept(problem);
 			}
 		}
-	}
-
-	private void createProblem(String spelExpression, String message, int startPosition, int position, IProblemCollector problemCollector) {
-		int start = startPosition + position;
-		int length = spelExpression.length() - position;
-		ReconcileProblem problem = new ReconcileProblemImpl(SpelProblemType.JAVA_SPEL_EXPRESSION_SYNTAX, message, start, length);
-		problemCollector.accept(problem);
 	}
 
 }

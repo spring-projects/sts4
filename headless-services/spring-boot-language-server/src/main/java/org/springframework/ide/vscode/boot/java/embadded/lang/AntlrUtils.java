@@ -8,7 +8,7 @@
  * Contributors:
  *     Broadcom, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.data.jpa.queries;
+package org.springframework.ide.vscode.boot.java.embadded.lang;
 
 import java.util.stream.Stream;
 

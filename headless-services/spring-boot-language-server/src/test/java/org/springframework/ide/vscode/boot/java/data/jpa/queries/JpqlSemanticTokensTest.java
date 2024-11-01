@@ -32,7 +32,7 @@ public class JpqlSemanticTokensTest {
 	
 	@Test
 	void simpleQuery_1() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 12, "variable", new String[0]));
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 17, "keyword", new String[0]));
@@ -43,20 +43,8 @@ public class JpqlSemanticTokensTest {
 	}
 
 	@Test
-	void initialOffset() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner", 3);
-		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(3, 9, "keyword", new String[0]));
-		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(10, 15, "variable", new String[0]));
-		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(16, 20, "keyword", new String[0]));
-		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(21, 26, "class", new String[0]));
-		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(27, 32, "variable", new String[0]));
-		
-		assertThat(tokens.size()).isEqualTo(5);
-	}
-	
-	@Test
 	void query_with_conflicting_groupby() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT g FROM G g GROUP BY g.name", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT g FROM G g GROUP BY g.name");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "variable", new String[0])); // g
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 13, "keyword", new String[0])); // FROM
@@ -73,7 +61,7 @@ public class JpqlSemanticTokensTest {
 	
 	@Test
 	void query_with_parameter() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT f from Student f LEFT JOIN f.classTbls s WHERE s.ClassName = :className", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT f from Student f LEFT JOIN f.classTbls s WHERE s.ClassName = :className");
 		
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "variable", new String[0])); // f
@@ -99,7 +87,7 @@ public class JpqlSemanticTokensTest {
 
 	@Test
 	void query_with_SPEL() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{id}", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{id}");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 12, "variable", new String[0])); // owner
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 17, "keyword", new String[0])); // FROM
@@ -127,7 +115,7 @@ public class JpqlSemanticTokensTest {
 	@Test
 	void query_with_SPEL_Tokens() {
 		provider = new JpqlSemanticTokens(Optional.of(new SpelSemanticTokens()));
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{id}", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT owner FROM Owner owner left join fetch owner.pets WHERE owner.id =:#{id}");
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
 		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 12, "variable", new String[0])); // owner
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 17, "keyword", new String[0])); // FROM

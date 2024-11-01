@@ -32,6 +32,7 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.springframework.ide.vscode.boot.java.embadded.lang.AntlrUtils;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
@@ -73,7 +74,7 @@ public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 	}
 
 	@Override
-	public List<SemanticTokenData> computeTokens(String text, int initialOffset) {
+	public List<SemanticTokenData> computeTokens(String text) {
 		PostgreSqlLexer lexer = new PostgreSqlLexer(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		PostgreSqlParser parser = new PostgreSqlParser(antlrTokens);
@@ -109,7 +110,7 @@ public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 				} else if (type >= PostgreSqlLexer.LineComment && type <= PostgreSqlLexer.UnterminatedBlockComment) {
 					semantics.put(token, "comment");
 				} else if (type == PostgreSqlLexer.SPEL) {
-					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, initialOffset, optSpelTokens));
+					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, 0, optSpelTokens));
 				}
 			}
 			
@@ -181,8 +182,8 @@ public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 		parser.root();
 		
 		semantics.entrySet().stream()
-				.map(e -> new SemanticTokenData(e.getKey().getStartIndex() + initialOffset,
-						e.getKey().getStartIndex() + e.getKey().getText().length() + initialOffset, e.getValue(),
+				.map(e -> new SemanticTokenData(e.getKey().getStartIndex(),
+						e.getKey().getStartIndex() + e.getKey().getText().length(), e.getValue(),
 						new String[0]))
 				.forEach(tokens::add);
 		

@@ -75,12 +75,12 @@ public class JdtDataQueriesInlayHintsProvider implements JdtInlayHintsProvider {
 	}
 	
 	private void processQuery(IJavaProject project, TextDocument doc, Collector<InlayHint> collector, MethodDeclaration m, EmbeddedQueryExpression q) {
-		List<SemanticTokenData> semanticTokens = semanticTokensProvider.computeSemanticTokens(project, q.query().text(), q.query().offset(), q.isNative());
+		List<SemanticTokenData> semanticTokens = semanticTokensProvider.computeSemanticTokens(project, q.query(), q.isNative());
 		SemanticTokenData previousToken = null;
 		for (SemanticTokenData t : semanticTokens) {
 			if (isValidParameterOrdinalInputParameterToken(doc, t, previousToken)) {
 				try {
-					int number = Integer.parseInt(doc.get(t.start(), t.end() - t.start()));
+					int number = Integer.parseInt(doc.get(t.range().getOffset(), t.range().getLength()));
 					if (number > 0 && number <= m.parameters().size()) {
 						Object param = m.parameters().get(number - 1);
 						if (param instanceof SingleVariableDeclaration svd) {
@@ -90,7 +90,7 @@ public class JdtDataQueriesInlayHintsProvider implements JdtInlayHintsProvider {
 							hint.setLabel(Either.forLeft(paramName));
 							hint.setPaddingLeft(true);
 							hint.setPaddingRight(true);
-							hint.setPosition(doc.toPosition(firstNonSkippedChar(doc, t.end(), c -> '%' != c)));
+							hint.setPosition(doc.toPosition(firstNonSkippedChar(doc, t.range().getEnd(), c -> '%' != c)));
 							
 							collector.accept(hint);
 						}
@@ -111,7 +111,7 @@ public class JdtDataQueriesInlayHintsProvider implements JdtInlayHintsProvider {
 	private static boolean isValidParameterOrdinalInputParameterToken(TextDocument doc, SemanticTokenData token, SemanticTokenData previous) {
 		if ("parameter".equals(token.type()) && previous != null && "operator".equals(previous.type())) {
 			try {
-				return "?".equals(doc.get(previous.start(), previous.end() - previous.start()));
+				return "?".equals(doc.get(previous.range().getOffset(), previous.range().getLength()));
 			} catch (BadLocationException e) {
 				// ignore
 			}

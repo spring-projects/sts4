@@ -78,27 +78,27 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(120, 126, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
         
         token = tokens.get(1);
         assertThat(token).isEqualTo(new SemanticTokenData(127, 135, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("DISTINCT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("DISTINCT");
         
         token = tokens.get(2);
         assertThat(token).isEqualTo(new SemanticTokenData(136, 141, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
         
         token = tokens.get(3);
         assertThat(token).isEqualTo(new SemanticTokenData(142, 146, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
 
         token = tokens.get(4);
         assertThat(token).isEqualTo(new SemanticTokenData(147, 152, "class", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("Owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("Owner");
 
         token = tokens.get(5);
         assertThat(token).isEqualTo(new SemanticTokenData(153, 158, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
 	}
 
 	@Test
@@ -126,27 +126,27 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(125, 131, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
         
         token = tokens.get(1);
         assertThat(token).isEqualTo(new SemanticTokenData(132, 140, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("DISTINCT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("DISTINCT");
         
         token = tokens.get(2);
         assertThat(token).isEqualTo(new SemanticTokenData(141, 146, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
         
         token = tokens.get(3);
         assertThat(token).isEqualTo(new SemanticTokenData(147, 151, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
 
         token = tokens.get(4);
         assertThat(token).isEqualTo(new SemanticTokenData(152, 157, "class", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("Owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("Owner");
 
         token = tokens.get(5);
         assertThat(token).isEqualTo(new SemanticTokenData(158, 163, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
 	}
 
 	@Test
@@ -172,27 +172,27 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(128, 134, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
         
         token = tokens.get(1);
         assertThat(token).isEqualTo(new SemanticTokenData(135, 143, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("DISTINCT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("DISTINCT");
         
         token = tokens.get(2);
         assertThat(token).isEqualTo(new SemanticTokenData(144, 149, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
         
         token = tokens.get(3);
         assertThat(token).isEqualTo(new SemanticTokenData(150, 154, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
 
         token = tokens.get(4);
         assertThat(token).isEqualTo(new SemanticTokenData(155, 160, "class", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("Owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("Owner");
 
         token = tokens.get(5);
         assertThat(token).isEqualTo(new SemanticTokenData(161, 166, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
 	}
 	
 	@Test
@@ -219,27 +219,27 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(176, 182, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
         
         token = tokens.get(1);
         assertThat(token).isEqualTo(new SemanticTokenData(183, 191, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("DISTINCT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("DISTINCT");
         
         token = tokens.get(2);
         assertThat(token).isEqualTo(new SemanticTokenData(192, 197, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
         
         token = tokens.get(3);
         assertThat(token).isEqualTo(new SemanticTokenData(198, 202, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
 
         token = tokens.get(4);
         assertThat(token).isEqualTo(new SemanticTokenData(203, 208, "class", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("Owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("Owner");
 
         token = tokens.get(5);
         assertThat(token).isEqualTo(new SemanticTokenData(209, 214, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
 	}
 
 	@Test
@@ -268,27 +268,27 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(181, 187, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
         
         token = tokens.get(1);
         assertThat(token).isEqualTo(new SemanticTokenData(188, 196, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("DISTINCT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("DISTINCT");
         
         token = tokens.get(2);
         assertThat(token).isEqualTo(new SemanticTokenData(197, 202, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
         
         token = tokens.get(3);
         assertThat(token).isEqualTo(new SemanticTokenData(203, 207, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
 
         token = tokens.get(4);
         assertThat(token).isEqualTo(new SemanticTokenData(208, 213, "class", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("Owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("Owner");
 
         token = tokens.get(5);
         assertThat(token).isEqualTo(new SemanticTokenData(214, 219, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
 	}
 
 	@Test
@@ -313,47 +313,47 @@ public class JdtDataQuerySemanticTokensProviderTest {
         List<SemanticTokenData> tokens = computeTokens(cu);
         
         SemanticTokenData token = tokens.get(0);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
         assertThat(token).isEqualTo(new SemanticTokenData(128, 134, "keyword", new String[0]));
         
         token = tokens.get(1);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("*");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
         assertThat(token).isEqualTo(new SemanticTokenData(135, 136, "operator", new String[0]));
         
         token = tokens.get(2);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
         assertThat(token).isEqualTo(new SemanticTokenData(137, 141, "keyword", new String[0]));
         
         token = tokens.get(3);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("USERS");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("USERS");
         assertThat(token).isEqualTo(new SemanticTokenData(142, 147, "variable", new String[0]));
         
         token = tokens.get(4);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("u");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("u");
         assertThat(token).isEqualTo(new SemanticTokenData(148, 149, "variable", new String[0]));
         
         token = tokens.get(5);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("WHERE");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("WHERE");
         assertThat(token).isEqualTo(new SemanticTokenData(150, 155, "keyword", new String[0]));
         
         token = tokens.get(6);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("u");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("u");
         assertThat(token).isEqualTo(new SemanticTokenData(156, 157, "variable", new String[0]));
         
         token = tokens.get(7);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo(".");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo(".");
         assertThat(token).isEqualTo(new SemanticTokenData(157, 158, "operator", new String[0]));
         
         token = tokens.get(8);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("status");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("status");
         assertThat(token).isEqualTo(new SemanticTokenData(158, 164, "property", new String[0]));
 
         token = tokens.get(9);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("=");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("=");
         assertThat(token).isEqualTo(new SemanticTokenData(165, 166, "operator", new String[0]));
 
         token = tokens.get(10);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("1");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("1");
         assertThat(token).isEqualTo(new SemanticTokenData(167, 168, "number", new String[0]));
         
 	}
@@ -380,59 +380,59 @@ public class JdtDataQuerySemanticTokensProviderTest {
         List<SemanticTokenData> tokens = computeTokens(cu);
         
         SemanticTokenData token = tokens.get(0);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
         assertThat(token).isEqualTo(new SemanticTokenData(128, 134, "keyword", new String[0]));
         
         token = tokens.get(1);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("*");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
         assertThat(token).isEqualTo(new SemanticTokenData(135, 136, "operator", new String[0]));
         
         token = tokens.get(2);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
         assertThat(token).isEqualTo(new SemanticTokenData(137, 141, "keyword", new String[0]));
         
         token = tokens.get(3);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("USERS");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("USERS");
         assertThat(token).isEqualTo(new SemanticTokenData(142, 147, "variable", new String[0]));
         
         token = tokens.get(4);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("u");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("u");
         assertThat(token).isEqualTo(new SemanticTokenData(148, 149, "variable", new String[0]));
         
         token = tokens.get(5);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("WHERE");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("WHERE");
         assertThat(token).isEqualTo(new SemanticTokenData(150, 155, "keyword", new String[0]));
         
         token = tokens.get(6);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("u");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("u");
         assertThat(token).isEqualTo(new SemanticTokenData(156, 157, "variable", new String[0]));
         
         token = tokens.get(7);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo(".");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo(".");
         assertThat(token).isEqualTo(new SemanticTokenData(157, 158, "operator", new String[0]));
         
         token = tokens.get(8);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("status");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("status");
         assertThat(token).isEqualTo(new SemanticTokenData(158, 164, "property", new String[0]));
 
         token = tokens.get(9);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("=");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("=");
         assertThat(token).isEqualTo(new SemanticTokenData(165, 166, "operator", new String[0]));
 
         token = tokens.get(10);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("?");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("?");
         assertThat(token).isEqualTo(new SemanticTokenData(167, 168, "operator", new String[0]));
         
         token = tokens.get(11);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("#{");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("#{");
         assertThat(token).isEqualTo(new SemanticTokenData(168, 170, "operator", new String[0]));
         
         token = tokens.get(12);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("status");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("status");
         assertThat(token).isEqualTo(new SemanticTokenData(170, 176, "variable", new String[0]));
 
         token = tokens.get(13);
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("}");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("}");
         assertThat(token).isEqualTo(new SemanticTokenData(176, 177, "operator", new String[0]));
 	}
 	
@@ -457,27 +457,84 @@ public class JdtDataQuerySemanticTokensProviderTest {
         
         SemanticTokenData token = tokens.get(0);
         assertThat(token).isEqualTo(new SemanticTokenData(101, 107, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("SELECT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
         
         token = tokens.get(1);
         assertThat(token).isEqualTo(new SemanticTokenData(108, 116, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("DISTINCT");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("DISTINCT");
         
         token = tokens.get(2);
         assertThat(token).isEqualTo(new SemanticTokenData(117, 122, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
         
         token = tokens.get(3);
         assertThat(token).isEqualTo(new SemanticTokenData(123, 127, "keyword", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("FROM");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
 
         token = tokens.get(4);
         assertThat(token).isEqualTo(new SemanticTokenData(128, 133, "class", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("Owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("Owner");
 
         token = tokens.get(5);
         assertThat(token).isEqualTo(new SemanticTokenData(134, 139, "variable", new String[0]));
-        assertThat(source.substring(token.start(), token.end())).isEqualTo("owner");
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("owner");
 	}
+	
+	@Test
+	void nativeConcatenatedStringQuery() throws Exception {
+		String source = """
+		package my.package
+		
+		import org.springframework.data.jpa.repository.Query;
+		
+		public interface OwnerRepository {
+		
+			@Query(value = "SELECT" +
+				" DIS" + 
+				"TINCT" + 
+				" test FROM Te" +
+				"st", nativeQuery = true) 
+			void findByLastName();
+		}
+		""";
+
+		String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/OwnerRepository.java").toUri()
+				.toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "OwnerRepository.java", jp);
+
+		assertThat(cu).isNotNull();
+
+		List<SemanticTokenData> tokens = computeTokens(cu);
+
+		SemanticTokenData token = tokens.get(0);
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
+		assertThat(token).isEqualTo(new SemanticTokenData(128, 134, "keyword", new String[0]));
+
+		token = tokens.get(1);
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("DIS");
+		assertThat(token).isEqualTo(new SemanticTokenData(142, 145, "keyword", new String[0]));
+
+		token = tokens.get(2);
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("TINCT");
+		assertThat(token).isEqualTo(new SemanticTokenData(152, 157, "keyword", new String[0]));
+
+		token = tokens.get(3);
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("test");
+		assertThat(token).isEqualTo(new SemanticTokenData(165, 169, "variable", new String[0]));
+
+		token = tokens.get(4);
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
+		assertThat(token).isEqualTo(new SemanticTokenData(170, 174, "keyword", new String[0]));
+
+		token = tokens.get(5);
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("Te");
+		assertThat(token).isEqualTo(new SemanticTokenData(175, 177, "variable", new String[0]));
+
+		token = tokens.get(6);
+		assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("st");
+		assertThat(token).isEqualTo(new SemanticTokenData(184, 186, "variable", new String[0]));
+
+	}
+
 
 }

@@ -14,11 +14,11 @@ import java.util.Optional;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ide.vscode.boot.java.data.jpa.queries.AntlrReconcilerWithSpel;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryProblemType;
+import org.springframework.ide.vscode.boot.java.embadded.lang.AntlrReconcilerWithSpel;
 import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;

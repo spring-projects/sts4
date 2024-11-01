@@ -53,7 +53,7 @@ public class JdtSpelReconciler implements JdtAstReconciler {
 					.map(e -> e.getSpelRegion(node))
 					.filter(o -> o.isPresent())
 					.map(o -> o.get())
-					.forEach(snippet -> spelReconciler.reconcile(snippet.text(), snippet.offset(), problemCollector));
+					.forEach(snippet -> spelReconciler.reconcile(snippet.getText(), snippet::toSingleJavaRange, problemCollector));
 				return super.visit(node);
 			}
 			
@@ -63,7 +63,7 @@ public class JdtSpelReconciler implements JdtAstReconciler {
 					.map(e -> e.getSpelRegion(node))
 					.filter(o -> o.isPresent())
 					.map(o -> o.get())
-					.forEach(snippet -> spelReconciler.reconcile(snippet.text(), snippet.offset(), problemCollector));
+					.forEach(snippet -> spelReconciler.reconcile(snippet.getText(), snippet::toSingleJavaRange, problemCollector));
 				return super.visit(node);
 			}
 

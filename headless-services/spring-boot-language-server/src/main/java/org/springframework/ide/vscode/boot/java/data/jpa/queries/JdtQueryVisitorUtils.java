@@ -18,24 +18,21 @@ import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.jdt.core.dom.TextBlock;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLangAstUtils;
+import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLanguageSnippet;
 
 public class JdtQueryVisitorUtils {
 	
 	private static final String QUERY = "Query";
 	private static final String NAMED_QUERY = "NamedQuery";	
-
 	
-	public record EmbeddedExpression(Expression expression, String text, int offset) {};
-	
-	public record EmbeddedQueryExpression(EmbeddedExpression query, boolean isNative) {};
+	public record EmbeddedQueryExpression(EmbeddedLanguageSnippet query, boolean isNative) {};
 	
 	public static EmbeddedQueryExpression extractQueryExpression(SingleMemberAnnotation a) {
 		if (isQueryAnnotation(a)) {
-			EmbeddedExpression expression = extractEmbeddedExpression(a.getValue());
+			EmbeddedLanguageSnippet expression = EmbeddedLangAstUtils.extractEmbeddedExpression(a.getValue());
 			return expression == null ? null : new EmbeddedQueryExpression(expression, false);
 		}
 		return null;
@@ -83,7 +80,7 @@ public class JdtQueryVisitorUtils {
 			}
 		}
 		if (queryExpression != null) {
-			EmbeddedExpression e = extractEmbeddedExpression(queryExpression);
+			EmbeddedLanguageSnippet e = EmbeddedLangAstUtils.extractEmbeddedExpression(queryExpression);
 			if (e != null) {
 				return new EmbeddedQueryExpression(e, isNative);
 			}
@@ -96,29 +93,13 @@ public class JdtQueryVisitorUtils {
 			IMethodBinding methodBinding = m.resolveMethodBinding();
 			if ("jakarta.persistence.EntityManager".equals(methodBinding.getDeclaringClass().getQualifiedName())) {
 				if (methodBinding.getParameterTypes().length <= 2 && "java.lang.String".equals(methodBinding.getParameterTypes()[0].getQualifiedName())) {
-					EmbeddedExpression expression = extractEmbeddedExpression(queryExpr);
+					EmbeddedLanguageSnippet expression = EmbeddedLangAstUtils.extractEmbeddedExpression(queryExpr);
 					return expression == null ? null : new EmbeddedQueryExpression(expression, false);
 				}
 			}
 		}
 		return null;
 	}
-	
-	public static EmbeddedExpression extractEmbeddedExpression(Expression valueExp) {
-		String text = null;
-		int offset = 0;
-		if (valueExp instanceof StringLiteral sl) {
-			text = sl.getEscapedValue();
-			text = text.substring(1, text.length() - 1);
-			offset = sl.getStartPosition() + 1; // +1 to skip over opening "
-		} else if (valueExp instanceof TextBlock tb) {
-			text = tb.getEscapedValue();
-			text = text.substring(3, text.length() - 3);
-			offset = tb.getStartPosition() + 3; // +3 to skip over opening """ 
-		}
-		return text == null ? null : new EmbeddedExpression(valueExp, text, offset);
-	}
-
 	
 	static boolean isQueryAnnotation(Annotation a) {
 		if (Annotations.DATA_QUERY.equals(a.getTypeName().getFullyQualifiedName()) || QUERY.equals(a.getTypeName().getFullyQualifiedName())) {

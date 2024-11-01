@@ -8,10 +8,11 @@
  * Contributors:
  *     Broadcom, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.data.jpa.queries;
+package org.springframework.ide.vscode.boot.java.embadded.lang;
 
 import java.util.BitSet;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStream;
@@ -33,6 +34,8 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
+import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.commons.util.text.linetracker.DefaultLineTracker;
 
 public class AntlrReconciler implements Reconciler {
@@ -57,7 +60,7 @@ public class AntlrReconciler implements Reconciler {
 		this.problemType = problemType;
 	}
 
-	protected Parser createParser(String text, int startPosition, IProblemCollector problemCollector) throws Exception {
+	protected Parser createParser(String text, Function<IRegion, IRegion> mapping, IProblemCollector problemCollector) throws Exception {
 		Lexer lexer = lexerClass.getDeclaredConstructor(CharStream.class).newInstance(CharStreams.fromString(text));
 		CommonTokenStream antlrTokens = new CommonTokenStream(lexer);
 		Parser parser = parserClass.getDeclaredConstructor(TokenStream.class).newInstance(antlrTokens);
@@ -93,7 +96,8 @@ public class AntlrReconciler implements Reconciler {
 						log.error("", e1);
 					}
 				}
-				problemCollector.accept(new ReconcileProblemImpl(problemType,  String.format("%s: %s",  prefix, msg), startPosition + offset, length));
+				IRegion problemRegion = mapping.apply(new Region(offset, length));
+				problemCollector.accept(new ReconcileProblemImpl(problemType,  String.format("%s: %s",  prefix, msg), problemRegion.getOffset(), problemRegion.getLength()));
 			}
 			
 			@Override
@@ -121,9 +125,9 @@ public class AntlrReconciler implements Reconciler {
 	}
 
 	@Override
-	public void reconcile(String text, int startPosition, IProblemCollector problemCollector) {
+	public void reconcile(String text, Function<IRegion, IRegion> mapping, IProblemCollector problemCollector) {
 		try {
-			Parser parser = createParser(text, startPosition, problemCollector);
+			Parser parser = createParser(text, mapping, problemCollector);
 			parserClass.getDeclaredMethod(parseMethod).invoke(parser);
 		} catch (Throwable t) {
 			log.error("", t);

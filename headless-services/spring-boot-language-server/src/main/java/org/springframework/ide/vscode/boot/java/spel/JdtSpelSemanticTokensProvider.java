@@ -60,7 +60,10 @@ public class JdtSpelSemanticTokensProvider implements JdtSemanticTokensProvider 
 					.map(e -> e.getSpelRegion(node))
 					.filter(o -> o.isPresent())
 					.map(o -> o.get())
-					.forEach(snippet -> tokensProvider.computeTokens(snippet.text(), snippet.offset()).forEach(collector::accept));
+						.forEach(snippet -> tokensProvider.computeTokens(snippet.getText()).stream()
+								.flatMap(td -> snippet.toJavaRanges(td.range()).stream().map(r -> new SemanticTokenData(r,
+										td.type(), td.modifiers())))
+								.forEach(collector::accept));
 				return super.visit(node);
 			}
 			
@@ -70,7 +73,10 @@ public class JdtSpelSemanticTokensProvider implements JdtSemanticTokensProvider 
 					.map(e -> e.getSpelRegion(node))
 					.filter(o -> o.isPresent())
 					.map(o -> o.get())
-					.forEach(snippet -> tokensProvider.computeTokens(snippet.text(), snippet.offset()).forEach(collector::accept));
+					.forEach(snippet -> tokensProvider.computeTokens(snippet.getText()).stream()
+							.flatMap(td -> snippet.toJavaRanges(td.range()).stream().map(r -> new SemanticTokenData(r,
+									td.type(), td.modifiers())))
+							.forEach(collector::accept));
 				return super.visit(node);
 			}
 

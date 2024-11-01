@@ -52,11 +52,11 @@ public class SemanticTokensUtils {
 		int previousLine = 0;
 		int previousColumn = 0;
 		for (SemanticTokenData tokenData : tokensData) {
-			int currentLine = getLineNumber.apply(tokenData.start());
-			int currentColumn = getColumnNumber.apply(tokenData.start());
+			int currentLine = getLineNumber.apply(tokenData.getStart());
+			int currentColumn = getColumnNumber.apply(tokenData.getStart());
 			data.add(currentLine - previousLine);
 			data.add(currentLine == previousLine ? currentColumn - previousColumn : currentColumn);
-			data.add(tokenData.end() -  tokenData.start());
+			data.add(tokenData.getEnd() -  tokenData.getStart());
 			data.add(SemanticTokensUtils.getSemanticTokenTypeIndex(legend, tokenData.type()));
 			data.add(SemanticTokensUtils.getSemanticTokenModifiersFlags(legend, tokenData.modifiers()));
 			previousLine = currentLine;
@@ -79,11 +79,11 @@ public class SemanticTokensUtils {
 		int previousColumn = 0;
 		for (SemanticTokenData tokenData : tokensData) {
 			try {
-				int currentLine = doc.getLineOfOffset(tokenData.start());
-				int currentColumn = tokenData.start() - doc.getLineOffset(currentLine);
+				int currentLine = doc.getLineOfOffset(tokenData.getStart());
+				int currentColumn = tokenData.getStart() - doc.getLineOffset(currentLine);
 				data.add(currentLine - previousLine);
 				data.add(currentLine == previousLine ? currentColumn - previousColumn : currentColumn);
-				data.add(tokenData.end() -  tokenData.start());
+				data.add(tokenData.getEnd() -  tokenData.getStart());
 				data.add(SemanticTokensUtils.getSemanticTokenTypeIndex(legend, tokenData.type()));
 				data.add(SemanticTokensUtils.getSemanticTokenModifiersFlags(legend, tokenData.modifiers()));
 				previousLine = currentLine;
