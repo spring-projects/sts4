@@ -252,7 +252,7 @@ public class QueryReconcilerTest {
 		String docUri = directory.toPath().resolve("src/main/java/example/demo/OwnerRepository.java").toUri()
 				.toString();
 		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
-		editor.assertProblems("ptype|PostgreSQL: no viable alternative at input 'SELECTXptype'");
+		editor.assertProblems("SELECTX|PostgreSQL: mismatched input 'SELECTX'");
 	}
 	
 	@Test

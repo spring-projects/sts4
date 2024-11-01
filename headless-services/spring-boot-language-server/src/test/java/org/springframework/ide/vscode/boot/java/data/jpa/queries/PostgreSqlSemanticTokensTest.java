@@ -58,10 +58,10 @@ public class PostgreSqlSemanticTokensTest {
 		assertThat(tokens.get(26)).isEqualTo(new SemanticTokenData(154, 155, "parameter", new String[0])); // 1 from ?1
 		assertThat(tokens.get(28)).isEqualTo(new SemanticTokenData(161, 177, "method", new String[0])); // json_path_exists
 		assertThat(tokens.get(33)).isEqualTo(new SemanticTokenData(194, 196, "operator", new String[0])); // ::
-		assertThat(tokens.get(34)).isEqualTo(new SemanticTokenData(196, 201, "type", new String[0])); // ::
+		assertThat(tokens.get(34)).isEqualTo(new SemanticTokenData(196, 201, "type", new String[0])); // jsonb
 		assertThat(tokens.get(37)).isEqualTo(new SemanticTokenData(204, 281, "string", new String[0])); // 'strict $.content.**.id ? (@ == "\\' || representation.targetobjectid || \\'")'
 		assertThat(tokens.get(39)).isEqualTo(new SemanticTokenData(282, 284, "operator", new String[0])); // ::
-		assertThat(tokens.get(40)).isEqualTo(new SemanticTokenData(284, 292, "type", new String[0])); // ::
+		assertThat(tokens.get(40)).isEqualTo(new SemanticTokenData(284, 292, "type", new String[0])); // jsonpath
 	}
 	
 	@Test
@@ -85,7 +85,7 @@ public class PostgreSqlSemanticTokensTest {
 	void semiColonAtEnd() {
 		List<SemanticTokenData> tokens = provider.computeTokens(" select count(*) from anecdote where anecdote_id=:anecdote ; ", 0);
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(1, 7, "keyword", new String[0])); // select
-		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(8, 13, "keyword", new String[0])); // count
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(8, 13, "method", new String[0])); // count
 		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(13, 14, "operator", new String[0])); // (
 		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 15, "operator", new String[0])); // *
 		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(15, 16, "operator", new String[0])); // )
@@ -103,7 +103,7 @@ public class PostgreSqlSemanticTokensTest {
 	
 	@Test
 	void parameterInLimitClause_1() {
-		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT :2", 0);
+		List<SemanticTokenData> tokens = provider.computeTokens("SELECT * FROM cards ORDER BY random() LIMIT ?2", 0);
 		assertThat(tokens.size()).isEqualTo(12);
 		
 		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0]));
@@ -203,7 +203,7 @@ public class PostgreSqlSemanticTokensTest {
 		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(15, 19, "keyword", new String[0]));
 		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(20, 32, "variable", new String[0]));
 		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(33, 38, "keyword", new String[0]));
-		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(39, 50, "keyword", new String[0]));
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(39, 50, "variable", new String[0]));
 		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(51, 52, "operator", new String[0]));
 		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(53, 54, "operator", new String[0]));
 		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(54, 55, "parameter", new String[0]));
@@ -285,4 +285,36 @@ public class PostgreSqlSemanticTokensTest {
             """, 0);
 		assertThat(tokens.size()).isEqualTo(74);
 	}
+	
+	@Test
+	void collate_1() {
+		List<SemanticTokenData> tokens = provider.computeTokens("""
+				SELECT DISTINCT test COLLATE "numeric" FROM Test
+				""", 0);
+		assertThat(tokens.size()).isEqualTo(7);
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 15, "keyword", new String[0])); // DISTICT
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(16, 20, "variable", new String[0])); // test
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(21, 28, "keyword", new String[0])); // COLLATE
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(29, 38, "variable", new String[0])); // "numeric"
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(39, 43, "keyword", new String[0])); // FROM
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(44, 48, "variable", new String[0])); // Test
+	}
+
+	@Test
+	void collate_2() {
+		List<SemanticTokenData> tokens = provider.computeTokens("""
+				SELECT a COLLATE "de_DE" < b FROM test1
+				""", 0);
+		assertThat(tokens.size()).isEqualTo(8);
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // SELECT
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 8, "variable", new String[0])); // a
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(9, 16, "keyword", new String[0])); // COLLATE
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(17, 24, "variable", new String[0])); // "de_DE"
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(25, 26, "operator", new String[0])); // <
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(27, 28, "variable", new String[0])); // b
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(29, 33, "keyword", new String[0])); // FROM
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(34, 39, "variable", new String[0])); // test1
+	}
+	
 }

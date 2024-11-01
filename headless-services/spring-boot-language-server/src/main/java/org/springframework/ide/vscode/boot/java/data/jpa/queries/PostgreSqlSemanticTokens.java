@@ -37,16 +37,16 @@ import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.Sem
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokensDataProvider;
 import org.springframework.ide.vscode.parser.postgresql.PostgreSqlLexer;
 import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser;
-import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser.Data_typeContext;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser.Attr_nameContext;
 import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser.Func_nameContext;
-import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser.IdentifierContext;
 import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser.ParameterContext;
+import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParser.TypenameContext;
 import org.springframework.ide.vscode.parser.postgresql.PostgreSqlParserBaseListener;
 
 public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 	
 	private static List<String> TOKEN_TYPES = List.of("keyword", "type", "string", "number", "operator",
-			"variable", "regexp", "comment", "parameter", "method");
+			"variable", "comment", "parameter", "method");
 
 	private Optional<SpelSemanticTokens> optSpelTokens;
 	private Optional<Consumer<RecognitionException>> parseErrorHandler;
@@ -90,24 +90,23 @@ public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 			private void processTerminalNode(TerminalNode node) {
 				Token token = node.getSymbol();
 				int type = token.getType();
-				if (type >= PostgreSqlLexer.A_ && type <= PostgreSqlLexer.OWNED) {
+				if (type >= PostgreSqlLexer.ALL && type <= PostgreSqlLexer.TOP) {
 					semantics.put(token, "keyword");
-				} else if (type >= PostgreSqlLexer.ABSTIME && type <= PostgreSqlLexer.XML) {
-					semantics.put(token, "type");
-				} else if ((type >= PostgreSqlLexer.AMP && type <= PostgreSqlLexer.SEMI)
+				} else if (type >= PostgreSqlLexer.ABS && type <= PostgreSqlLexer.TO_NUMBER) {
+					semantics.put(token, "method");
+				} else if ((type >= PostgreSqlLexer.Dollar && type <= PostgreSqlLexer.Operator)
 						|| (type >= PostgreSqlLexer.COMMA && type <= PostgreSqlLexer.CLOSE_BRACKET)
 						|| type == PostgreSqlLexer.DOT) {
 					semantics.put(token, "operator");
-				} else if (type == PostgreSqlLexer.REGEX_STRING) {
-					semantics.put(token, "regexp");
-				} else if (type >= PostgreSqlLexer.SINGLEQ_STRING_LITERAL && type <= PostgreSqlLexer.DOUBLEQ_STRING_LITERAL) {
+				} else if (type >= PostgreSqlLexer.StringConstant && type <= PostgreSqlLexer.BeginDollarStringConstant) {
 					semantics.put(token, "string");
-				} else if ((type >= PostgreSqlLexer.NUMERIC_LITERAL && type <= PostgreSqlLexer.HEX_INTEGER_LITERAL)
-						|| type == PostgreSqlLexer.DOLLAR_DEC || type == PostgreSqlLexer.BIT_STRING) {
+				} else if ((type >= PostgreSqlLexer.Integral && type <= PostgreSqlLexer.Numeric)
+						|| (type >= PostgreSqlLexer.BinaryStringConstant && type <= PostgreSqlLexer.InvalidUnterminatedHexadecimalStringConstant)) {
 					semantics.put(token, "number");
-				} else if (type == PostgreSqlLexer.IDENTIFIER) {
+				} else if ((type >= PostgreSqlLexer.Identifier && type <= PostgreSqlLexer.InvalidUnterminatedHexadecimalStringConstant) 
+						|| type == PostgreSqlLexer.PLSQLIDENTIFIER) {
 					semantics.put(token, "variable");
-				} else if (type >= PostgreSqlLexer.BLOCK_COMMENT && type <= PostgreSqlLexer.LINE_COMMENT) {
+				} else if (type >= PostgreSqlLexer.LineComment && type <= PostgreSqlLexer.UnterminatedBlockComment) {
 					semantics.put(token, "comment");
 				} else if (type == PostgreSqlLexer.SPEL) {
 					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, initialOffset, optSpelTokens));
@@ -125,39 +124,29 @@ public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 			}
 
 			@Override
-			public void exitIdentifier(IdentifierContext ctx) {
-				if (ctx.identifier() != null) {
-					for (int i = 1; i < ctx.identifier().size(); i++) {
-						IdentifierContext identifier = ctx.identifier(i);
-						if (identifier.IDENTIFIER() != null) {
-							semantics.put(identifier.IDENTIFIER().getSymbol(), "property");
-						}
-					}
-				}
-			}
-
-			@Override
 			public void exitFunc_name(Func_nameContext funcName) {
-				if (funcName.identifier() != null && funcName.identifier().IDENTIFIER() != null) {
-					semantics.put(funcName.identifier().IDENTIFIER().getSymbol(), "method");
-				}
+				AntlrUtils.getAllLeafs(funcName).filter(t -> t.getType() != PostgreSqlLexer.DOT)
+						.forEach(t -> semantics.put(t, "method"));
 			}
 			
 			@Override
-			public void exitData_type(Data_typeContext dataType) {
-				if (dataType.identifier() != null) {
-					AntlrUtils.getAllLeafs(dataType.identifier())
-						.filter(t -> t.getType() == PostgreSqlLexer.IDENTIFIER)
+			public void exitAttr_name(Attr_nameContext ctx) {
+				AntlrUtils.getAllLeafs(ctx)
+				.forEach(t -> semantics.put(t, "proeprty"));
+			}
+
+			@Override
+			public void exitTypename(TypenameContext ctx) {
+				AntlrUtils.getAllLeafs(ctx).filter(t -> t.getType() != PostgreSqlLexer.DOT)
 						.forEach(t -> semantics.put(t, "type"));
-				}
 			}
 
 			@Override
 			public void exitParameter(ParameterContext param) {
-				if (param.identifier() != null) {
-					AntlrUtils.getAllLeafs(param.identifier()).forEach(t -> semantics.put(t, "parameter"));
-				} else if (param.INTEGER_LITERAL() != null) {
-					semantics.put(param.INTEGER_LITERAL().getSymbol(), "parameter");
+				if (param.colid() != null) {
+					AntlrUtils.getAllLeafs(param.colid()).forEach(t -> semantics.put(t, "parameter"));
+				} else if (param.Integral() != null) {
+					semantics.put(param.Integral().getSymbol(), "parameter");
 				} else if (param.reserved_keyword() != null) {
 					AntlrUtils.getAllLeafs(param.reserved_keyword()).forEach(t -> semantics.put(t, "parameter"));
 				}
