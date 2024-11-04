@@ -58,6 +58,11 @@ public class PropertyIndexHarness {
 		}
 
 		@Override
+		public SpringPropertyIndex getIndex(IJavaProject project) {
+			return getIndex((IDocument) null);
+		}
+
+		@Override
 		public void onChange(Runnable runnable) {
 
 		}

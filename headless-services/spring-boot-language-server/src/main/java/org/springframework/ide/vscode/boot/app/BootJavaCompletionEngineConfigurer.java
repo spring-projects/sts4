@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.boot.java.beans.NamedCompletionProvider;
 import org.springframework.ide.vscode.boot.java.beans.ProfileCompletionProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProvider;
 import org.springframework.ide.vscode.boot.java.beans.ResourceCompletionProvider;
+import org.springframework.ide.vscode.boot.java.conditionals.ConditionalOnPropertyCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalOnResourceCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.contextconfiguration.ContextConfigurationProcessor;
 import org.springframework.ide.vscode.boot.java.cron.CronExpressionCompletionProvider;
@@ -126,6 +127,11 @@ public class BootJavaCompletionEngineConfigurer {
 		
 		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
 				"resources", new ConditionalOnResourceCompletionProcessor())));
+
+		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
+				"value", new ConditionalOnPropertyCompletionProcessor(indexProvider, adHocProperties, ConditionalOnPropertyCompletionProcessor.Mode.PROPERTY),
+				"name", new ConditionalOnPropertyCompletionProcessor(indexProvider, adHocProperties, ConditionalOnPropertyCompletionProcessor.Mode.PROPERTY),
+				"prefix", new ConditionalOnPropertyCompletionProcessor(indexProvider, adHocProperties, ConditionalOnPropertyCompletionProcessor.Mode.PREFIX))));
 
 		providers.put(Annotations.SCOPE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
 				"value", new ScopeCompletionProcessor())));

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2023 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,6 +47,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.RunnableWithException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -4792,7 +4793,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
         useProject(createPredefinedMavenProject("boot-1.3.3-app-with-resource-prop"));
 
         //Check the metadata reflects the 'handle-as':
-        PropertyInfo metadata = getIndexProvider().getIndex(null).getProperties().get("my.welcome.path");
+        PropertyInfo metadata = getIndexProvider().getIndex((IDocument)null).getProperties().get("my.welcome.path");
         assertEquals("org.springframework.core.io.Resource", metadata.getType());
 
         //Check the content assist based on it works too:
