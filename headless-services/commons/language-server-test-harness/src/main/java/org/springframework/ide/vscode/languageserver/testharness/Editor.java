@@ -71,8 +71,8 @@ public class Editor {
 
 	public static final Predicate<CompletionItem> RELAXED_COMPLETION
 			= c -> c.getLabel().startsWith("- ")
-				|| c.getLabel().startsWith(Unicodes.LEFT_ARROW+" ")
-				|| c.getLabel().startsWith(Unicodes.RIGHT_ARROW+" ")
+				|| c.getLabel().startsWith(Unicodes.LEFT_ARROW + " ")
+				|| c.getLabel().startsWith(Unicodes.RIGHT_ARROW + " ")
 				;
 	public static final Predicate<CompletionItem> SNIPPET_COMPLETION = c -> c.getLabel().endsWith("Snippet");
 	public static final Predicate<CompletionItem> PLAIN_COMPLETION = RELAXED_COMPLETION.negate();
@@ -86,11 +86,11 @@ public class Editor {
 
 		public EditorState(String text) {
 			selectionStart = text.indexOf(CURSOR);
-			if (selectionStart>=0) {
-				text = text.substring(0,selectionStart) + text.substring(selectionStart+CURSOR.length());
+			if (selectionStart >= 0) {
+				text = text.substring(0,selectionStart) + text.substring(selectionStart + CURSOR.length());
 				selectionEnd = text.indexOf(CURSOR, selectionStart);
-				if (selectionEnd>=0) {
-					text = text.substring(0, selectionEnd) + text.substring(selectionEnd+CURSOR.length());
+				if (selectionEnd >= 0) {
+					text = text.substring(0, selectionEnd) + text.substring(selectionEnd + CURSOR.length());
 				} else {
 					selectionEnd = selectionStart;
 				}
@@ -110,15 +110,15 @@ public class Editor {
 		@Override
 		public int compare(Diagnostic o1, Diagnostic o2) {
 			int diff = compare(o1.getRange().getStart(), o2.getRange().getStart());
-			if (diff!=0) return diff;
+			if (diff != 0) return diff;
 			diff = compare(o1.getRange().getEnd(), o2.getRange().getEnd());
-			if (diff!=0) return diff;
+			if (diff != 0) return diff;
 			return o1.getMessage().compareTo(o2.getMessage());
 		}
 
 		private int compare(Position p1, Position p2) {
 			int d = p1.getLine() - p2.getLine();
-			if (d!=0) return d;
+			if (d != 0) return d;
 			return p1.getCharacter() - p2.getCharacter();
 		}
 	};
@@ -126,12 +126,12 @@ public class Editor {
 		@Override
 		public int compare(Range o1, Range o2) {
 			int diff = compare(o1.getStart(), o2.getStart());
-			if (diff!=0) return diff;
+			if (diff != 0) return diff;
 			return compare(o1.getEnd(), o2.getEnd());
 		}
 		private int compare(Position p1, Position p2) {
 			int d = p1.getLine() - p2.getLine();
-			if (d!=0) return d;
+			if (d != 0) return d;
 			return p1.getCharacter() - p2.getCharacter();
 		}
 	};
@@ -202,18 +202,18 @@ public class Editor {
 		}).collect(Collectors.toList()));
 		Collections.sort(actualProblems, PROBLEM_COMPARATOR);
 		String bad = null;
-		if (actualProblems.size()!=expectedProblems.length) {
+		if (actualProblems.size() != expectedProblems.length) {
 			bad = "Wrong number of problems (expecting "+expectedProblems.length+" but found "+actualProblems.size()+")";
 		} else {
 			for (int i = 0; i < expectedProblems.length; i++) {
 				if (!matchProblem(actualProblems.get(i), expectedProblems[i])) {
-					bad = "First mismatch at index "+i+": "+expectedProblems[i]+"\n";
+					bad = "First mismatch at index "+i+": " + expectedProblems[i] + "\n";
 					break;
 				}
 			}
 		}
 		if (bad!=null) {
-			fail(bad+problemSumary(editor, actualProblems));
+			fail(bad + problemSumary(editor, actualProblems));
 		}
 		return ImmutableList.copyOf(actualProblems);
 	}
@@ -224,8 +224,8 @@ public class Editor {
 			buf.append("\n----------------------\n");
 
 			String snippet = editor.getText(p.getRange());
-			buf.append("("+p.getRange().getStart().getLine()+", "+p.getRange().getStart().getCharacter()+")["+snippet+"]:\n");
-			buf.append("   "+p.getMessage());
+			buf.append("(" + p.getRange().getStart().getLine() + ", " + p.getRange().getStart().getCharacter() + ")[" + snippet + "]:\n");
+			buf.append("   " + p.getMessage());
 		}
 		return buf.toString();
 	}
@@ -244,7 +244,7 @@ public class Editor {
 	
 	public void assertDocumentHighlights(String afterString, DocumentHighlight... expected) throws Exception {
 		int pos = getRawText().indexOf(afterString);
-		if (pos>=0) {
+		if (pos >= 0) {
 			pos += afterString.length();
 		}
 		List<? extends DocumentHighlight> actual = harness.getDocumentHighlights(doc.getId(), doc.toPosition(pos));
@@ -264,7 +264,7 @@ public class Editor {
 	public String getText() {
 		String text = doc.getText();
 		text = text.substring(0, selectionEnd) + CURSOR + text.substring(selectionEnd);
-		if (selectionStart<selectionEnd) {
+		if (selectionStart < selectionEnd) {
 			text = text.substring(0,selectionStart) + CURSOR + text.substring(selectionStart);
 		}
 		return text;
@@ -303,7 +303,7 @@ public class Editor {
 		String snippetBefore;
 		String snippetAfter;
 		String[] badParts = StringUtil.split(badSnippet, '^');
-		assertTrue(badParts.length<=3);
+		assertTrue(badParts.length <= 3);
 		if (badParts.length == 1) {
 			snippetBefore = "";
 			snippetAfter = "";
@@ -318,7 +318,7 @@ public class Editor {
 			snippetAfter = badParts[2];
 		}
 		String messageSnippet = parts[1];
-		boolean spaceSensitive = badSnippet.trim().length()<badSnippet.length();
+		boolean spaceSensitive = badSnippet.trim().length() < badSnippet.length();
 		boolean emptyRange = problem.getRange().getStart().equals(problem.getRange().getEnd());
 		String actualBadSnippet = emptyRange
 				? getCharAt(problem.getRange().getStart())
@@ -345,14 +345,14 @@ public class Editor {
 	private String getCharAt(Position start) {
 		String text = doc.getText();
 		int offset = doc.toOffset(start);
-		return offset<text.length()
-			? text.substring(offset, offset+1)
+		return offset < text.length()
+			? text.substring(offset, offset + 1)
 			: "";
 	}
 
 	public List<Diagnostic> reconcile() throws Exception {
 		PublishDiagnosticsParams diagnostics = harness.getDiagnostics(doc);
-		if (diagnostics!=null) {
+		if (diagnostics != null) {
 			return diagnostics.getDiagnostics();
 		}
 		return Collections.emptyList();
@@ -428,7 +428,7 @@ public class Editor {
 			.filter(labelPredicate)
 			.collect(Collectors.toList());
 		if (!found.isEmpty()) {
-			fail("Found but not expected: "+found);
+			fail("Found but not expected: " + found);
 		}
 	}
 
@@ -520,7 +520,7 @@ public class Editor {
 			insertPosition = selectionStart;
 			insertLength = insertText.length();
 
-			selectionStart+= insertText.length();
+			selectionStart += insertText.length();
 			selectionEnd += insertText.length();
 			setRawText(newText);
 		}
@@ -554,7 +554,7 @@ public class Editor {
 
 	private String getInsertText(CompletionItem completion) {
 		String s = completion.getInsertText();
-		if (s==null) {
+		if (s == null) {
 			//If no insertText is provided the label is used
 			s = completion.getLabel();
 		}
@@ -650,7 +650,7 @@ public class Editor {
 					buf.append(s);
 				} else if (block.isRight()) {
 					MarkedString ms = block.getRight();
-					buf.append("```"+ms.getLanguage()+"\n");
+					buf.append("```" + ms.getLanguage() + "\n");
 					buf.append(ms.getValue());
 					buf.append("\n```");
 				}
@@ -663,10 +663,10 @@ public class Editor {
 	}
 
 	private int getHoverPosition(String hoverOver, int occurrence) throws Exception {
-		assertTrue(occurrence>0);
+		assertTrue(occurrence > 0);
 		return occurrences(getRawText(), hoverOver)
 				.elementAt(occurrence-1)
-				.map(offset -> offset + hoverOver.length()/2)
+				.map(offset -> offset + hoverOver.length() / 2)
 				.block();
 	}
 
@@ -681,7 +681,7 @@ public class Editor {
 			@Override
 			public Integer next() {
 				int found = text.indexOf(substring, searchFrom);
-				assertTrue(found>=0);
+				assertTrue(found >= 0);
 				searchFrom = found+1;
 				return found;
 			}
@@ -732,7 +732,7 @@ public class Editor {
 	 */
 	public void assertHoverText(String afterString, String expectSnippet) throws Exception {
 		int pos = getRawText().indexOf(afterString);
-		if (pos>=0) {
+		if (pos >= 0) {
 			pos += afterString.length();
 		}
 		Hover hover = harness.getHover(doc, doc.toPosition(pos));
@@ -746,7 +746,7 @@ public class Editor {
 	 */
 	public void assertHoverExactText(String afterString, String expectedHover) throws Exception {
 		int pos = getRawText().indexOf(afterString);
-		if (pos>=0) {
+		if (pos >= 0) {
 			pos += afterString.length();
 		}
 		Hover hover = harness.getHover(doc, doc.toPosition(pos));
@@ -755,7 +755,7 @@ public class Editor {
 
 	public Hover getHover(String afterString) throws Exception {
 		int pos = getRawText().indexOf(afterString);
-		if (pos>=0) {
+		if (pos >= 0) {
 			pos += afterString.length();
 		}
 		return harness.getHover(doc, doc.toPosition(pos));
@@ -763,10 +763,10 @@ public class Editor {
 
 	public CompletionItem assertCompletionDetails(String expectLabel, String expectDetail, String expectDocSnippet) throws Exception {
 		CompletionItem it = harness.resolveCompletionItem(assertCompletionWithLabel(expectLabel));
-		if (expectDetail!=null) {
+		if (expectDetail != null) {
 			assertEquals(expectDetail, it.getDetail());
 		}
-		if (expectDocSnippet!=null) {
+		if (expectDocSnippet != null) {
 			assertContains(expectDocSnippet, getDocString(it));
 		}
 		return it;
@@ -774,10 +774,10 @@ public class Editor {
 
 	public CompletionItem assertCompletionDetailsWithDeprecation(String expectLabel, String expectDetail, String expectDocSnippet, boolean deprecated) throws Exception {
 		CompletionItem it = harness.resolveCompletionItem(assertCompletionWithLabel(expectLabel));
-		if (expectDetail!=null) {
+		if (expectDetail != null) {
 			assertEquals(expectDetail, it.getDetail());
 		}
-		if (expectDocSnippet!=null) {
+		if (expectDocSnippet != null) {
 			assertContains(expectDocSnippet, getDocString(it));
 		}
 		@SuppressWarnings("deprecation")
@@ -794,7 +794,7 @@ public class Editor {
 		if (completion.isPresent()) {
 			return completion.get();
 		}
-		fail("Not found in "+ completions.stream().map(c -> c.getLabel()).collect(Collectors.toList()));
+		fail("Not found in " + completions.stream().map(c -> c.getLabel()).collect(Collectors.toList()));
 		return null; //unreachable but compiler doesn't know.
 	}
 
@@ -806,7 +806,7 @@ public class Editor {
 		if (completion.isPresent()) {
 			return completion.get();
 		}
-		fail("Not found '"+expectLabel+"' in "+ completions.stream().map(c -> c.getLabel()).collect(Collectors.toList()));
+		fail("Not found '" + expectLabel + "' in " + completions.stream().map(c -> c.getLabel()).collect(Collectors.toList()));
 		return null; //unreachable but compiler doesn't know.
 	}
 
@@ -828,21 +828,21 @@ public class Editor {
 	}
 
 	public void setSelection(int start, int end) {
-		assertTrue(start>=0);
-		assertTrue(end>=start);
-		assertTrue(end<=doc.getText().length());
+		assertTrue(start >= 0);
+		assertTrue(end >= start);
+		assertTrue(end <= doc.getText().length());
 		this.selectionStart = start;
 		this.selectionEnd = end;
 	}
 
 	@Override
 	public String toString() {
-		return "Editor(\n"+getText()+"\n)";
+		return "Editor(\n" + getText() + "\n)";
 	}
 
 	public void assertLinkTargets(String hoverOver, Collection<LocationLink> expectedLocations) throws Exception {
 		int pos = getRawText().indexOf(hoverOver);
-		if (pos>=0) {
+		if (pos >= 0) {
 			pos += hoverOver.length() / 2;
 		}
 		assertTrue(pos>=0, "Not found in editor: '"+hoverOver+"'");
@@ -859,10 +859,10 @@ public class Editor {
 	
 	public void assertNoLinkTargets(String hoverOver) throws Exception {
 		int pos = getRawText().indexOf(hoverOver);
-		if (pos>=0) {
+		if (pos >= 0) {
 			pos += hoverOver.length() / 2;
 		}
-		assertTrue(pos>=0, "Not found in editor: '"+hoverOver+"'");
+		assertTrue(pos >= 0, "Not found in editor: '" + hoverOver + "'");
 
 		DefinitionParams params = new DefinitionParams(new TextDocumentIdentifier(getUri()), doc.toPosition(pos));
 		List<? extends LocationLink> definitions = harness.getDefinitions(params);
@@ -901,7 +901,7 @@ public class Editor {
 				return p;
 			}
 		}
-		fail("No problem found covering the text '"+coveredText+"' in: \n"
+		fail("No problem found covering the text '" + coveredText + "' in: \n"
 				+ problemSumary(editor, problems)
 		);
 		return null; //unreachable but compiler doesn't know
@@ -917,11 +917,11 @@ public class Editor {
 		List<CodeAction> actions = getCodeActions(problem);
 		StringBuilder expecteds = new StringBuilder();
 		for (String l : expectedLabels) {
-			expecteds.append(l+"\n");
+			expecteds.append(l + "\n");
 		}
 		StringBuilder actuals = new StringBuilder();
 		for (CodeAction a : actions) {
-			actuals.append(a.getLabel()+"\n");
+			actuals.append(a.getLabel() + "\n");
 		}
 		assertEquals(expecteds.toString(), actuals.toString());
 		return actions;
@@ -954,7 +954,7 @@ public class Editor {
 	 */
 	public Position positionOf(String longSnippet, String focusSnippet) throws Exception {
 		Range r = rangeOf(longSnippet, focusSnippet);
-		return r==null?null:r.getStart();
+		return r == null ? null : r.getStart();
 	}
 
 	public Position positionOf(String snippet) throws Exception {
@@ -977,8 +977,8 @@ public class Editor {
 	public Range rangeOf(String longSnippet, String focusSnippet) throws Exception {
 		int relativeOffset = longSnippet.indexOf(focusSnippet);
 		int contextStart = getRawText().indexOf(longSnippet);
-		assertTrue(contextStart>=0, "'"+longSnippet+"' not found in editor");
-		int start = contextStart+relativeOffset;
+		assertTrue(contextStart >= 0, "'" + longSnippet + "' not found in editor");
+		int start = contextStart + relativeOffset;
 		return new Range(doc.toPosition(start), doc.toPosition(start+focusSnippet.length()));
 	}
 
@@ -991,10 +991,10 @@ public class Editor {
 	}
 	
 	public List<CodeAction> getCodeActions(String overStr, int occurrence) throws Exception {
-		assertTrue(occurrence>0);
+		assertTrue(occurrence > 0);
 		int offset = occurrences(getRawText(), overStr)
-				.elementAt(occurrence-1)
-				.map(o -> o + overStr.length()/2)
+				.elementAt(occurrence - 1)
+				.map(o -> o + overStr.length() / 2)
 				.block();
 		Position position = doc.toPosition(offset);
 		return harness.getCodeActions(doc, new Range(position, position));
@@ -1008,10 +1008,10 @@ public class Editor {
 
 	public void assertNoCodeAction(Diagnostic problem) throws Exception {
 		List<CodeAction> actions = getCodeActions(problem);
-		if (actions!=null && !actions.isEmpty()) {
+		if (actions != null && !actions.isEmpty()) {
 			StringBuilder found = new StringBuilder();
 			for (CodeAction codeAction : actions) {
-				found.append("\n"+codeAction.getLabel());
+				found.append("\n" + codeAction.getLabel());
 			}
 			fail("Expected no code actions but found:"+found);
 		}
@@ -1030,7 +1030,7 @@ public class Editor {
 		Arrays.sort(symbolsAndContainers);
 		StringBuilder expected = new StringBuilder();
 		for (String string : symbolsAndContainers) {
-			expected.append(string+"\n");
+			expected.append(string + "\n");
 		}
 
 		List<? extends SymbolInformation> actualSymbols = getDocumentSymbols();
@@ -1044,7 +1044,7 @@ public class Editor {
 		Collections.sort(actuals);
 		StringBuilder actual = new StringBuilder();
 		for (String string : actuals) {
-			actual.append(string+"\n");
+			actual.append(string + "\n");
 		}
 		assertEquals(expected.toString(), actual.toString());
 	}
@@ -1072,9 +1072,9 @@ public class Editor {
 		symbolDump.append("\n");
 		assertEquals(s.getName(), getText(s.getSelectionRange()));
 		
-		assertNestedRange("Invalid selection range for "+s.getName(), s.getRange(), s.getSelectionRange());
+		assertNestedRange("Invalid selection range for " + s.getName(), s.getRange(), s.getSelectionRange());
 		List<DocumentSymbol> children = s.getChildren();
-		if (children!=null) {
+		if (children != null) {
 			dumpSymbols(children, indent+1, symbolDump);
 		}
 	}
@@ -1086,15 +1086,15 @@ public class Editor {
 			//it's fine!
 		} else {
 			fail(msg + "\n" +
-				"outer: '"+this.getText(outerRange)+"'\n" +
+				"outer: '" + this.getText(outerRange)+"'\n" +
 				"does not contain\n" +
-				"inner: '"+this.getText(innerRange)+"'"
+				"inner: '" + this.getText(innerRange) + "'"
 			);
 		}
 	}
 
 	private static int compare(Position p1, Position p2) {
-		if (p1.getLine()==p2.getLine()) {
+		if (p1.getLine() == p2.getLine()) {
 			return p1.getCharacter() - p2.getCharacter();
 		} else {
 			return p1.getLine() - p2.getLine();
