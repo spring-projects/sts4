@@ -31,7 +31,6 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
@@ -65,9 +64,11 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	private static final Logger log = LoggerFactory.getLogger(ValuePropertyReferencesProvider.class);
 
 	private final JavaProjectFinder projectFinder;
+	private final PropertyExtractor propertyExtractor;
 
 	public ValuePropertyReferencesProvider(JavaProjectFinder projectFinder) {
 		this.projectFinder = projectFinder;
+		this.propertyExtractor = new PropertyExtractor();
 	}
 
 	@Override
@@ -76,34 +77,9 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		cancelToken.checkCanceled();
 
 		try {
-			// case: @Value("prefix<*>")
-			if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(node.toString(), offset - node.getStartPosition(), node.getStartPosition());
-				}
-			}
-			// case: @Value(value="prefix<*>")
-			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
-					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(node.toString(), offset - node.getStartPosition(), node.getStartPosition());
-				}
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return null;
-	}
-
-	private List<? extends Location> provideReferences(String value, int offset, int nodeStartOffset) {
-
-		try {
-			LocalRange range = getPropertyRange(value, offset);
-			if (range != null) {
-				String propertyKey = value.substring(range.getStart(), range.getEnd());
-				if (propertyKey != null && propertyKey.length() > 0) {
+			if (node instanceof StringLiteral) {
+				String propertyKey = this.propertyExtractor.extractPropertyKey((StringLiteral) node);
+				if (propertyKey != null) {
 					return findReferencesFromPropertyFiles(propertyKey);
 				}
 			}

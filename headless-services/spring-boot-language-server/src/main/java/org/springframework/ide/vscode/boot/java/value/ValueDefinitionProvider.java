@@ -18,13 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.IAnnotationBinding;
-import org.eclipse.jdt.core.dom.MemberValuePair;
-import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
@@ -34,7 +28,6 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.IJavaDefinitionProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -47,37 +40,12 @@ import com.google.common.collect.ImmutableList.Builder;
 public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(ValueDefinitionProvider.class);
+	private final PropertyExtractor propertyExtractor;
 	
-	private static final String PARAM_VALUE = "value";
-	private static final String PARAM_NAME = "name";
-	private static final String PARAM_PREFIX = "prefix";
+	public ValueDefinitionProvider() {
+		this.propertyExtractor = new PropertyExtractor();
+	}
 	
-	private Map<String, PropertyKeyExtractor> annotationToPropertyKeyExtractor = Map.of(
-			Annotations.VALUE, (annotation, memberValuePair, stringLiteral) -> {
-				if (annotation.isSingleMemberAnnotation()) {
-					return extractPropertyKey(stringLiteral.getLiteralValue());
-				} else if (annotation.isNormalAnnotation() && PARAM_VALUE.equals(memberValuePair.getName().getIdentifier())) {
-					return extractPropertyKey(stringLiteral.getLiteralValue());
-				}
-				return null;
-			},
-			Annotations.CONDITIONAL_ON_PROPERTY, (annotation, memberValuePair, stringLiteral) -> {
-				if (annotation.isSingleMemberAnnotation()) {
-					return stringLiteral.getLiteralValue();
-				} else if (annotation.isNormalAnnotation()) {
-					switch (memberValuePair.getName().getIdentifier()) {
-					case PARAM_VALUE:
-						return stringLiteral.getLiteralValue();
-					case PARAM_NAME:
-						String prefix = extractAnnotationParameter(annotation, PARAM_PREFIX);
-						String name = stringLiteral.getLiteralValue();
-						return prefix != null && !prefix.isBlank() ? prefix + "." + name : name;
-					}
-				}
-				return null;
-			}
-	);
-
 	@Override
 	public List<LocationLink> getDefinitions(CancelChecker cancelToken, IJavaProject project,
 			TextDocumentIdentifier docId, CompilationUnit cu, ASTNode n, int offset) {
@@ -99,30 +67,7 @@ public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 	}
 	
 	private List<LocationLink> getDefinitionForProperty(IJavaProject project, CompilationUnit cu, StringLiteral valueNode) {
-		String propertyKey = null;
-		
-		ASTNode parent = valueNode.getParent();
-		if (parent instanceof Annotation) {
-			Annotation a = (Annotation) parent;
-			IAnnotationBinding binding = a.resolveAnnotationBinding();
-			if (binding != null && binding.getAnnotationType() != null) {
-				PropertyKeyExtractor propertyExtractor = annotationToPropertyKeyExtractor.get(binding.getAnnotationType().getQualifiedName());
-				if (propertyExtractor != null) {
-					propertyKey = propertyExtractor.extract(a, null, valueNode);
-				}
-			}
-		} else if (parent instanceof MemberValuePair
-				&& parent.getParent() instanceof Annotation) {
-			MemberValuePair pair = (MemberValuePair) parent;
-			Annotation a = (Annotation) parent.getParent();
-			IAnnotationBinding binding = a.resolveAnnotationBinding();
-			if (binding != null && binding.getAnnotationType() != null) {
-				PropertyKeyExtractor propertyExtractor = annotationToPropertyKeyExtractor.get(binding.getAnnotationType().getQualifiedName());
-				if (propertyExtractor != null) {
-					propertyKey = propertyExtractor.extract(a, pair, valueNode);
-				}
-			}
-		}
+		String propertyKey = propertyExtractor.extractPropertyKey(valueNode);
 		
 		if (propertyKey != null) {
 			Builder<LocationLink> builder = ImmutableList.builder();
@@ -217,36 +162,6 @@ public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 		return links.build();
 	}
 	
-	@SuppressWarnings("unchecked")
-	private static String extractAnnotationParameter(Annotation a, String param) {
-		Expression value = null;
-		if (a.isSingleMemberAnnotation() && PARAM_VALUE.equals(param)) {
-			value = ((SingleMemberAnnotation) a).getValue();
-		} else if (a.isNormalAnnotation()) {
-			for (MemberValuePair pair : (List<MemberValuePair>) ((NormalAnnotation) a).values()) {
-				if (param.equals(pair.getName().getIdentifier())) {
-					value = pair.getValue();
-					break;
-				}
-			}
-		}
-		if (value instanceof StringLiteral) {
-			return ((StringLiteral) value).getLiteralValue();
-		}
-		return null;
-	}
-
-	private static String extractPropertyKey(String s) {
-		if (s.length() > 3 && (s.startsWith("${") || s.startsWith("#{")) && s.endsWith("}")) {
-			return s.substring(2, s.length() - 1);
-		}
-		return null;
-	}
-	
-	private interface PropertyKeyExtractor {
-		String extract(Annotation annotation, MemberValuePair memberValuePair, StringLiteral stringLiteral);
-	}
-
 	private List<LocationLink> getDefinitionForClasspathResource(IJavaProject project, CompilationUnit cu, StringLiteral valueNode, String literalValue) {
 		literalValue = literalValue.substring("classpath:".length());
 		

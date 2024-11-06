@@ -41,9 +41,9 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReferencesHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
+import org.springframework.ide.vscode.boot.java.handlers.CopilotCodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
-import org.springframework.ide.vscode.boot.java.handlers.CopilotCodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
@@ -319,6 +319,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		Map<String, ReferenceProvider> providers = new HashMap<>();
 
 		providers.put(Annotations.VALUE, new ValuePropertyReferencesProvider(projectFinder));
+		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, new ValuePropertyReferencesProvider(projectFinder));
 		providers.put(Annotations.QUALIFIER, new QualifierReferencesProvider(index, symbolIndex));
 		providers.put(Annotations.NAMED_JAKARTA, new NamedReferencesProvider(index, symbolIndex));
 		providers.put(Annotations.NAMED_JAVAX, new NamedReferencesProvider(index, symbolIndex));
