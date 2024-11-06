@@ -57,8 +57,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
  */
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
-@Import({AdHocPropertyHarnessTestConf.class, ConditionalOnPropertyTest.TestConf.class})
-public class ConditionalOnPropertyTest {
+@Import({AdHocPropertyHarnessTestConf.class, ConditionalOnPropertyCompletionTest.TestConf.class})
+public class ConditionalOnPropertyCompletionTest {
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
