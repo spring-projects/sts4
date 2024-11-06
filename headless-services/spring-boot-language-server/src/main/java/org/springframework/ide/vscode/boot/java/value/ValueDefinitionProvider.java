@@ -53,24 +53,24 @@ public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 	private static final String PARAM_PREFIX = "prefix";
 	
 	private Map<String, PropertyKeyExtractor> annotationToPropertyKeyExtractor = Map.of(
-			Annotations.VALUE, (a, p, v) -> {
-				if (a.isSingleMemberAnnotation()) {
-					return extractPropertyKey(v.getLiteralValue());
-				} else if (a.isNormalAnnotation() && PARAM_VALUE.equals(p.getName().getIdentifier())) {
-					return extractPropertyKey(v.getLiteralValue());
+			Annotations.VALUE, (annotation, memberValuePair, stringLiteral) -> {
+				if (annotation.isSingleMemberAnnotation()) {
+					return extractPropertyKey(stringLiteral.getLiteralValue());
+				} else if (annotation.isNormalAnnotation() && PARAM_VALUE.equals(memberValuePair.getName().getIdentifier())) {
+					return extractPropertyKey(stringLiteral.getLiteralValue());
 				}
 				return null;
 			},
-			Annotations.CONDITIONAL_ON_PROPERTY, (a, p, v) -> {
-				if (a.isSingleMemberAnnotation()) {
-					return v.getLiteralValue();
-				} else if (a.isNormalAnnotation()) {
-					switch (p.getName().getIdentifier()) {
+			Annotations.CONDITIONAL_ON_PROPERTY, (annotation, memberValuePair, stringLiteral) -> {
+				if (annotation.isSingleMemberAnnotation()) {
+					return stringLiteral.getLiteralValue();
+				} else if (annotation.isNormalAnnotation()) {
+					switch (memberValuePair.getName().getIdentifier()) {
 					case PARAM_VALUE:
-						return v.getLiteralValue();
+						return stringLiteral.getLiteralValue();
 					case PARAM_NAME:
-						String prefix = extractAnnotationParameter(a, PARAM_PREFIX);
-						String name = v.getLiteralValue();
+						String prefix = extractAnnotationParameter(annotation, PARAM_PREFIX);
+						String name = stringLiteral.getLiteralValue();
 						return prefix != null && !prefix.isBlank() ? prefix + "." + name : name;
 					}
 				}
@@ -244,7 +244,7 @@ public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 	}
 	
 	private interface PropertyKeyExtractor {
-		String extract(Annotation a, MemberValuePair pair, StringLiteral v);
+		String extract(Annotation annotation, MemberValuePair memberValuePair, StringLiteral stringLiteral);
 	}
 
 	private List<LocationLink> getDefinitionForClasspathResource(IJavaProject project, CompilationUnit cu, StringLiteral valueNode, String literalValue) {
