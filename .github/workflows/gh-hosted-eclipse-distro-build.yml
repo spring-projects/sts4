@@ -34,6 +34,7 @@ env:
   AWS_ENDPOINT_URL_S3:  ${{ secrets.CDN_S3_ENDPOINT }}
   AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}/spring-tools
   DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
+  CDN_BUCKET: ${{ secrets.CDN_BUCKET }}
 
 jobs:
 
@@ -146,17 +147,15 @@ jobs:
       - name: Upload Win Zip to S3 for Signing via JFrog
         run: |
           aws s3 rm s3://$AWS_S3_BUCKET/sts4-distro-win-sign/${{ inputs.eclipse_profile }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --exclude "*/*"
-          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://$AWS_S3_BUCKET/sts4-distro-win-sign/${{ inputs.eclipse_profile }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --exclude "*/*" --no-progress
     outputs:
       id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
       dist_path: ${{ steps.s3-paths.outputs.dist_path }}
       p2_path: ${{ steps.s3-paths.outputs.p2_path }}
       version: ${{ steps.project-version.outputs.version }}
 
-
   sign-win-distros:
     needs: [ eclipse-distro-build ]
-    runs-on: [ self-hosted, Linux ]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
@@ -167,17 +166,14 @@ jobs:
           rm -f spring-tool-suite-4*win*.zip*
           rm -f spring-tool-suite-4*win*.self-extracting.jar*
           ls
-          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*"
+          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
       - name: Sign EXE within zip files
         id: sign
-        env:
-          SSH_KEY: ~/.ssh/id_rsa
-          SSH_USER: signer
         run: |
           files=`ls spring-tool-suite-4*win*.zip`
           for file in $files
           do
-            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ needs.eclipse-distro-build.outputs.id }}
+            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ github.run_id }}
           done
       - name: Update Win zip/jar on S3
         id: update-s3
@@ -196,14 +192,6 @@ jobs:
           eclipse_profile=${{ inputs.eclipse_profile }}
           eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
           ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }} $AWS_S3_BUCKET $DOWNLOAD_URL_ROOT
-      - name: Cleanup
-        if: ${{ always() }}
-        env:
-          SSH_KEY: ~/.ssh/id_rsa
-          SSH_USER: signer
-        run: |
-          ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -rf /opt/bamboo/${{ needs.eclipse-distro-build.outputs.id }}
-          rm -rf *spring-tool-suite-4*win*
 
   sign-osx-distros:
     needs: [ eclipse-distro-build ]
