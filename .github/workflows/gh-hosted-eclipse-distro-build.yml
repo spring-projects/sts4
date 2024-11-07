@@ -170,8 +170,20 @@ jobs:
           files=`ls spring-tool-suite-4*win*.zip`
           for file in $files
           do
-            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ github.run_id }}
+            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ github.run_id }} &
           done
+          FAIL=0
+          for job in `jobs -p`
+          do
+            wait $job || let "FAIL+=1"
+          done
+          if [ "$FAIL" == "0" ];
+          then
+            echo "Done signing EXE files"
+          else
+            echo "Failed signing one or more EXE files"
+            exit 1
+          fi
       - name: Update Win zip/jar on S3
         id: update-s3
         run: |
