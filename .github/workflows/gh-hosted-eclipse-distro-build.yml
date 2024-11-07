@@ -34,6 +34,7 @@ env:
   AWS_ENDPOINT_URL_S3:  ${{ secrets.CDN_S3_ENDPOINT }}
   AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}/spring-tools
   DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
+  CDN_BUCKET: ${{ secrets.CDN_BUCKET }}
 
 jobs:
 
