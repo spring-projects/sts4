@@ -18,5 +18,5 @@ for (( i=wait_time; i<timeout; i+=wait_time )) ; {
     break
   fi
 }
-aws mv s3://$AWS_S3_BUCKET/exes-signed/$id.exe $out_file
+aws s3 mv s3://$AWS_S3_BUCKET/exes-signed/$id.exe $out_file
 
