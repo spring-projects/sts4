@@ -153,57 +153,96 @@ jobs:
       p2_path: ${{ steps.s3-paths.outputs.p2_path }}
       version: ${{ steps.project-version.outputs.version }}
 
+    sign-win-distros:
+      needs: [ eclipse-distro-build ]
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+          with:
+            sparse-checkout: |
+              .github
+        - name: Download Win Zips from S3 for Signing
+          run: |
+            rm -f spring-tool-suite-4*win*.zip*
+            rm -f spring-tool-suite-4*win*.self-extracting.jar*
+            ls
+            aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*"
+        - name: Sign EXE within zip files
+          id: sign
+          run: |
+            files=`ls spring-tool-suite-4*win*.zip`
+            for file in $files
+            do
+              ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ github.run_id }}
+            done
+        - name: Update Win zip/jar on S3
+          id: update-s3
+          run: |
+            dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
+            echo "Processing S3 update..."
+            ls spring-tool-suite-4*win*
+            echo "Removing old win zip and self extracting jar files from S3..."
+            aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
+            echo "Uploading new win zip and self extracting jar files to S3..."
+            aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
+        - name: Update Nightly Distro Downloads page
+          if: ${{ inputs.build_type == 'snapshot' }}
+          run: |
+            dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
+            eclipse_profile=${{ inputs.eclipse_profile }}
+            eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
+            ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }} $AWS_S3_BUCKET $DOWNLOAD_URL_ROOT
 
-  sign-win-distros:
-    needs: [ eclipse-distro-build ]
-    runs-on: [ self-hosted, Linux ]
-    steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
-        with:
-          sparse-checkout: |
-            .github
-      - name: Download Win Zips from S3 for Signing
-        run: |
-          rm -f spring-tool-suite-4*win*.zip*
-          rm -f spring-tool-suite-4*win*.self-extracting.jar*
-          ls
-          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*"
-      - name: Sign EXE within zip files
-        id: sign
-        env:
-          SSH_KEY: ~/.ssh/id_rsa
-          SSH_USER: signer
-        run: |
-          files=`ls spring-tool-suite-4*win*.zip`
-          for file in $files
-          do
-            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ needs.eclipse-distro-build.outputs.id }}
-          done
-      - name: Update Win zip/jar on S3
-        id: update-s3
-        run: |
-          dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
-          echo "Processing S3 update..."
-          ls spring-tool-suite-4*win*
-          echo "Removing old win zip and self extracting jar files from S3..."
-          aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
-          echo "Uploading new win zip and self extracting jar files to S3..."
-          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
-      - name: Update Nightly Distro Downloads page
-        if: ${{ inputs.build_type == 'snapshot' }}
-        run: |
-          dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
-          eclipse_profile=${{ inputs.eclipse_profile }}
-          eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
-          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }} $AWS_S3_BUCKET $DOWNLOAD_URL_ROOT
-      - name: Cleanup
-        if: ${{ always() }}
-        env:
-          SSH_KEY: ~/.ssh/id_rsa
-          SSH_USER: signer
-        run: |
-          ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -rf /opt/bamboo/${{ needs.eclipse-distro-build.outputs.id }}
-          rm -rf *spring-tool-suite-4*win*
+#  sign-win-distros:
+#    needs: [ eclipse-distro-build ]
+#    runs-on: [ self-hosted, Linux ]
+#    steps:
+#      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+#        with:
+#          sparse-checkout: |
+#            .github
+#      - name: Download Win Zips from S3 for Signing
+#        run: |
+#          rm -f spring-tool-suite-4*win*.zip*
+#          rm -f spring-tool-suite-4*win*.self-extracting.jar*
+#          ls
+#          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*"
+#      - name: Sign EXE within zip files
+#        id: sign
+#        env:
+#          SSH_KEY: ~/.ssh/id_rsa
+#          SSH_USER: signer
+#        run: |
+#          files=`ls spring-tool-suite-4*win*.zip`
+#          for file in $files
+#          do
+#            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ needs.eclipse-distro-build.outputs.id }}
+#          done
+#      - name: Update Win zip/jar on S3
+#        id: update-s3
+#        run: |
+#          dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
+#          echo "Processing S3 update..."
+#          ls spring-tool-suite-4*win*
+#          echo "Removing old win zip and self extracting jar files from S3..."
+#          aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
+#          echo "Uploading new win zip and self extracting jar files to S3..."
+#          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
+#      - name: Update Nightly Distro Downloads page
+#        if: ${{ inputs.build_type == 'snapshot' }}
+#        run: |
+#          dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
+#          eclipse_profile=${{ inputs.eclipse_profile }}
+#          eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
+#          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }} $AWS_S3_BUCKET $DOWNLOAD_URL_ROOT
+#      - name: Cleanup
+#        if: ${{ always() }}
+#        env:
+#          SSH_KEY: ~/.ssh/id_rsa
+#          SSH_USER: signer
+#        run: |
+#          ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -rf /opt/bamboo/${{ needs.eclipse-distro-build.outputs.id }}
+#          rm -rf *spring-tool-suite-4*win*
 
   sign-osx-distros:
     needs: [ eclipse-distro-build ]
