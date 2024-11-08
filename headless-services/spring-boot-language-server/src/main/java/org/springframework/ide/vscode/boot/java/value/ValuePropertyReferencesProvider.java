@@ -194,7 +194,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 		}
 
 		return foundLocations;
