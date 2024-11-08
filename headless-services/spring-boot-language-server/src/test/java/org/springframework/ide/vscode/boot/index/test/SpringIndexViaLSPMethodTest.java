@@ -84,7 +84,7 @@ public class SpringIndexViaLSPMethodTest {
 		List<Bean> beans = result.get(5, TimeUnit.SECONDS);
 
 		assertNotNull(beans);
-		assertEquals(19, beans.size());
+		assertEquals(23, beans.size());
 	}
 
 	@Test
@@ -98,7 +98,7 @@ public class SpringIndexViaLSPMethodTest {
 		List<Bean> beans = result.get(5, TimeUnit.SECONDS);
 
 		assertNotNull(beans);
-		assertEquals(18, beans.size());
+		assertEquals(22, beans.size());
 	}
 
 	@Test
