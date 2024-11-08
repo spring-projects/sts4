@@ -449,7 +449,10 @@ public class ASTUtils {
 					fieldAnnotations.add(annotation);
 
 					String qualifiedName = annotation.resolveTypeBinding().getQualifiedName();
-					if (Annotations.AUTOWIRED.equals(qualifiedName) || Annotations.INJECT_JAVAX.equals(qualifiedName) || Annotations.INJECT_JAKARTA.equals(qualifiedName)) {
+					if (Annotations.AUTOWIRED.equals(qualifiedName)
+							|| Annotations.INJECT_JAVAX.equals(qualifiedName)
+							|| Annotations.INJECT_JAKARTA.equals(qualifiedName)
+							|| Annotations.VALUE.equals(qualifiedName)) {
 						autowiredField = true;
 					}
 				}

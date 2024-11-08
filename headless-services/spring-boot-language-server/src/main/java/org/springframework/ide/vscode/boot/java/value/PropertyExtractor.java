@@ -15,16 +15,13 @@ import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.lsp4j.LocationLink;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 public class PropertyExtractor {
 	
@@ -103,7 +100,7 @@ public class PropertyExtractor {
 		return null;
 	}
 	
-	private String extractPropertyKey(String s) {
+	public static String extractPropertyKey(String s) {
 		if (s.length() > 3 && (s.startsWith("${") || s.startsWith("#{")) && s.endsWith("}")) {
 			return s.substring(2, s.length() - 1);
 		}

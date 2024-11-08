@@ -318,8 +318,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		
 		Map<String, ReferenceProvider> providers = new HashMap<>();
 
-		providers.put(Annotations.VALUE, new ValuePropertyReferencesProvider(projectFinder));
-		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, new ValuePropertyReferencesProvider(projectFinder));
+		providers.put(Annotations.VALUE, new ValuePropertyReferencesProvider(projectFinder, index));
+		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, new ValuePropertyReferencesProvider(projectFinder, index));
 		providers.put(Annotations.QUALIFIER, new QualifierReferencesProvider(index, symbolIndex));
 		providers.put(Annotations.NAMED_JAKARTA, new NamedReferencesProvider(index, symbolIndex));
 		providers.put(Annotations.NAMED_JAVAX, new NamedReferencesProvider(index, symbolIndex));

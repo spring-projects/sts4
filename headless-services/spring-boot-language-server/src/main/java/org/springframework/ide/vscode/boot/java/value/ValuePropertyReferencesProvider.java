@@ -19,8 +19,11 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -38,11 +41,16 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -65,9 +73,12 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 
 	private final JavaProjectFinder projectFinder;
 	private final PropertyExtractor propertyExtractor;
+	private final SpringMetamodelIndex springIndex;
 
-	public ValuePropertyReferencesProvider(JavaProjectFinder projectFinder) {
+
+	public ValuePropertyReferencesProvider(JavaProjectFinder projectFinder, SpringMetamodelIndex springIndex) {
 		this.projectFinder = projectFinder;
+		this.springIndex = springIndex;
 		this.propertyExtractor = new PropertyExtractor();
 	}
 
@@ -80,7 +91,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 			if (node instanceof StringLiteral) {
 				String propertyKey = this.propertyExtractor.extractPropertyKey((StringLiteral) node);
 				if (propertyKey != null) {
-					return findReferencesFromPropertyFiles(propertyKey);
+					return findReferencesToPropertyKey(propertyKey);
 				}
 			}
 		}
@@ -89,6 +100,126 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		}
 
 		return null;
+	}
+	
+	public List<? extends Location> findReferencesToPropertyKey(String propertyKey) {
+		List<? extends Location> fromPropertyFiles = findReferencesFromPropertyFiles(propertyKey);
+		List<? extends Location> fromAnnotations = findReferencesFromAnnotations(propertyKey);
+		
+		List<Location> result = new ArrayList<>();
+		result.addAll(fromPropertyFiles);
+		result.addAll(fromAnnotations);
+		
+		return result;
+	}
+	
+	public List<? extends Location> findReferencesFromAnnotations(String propertyKey) {
+		List<Location> result = new ArrayList<>();
+		
+		Collection<? extends IJavaProject> allProjects = this.projectFinder.all();
+		for (IJavaProject project : allProjects) {
+			collectReferencesFromAnnotations(project, propertyKey, result);
+		}
+		
+		return result;
+	}
+	
+	private void collectReferencesFromAnnotations(IJavaProject project, String propertyKey, List<Location> result) {
+		Bean[] beans = springIndex.getBeansOfProject(project.getElementName());
+		
+		if (beans != null) {
+			for (Bean bean : beans) {
+				collectReferencesFromAnnotations(bean, propertyKey, result);
+			}
+		}
+	}
+
+	private void collectReferencesFromAnnotations(Bean bean, String propertyKey, List<Location> result) {
+		AnnotationMetadata[] annotations = bean.getAnnotations();
+		for (AnnotationMetadata annotation : annotations) {
+			collectReferencesFromAnnotation(annotation, bean, propertyKey, result);
+		}
+		
+		InjectionPoint[] injectionPoints = bean.getInjectionPoints();
+		for (InjectionPoint injectionPoint : injectionPoints) {
+			AnnotationMetadata[] annotationsFromInjectionPoint = injectionPoint.getAnnotations();
+			for (AnnotationMetadata annotation : annotationsFromInjectionPoint) {
+				collectReferencesFromAnnotation(annotation, injectionPoint, propertyKey, result);
+			}
+		}
+	}
+
+	private void collectReferencesFromAnnotation(AnnotationMetadata annotation, Bean bean, String propertyKey, List<Location> result) {
+
+		if (Annotations.VALUE.equals(annotation.getAnnotationType())) {
+			Map<String, String[]> attributes = annotation.getAttributes();
+			String[] values = attributes.get("value");
+			if (values != null && values.length > 0) {
+				for (String value : values) {
+					String extractedKey = PropertyExtractor.extractPropertyKey(value);
+					if (extractedKey != null && extractedKey.equals(propertyKey)) {
+						result.add(bean.getLocation());
+					}
+				}
+			}
+		}
+
+		else if (Annotations.CONDITIONAL_ON_PROPERTY.equals(annotation.getAnnotationType())) {
+			Map<String, String[]> attributes = annotation.getAttributes();
+
+			String[] prefixes = attributes.get("prefix");
+			String prefix = prefixes != null && prefixes.length == 1 ? prefixes[0] + "." : "";
+			
+			String[] names = attributes.get("name");
+			if (names == null) {
+				names = attributes.get("value");
+			}
+			
+			if (names != null) {
+				for (String name : names) {
+					String key = prefix + name;
+					if (key.equals(propertyKey)) {
+						result.add(bean.getLocation());
+					}
+				}
+			}
+		}
+	}
+
+	private void collectReferencesFromAnnotation(AnnotationMetadata annotation, InjectionPoint injectionPoint, String propertyKey, List<Location> result) {
+		if (Annotations.VALUE.equals(annotation.getAnnotationType())) {
+			Map<String, String[]> attributes = annotation.getAttributes();
+			String[] values = attributes.get("value");
+			if (values != null && values.length > 0) {
+				for (String value : values) {
+					String extractedKey = PropertyExtractor.extractPropertyKey(value);
+					if (extractedKey != null && extractedKey.equals(propertyKey)) {
+						result.add(injectionPoint.getLocation());
+					}
+				}
+			}
+		}
+
+		else if (Annotations.CONDITIONAL_ON_PROPERTY.equals(annotation.getAnnotationType())) {
+			Map<String, String[]> attributes = annotation.getAttributes();
+
+			String[] prefixes = attributes.get("prefix");
+			String prefix = prefixes != null && prefixes.length == 1 ? prefixes[0] + "." : "";
+			
+			String[] names = attributes.get("name");
+			if (names == null) {
+				names = attributes.get("value");
+			}
+
+			if (names != null) {
+				for (String name : names) {
+					String key = prefix + name;
+					if (key.equals(propertyKey)) {
+						result.add(injectionPoint.getLocation());
+					}
+				}
+			}
+		}
 	}
 
 	public List<? extends Location> findReferencesFromPropertyFiles(String propertyKey) {
@@ -112,7 +243,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 				.collect(Collectors.toList());
 		}
 		catch (Exception e) {
-			return null;
+			return Collections.emptyList();
 		}
 	}
 

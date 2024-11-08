@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -50,6 +51,7 @@ public class ValuePropertyReferenceFinderTest {
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
+	@Autowired private SpringMetamodelIndex springIndex;
 	@Autowired private SpringSymbolIndex indexer;
 
 	private File directory;
@@ -74,7 +76,7 @@ public class ValuePropertyReferenceFinderTest {
 	
 	@Test
     void testFindReferenceAtBeginningPropFile() throws Exception {
-        ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(projectFinder);
+        ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(projectFinder, springIndex);
 
         Path file = resourceDir.resolve("simple-case/application.properties");
         List<? extends Location> locations = provider.findReferences(file, "test.property");
@@ -93,7 +95,7 @@ public class ValuePropertyReferenceFinderTest {
 
     @Test
     void testFindReferenceAtBeginningYMLFile() throws Exception {
-        ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(projectFinder);
+        ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(projectFinder, springIndex);
 
         Path file = resourceDir.resolve("simple-yml/application.yml");
         List<? extends Location> locations = provider.findReferences(file, "test.property");
@@ -112,7 +114,7 @@ public class ValuePropertyReferenceFinderTest {
 
     @Test
     void testFindReferenceWithinMultipleFiles() throws Exception {
-        ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(projectFinder);
+        ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(projectFinder, springIndex);
 
         List<? extends Location> locations = provider.findReferencesFromPropertyFiles("appl1.prop");
 
@@ -163,7 +165,7 @@ public class ValuePropertyReferenceFinderTest {
 	}
 
     @Test
-    void testFindReferencesToPropertyFromValueAnnotation() throws Exception {
+    void testFindReferencesToPropertyFromValueAnnotationAtName() throws Exception {
     	harness.getServer().getWorkspaceService().setWorkspaceFolders(List.of(new WorkspaceFolder(directory.toURI().toString())));
     	
     	String completionLine = "@Value(\"${my.<*>prop}\")";
@@ -196,4 +198,90 @@ public class ValuePropertyReferenceFinderTest {
     	assertEquals(0, location.getRange().getEnd().getLine());
     	assertEquals(7, location.getRange().getEnd().getCharacter());
     }
+
+    @Test
+    void testFindReferencesToPropertyFromValueAnnotationAtPrefix() throws Exception {
+    	harness.getServer().getWorkspaceService().setWorkspaceFolders(List.of(new WorkspaceFolder(directory.toURI().toString())));
+    	
+    	String completionLine = "@Value(\"${<*>my.prop}\")";
+    	
+    	String editorContent = """
+    			package org.test;
+
+    			import 
+    			""" +
+    			Annotations.VALUE + ";" +
+    			"""
+
+    			@Component
+    			""" +
+    			completionLine + "\n" +
+    			"""
+    			public class TestDependsOnClass {
+    			}
+    			""";
+
+    	Editor editor = harness.newEditor(LanguageId.JAVA, editorContent, tempJavaDocUri);
+    	List<? extends Location> references = editor.getReferences();
+    	
+    	assertEquals(1, references.size());
+    	
+    	Location location = references.get(0);
+    	assertEquals(directory.toPath().resolve("src/main/java/application.properties").toUri().toString(), location.getUri());
+    	assertEquals(0, location.getRange().getStart().getLine());
+    	assertEquals(0, location.getRange().getStart().getCharacter());
+    	assertEquals(0, location.getRange().getEnd().getLine());
+    	assertEquals(7, location.getRange().getEnd().getCharacter());
+    }
+    
+    @Test
+    void testFindReferenceForPropertiesUsedInAnnotations() throws Exception {
+        ValuePropertyReferencesProvider provider = new ValuePropertyReferencesProvider(projectFinder, springIndex);
+
+        List<? extends Location> locations = provider.findReferencesToPropertyKey("my.prop2");
+
+        assertNotNull(locations);
+        assertEquals(5, locations.size());
+
+        URI propertiesFile = directory.toPath().resolve("src/main/java/application.properties").toUri();
+        Location location = getLocation(locations, propertiesFile);
+        assertNotNull(location);
+        assertEquals(1, location.getRange().getStart().getLine());
+        assertEquals(0, location.getRange().getStart().getCharacter());
+        assertEquals(1, location.getRange().getEnd().getLine());
+        assertEquals(8, location.getRange().getEnd().getCharacter());
+
+        URI javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithValue.java").toUri();
+        location = getLocation(locations, javaFile);
+        assertNotNull(location);
+        assertEquals(9, location.getRange().getStart().getLine());
+        assertEquals(16, location.getRange().getStart().getCharacter());
+        assertEquals(9, location.getRange().getEnd().getLine());
+        assertEquals(24, location.getRange().getEnd().getCharacter());
+
+        javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConditional.java").toUri();
+        location = getLocation(locations, javaFile);
+        assertNotNull(location);
+        assertEquals(5, location.getRange().getStart().getLine());
+        assertEquals(0, location.getRange().getStart().getCharacter());
+        assertEquals(5, location.getRange().getEnd().getLine());
+        assertEquals(10, location.getRange().getEnd().getCharacter());
+
+        javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConditionalAndArray.java").toUri();
+        location = getLocation(locations, javaFile);
+        assertNotNull(location);
+        assertEquals(5, location.getRange().getStart().getLine());
+        assertEquals(0, location.getRange().getStart().getCharacter());
+        assertEquals(5, location.getRange().getEnd().getLine());
+        assertEquals(10, location.getRange().getEnd().getCharacter());
+
+        javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConditionalWithArrayAndPrefix.java").toUri();
+        location = getLocation(locations, javaFile);
+        assertNotNull(location);
+        assertEquals(5, location.getRange().getStart().getLine());
+        assertEquals(0, location.getRange().getStart().getCharacter());
+        assertEquals(5, location.getRange().getEnd().getLine());
+        assertEquals(10, location.getRange().getEnd().getCharacter());
+}
+
 }
