@@ -118,6 +118,22 @@ public class ConditionalOnPropertyReferenceFinderTest {
     	assertEquals(7, location.getRange().getEnd().getCharacter());
     }
     
+    @Test
+    void testFindReferencesToPropertyFromAnnotationWithPrefixOnPrefix() throws Exception {
+    	harness.getServer().getWorkspaceService().setWorkspaceFolders(List.of(new WorkspaceFolder(directory.toURI().toString())));
+    	
+    	List<? extends Location> references = getReferences("@ConditionalOnProperty(prefix=\"<*>my\", name=\"prop\")");
+    	
+    	assertEquals(1, references.size());
+    	
+    	Location location = references.get(0);
+    	assertEquals(directory.toPath().resolve("src/main/java/application.properties").toUri().toString(), location.getUri());
+    	assertEquals(0, location.getRange().getStart().getLine());
+    	assertEquals(0, location.getRange().getStart().getCharacter());
+    	assertEquals(0, location.getRange().getEnd().getLine());
+    	assertEquals(7, location.getRange().getEnd().getCharacter());
+    }
+    
     private List<? extends Location> getReferences(String completionLine) throws Exception {
     	harness.getServer().getWorkspaceService().setWorkspaceFolders(List.of(new WorkspaceFolder(directory.toURI().toString())));
     	

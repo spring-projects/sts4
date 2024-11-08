@@ -61,6 +61,10 @@ public class PropertyExtractor {
 							String prefix = extractAnnotationParameter(annotation, PARAM_PREFIX);
 							String name = stringLiteral.getLiteralValue();
 							return prefix != null && !prefix.isBlank() ? prefix + "." + name : name;
+						case PARAM_PREFIX:
+							name = extractAnnotationParameter(annotation, PARAM_NAME);
+							prefix = stringLiteral.getLiteralValue();
+							return prefix != null && !prefix.isBlank() ? prefix + "." + name : name;
 						}
 					}
 					return null;
