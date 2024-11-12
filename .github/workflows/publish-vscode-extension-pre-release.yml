@@ -26,6 +26,9 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
       - name: Build .VSIX file
         id: build-vsix
         run: |
