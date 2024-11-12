@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -66,6 +66,18 @@ public class SpringMetamodelIndex {
 			
 			beansPerProject.put(projectName, (Bean[]) newBeans.toArray(new Bean[newBeans.size()]));
 		}
+	}
+
+	public Bean[] getBeans() {
+		List<Bean> result = new ArrayList<>();
+		
+		for (Bean[] beans : beansPerProject.values()) {
+			for (Bean bean : beans) {
+				result.add(bean);
+			}
+		}
+		
+		return (Bean[]) result.toArray(new Bean[result.size()]);
 	}
 
 	public Bean[] getBeansOfProject(String projectName) {

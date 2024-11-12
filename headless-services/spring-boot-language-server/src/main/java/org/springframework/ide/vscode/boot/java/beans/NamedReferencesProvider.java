@@ -20,10 +20,10 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
@@ -76,20 +76,26 @@ public class NamedReferencesProvider implements ReferenceProvider {
 				.filter(bean -> bean.getName().equals(value))
 				.map(bean -> bean.getLocation());
 		
-		String exactPhrase1 = "@Named(\"" + value + "\")";
-		String exactPhrase2 = "@Named(value=\"" + value + "\")";
+		Stream<Location> namedLocationFromBeans = Arrays.stream(beans)
+				// annotations from beans themselves
+				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
+				.filter(annotation -> Annotations.NAMED_ANNOTATIONS.contains(annotation.getAnnotationType()))
+				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value") && annotation.getAttributes().get("value").length == 1)
+				.filter(annotation -> annotation.getAttributes().get("value")[0].getName().equals(value))
+				.map(annotation -> annotation.getAttributes().get("value")[0].getLocation());
 		
-		// qualifier annotations
-		List<WorkspaceSymbol> qualifierSymbols1 = symbolIndex.getAllSymbols(exactPhrase1);
-		List<WorkspaceSymbol> qualifierSymbols2 = symbolIndex.getAllSymbols(exactPhrase2);
+		Stream<Location> namedLocationsFromInjectionPoints = Arrays.stream(beans)
+				// annotations from injection points
+				.filter(bean -> bean.getInjectionPoints() != null)
+				.flatMap(bean -> Arrays.stream(bean.getInjectionPoints()))
+				.filter(injectionPoint -> injectionPoint.getAnnotations() != null)
+				.flatMap(injectionPoint -> Arrays.stream(injectionPoint.getAnnotations()))
+				.filter(annotation -> Annotations.NAMED_ANNOTATIONS.contains(annotation.getAnnotationType()))
+				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value") && annotation.getAttributes().get("value").length == 1)
+				.filter(annotation -> annotation.getAttributes().get("value")[0].getName().equals(value))
+				.map(annotation -> annotation.getAttributes().get("value")[0].getLocation());
 		
-		Stream<Location> qualifierLocations = Stream.concat(qualifierSymbols1.stream(), qualifierSymbols2.stream())
-				.filter(symbol -> symbol.getName().contains(exactPhrase1) || symbol.getName().contains(exactPhrase2))
-				.map(symbol -> symbol.getLocation())
-				.filter(location -> location.isLeft())
-				.map(location -> location.getLeft());
-		
-		return Stream.concat(qualifierLocations, beanLocations).toList();
+		return Stream.concat(beanLocations, Stream.concat(namedLocationFromBeans, namedLocationsFromInjectionPoints)).toList();
 	}
 
 }

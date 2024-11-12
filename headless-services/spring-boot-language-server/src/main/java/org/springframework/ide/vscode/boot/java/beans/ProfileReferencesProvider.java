@@ -21,10 +21,9 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
@@ -35,11 +34,9 @@ import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 public class ProfileReferencesProvider implements ReferenceProvider {
 
 	private final SpringMetamodelIndex springIndex;
-	private final SpringSymbolIndex symbolIndex;
 
-	public ProfileReferencesProvider(SpringMetamodelIndex springIndex, SpringSymbolIndex symbolIndex) {
+	public ProfileReferencesProvider(SpringMetamodelIndex springIndex) {
 		this.springIndex = springIndex;
-		this.symbolIndex = symbolIndex;
 	}
 
 	@Override
@@ -76,25 +73,30 @@ public class ProfileReferencesProvider implements ReferenceProvider {
 	}
 	
 	private List<? extends Location> provideReferences(IJavaProject project, String value) {
-		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
+		Bean[] beans = this.springIndex.getBeans();
 		
-		// beans with name
-		Stream<Location> beanLocations = Arrays.stream(beans)
-				.filter(bean -> bean.getName().equals(value))
-				.map(bean -> bean.getLocation());
+		Stream<Location> profileLocationFromBeans = Arrays.stream(beans)
+				// annotations from beans themselves
+				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
+				.filter(annotation -> Annotations.PROFILE.equals(annotation.getAnnotationType()))
+				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value"))
+				.flatMap(annotation -> Arrays.stream(annotation.getAttributes().get("value")))
+				.filter(attribute -> attribute.getName().equals(value))
+				.map(attribute -> attribute.getLocation());
 		
-		String profileSymbolsSearch = "@Profile(";
-		List<WorkspaceSymbol> profileSymbols = symbolIndex.getAllSymbols(profileSymbolsSearch);
+		Stream<Location> profileLocationsFromInjectionPoints = Arrays.stream(beans)
+				// annotations from injection points
+				.filter(bean -> bean.getInjectionPoints() != null)
+				.flatMap(bean -> Arrays.stream(bean.getInjectionPoints()))
+				.filter(injectionPoint -> injectionPoint.getAnnotations() != null)
+				.flatMap(injectionPoint -> Arrays.stream(injectionPoint.getAnnotations()))
+				.filter(annotation -> Annotations.PROFILE.equals(annotation.getAnnotationType()))
+				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value"))
+				.flatMap(annotation -> Arrays.stream(annotation.getAttributes().get("value")))
+				.filter(attribute -> attribute.getName().equals(value))
+				.map(attribute -> attribute.getLocation());
 		
-		String valuePhrase = "\"" + value + "\"";
-		
-		Stream<Location> qualifierLocations = profileSymbols.stream()
-				.filter(symbol -> symbol.getName().contains(valuePhrase))
-				.map(symbol -> symbol.getLocation())
-				.filter(location -> location.isLeft())
-				.map(location -> location.getLeft());
-		
-		return Stream.concat(qualifierLocations, beanLocations).toList();
+		return Stream.concat(profileLocationFromBeans, profileLocationsFromInjectionPoints).toList();
 	}
 
 }

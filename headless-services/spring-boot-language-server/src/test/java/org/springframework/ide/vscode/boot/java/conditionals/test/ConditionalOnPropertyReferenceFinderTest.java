@@ -11,11 +11,8 @@
 package org.springframework.ide.vscode.boot.java.conditionals.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
-import java.net.URI;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +29,6 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;

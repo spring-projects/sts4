@@ -19,7 +19,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +47,7 @@ import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServ
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
@@ -74,7 +74,6 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	private final JavaProjectFinder projectFinder;
 	private final PropertyExtractor propertyExtractor;
 	private final SpringMetamodelIndex springIndex;
-
 
 	public ValuePropertyReferencesProvider(JavaProjectFinder projectFinder, SpringMetamodelIndex springIndex) {
 		this.projectFinder = projectFinder;
@@ -116,24 +115,16 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	public List<? extends Location> findReferencesFromAnnotations(String propertyKey) {
 		List<Location> result = new ArrayList<>();
 		
-		Collection<? extends IJavaProject> allProjects = this.projectFinder.all();
-		for (IJavaProject project : allProjects) {
-			collectReferencesFromAnnotations(project, propertyKey, result);
-		}
-		
-		return result;
-	}
-	
-	private void collectReferencesFromAnnotations(IJavaProject project, String propertyKey, List<Location> result) {
-		Bean[] beans = springIndex.getBeansOfProject(project.getElementName());
-		
+		Bean[] beans = springIndex.getBeans();
 		if (beans != null) {
 			for (Bean bean : beans) {
 				collectReferencesFromAnnotations(bean, propertyKey, result);
 			}
 		}
+		
+		return result;
 	}
-
+	
 	private void collectReferencesFromAnnotations(Bean bean, String propertyKey, List<Location> result) {
 		AnnotationMetadata[] annotations = bean.getAnnotations();
 		for (AnnotationMetadata annotation : annotations) {
@@ -152,34 +143,34 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	private void collectReferencesFromAnnotation(AnnotationMetadata annotation, Bean bean, String propertyKey, List<Location> result) {
 
 		if (Annotations.VALUE.equals(annotation.getAnnotationType())) {
-			Map<String, String[]> attributes = annotation.getAttributes();
-			String[] values = attributes.get("value");
+			Map<String, AnnotationAttributeValue[]> attributes = annotation.getAttributes();
+			AnnotationAttributeValue[] values = attributes.get("value");
 			if (values != null && values.length > 0) {
-				for (String value : values) {
-					String extractedKey = PropertyExtractor.extractPropertyKey(value);
+				for (AnnotationAttributeValue value : values) {
+					String extractedKey = PropertyExtractor.extractPropertyKey(value.getName());
 					if (extractedKey != null && extractedKey.equals(propertyKey)) {
-						result.add(bean.getLocation());
+						result.add(value.getLocation());
 					}
 				}
 			}
 		}
 
 		else if (Annotations.CONDITIONAL_ON_PROPERTY.equals(annotation.getAnnotationType())) {
-			Map<String, String[]> attributes = annotation.getAttributes();
+			Map<String, AnnotationAttributeValue[]> attributes = annotation.getAttributes();
 
-			String[] prefixes = attributes.get("prefix");
-			String prefix = prefixes != null && prefixes.length == 1 ? prefixes[0] + "." : "";
+			AnnotationAttributeValue[] prefixes = attributes.get("prefix");
+			String prefix = prefixes != null && prefixes.length == 1 ? prefixes[0].getName() + "." : "";
 			
-			String[] names = attributes.get("name");
+			AnnotationAttributeValue[] names = attributes.get("name");
 			if (names == null) {
 				names = attributes.get("value");
 			}
 			
 			if (names != null) {
-				for (String name : names) {
-					String key = prefix + name;
+				for (AnnotationAttributeValue name : names) {
+					String key = prefix + name.getName();
 					if (key.equals(propertyKey)) {
-						result.add(bean.getLocation());
+						result.add(name.getLocation());
 					}
 				}
 			}
@@ -188,34 +179,35 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 
 	private void collectReferencesFromAnnotation(AnnotationMetadata annotation, InjectionPoint injectionPoint, String propertyKey, List<Location> result) {
 		if (Annotations.VALUE.equals(annotation.getAnnotationType())) {
-			Map<String, String[]> attributes = annotation.getAttributes();
-			String[] values = attributes.get("value");
+			Map<String, AnnotationAttributeValue[]> attributes = annotation.getAttributes();
+
+			AnnotationAttributeValue[] values = attributes.get("value");
 			if (values != null && values.length > 0) {
-				for (String value : values) {
-					String extractedKey = PropertyExtractor.extractPropertyKey(value);
+				for (AnnotationAttributeValue value : values) {
+					String extractedKey = PropertyExtractor.extractPropertyKey(value.getName());
 					if (extractedKey != null && extractedKey.equals(propertyKey)) {
-						result.add(injectionPoint.getLocation());
+						result.add(value.getLocation());
 					}
 				}
 			}
 		}
 
 		else if (Annotations.CONDITIONAL_ON_PROPERTY.equals(annotation.getAnnotationType())) {
-			Map<String, String[]> attributes = annotation.getAttributes();
+			Map<String, AnnotationAttributeValue[]> attributes = annotation.getAttributes();
 
-			String[] prefixes = attributes.get("prefix");
-			String prefix = prefixes != null && prefixes.length == 1 ? prefixes[0] + "." : "";
+			AnnotationAttributeValue[] prefixes = attributes.get("prefix");
+			String prefix = prefixes != null && prefixes.length == 1 ? prefixes[0].getName() + "." : "";
 			
-			String[] names = attributes.get("name");
+			AnnotationAttributeValue[] names = attributes.get("name");
 			if (names == null) {
 				names = attributes.get("value");
 			}
 
 			if (names != null) {
-				for (String name : names) {
-					String key = prefix + name;
+				for (AnnotationAttributeValue name : names) {
+					String key = prefix + name.getName();
 					if (key.equals(propertyKey)) {
-						result.add(injectionPoint.getLocation());
+						result.add(name.getLocation());
 					}
 				}
 			}

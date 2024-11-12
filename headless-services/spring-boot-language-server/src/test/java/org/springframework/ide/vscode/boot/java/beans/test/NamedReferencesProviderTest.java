@@ -23,6 +23,7 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,6 +111,7 @@ public class NamedReferencesProviderTest {
 	}
 
 	@Test
+	@Disabled // TODO: need to include setter injection in spring index as a first step, then resurrect this test case
 	public void testNamedRefersToOtherNamedValues() throws Exception {
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;

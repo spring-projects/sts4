@@ -84,13 +84,13 @@ public class ProfileReferencesProviderTest {
 		
 		String expectedDefinitionUri1 = directory.toPath().resolve("src/main/java/org/test/profiles/ProfilesClass1.java").toUri().toString();
 		Location expectedLocation1 = new Location(expectedDefinitionUri1,
-				new Range(new Position(6, 0), new Position(6, 20)));
+				new Range(new Position(6, 9), new Position(6, 19)));
 		
 		assertTrue(references.contains(expectedLocation1));
 
 		String expectedDefinitionUri2 = directory.toPath().resolve("src/main/java/org/test/profiles/ProfilesClassWithArray.java").toUri().toString();
 		Location expectedLocation2 = new Location(expectedDefinitionUri2,
-				new Range(new Position(6, 0), new Position(6, 42)));
+				new Range(new Position(6, 18), new Position(6, 28)));
 
 		assertTrue(references.contains(expectedLocation2));
 	}
@@ -115,13 +115,13 @@ public class ProfileReferencesProviderTest {
 
 		String expectedDefinitionUri1 = directory.toPath().resolve("src/main/java/org/test/profiles/ProfilesClass1.java").toUri().toString();
 		Location expectedLocation1 = new Location(expectedDefinitionUri1,
-				new Range(new Position(6, 0), new Position(6, 20)));
+				new Range(new Position(6, 9), new Position(6, 19)));
 
 		assertTrue(references.contains(expectedLocation1));
 		
 		String expectedDefinitionUri2 = directory.toPath().resolve("src/main/java/org/test/profiles/ProfilesClassWithArray.java").toUri().toString();
 		Location expectedLocation2 = new Location(expectedDefinitionUri2,
-				new Range(new Position(6, 0), new Position(6, 42)));
+				new Range(new Position(6, 18), new Position(6, 28)));
 		
 		assertTrue(references.contains(expectedLocation2));
 	}

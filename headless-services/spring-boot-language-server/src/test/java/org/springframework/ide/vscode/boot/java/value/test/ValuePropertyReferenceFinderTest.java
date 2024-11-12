@@ -254,34 +254,34 @@ public class ValuePropertyReferenceFinderTest {
         URI javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithValue.java").toUri();
         location = getLocation(locations, javaFile);
         assertNotNull(location);
-        assertEquals(9, location.getRange().getStart().getLine());
-        assertEquals(16, location.getRange().getStart().getCharacter());
-        assertEquals(9, location.getRange().getEnd().getLine());
-        assertEquals(24, location.getRange().getEnd().getCharacter());
+        assertEquals(8, location.getRange().getStart().getLine());
+        assertEquals(8, location.getRange().getStart().getCharacter());
+        assertEquals(8, location.getRange().getEnd().getLine());
+        assertEquals(21, location.getRange().getEnd().getCharacter());
 
         javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConditional.java").toUri();
         location = getLocation(locations, javaFile);
         assertNotNull(location);
-        assertEquals(5, location.getRange().getStart().getLine());
-        assertEquals(0, location.getRange().getStart().getCharacter());
-        assertEquals(5, location.getRange().getEnd().getLine());
-        assertEquals(10, location.getRange().getEnd().getCharacter());
+        assertEquals(6, location.getRange().getStart().getLine());
+        assertEquals(23, location.getRange().getStart().getCharacter());
+        assertEquals(6, location.getRange().getEnd().getLine());
+        assertEquals(33, location.getRange().getEnd().getCharacter());
 
         javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConditionalAndArray.java").toUri();
         location = getLocation(locations, javaFile);
         assertNotNull(location);
-        assertEquals(5, location.getRange().getStart().getLine());
-        assertEquals(0, location.getRange().getStart().getCharacter());
-        assertEquals(5, location.getRange().getEnd().getLine());
-        assertEquals(10, location.getRange().getEnd().getCharacter());
+        assertEquals(6, location.getRange().getStart().getLine());
+        assertEquals(31, location.getRange().getStart().getCharacter());
+        assertEquals(6, location.getRange().getEnd().getLine());
+        assertEquals(41, location.getRange().getEnd().getCharacter());
 
         javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConditionalWithArrayAndPrefix.java").toUri();
         location = getLocation(locations, javaFile);
         assertNotNull(location);
-        assertEquals(5, location.getRange().getStart().getLine());
-        assertEquals(0, location.getRange().getStart().getCharacter());
-        assertEquals(5, location.getRange().getEnd().getLine());
-        assertEquals(10, location.getRange().getEnd().getCharacter());
+        assertEquals(6, location.getRange().getStart().getLine());
+        assertEquals(46, location.getRange().getStart().getCharacter());
+        assertEquals(6, location.getRange().getEnd().getLine());
+        assertEquals(53, location.getRange().getEnd().getCharacter());
 }
 
 }
