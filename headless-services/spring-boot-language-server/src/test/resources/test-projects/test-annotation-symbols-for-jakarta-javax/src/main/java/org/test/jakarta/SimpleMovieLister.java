@@ -6,6 +6,9 @@ import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class SimpleMovieLister {
 
 	@Resource

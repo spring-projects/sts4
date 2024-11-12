@@ -64,7 +64,7 @@ public class QualifierCompletionProvider implements AnnotationAttributeCompletio
 				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
 				.filter(annotation -> Annotations.QUALIFIER.equals(annotation.getAnnotationType()))
 				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value") && annotation.getAttributes().get("value").length == 1)
-				.map(annotation -> annotation.getAttributes().get("value")[0]);
+				.map(annotation -> annotation.getAttributes().get("value")[0].getName());
 		
 		Stream<String> qualifiersFromInjectionPoints = Arrays.stream(beans)
 				// annotations from beans themselves
@@ -74,7 +74,7 @@ public class QualifierCompletionProvider implements AnnotationAttributeCompletio
 				.flatMap(injectionPoint -> Arrays.stream(injectionPoint.getAnnotations()))
 				.filter(annotation -> Annotations.QUALIFIER.equals(annotation.getAnnotationType()))
 				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value") && annotation.getAttributes().get("value").length == 1)
-				.map(annotation -> annotation.getAttributes().get("value")[0]);
+				.map(annotation -> annotation.getAttributes().get("value")[0].getName());
 		
 		return Stream.concat(qualifiersFromBeans, qualifiersFromInjectionPoints);
 	}

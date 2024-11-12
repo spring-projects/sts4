@@ -78,10 +78,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 				String concreteRepoType = concreteBeanTypeBindung.getQualifiedName();
 				
 				Collection<Annotation> annotationsOnMethod = ASTUtils.getAnnotations(typeDeclaration);
-				AnnotationMetadata[] annotations = annotationsOnMethod.stream()
-					.map(an -> an.resolveAnnotationBinding())
-					.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, ASTUtils.getAttributes(t)))
-					.toArray(AnnotationMetadata[]::new);
+				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(annotationsOnMethod, doc);
 				
 				Bean beanDefinition = new Bean(beanName, concreteRepoType, location, injectionPoints, supertypes, annotations);
 				

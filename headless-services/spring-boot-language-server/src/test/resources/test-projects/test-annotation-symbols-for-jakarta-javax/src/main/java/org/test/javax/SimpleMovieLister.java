@@ -4,8 +4,11 @@ import javax.annotation.Resource;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.springframework.stereotype.Component;
+
 import org.test.MovieFinder;
 
+@Component
 public class SimpleMovieLister {
 
 	@Resource

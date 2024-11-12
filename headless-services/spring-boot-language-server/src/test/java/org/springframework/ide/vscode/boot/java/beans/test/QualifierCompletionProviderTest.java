@@ -37,6 +37,7 @@ import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -80,8 +81,8 @@ public class QualifierCompletionProviderTest {
 		indexedBeans = springIndex.getBeansOfProject(project.getElementName());
 		
         tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
-        AnnotationMetadata annotationBean1 = new AnnotationMetadata("org.springframework.beans.factory.annotation.Qualifier", false, Map.of("value", new String[] {"quali1"}));
-        AnnotationMetadata annotationBean2 = new AnnotationMetadata("org.springframework.beans.factory.annotation.Qualifier", false, Map.of("value", new String[] {"quali2"}));
+        AnnotationMetadata annotationBean1 = new AnnotationMetadata("org.springframework.beans.factory.annotation.Qualifier", false, null, Map.of("value", new AnnotationAttributeValue[] {new AnnotationAttributeValue("quali1", null)}));
+        AnnotationMetadata annotationBean2 = new AnnotationMetadata("org.springframework.beans.factory.annotation.Qualifier", false, null, Map.of("value", new AnnotationAttributeValue[] {new AnnotationAttributeValue("quali2", null)}));
         
 		bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {annotationBean1});
 		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {annotationBean2});

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -105,12 +106,10 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		Collection<Annotation> annotationsOnType = ASTUtils.getAnnotations(type);
 		
 		AnnotationMetadata[] annotations = Stream.concat(
-				annotationsOnType.stream()
-				.map(an -> an.resolveAnnotationBinding())
-				.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, ASTUtils.getAttributes(t)))
+				Arrays.stream(ASTUtils.getAnnotationsMetadata(annotationsOnType, doc))
 				,
 				metaAnnotations.stream()
-				.map(an -> new AnnotationMetadata(an.getQualifiedName(), true, null)))
+				.map(an -> new AnnotationMetadata(an.getQualifiedName(), true, null, null)))
 				.toArray(AnnotationMetadata[]::new);
 		
 		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations);

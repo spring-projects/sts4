@@ -96,16 +96,8 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 				ASTUtils.findSupertypes(beanType, supertypes);
 				
 				Collection<Annotation> annotationsOnMethod = ASTUtils.getAnnotations(method);
-				AnnotationMetadata[] annotations = annotationsOnMethod.stream()
-					.map(an -> an.resolveAnnotationBinding())
-					.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, ASTUtils.getAttributes(t)))
-					.toArray(AnnotationMetadata[]::new);
+				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(annotationsOnMethod, doc);
 				
-//				AnnotationMetadata[] annotations = AnnotationHierarchies
-//						.findTransitiveSuperAnnotationBindings(node.resolveAnnotationBinding())
-//						.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, getAttributes(t)))
-//						.toArray(AnnotationMetadata[]::new);
-
 				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));

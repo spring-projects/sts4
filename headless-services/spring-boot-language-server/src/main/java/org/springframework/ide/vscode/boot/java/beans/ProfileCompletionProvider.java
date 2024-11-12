@@ -52,7 +52,8 @@ public class ProfileCompletionProvider implements AnnotationAttributeCompletionP
 				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
 				.filter(annotation -> Annotations.PROFILE.equals(annotation.getAnnotationType()))
 				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value"))
-				.flatMap(annotation -> Arrays.stream(annotation.getAttributes().get("value")));
+				.flatMap(annotation -> Arrays.stream(annotation.getAttributes().get("value")))
+				.map(attributeValue -> attributeValue.getName());
 		
 		Stream<String> profilesFromInjectionPoints = Arrays.stream(beans)
 				// annotations from beans themselves
@@ -62,7 +63,8 @@ public class ProfileCompletionProvider implements AnnotationAttributeCompletionP
 				.flatMap(injectionPoint -> Arrays.stream(injectionPoint.getAnnotations()))
 				.filter(annotation -> Annotations.PROFILE.equals(annotation.getAnnotationType()))
 				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value"))
-				.flatMap(annotation -> Arrays.stream(annotation.getAttributes().get("value")));
+				.flatMap(annotation -> Arrays.stream(annotation.getAttributes().get("value")))
+				.map(attributeValue -> attributeValue.getName());
 		
 		return Stream.concat(profilesFromBeans, profilesFromInjectionPoints);
 	}

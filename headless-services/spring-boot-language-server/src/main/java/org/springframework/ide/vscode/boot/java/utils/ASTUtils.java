@@ -40,9 +40,10 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.core.dom.TypeLiteral;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
@@ -51,6 +52,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.jdt.imports.ImportRewrite;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
@@ -269,6 +271,14 @@ public class ASTUtils {
 		return getAnnotationsFromModifiers(methodDeclaration.getStructuralProperty(MethodDeclaration.MODIFIERS2_PROPERTY));
 	}
 	
+	public static Collection<Annotation> getAnnotations(FieldDeclaration fieldDeclaration) {
+		return getAnnotationsFromModifiers(fieldDeclaration.getStructuralProperty(FieldDeclaration.MODIFIERS2_PROPERTY));
+	}
+	
+	public static Collection<Annotation> getAnnotations(SingleVariableDeclaration variableDeclaration) {
+		return getAnnotationsFromModifiers(variableDeclaration.getStructuralProperty(SingleVariableDeclaration.MODIFIERS2_PROPERTY));
+	}
+	
 	private static Collection<Annotation> getAnnotationsFromModifiers(Object modifiersObj) {
 		if (modifiersObj instanceof List) {
 			ImmutableList.Builder<Annotation> annotations = ImmutableList.builder();
@@ -285,7 +295,7 @@ public class ASTUtils {
 
 	public static String getAnnotationType(Annotation annotation) {
 		ITypeBinding binding = annotation.resolveTypeBinding();
-		if (binding!=null) {
+		if (binding != null) {
 			return binding.getQualifiedName();
 		}
 		return null;
@@ -339,30 +349,30 @@ public class ASTUtils {
 		return edit != null ?  Optional.of(edit) : Optional.empty();
 	}
 
-	public static Collection<InjectionPoint> getInjectionPointsFromMethodParams(MethodDeclaration method, TextDocument doc) throws BadLocationException {
-		List<InjectionPoint> result = new ArrayList<>();
-		
-		List<?> parameters = method.parameters();
-		for (Object object : parameters) {
-			if (object instanceof VariableDeclaration) {
-				VariableDeclaration variable = (VariableDeclaration) object;
-				String name = variable.getName().toString();
-				
-				IVariableBinding variableBinding = variable.resolveBinding();
-				String type = variableBinding.getType().getQualifiedName();
-				
-				DocumentRegion region = ASTUtils.nodeRegion(doc, variable.getName());
-				Range range = doc.toRange(region);
-				
-				Location location = new Location(doc.getUri(), range);
-				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(variableBinding.getAnnotations());
-				
-				result.add(new InjectionPoint(name, type, location, annotations));
-			}
-		}
-		return result;
-	}
-
+//	public static Collection<InjectionPoint> getInjectionPointsFromMethodParams(MethodDeclaration method, TextDocument doc) throws BadLocationException {
+//		List<InjectionPoint> result = new ArrayList<>();
+//		
+//		List<?> parameters = method.parameters();
+//		for (Object object : parameters) {
+//			if (object instanceof VariableDeclaration) {
+//				VariableDeclaration variable = (VariableDeclaration) object;
+//				String name = variable.getName().toString();
+//				
+//				IVariableBinding variableBinding = variable.resolveBinding();
+//				String type = variableBinding.getType().getQualifiedName();
+//				
+//				DocumentRegion region = ASTUtils.nodeRegion(doc, variable.getName());
+//				Range range = doc.toRange(region);
+//				
+//				Location location = new Location(doc.getUri(), range);
+//				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(variableBinding.getAnnotations());
+//				
+//				result.add(new InjectionPoint(name, type, location, annotations));
+//			}
+//		}
+//		return result;
+//	}
+//
 	public static void findSupertypes(ITypeBinding binding, Set<String> supertypesCollector) {
 		
 		// interfaces
@@ -405,8 +415,8 @@ public class ASTUtils {
 		
 		List<?> parameters = method.parameters();
 		for (Object object : parameters) {
-			if (object instanceof VariableDeclaration) {
-				VariableDeclaration variable = (VariableDeclaration) object;
+			if (object instanceof SingleVariableDeclaration) {
+				SingleVariableDeclaration variable = (SingleVariableDeclaration) object;
 				String name = variable.getName().toString();
 
 				IVariableBinding variableBinding = variable.resolveBinding();
@@ -416,7 +426,8 @@ public class ASTUtils {
 				Range range = doc.toRange(region);
 				
 				Location location = new Location(doc.getUri(), range);
-				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(variableBinding.getAnnotations());
+				
+				AnnotationMetadata[] annotations = getAnnotationsMetadata(getAnnotations(variable), doc);
 				
 				result.add(new InjectionPoint(name, type, location, annotations));
 			}
@@ -471,10 +482,7 @@ public class ASTUtils {
 
 						String fieldType = field.getType().resolveBinding().getQualifiedName();
 
-						AnnotationMetadata[] annotationsMetadata = fieldAnnotations.stream()
-								.map(an -> an.resolveAnnotationBinding())
-								.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, ASTUtils.getAttributes(t)))
-								.toArray(AnnotationMetadata[]::new);
+						AnnotationMetadata[] annotationsMetadata = getAnnotationsMetadata(fieldAnnotations, doc);
 						
 						result.add(new InjectionPoint(fieldName, fieldType, fieldLocation, annotationsMetadata));
 					}
@@ -485,24 +493,127 @@ public class ASTUtils {
 		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : DefaultValues.EMPTY_INJECTION_POINTS;
 	}
 	
-	private static AnnotationMetadata[] getAnnotationsMetadata(IAnnotationBinding[] annotations) {
-		return Arrays.stream(annotations)
-			.map(t -> new AnnotationMetadata(t.getAnnotationType().getQualifiedName(), false, getAttributes(t)))
-			.toArray(AnnotationMetadata[]::new);
+	public static AnnotationMetadata[] getAnnotationsMetadata(Collection<Annotation> annotations, TextDocument doc) {
+		return annotations.stream()
+				.map(annotation -> createAnnotationMetadataFrom(annotation, doc))
+				.toArray(AnnotationMetadata[]::new);
 	}
 	
-	public static Map<String, String[]> getAttributes(IAnnotationBinding t) {
-		Map<String, String[]> result = new LinkedHashMap<>();
+	private static AnnotationMetadata createAnnotationMetadataFrom(Annotation annotation, TextDocument doc) {
+		try {
+			DocumentRegion region = ASTUtils.nodeRegion(doc, annotation);
+			Range range = doc.toRange(region);
+			Location location = new Location(doc.getUri(), range);
 
+			IAnnotationBinding binding = annotation.resolveAnnotationBinding();
+			return new AnnotationMetadata(binding.getAnnotationType().getQualifiedName(), false, location, getAttributes(annotation, doc));
+		}
+		catch (BadLocationException e) {
+			log.error("problem when identifying location of annotation", e);
+		}
+		
+		return null;
+	}
+	
+//	public static Map<String, String[]> getAttributes(IAnnotationBinding t) {
+//		Map<String, String[]> result = new LinkedHashMap<>();
+//
+//		IMemberValuePairBinding[] pairs = t.getDeclaredMemberValuePairs();
+//		for (IMemberValuePairBinding pair : pairs) {
+//			MemberValuePairAndType values = ASTUtils.getValuesFromValuePair(pair);
+//			if (values != null) {
+//				result.put(pair.getName(), values.values);
+//			}
+//		}
+//		
+//		return result;
+//	}
+	
+	public static Map<String, AnnotationAttributeValue[]> getAttributes(Annotation annotation, TextDocument doc) throws BadLocationException {
+		Map<String, AnnotationAttributeValue[]> result = new LinkedHashMap<>();
+/*
+		IAnnotationBinding t = annotation.resolveAnnotationBinding();
 		IMemberValuePairBinding[] pairs = t.getDeclaredMemberValuePairs();
 		for (IMemberValuePairBinding pair : pairs) {
 			MemberValuePairAndType values = ASTUtils.getValuesFromValuePair(pair);
 			if (values != null) {
-				result.put(pair.getName(), values.values);
+				AnnotationAttributeValue[] attributeValue = Arrays.stream(values.values)
+					.map(value -> new AnnotationAttributeValue(value, null))
+					.toArray(AnnotationAttributeValue[]::new);
+				
+				result.put(pair.getName(), attributeValue);
 			}
 		}
+*/
 		
+		if (annotation.isSingleMemberAnnotation()) {
+			Expression value = ((SingleMemberAnnotation) annotation).getValue();
+			AnnotationAttributeValue[] attributeValues = getAnnotationAttributeValues(value, doc);
+			result.put("value", attributeValues);
+
+		} else if (annotation.isNormalAnnotation()) {
+			List<?> attributes = ((NormalAnnotation) annotation).values();
+			for (Object attribute : attributes) {
+				MemberValuePair pair = (MemberValuePair) attribute;
+				
+				SimpleName attributeName = pair.getName();
+				Expression attributeValue = pair.getValue();
+				
+				AnnotationAttributeValue[] attributeValues = getAnnotationAttributeValues(attributeValue, doc);
+				result.put(attributeName.toString(), attributeValues);
+			}
+		}
+
 		return result;
+	}
+	
+	private static AnnotationAttributeValue[] getAnnotationAttributeValues(Expression expression, TextDocument doc) throws BadLocationException {
+		if (expression instanceof ArrayInitializer) {
+			ArrayInitializer arrayInitializer = (ArrayInitializer) expression;
+			List<?> expressions = arrayInitializer.expressions();
+			
+			AnnotationAttributeValue[] result = new AnnotationAttributeValue[expressions.size()];
+			for (int i = 0; i < result.length; i++) {
+				Expression ex = (Expression) expressions.get(i);
+				result[i] = convertExpressionInto(ex, doc);
+			}
+			
+			return result;
+		}
+		else {
+			return new AnnotationAttributeValue[] {convertExpressionInto(expression, doc)};
+		}
+		
+//		Object constantExpressionValue = attributeValue.resolveConstantExpressionValue();
+	}
+	
+	private static AnnotationAttributeValue convertExpressionInto(Expression expression, TextDocument doc) throws BadLocationException {
+		if (expression instanceof StringLiteral) {
+			StringLiteral stringLiteral = (StringLiteral) expression;
+			String literalValue = stringLiteral.getLiteralValue();
+			
+			DocumentRegion region = ASTUtils.nodeRegion(doc, stringLiteral);
+			Range range = doc.toRange(region);
+			Location location = new Location(doc.getUri(), range);
+			
+			return new AnnotationAttributeValue(literalValue, location);
+		}
+		else if (expression instanceof TypeLiteral) {
+			TypeLiteral type = (TypeLiteral) expression;
+			
+			DocumentRegion region = ASTUtils.nodeRegion(doc, type);
+			Range range = doc.toRange(region);
+			Location location = new Location(doc.getUri(), range);
+
+			return new AnnotationAttributeValue(type.getType().resolveBinding().getQualifiedName(), location);
+		}
+		else {
+			DocumentRegion region = ASTUtils.nodeRegion(doc, expression);
+			Range range = doc.toRange(region);
+			Location location = new Location(doc.getUri(), range);
+			
+			return new AnnotationAttributeValue(expression.toString(), location);
+		}
 	}
 	
 	public static ASTNode getNearestAnnotationParent(ASTNode node) {

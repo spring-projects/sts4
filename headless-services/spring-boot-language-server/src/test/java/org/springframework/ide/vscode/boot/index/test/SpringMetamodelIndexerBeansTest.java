@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,6 +36,7 @@ import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
@@ -277,22 +278,41 @@ public class SpringMetamodelIndexerBeansTest {
 		assertEquals("org.springframework.context.annotation.Bean", beanAnnotation.getAnnotationType());
 		assertFalse(annotations[0].isMetaAnnotation());
 		assertEquals(0, annotations[0].getAttributes().size());
+		assertEquals(new Location(mainClassBean.getLocation().getUri(), new Range(new Position(25, 1), new Position(25, 6))), beanAnnotation.getLocation());
 		
 		AnnotationMetadata qualifierAnnotation = annotations[1];
 		assertEquals("org.springframework.beans.factory.annotation.Qualifier", qualifierAnnotation.getAnnotationType());
-		Map<String, String[]> attributes = qualifierAnnotation.getAttributes();
+		assertEquals(new Location(mainClassBean.getLocation().getUri(), new Range(new Position(26, 1), new Position(26, 25))), qualifierAnnotation.getLocation());
+
+		Map<String, AnnotationAttributeValue[]> attributes = qualifierAnnotation.getAttributes();
 		assertEquals(1, attributes.size());
 		assertTrue(attributes.containsKey("value"));
-		assertArrayEquals(new String[] {"qualifier1"}, attributes.get("value"));
+		
+		AnnotationAttributeValue[] valueAttributes = attributes.get("value");
+		assertEquals(1, valueAttributes.length);
+		assertEquals("qualifier1", valueAttributes[0].getName());
+		Location expectedValueAttributeLocation = new Location(mainClassBean.getLocation().getUri(), new Range(new Position(26, 12), new Position(26, 24)));
+		assertEquals(expectedValueAttributeLocation, valueAttributes[0].getLocation());
 
 		AnnotationMetadata profileAnnotation = annotations[2];
 		assertEquals("org.springframework.context.annotation.Profile", profileAnnotation.getAnnotationType());
 		assertFalse(profileAnnotation.isMetaAnnotation());
+		assertEquals(new Location(mainClassBean.getLocation().getUri(), new Range(new Position(27, 1), new Position(27, 41))), profileAnnotation.getLocation());
 		
 		attributes = profileAnnotation.getAttributes();
 		assertEquals(1, attributes.size());
-		assertTrue(attributes.containsKey("value"));
-		assertArrayEquals(new String[] {"testprofile","testprofile2"}, attributes.get("value"));
+
+		AnnotationAttributeValue[] profileValueAttributes = attributes.get("value");
+		assertEquals(2, profileValueAttributes.length);
+		
+		assertEquals("testprofile", profileValueAttributes[0].getName());
+		assertEquals("testprofile2", profileValueAttributes[1].getName());
+	
+		Location profileValueLocation1 = new Location(mainClassBean.getLocation().getUri(), new Range(new Position(27, 11), new Position(27, 24)));
+		Location profileValueLocation2 = new Location(mainClassBean.getLocation().getUri(), new Range(new Position(27, 25), new Position(27, 39)));
+
+		assertEquals(profileValueLocation1, profileValueAttributes[0].getLocation());
+		assertEquals(profileValueLocation2, profileValueAttributes[1].getLocation());
 	}
 	
 	@Test
@@ -309,11 +329,18 @@ public class SpringMetamodelIndexerBeansTest {
 		AnnotationMetadata dependsonAnnotation = annotations[1];
 
 		assertEquals("org.springframework.context.annotation.Bean", beanAnnotation.getAnnotationType());
+		assertEquals(new Location(bean.getLocation().getUri(), new Range(new Position(16, 1), new Position(16, 6))), beanAnnotation.getLocation());
+		
 		assertEquals("org.springframework.context.annotation.DependsOn", dependsonAnnotation.getAnnotationType());
 		
-		Map<String, String[]> dependsOnAttributes = dependsonAnnotation.getAttributes();
+		Map<String, AnnotationAttributeValue[]> dependsOnAttributes = dependsonAnnotation.getAttributes();
 		assertEquals(1, dependsOnAttributes.size());
-		assertArrayEquals(new String[] {"bean1", "bean2"}, dependsOnAttributes.get("value"));
+		AnnotationAttributeValue[] dependsOnValueAttribute = dependsOnAttributes.get("value");
+		assertEquals(2, dependsOnValueAttribute.length);
+		assertEquals("bean1", dependsOnValueAttribute[0].getName());
+		assertEquals("bean2", dependsOnValueAttribute[1].getName());
+		assertEquals(new Location(bean.getLocation().getUri(), new Range(new Position(17, 13), new Position(17, 20))), dependsOnValueAttribute[0].getLocation());
+		assertEquals(new Location(bean.getLocation().getUri(), new Range(new Position(17, 22), new Position(17, 29))), dependsOnValueAttribute[1].getLocation());
 		
 		InjectionPoint[] injectionPoints = bean.getInjectionPoints();
 		assertEquals(2, injectionPoints.length);
@@ -325,14 +352,20 @@ public class SpringMetamodelIndexerBeansTest {
 		assertEquals(1, annotationsFromPoint2.length);
 		
 		assertEquals("org.springframework.beans.factory.annotation.Qualifier", annotationsFromPoint1[0].getAnnotationType());
-		Map<String, String[]> attributesFromParam1 = annotationsFromPoint1[0].getAttributes();
+		Map<String, AnnotationAttributeValue[]> attributesFromParam1 = annotationsFromPoint1[0].getAttributes();
 		assertEquals(1, attributesFromParam1.size());
-		assertArrayEquals(new String[] {"q1"}, attributesFromParam1.get("value"));
+		AnnotationAttributeValue[] qualifier1ValueAttributes = attributesFromParam1.get("value");
+		assertEquals(1, qualifier1ValueAttributes.length);
+		assertEquals("q1", qualifier1ValueAttributes[0].getName());
+		assertEquals(new Location(bean.getLocation().getUri(), new Range(new Position(18, 84), new Position(18, 88))), qualifier1ValueAttributes[0].getLocation());
 		
 		assertEquals("org.springframework.beans.factory.annotation.Qualifier", annotationsFromPoint2[0].getAnnotationType());
-		Map<String, String[]> attributesFromParam2 = annotationsFromPoint2[0].getAttributes();
+		Map<String, AnnotationAttributeValue[]> attributesFromParam2 = annotationsFromPoint2[0].getAttributes();
 		assertEquals(1, attributesFromParam2.size());
-		assertArrayEquals(new String[] {"q2"}, attributesFromParam2.get("value"));
+		AnnotationAttributeValue[] qualifier2ValueAttributes = attributesFromParam2.get("value");
+		assertEquals(1, qualifier2ValueAttributes.length);
+		assertEquals("q2", qualifier2ValueAttributes[0].getName());
+		assertEquals(new Location(bean.getLocation().getUri(), new Range(new Position(18, 119), new Position(18, 123))), qualifier2ValueAttributes[0].getLocation());
 	}
 	
 	@Test
@@ -359,13 +392,26 @@ public class SpringMetamodelIndexerBeansTest {
 		assertEquals("org.springframework.context.annotation.ImportRuntimeHints", runtimeHintsAnnotation.getAnnotationType());
 		assertEquals("org.springframework.stereotype.Component", componentMetaAnnotation.getAnnotationType());
 		
-		Map<String, String[]> qualifierAttributes = qualifierAnnotation.getAttributes();
+		Map<String, AnnotationAttributeValue[]> qualifierAttributes = qualifierAnnotation.getAttributes();
 		assertEquals(1, qualifierAttributes.size());
-		assertArrayEquals(new String[] {"qualifier"}, qualifierAttributes.get("value"));
 		
-		Map<String, String[]> runtimeHintsAttributes = runtimeHintsAnnotation.getAttributes();
+		AnnotationAttributeValue[] valueAttributes = qualifierAttributes.get("value");
+		assertNotNull(valueAttributes);
+		assertEquals(1, valueAttributes.length);
+		
+		Location qualifierValueLocation = new Location(bean.getLocation().getUri(), new Range(new Position(12, 11), new Position(12, 22)));
+		assertEquals("qualifier", valueAttributes[0].getName());
+		assertEquals(qualifierValueLocation, valueAttributes[0].getLocation());
+		
+		Map<String, AnnotationAttributeValue[]> runtimeHintsAttributes = runtimeHintsAnnotation.getAttributes();
 		assertEquals(1, runtimeHintsAttributes.size());
-		assertArrayEquals(new String[] {"org.test.injections.DummyRuntimeHintsRegistrar"}, runtimeHintsAttributes.get("value"));
+		AnnotationAttributeValue[] runtimeHintsValueAttribute = runtimeHintsAttributes.get("value");
+		assertNotNull(runtimeHintsValueAttribute);
+		assertEquals(1, runtimeHintsValueAttribute.length);
+
+		Location runtimeHintsValueLocation = new Location(bean.getLocation().getUri(), new Range(new Position(13, 20), new Position(13, 52)));
+		assertEquals("org.test.injections.DummyRuntimeHintsRegistrar", runtimeHintsValueAttribute[0].getName());
+		assertEquals(runtimeHintsValueLocation, runtimeHintsValueAttribute[0].getLocation());
 	}
 	
 	@Test
@@ -395,9 +441,11 @@ public class SpringMetamodelIndexerBeansTest {
 		assertFalse(qualifierFromPoint2.isMetaAnnotation());
 		assertEquals(1, qualifierFromPoint2.getAttributes().size());
 		
-		Map<String, String[]> qualifierAttributes = qualifierFromPoint2.getAttributes();
-		assertEquals(1, qualifierAttributes.size());
-		assertArrayEquals(new String[] {"qual1"}, qualifierAttributes.get("value"));
+		Map<String, AnnotationAttributeValue[]> qualifierAttributes = qualifierFromPoint2.getAttributes();
+		AnnotationAttributeValue[] qualifierAttributeValues = qualifierAttributes.get("value");
+		assertEquals(1, qualifierAttributeValues.length);
+		assertEquals("qual1", qualifierAttributeValues[0].getName());
+		assertEquals(new Location(beans[0].getLocation().getUri(), new Range(new Position(15, 12), new Position(15, 19))), qualifierAttributeValues[0].getLocation());
 	}
 	
 	@Test
@@ -415,16 +463,26 @@ public class SpringMetamodelIndexerBeansTest {
 		assertEquals("org.springframework.beans.factory.annotation.Qualifier", qualifierAnnotation.getAnnotationType());
 		assertFalse(qualifierAnnotation.isMetaAnnotation());
 		
-		Map<String, String[]> qualifierAttributes = qualifierAnnotation.getAttributes();
+		Map<String, AnnotationAttributeValue[]> qualifierAttributes = qualifierAnnotation.getAttributes();
 		assertEquals(1, qualifierAttributes.size());
-		assertArrayEquals(new String[] {"repoQualifier"}, qualifierAttributes.get("value"));
+		AnnotationAttributeValue[] qualifierAttributeValues = qualifierAttributes.get("value");
+		assertEquals(1, qualifierAttributeValues.length);
+		assertEquals("repoQualifier", qualifierAttributeValues[0].getName());
+		assertEquals(new Location(beans[0].getLocation().getUri(), new Range(new Position(8, 11), new Position(8, 26))), qualifierAttributeValues[0].getLocation());
 		
 		assertEquals("org.springframework.context.annotation.Profile", profileAnnotation.getAnnotationType());
 		assertFalse(profileAnnotation.isMetaAnnotation());
 		
-		Map<String, String[]> profileAttributes = profileAnnotation.getAttributes();
+		Map<String, AnnotationAttributeValue[]> profileAttributes = profileAnnotation.getAttributes();
 		assertEquals(1, profileAttributes.size());
-		assertArrayEquals(new String[] {"prof1", "prof2"}, profileAttributes.get("value"));
+		AnnotationAttributeValue[] profileAttributeValues = profileAttributes.get("value");
+		assertEquals(2, profileAttributeValues.length);
+
+		assertEquals("prof1", profileAttributeValues[0].getName());
+		assertEquals(new Location(beans[0].getLocation().getUri(), new Range(new Position(9, 10), new Position(9, 17))), profileAttributeValues[0].getLocation());
+
+		assertEquals("prof2", profileAttributeValues[1].getName());
+		assertEquals(new Location(beans[0].getLocation().getUri(), new Range(new Position(9, 19), new Position(9, 26))), profileAttributeValues[1].getLocation());
 	}
 
 

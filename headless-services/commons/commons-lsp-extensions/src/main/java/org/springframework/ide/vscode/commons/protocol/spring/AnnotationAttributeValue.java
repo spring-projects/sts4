@@ -10,41 +10,46 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.spring;
 
-import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.lsp4j.Location;
 
 /**
  * @author Martin Lippert
  */
-public class AnnotationMetadata {
+public class AnnotationAttributeValue {
 	
-	private final String annotationType;
-	private final boolean isMetaAnnotation;
+	private final String name;
 	private final Location location;
-	private final Map<String, AnnotationAttributeValue[]> attributes;
 	
-	public AnnotationMetadata(String annotationType, boolean isMetaAnnotation, Location location, Map<String, AnnotationAttributeValue[]> attributes) {
-		this.annotationType = annotationType;
-		this.isMetaAnnotation = isMetaAnnotation;
+	public AnnotationAttributeValue(String name, Location location) {
+		this.name = name;
 		this.location = location;
-		this.attributes = attributes;
 	}
 	
-	public String getAnnotationType() {
-		return annotationType;
-	}
-
-	public boolean isMetaAnnotation() {
-		return isMetaAnnotation;
+	public String getName() {
+		return name;
 	}
 	
 	public Location getLocation() {
 		return location;
 	}
 
-	public Map<String, AnnotationAttributeValue[]> getAttributes() {
-		return attributes;
+	@Override
+	public int hashCode() {
+		return Objects.hash(location, name);
 	}
-	
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AnnotationAttributeValue other = (AnnotationAttributeValue) obj;
+		return Objects.equals(location, other.location) && Objects.equals(name, other.name);
+	}
+
 }

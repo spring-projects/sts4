@@ -67,7 +67,8 @@ public class SpringIndexerJakartaJavaxAnnotationsTest {
         String docUri = directory.toPath().resolve("src/main/java/org/test/jakarta/SimpleMovieLister.java").toUri().toString();
 
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
-                SpringIndexerHarness.symbol("@Resource", "@Resource"),
+        		SpringIndexerHarness.symbol("@Component", "@+ 'simpleMovieLister' (@Component) SimpleMovieLister"),
+        		SpringIndexerHarness.symbol("@Resource", "@Resource"),
                 SpringIndexerHarness.symbol("@Resource", "@Resource"),
                 SpringIndexerHarness.symbol("@Resource(name=\"myMovieFinder\")", "@Resource(name=\"myMovieFinder\")"),
                 SpringIndexerHarness.symbol("@Inject", "@Inject"),

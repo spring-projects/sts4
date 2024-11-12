@@ -30,6 +30,7 @@ import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDisc;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
@@ -43,7 +44,7 @@ public class SpringMetamodelIndexTest {
 	private Set<String> emptySupertypes = new HashSet<>();
 	private AnnotationMetadata[] emptyAnnotations = new AnnotationMetadata[0];
 	private AnnotationMetadata[] emptyInjectionAnnotations = new AnnotationMetadata[0];
-	private Map<String, String[]> emptyAnnotationAttributes = new LinkedHashMap<>();
+	private Map<String, AnnotationAttributeValue[]> emptyAnnotationAttributes = new LinkedHashMap<>();
 	
 	private Location locationForDoc1 = new Location("docURI1", new Range(new Position(1, 1), new Position(1, 10)));
 	private Location locationForDoc2 = new Location("docURI2", new Range(new Position(2, 1), new Position(2, 10)));
@@ -225,8 +226,24 @@ public class SpringMetamodelIndexTest {
 	
 	@Test
 	void testOverallSerializeDeserializeBeans() {
+		Location locationForAnnotation1 = new Location("docURI1", new Range(new Position(100, 5), new Position(100, 20)));
+		Location locationForAnnotation2 = new Location("docURI1", new Range(new Position(200, 10), new Position(200, 40)));
+		
+		Location locationForAttribute1 = new Location("docURI1", new Range(new Position(1000, 100), new Position(1000, 400)));
+		Location locationForAttribute2 = new Location("docURI1", new Range(new Position(2000, 200), new Position(2000, 800)));
+		Location locationForAttribute3 = new Location("docURI1", new Range(new Position(3000, 400), new Position(3000, 1600)));
+
+		AnnotationAttributeValue annotationAttributeValue1 = new AnnotationAttributeValue("attribute1", locationForAttribute1);
+		AnnotationAttributeValue annotationAttributeValue2 = new AnnotationAttributeValue("attribute2", locationForAttribute2);
+		AnnotationAttributeValue annotationAttributeValue3 = new AnnotationAttributeValue("attribute3", locationForAttribute3);
+
 		InjectionPoint point1 = new InjectionPoint("point1", "point1-type", locationForDoc2, new AnnotationMetadata[]
-				{new AnnotationMetadata("anno1", false, emptyAnnotationAttributes),new AnnotationMetadata("anno2", false, emptyAnnotationAttributes)});
+				{
+						new AnnotationMetadata("anno1", false, locationForAnnotation1, Map.of(
+								"attribute1", new AnnotationAttributeValue[] {annotationAttributeValue1, annotationAttributeValue2},
+								"attribute2", new AnnotationAttributeValue[] {annotationAttributeValue3})),
+						new AnnotationMetadata("anno2", false, locationForAnnotation2, emptyAnnotationAttributes)
+				});
 
 		InjectionPoint point2 = new InjectionPoint("point2", "point2-type", locationForDoc1, null);
 
@@ -250,6 +267,7 @@ public class SpringMetamodelIndexTest {
 		assertEquals("point2", points[1].getName());
 		assertEquals("point2-type", points[1].getType());
 		assertEquals(locationForDoc1, points[1].getLocation());
+		assertSame(DefaultValues.EMPTY_ANNOTATIONS, points[1].getAnnotations());
 		
 		assertTrue(deserializedBean.isTypeCompatibleWith("supertype1"));
 		assertTrue(deserializedBean.isTypeCompatibleWith("supertype2"));
@@ -259,6 +277,21 @@ public class SpringMetamodelIndexTest {
 		assertEquals("anno1", points[0].getAnnotations()[0].getAnnotationType());
 		assertEquals("anno2", points[0].getAnnotations()[1].getAnnotationType());
 		
+		assertEquals(locationForAnnotation1, points[0].getAnnotations()[0].getLocation());
+		assertEquals(locationForAnnotation2, points[0].getAnnotations()[1].getLocation());
+		
+		Map<String, AnnotationAttributeValue[]> attributes = points[0].getAnnotations()[0].getAttributes();
+		assertEquals(2, attributes.get("attribute1").length);
+		assertEquals(1, attributes.get("attribute2").length);
+		
+		assertEquals(annotationAttributeValue1, attributes.get("attribute1")[0]);
+		assertEquals(annotationAttributeValue2, attributes.get("attribute1")[1]);
+		assertEquals(annotationAttributeValue3, attributes.get("attribute2")[0]);
+		
+		assertEquals(locationForAttribute1, attributes.get("attribute1")[0].getLocation());
+		assertEquals(locationForAttribute2, attributes.get("attribute1")[1].getLocation());
+		assertEquals(locationForAttribute3, attributes.get("attribute2")[0].getLocation());
+
 		assertEquals(0, points[1].getAnnotations().length);
 	}
 	
