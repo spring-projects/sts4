@@ -118,6 +118,10 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 	}
 
 	private void getIndexFromSourceFolder(File sourceFolder, SimplePropertyIndex index) {
+		if (!sourceFolder.exists()) {
+			return;
+		}
+
 		try (Stream<Path> walk = Files.walk(sourceFolder.toPath())) {
 			walk
 				.filter(path -> ValuePropertyReferencesProvider.isPropertiesFile(path))
@@ -132,7 +136,7 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 					}
 				});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("error getting ad-hoc property index data for: " + sourceFolder.toString(), e);
 		}
 	}
 
