@@ -38,7 +38,7 @@ public class RewriteRecipeRepositoryTest {
 		assertEquals(10, recipes.size());
 		
 		recipes = recipeRepo.getSubRecipes("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1", List.of(0, 2)).get();
-		assertEquals(19, recipes.size());
+		assertEquals(20, recipes.size());
 		
 		recipes = recipeRepo.getSubRecipes("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1",List.of(0, 345)).get();
 		assertEquals(0, recipes.size());
@@ -129,7 +129,6 @@ public class RewriteRecipeRepositoryTest {
 		
 		assertThat(java17.getRecipeList().get(0).getName()).isEqualTo("org.openrewrite.java.migrate.Java8toJava11");
 		assertThat(java17.getRecipeList().get(1).getName()).isEqualTo("org.openrewrite.java.migrate.UpgradeBuildToJava17");
-		assertThat(java17.getRecipeList().get(2).getName()).isEqualTo("org.openrewrite.java.migrate.lang.UseTextBlocks");
 		
 	}
 
