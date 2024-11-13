@@ -412,6 +412,63 @@ public class ASTUtils {
 	
 	public static InjectionPoint[] findInjectionPoints(MethodDeclaration method, TextDocument doc) throws BadLocationException {
 		List<InjectionPoint> result = new ArrayList<>();
+		findInjectionPoints(method, doc, result, false);
+		
+		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : DefaultValues.EMPTY_INJECTION_POINTS;
+	}
+	
+	public static InjectionPoint[] findInjectionPoints(TypeDeclaration type, TextDocument doc) throws BadLocationException {
+		List<InjectionPoint> result = new ArrayList<>();
+
+		findInjectionPoints(type.getMethods(), doc, result);
+		findInjectionPoints(type.getFields(), doc, result);
+		
+		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : DefaultValues.EMPTY_INJECTION_POINTS;
+	}
+
+	private static void findInjectionPoints(MethodDeclaration[] methods, TextDocument doc, List<InjectionPoint> result) throws BadLocationException {
+		int constructorCount = 0;
+
+		// special rule that if there is a single constructor, it doesn't have to have an autowired or inject annotation on it
+		MethodDeclaration singleConstructor = null;
+
+		for (MethodDeclaration method : methods) {
+			if (method.isConstructor()) {
+				constructorCount++;
+				singleConstructor = method;
+			}
+		}
+		
+		if (constructorCount == 1) {
+			findInjectionPoints(singleConstructor, doc, result, false);
+		}
+
+		// look for all methods with annotations (whether constructors or regular methods)
+		for (MethodDeclaration method : methods) {
+			findInjectionPoints(method, doc, result, true);
+		}
+	}
+	
+	public static void findInjectionPoints(MethodDeclaration method, TextDocument doc, List<InjectionPoint> result, boolean checkForAnnotation) throws BadLocationException {
+
+		Collection<Annotation> annotationsOnMethod = getAnnotations(method);
+		
+		if (checkForAnnotation) {
+			boolean isAutowired = false;
+			
+			for (Annotation annotation : annotationsOnMethod) {
+				String qualifiedName = annotation.resolveTypeBinding().getQualifiedName();
+				if (Annotations.AUTOWIRED.equals(qualifiedName)
+						|| Annotations.INJECT_JAVAX.equals(qualifiedName)
+						|| Annotations.INJECT_JAKARTA.equals(qualifiedName)) {
+					isAutowired = true;
+				}
+			}
+
+			if (!isAutowired) {
+				return;
+			}
+		}
 		
 		List<?> parameters = method.parameters();
 		for (Object object : parameters) {
@@ -427,70 +484,65 @@ public class ASTUtils {
 				
 				Location location = new Location(doc.getUri(), range);
 				
-				AnnotationMetadata[] annotations = getAnnotationsMetadata(getAnnotations(variable), doc);
+				List<Annotation> allAnnotations = new ArrayList<>();
+				allAnnotations.addAll(annotationsOnMethod);
+				allAnnotations.addAll(getAnnotations(variable));
+				
+				AnnotationMetadata[] annotations = getAnnotationsMetadata(allAnnotations, doc);
 				
 				result.add(new InjectionPoint(name, type, location, annotations));
 			}
 		}
-
-		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : DefaultValues.EMPTY_INJECTION_POINTS;
 	}
-	
-	public static InjectionPoint[] findInjectionPoints(TypeDeclaration type, TextDocument doc) throws BadLocationException {
-		List<InjectionPoint> result = new ArrayList<>();
 
-		MethodDeclaration[] methods = type.getMethods();
-		for (MethodDeclaration method : methods) {
-			if (method.isConstructor()) {
-				result.addAll(Arrays.asList(ASTUtils.findInjectionPoints(method, doc)));
+	private static void findInjectionPoints(FieldDeclaration[] fields, TextDocument doc, List<InjectionPoint> result) throws BadLocationException {
+		for (FieldDeclaration field : fields) {
+			findInjectionPoints(field, doc, result);
+		}
+	}
+
+	private static void findInjectionPoints(FieldDeclaration field, TextDocument doc, List<InjectionPoint> result) throws BadLocationException {
+		boolean autowiredField = false;
+		
+		List<Annotation> fieldAnnotations = new ArrayList<>();
+
+		List<?> modifiers = field.modifiers();
+		for (Object modifier : modifiers) {
+			if (modifier instanceof Annotation) {
+				Annotation annotation = (Annotation) modifier;
+				fieldAnnotations.add(annotation);
+
+				String qualifiedName = annotation.resolveTypeBinding().getQualifiedName();
+				if (Annotations.AUTOWIRED.equals(qualifiedName)
+						|| Annotations.INJECT_JAVAX.equals(qualifiedName)
+						|| Annotations.INJECT_JAKARTA.equals(qualifiedName)
+						|| Annotations.VALUE.equals(qualifiedName)) {
+					autowiredField = true;
+				}
 			}
 		}
 
-		FieldDeclaration[] fields = type.getFields();
-		for (FieldDeclaration field : fields) {
-
-			boolean autowiredField = false;
-			
-			List<Annotation> fieldAnnotations = new ArrayList<>();
-
-			List<?> modifiers = field.modifiers();
-			for (Object modifier : modifiers) {
-				if (modifier instanceof Annotation) {
-					Annotation annotation = (Annotation) modifier;
-					fieldAnnotations.add(annotation);
-
-					String qualifiedName = annotation.resolveTypeBinding().getQualifiedName();
-					if (Annotations.AUTOWIRED.equals(qualifiedName)
-							|| Annotations.INJECT_JAVAX.equals(qualifiedName)
-							|| Annotations.INJECT_JAKARTA.equals(qualifiedName)
-							|| Annotations.VALUE.equals(qualifiedName)) {
-						autowiredField = true;
-					}
-				}
-			}
-
-			if (autowiredField) {
-				List<?> fragments = field.fragments();
-				for (Object fragment : fragments) {
-					if (fragment instanceof VariableDeclarationFragment) {
-						VariableDeclarationFragment varFragment = (VariableDeclarationFragment) fragment;
-						String fieldName = varFragment.getName().toString();
-
-						DocumentRegion region = ASTUtils.nodeRegion(doc, varFragment.getName());
-						Range range = doc.toRange(region);
-						Location fieldLocation = new Location(doc.getUri(), range);
-
-						String fieldType = field.getType().resolveBinding().getQualifiedName();
-
-						AnnotationMetadata[] annotationsMetadata = getAnnotationsMetadata(fieldAnnotations, doc);
-						
-						result.add(new InjectionPoint(fieldName, fieldType, fieldLocation, annotationsMetadata));
-					}
-				}
-			}
+		if (!autowiredField) {
+			return;
 		}
 		
-		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : DefaultValues.EMPTY_INJECTION_POINTS;
+		List<?> fragments = field.fragments();
+		for (Object fragment : fragments) {
+			if (fragment instanceof VariableDeclarationFragment) {
+				VariableDeclarationFragment varFragment = (VariableDeclarationFragment) fragment;
+				String fieldName = varFragment.getName().toString();
+
+				DocumentRegion region = ASTUtils.nodeRegion(doc, varFragment.getName());
+				Range range = doc.toRange(region);
+				Location fieldLocation = new Location(doc.getUri(), range);
+
+				String fieldType = field.getType().resolveBinding().getQualifiedName();
+
+				AnnotationMetadata[] annotationsMetadata = getAnnotationsMetadata(fieldAnnotations, doc);
+
+				result.add(new InjectionPoint(fieldName, fieldType, fieldLocation, annotationsMetadata));
+			}
+		}
 	}
 	
 	public static AnnotationMetadata[] getAnnotationsMetadata(Collection<Annotation> annotations, TextDocument doc) {

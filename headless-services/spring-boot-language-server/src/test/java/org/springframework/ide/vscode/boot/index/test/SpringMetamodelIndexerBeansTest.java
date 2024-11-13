@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
@@ -184,6 +185,53 @@ public class SpringMetamodelIndexerBeansTest {
 		assertEquals("org.test.BeanClass2", injectionPoints[1].getType());
 		Location ip2Location = new Location(docUri, new Range(new Position(12, 65), new Position(12, 70)));
 		assertEquals(ip2Location, injectionPoints[1].getLocation());
+	}
+
+	@Test
+	void testSetterInjectionPointsFromConstructor() {
+		Bean[] beans = springIndex.getBeansWithName("test-spring-indexing", "setterInjectionService");
+		assertEquals(1, beans.length);
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/injections/SetterInjectionService.java").toUri().toString();
+
+		InjectionPoint[] injectionPoints = beans[0].getInjectionPoints();
+		assertEquals(2, injectionPoints.length);
+		
+		assertEquals("bean1", injectionPoints[0].getName());
+		assertEquals("org.test.BeanClass1", injectionPoints[0].getType());
+		assertEquals(new Location(docUri, new Range(new Position(21, 33), new Position(21, 38))), injectionPoints[0].getLocation());
+		
+		AnnotationMetadata[] point1Annotations = injectionPoints[0].getAnnotations();
+		assertEquals(2, point1Annotations.length);
+		
+		assertEquals(Annotations.AUTOWIRED, point1Annotations[0].getAnnotationType());
+		assertEquals(new Location(docUri, new Range(new Position(19, 1), new Position(19, 11))), point1Annotations[0].getLocation());
+		assertEquals(0, point1Annotations[0].getAttributes().size());
+		
+		assertEquals(Annotations.QUALIFIER, point1Annotations[1].getAnnotationType());
+		assertEquals(new Location(docUri, new Range(new Position(20, 1), new Position(20, 41))), point1Annotations[1].getLocation());
+		assertEquals(1, point1Annotations[1].getAttributes().size());
+		assertEquals(1, point1Annotations[1].getAttributes().get("value").length);
+		assertEquals("setter-injection-qualifier", point1Annotations[1].getAttributes().get("value")[0].getName());
+		assertEquals(new Location(docUri, new Range(new Position(20, 12), new Position(20, 40))), point1Annotations[1].getAttributes().get("value")[0].getLocation());
+		
+		assertEquals("bean2", injectionPoints[1].getName());
+		assertEquals("org.test.BeanClass2", injectionPoints[1].getType());
+		assertEquals(new Location(docUri, new Range(new Position(26, 83), new Position(26, 88))), injectionPoints[1].getLocation());
+
+		AnnotationMetadata[] point2Annotations = injectionPoints[1].getAnnotations();
+		assertEquals(2, point2Annotations.length);
+		assertEquals(Annotations.AUTOWIRED, point2Annotations[0].getAnnotationType());
+		assertEquals(new Location(docUri, new Range(new Position(25, 1), new Position(25, 11))), point2Annotations[0].getLocation());
+		assertEquals(0, point2Annotations[0].getAttributes().size());
+
+		assertEquals(Annotations.QUALIFIER, point2Annotations[1].getAnnotationType());
+		assertEquals(new Location(docUri, new Range(new Position(26, 22), new Position(26, 71))), point2Annotations[1].getLocation());
+		assertEquals(1, point2Annotations[1].getAttributes().size());
+		assertEquals(1, point2Annotations[1].getAttributes().get("value").length);
+		assertEquals("setter-injection-qualifier-on-param", point2Annotations[1].getAttributes().get("value")[0].getName());
+		assertEquals(new Location(docUri, new Range(new Position(26, 33), new Position(26, 70))), point2Annotations[1].getAttributes().get("value")[0].getLocation());
+		
 	}
 
 	@Test

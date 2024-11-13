@@ -18,12 +18,12 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,10 +58,8 @@ public class NamedReferencesProviderTest {
 	private File directory;
 	private IJavaProject project;
 	private Bean bean1;
-	private Bean bean2;
 
 	private String tempJavaDocUri1;
-	private String tempJavaDocUri2;
 	private String tempJavaDocUri;
 
 	@BeforeEach
@@ -78,12 +76,11 @@ public class NamedReferencesProviderTest {
 
 		tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TestDependsOnClass.java").toUri().toString();
         tempJavaDocUri1 = directory.toPath().resolve("src/main/java/org/test/TempClass1.java").toUri().toString();
-        tempJavaDocUri2 = directory.toPath().resolve("src/main/java/org/test/TempClass2.java").toUri().toString();
 
         bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri1, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {});
-		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri2, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {});
-		
-		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
+        
+        Bean[] beans = ArrayUtils.add(springIndex.getBeansOfProject(project.getElementName()), bean1);
+		springIndex.updateBeans(project.getElementName(), beans);
 	}
 	
 	@Test
@@ -111,7 +108,6 @@ public class NamedReferencesProviderTest {
 	}
 
 	@Test
-	@Disabled // TODO: need to include setter injection in spring index as a first step, then resurrect this test case
 	public void testNamedRefersToOtherNamedValues() throws Exception {
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;
@@ -124,11 +120,11 @@ public class NamedReferencesProviderTest {
 		
         String expectedDefinitionUri1 = directory.toPath().resolve("src/main/java/org/test/jakarta/SimpleMovieLister.java").toUri().toString();
 		Location expectedLocation1 = new Location(expectedDefinitionUri1,
-				new Range(new Position(24, 38), new Position(24, 62)));
+				new Range(new Position(27, 45), new Position(27, 61)));
 
         String expectedDefinitionUri2 = directory.toPath().resolve("src/main/java/org/test/javax/SimpleMovieLister.java").toUri().toString();
 		Location expectedLocation2 = new Location(expectedDefinitionUri2,
-				new Range(new Position(24, 38), new Position(24, 62)));
+				new Range(new Position(27, 45), new Position(27, 61)));
 
 		List<? extends Location> references = editor.getReferences();
 		assertEquals(2, references.size());
