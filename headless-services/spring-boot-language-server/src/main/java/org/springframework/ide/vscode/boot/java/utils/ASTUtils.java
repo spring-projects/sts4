@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -485,7 +484,13 @@ public class ASTUtils {
 				Location location = new Location(doc.getUri(), range);
 				
 				List<Annotation> allAnnotations = new ArrayList<>();
-				allAnnotations.addAll(annotationsOnMethod);
+				
+				// add method level annotations to each injection point only for autowired setter injection
+				// (not for bean methods)
+				if (checkForAnnotation) {
+					allAnnotations.addAll(annotationsOnMethod);
+				}
+				
 				allAnnotations.addAll(getAnnotations(variable));
 				
 				AnnotationMetadata[] annotations = getAnnotationsMetadata(allAnnotations, doc);
