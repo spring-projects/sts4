@@ -45,6 +45,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
 public class SpringMetamodelIndexingTest {
+	
+	private static final int NO_OF_EXPECTED_BEANS = 24;
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
@@ -75,7 +77,7 @@ public class SpringMetamodelIndexingTest {
     @Test
     void testDeleteProject() throws Exception {
     	Bean[] beans = springIndex.getBeansOfProject("test-spring-indexing");
-    	assertEquals(23, beans.length);
+    	assertEquals(NO_OF_EXPECTED_BEANS, beans.length);
 
     	CompletableFuture<Void> deleteProject = indexer.deleteProject(project);
         deleteProject.get(5, TimeUnit.SECONDS);
@@ -92,7 +94,7 @@ public class SpringMetamodelIndexingTest {
         String deletedDocURI = directory.toPath().resolve("src/main/java/org/test/injections/ConstructorInjectionService.java").toUri().toString();
 
         Bean[] allBeansOfProject = springIndex.getBeansOfProject("test-spring-indexing");
-        assertEquals(23, allBeansOfProject.length);
+        assertEquals(NO_OF_EXPECTED_BEANS, allBeansOfProject.length);
 
         Bean[] beans = springIndex.getBeansOfDocument(deletedDocURI);
         assertEquals(1, beans.length);
