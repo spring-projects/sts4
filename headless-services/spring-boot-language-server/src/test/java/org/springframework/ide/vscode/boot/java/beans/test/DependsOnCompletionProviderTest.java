@@ -170,6 +170,11 @@ public class DependsOnCompletionProviderTest {
 	}
 
 	@Test
+	public void testDependsOnCompletionInsideOfAttributeName() throws Exception {
+		assertCompletions("@DependsOn(<*>value=\"bean1\")", 0, null);
+	}
+	
+	@Test
 	public void testDependsOnCompletionInsideOfQuotesWithPrefixAndReplacedPostfix() throws Exception {
 		assertCompletions("@DependsOn(\"be<*>xxx\")", 2, "@DependsOn(\"bean1<*>\")");
 	}

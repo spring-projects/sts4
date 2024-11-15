@@ -77,6 +77,7 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 			}
 			// case: @Qualifier(value=<*>)
 			else if (node instanceof Name && node.getParent() instanceof MemberValuePair
+					&& ((MemberValuePair)node.getParent()).getName() != node
 					&& completionProviders.containsKey(((MemberValuePair)node.getParent()).getName().toString())) {
 				String attributeName = ((MemberValuePair)node.getParent()).getName().toString();
 				computeProposalsForSimpleName(project, node, attributeName, completions, offset, doc);
