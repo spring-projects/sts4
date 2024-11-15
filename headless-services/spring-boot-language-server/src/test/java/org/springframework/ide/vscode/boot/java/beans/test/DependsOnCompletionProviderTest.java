@@ -128,6 +128,11 @@ public class DependsOnCompletionProviderTest {
 		assertCompletions("@DependsOn(\"<*>\")", 2, "@DependsOn(\"bean1<*>\")");
 	}
 
+	@Test
+	public void testDependsOnCompletionWithQuotesWithAttributeName() throws Exception {
+		assertCompletions("@DependsOn(value=\"<*>\")", 2, "@DependsOn(value=\"bean1<*>\")");
+	}
+
 	// TODO: not yet working, needs more groundwork due to the parser skipping these non-valid parts of the AST
 //	@Test
 //	public void testDependsOnCompletionOpeningQuoteOnlyWithoutPrefix() throws Exception {
