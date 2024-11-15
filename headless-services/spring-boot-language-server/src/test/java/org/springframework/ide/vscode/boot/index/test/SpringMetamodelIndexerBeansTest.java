@@ -230,7 +230,6 @@ public class SpringMetamodelIndexerBeansTest {
 		assertEquals(1, point2Annotations[1].getAttributes().get("value").length);
 		assertEquals("setter-injection-qualifier-on-param", point2Annotations[1].getAttributes().get("value")[0].getName());
 		assertEquals(new Location(docUri, new Range(new Position(26, 33), new Position(26, 70))), point2Annotations[1].getAttributes().get("value")[0].getLocation());
-		
 	}
 
 	@Test

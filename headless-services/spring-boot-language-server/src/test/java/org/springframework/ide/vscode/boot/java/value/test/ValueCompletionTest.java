@@ -132,10 +132,13 @@ public class ValueCompletionTest {
 	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
-        prepareDefaultIndexData();
+		
+        indexHarness.data("spring.prop1", "java.lang.String", null, null);
+		indexHarness.data("data.prop2", "java.lang.String", null, null);
+		indexHarness.data("else.prop3", "java.lang.String", null, null);
 	}
-
-    @Test
+	
+	@Test
     void testPrefixIdentification() {
         ValueCompletionProcessor processor = new ValueCompletionProcessor(projectFinder, null, null);
 
@@ -578,12 +581,6 @@ public class ValueCompletionTest {
         );
     }
 
-
-	private void prepareDefaultIndexData() {
-		indexHarness.data("spring.prop1", "java.lang.String", null, null);
-		indexHarness.data("data.prop2", "java.lang.String", null, null);
-		indexHarness.data("else.prop3", "java.lang.String", null, null);
-	}
 
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-annotations/src/main/java/org/test/TestValueCompletion.java");

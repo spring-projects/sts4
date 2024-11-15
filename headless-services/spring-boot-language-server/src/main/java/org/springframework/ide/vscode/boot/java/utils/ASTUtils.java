@@ -669,7 +669,9 @@ public class ASTUtils {
 			Range range = doc.toRange(region);
 			Location location = new Location(doc.getUri(), range);
 			
-			return new AnnotationAttributeValue(expression.toString(), location);
+			Object constantExpressionValue = expression.resolveConstantExpressionValue();
+			
+			return new AnnotationAttributeValue(constantExpressionValue != null ? constantExpressionValue.toString() : expression.toString(), location);
 		}
 	}
 	
@@ -698,7 +700,7 @@ public class ASTUtils {
 						
 						ITypeBinding klass = varBinding.getDeclaringClass();
 						if (klass != null) {
-							result.dereferencedType= klass;
+							result.dereferencedType = klass;
 						}
 
 					}

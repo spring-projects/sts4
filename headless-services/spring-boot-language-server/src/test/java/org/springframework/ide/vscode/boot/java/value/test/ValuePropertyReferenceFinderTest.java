@@ -21,6 +21,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,11 +88,7 @@ public class ValuePropertyReferenceFinderTest {
         Location location = locations.get(0);
 
         URI docURI = file.toUri();
-        assertEquals(docURI.toString(), location.getUri());
-        assertEquals(0, location.getRange().getStart().getLine());
-        assertEquals(0, location.getRange().getStart().getCharacter());
-        assertEquals(0, location.getRange().getEnd().getLine());
-        assertEquals(13, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(docURI.toString(), new Range(new Position(0, 0), new Position(0, 13))), location);
     }
 
     @Test
@@ -105,11 +103,7 @@ public class ValuePropertyReferenceFinderTest {
         Location location = locations.get(0);
 
         URI docURI = file.toUri();
-        assertEquals(docURI.toString(), location.getUri());
-        assertEquals(3, location.getRange().getStart().getLine());
-        assertEquals(2, location.getRange().getStart().getCharacter());
-        assertEquals(3, location.getRange().getEnd().getLine());
-        assertEquals(10, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(docURI.toString(), new Range(new Position(3, 2), new Position(3, 10))), location);
     }
 
     @Test
@@ -123,35 +117,19 @@ public class ValuePropertyReferenceFinderTest {
 
         Path file1 = resourceDir.resolve("mixed-multiple-files/application-dev.properties");
         Location location = getLocation(locations, file1.toUri());
-        assertNotNull(location);
-        assertEquals(1, location.getRange().getStart().getLine());
-        assertEquals(0, location.getRange().getStart().getCharacter());
-        assertEquals(1, location.getRange().getEnd().getLine());
-        assertEquals(10, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(file1.toUri().toString(), new Range(new Position(1, 0), new Position(1, 10))), location);
 
         Path file2 = resourceDir.resolve("mixed-multiple-files/application.yml");
         location = getLocation(locations, file2.toUri());
-        assertNotNull(location);
-        assertEquals(3, location.getRange().getStart().getLine());
-        assertEquals(2, location.getRange().getStart().getCharacter());
-        assertEquals(3, location.getRange().getEnd().getLine());
-        assertEquals(6, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(file2.toUri().toString(), new Range(new Position(3, 2), new Position(3, 6))), location);
 
         Path file3 = resourceDir.resolve("another-prop-folder/application.properties");
         location = getLocation(locations, file3.toUri());
-        assertNotNull(location);
-        assertEquals(1, location.getRange().getStart().getLine());
-        assertEquals(0, location.getRange().getStart().getCharacter());
-        assertEquals(1, location.getRange().getEnd().getLine());
-        assertEquals(10, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(file3.toUri().toString(), new Range(new Position(1, 0), new Position(1, 10))), location);
 
         Path file4 = resourceDir.resolve("another-prop-folder/prod-application.properties");
         location = getLocation(locations, file4.toUri());
-        assertNotNull(location);
-        assertEquals(1, location.getRange().getStart().getLine());
-        assertEquals(0, location.getRange().getStart().getCharacter());
-        assertEquals(1, location.getRange().getEnd().getLine());
-        assertEquals(10, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(file4.toUri().toString(), new Range(new Position(1, 0), new Position(1, 10))), location);
     }
 
 	private Location getLocation(List<? extends Location> locations, URI docURI) {
@@ -193,10 +171,7 @@ public class ValuePropertyReferenceFinderTest {
     	
     	Location location = references.get(0);
     	assertEquals(directory.toPath().resolve("src/main/java/application.properties").toUri().toString(), location.getUri());
-    	assertEquals(0, location.getRange().getStart().getLine());
-    	assertEquals(0, location.getRange().getStart().getCharacter());
-    	assertEquals(0, location.getRange().getEnd().getLine());
-    	assertEquals(7, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(location.getUri(), new Range(new Position(0, 0), new Position(0, 7))), location);
     }
 
     @Test
@@ -228,10 +203,7 @@ public class ValuePropertyReferenceFinderTest {
     	
     	Location location = references.get(0);
     	assertEquals(directory.toPath().resolve("src/main/java/application.properties").toUri().toString(), location.getUri());
-    	assertEquals(0, location.getRange().getStart().getLine());
-    	assertEquals(0, location.getRange().getStart().getCharacter());
-    	assertEquals(0, location.getRange().getEnd().getLine());
-    	assertEquals(7, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(location.getUri(), new Range(new Position(0, 0), new Position(0, 7))), location);
     }
     
     @Test
@@ -241,47 +213,35 @@ public class ValuePropertyReferenceFinderTest {
         List<? extends Location> locations = provider.findReferencesToPropertyKey("my.prop2");
 
         assertNotNull(locations);
-        assertEquals(5, locations.size());
+        assertEquals(7, locations.size());
 
         URI propertiesFile = directory.toPath().resolve("src/main/java/application.properties").toUri();
         Location location = getLocation(locations, propertiesFile);
-        assertNotNull(location);
-        assertEquals(1, location.getRange().getStart().getLine());
-        assertEquals(0, location.getRange().getStart().getCharacter());
-        assertEquals(1, location.getRange().getEnd().getLine());
-        assertEquals(8, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(propertiesFile.toString(), new Range(new Position(1, 0), new Position(1, 8))), location);
 
         URI javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithValue.java").toUri();
         location = getLocation(locations, javaFile);
-        assertNotNull(location);
-        assertEquals(8, location.getRange().getStart().getLine());
-        assertEquals(8, location.getRange().getStart().getCharacter());
-        assertEquals(8, location.getRange().getEnd().getLine());
-        assertEquals(21, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(javaFile.toString(), new Range(new Position(8, 8), new Position(8, 21))), location);
 
         javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConditional.java").toUri();
         location = getLocation(locations, javaFile);
-        assertNotNull(location);
-        assertEquals(6, location.getRange().getStart().getLine());
-        assertEquals(23, location.getRange().getStart().getCharacter());
-        assertEquals(6, location.getRange().getEnd().getLine());
-        assertEquals(33, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(javaFile.toString(), new Range(new Position(6, 23), new Position(6, 33))), location);
 
         javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConditionalAndArray.java").toUri();
         location = getLocation(locations, javaFile);
-        assertNotNull(location);
-        assertEquals(6, location.getRange().getStart().getLine());
-        assertEquals(31, location.getRange().getStart().getCharacter());
-        assertEquals(6, location.getRange().getEnd().getLine());
-        assertEquals(41, location.getRange().getEnd().getCharacter());
+        assertEquals(new Location(javaFile.toString(), new Range(new Position(6, 31), new Position(6, 41))), location);
 
         javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConditionalWithArrayAndPrefix.java").toUri();
         location = getLocation(locations, javaFile);
-        assertNotNull(location);
-        assertEquals(6, location.getRange().getStart().getLine());
-        assertEquals(46, location.getRange().getStart().getCharacter());
-        assertEquals(6, location.getRange().getEnd().getLine());
-        assertEquals(53, location.getRange().getEnd().getCharacter());
-}
+        assertEquals(new Location(javaFile.toString(), new Range(new Position(6, 46), new Position(6, 53))), location);
+
+        javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConstantInConditionalAnnotation.java").toUri();
+        location = getLocation(locations, javaFile);
+        assertEquals(new Location(javaFile.toString(), new Range(new Position(6, 23), new Position(6, 52))), location);
+
+        javaFile = directory.toPath().resolve("src/main/java/org/test/properties/PropertyUsageWithConstantInValueAnnotation.java").toUri();
+        location = getLocation(locations, javaFile);
+        assertEquals(new Location(javaFile.toString(), new Range(new Position(8, 8), new Position(8, 41))), location);
+    }
 
 }
