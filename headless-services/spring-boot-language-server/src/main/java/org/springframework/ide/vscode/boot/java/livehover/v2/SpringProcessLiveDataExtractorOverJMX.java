@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,6 +29,7 @@ import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
 import javax.management.Query;
 import javax.management.QueryExp;
+import javax.management.ReflectionException;
 import javax.management.remote.JMXConnector;
 
 import org.json.JSONArray;
@@ -604,8 +605,15 @@ public class SpringProcessLiveDataExtractorOverJMX {
 
 	public LiveConditional[] getConditionals(MBeanServerConnection connection, String domain, String processId, String processName) {
 		try {
+			//Boot 3.x
+			Object result = getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Conditions"), "conditions");
+			if (result != null) {
+				String report = gson.toJson(result);
+				return LiveConditionalParser.parse(report, processId, processName);
+			}
+
 			//Boot 2.x
-			Object result = getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Conditions"), "applicationConditionEvaluation");
+			result = getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Conditions"), "applicationConditionEvaluation");
 			if (result != null) {
 				String report = gson.toJson(result);
 				return LiveConditionalParser.parse(report, processId, processName);
@@ -621,7 +629,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		} catch (IOException e) {
 			//ignore. Happens a lot when apps are stopped while we try to talk to them.
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			// ignore, might happen when communication with the running app is difficult
 		}
 
 		return null;
@@ -655,7 +663,6 @@ public class SpringProcessLiveDataExtractorOverJMX {
 	}
 	
 	public LiveProperties getProperties(MBeanServerConnection connection, String environment) throws Exception {
-
 		try {
 			if (environment != null) {
 				return LivePropertiesJsonParser.parseProperties(environment);
@@ -666,21 +673,20 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		return null;
 	}
 
-
-
 	public String getEnvironment(MBeanServerConnection connection, String domain) throws Exception {
 		try {
-			Object result = getActuatorDataFromAttribute(connection, getObjectName(domain, "type=Endpoint,name=environmentEndpoint"), "Data");
+			Object result = getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Env"), "environment");
 			if (result != null) {
 				String environment = gson.toJson(result);
 				return environment;
 			}
 
-			result = getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Env"), "environment");
+			result = getActuatorDataFromAttribute(connection, getObjectName(domain, "type=Endpoint,name=environmentEndpoint"), "Data");
 			if (result != null) {
 				String environment = gson.toJson(result);
 				return environment;
 			}
+
 		} catch (IOException e) {
 			//ignore... probably just because app is stopped
 		} catch (ExecutionException e) {
@@ -700,6 +706,9 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			catch (InstanceNotFoundException|IOException e) {
 				return null;
 			}
+			catch (ReflectionException e) {
+				return null;
+			}
 		}
 		return null;
 	}
@@ -712,6 +721,9 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			catch (InstanceNotFoundException|IOException e) {
 				return null;
 			}
+			catch (ReflectionException e) {
+				return null;
+			}
 		}
 		return null;
 	}
@@ -722,6 +734,9 @@ public class SpringProcessLiveDataExtractorOverJMX {
 				return connection.invoke(objectName, operation, parameters, signature);
 			}
 			catch (InstanceNotFoundException|IOException e) {
+				return null;
+			}
+			catch (ReflectionException e) {
 				return null;
 			}
 		}

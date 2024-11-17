@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,12 +51,19 @@ public class LiveConditionalParser {
 			if (StringUtil.hasText(autoConfigRecord)) {
 				JSONObject autoConfigReport = new JSONObject(autoConfigRecord);
 				if (autoConfigReport.has("contexts")) {
-					//more recently the report is nested inside the 'application' context.
-					autoConfigReport = autoConfigReport.getJSONObject("contexts").getJSONObject("application");
+					//more recently the report is nested inside an 'application' context, but the name of the node depends on the app
+					
+					JSONObject contexts = autoConfigReport.getJSONObject("contexts");
+					Iterator<String> keys = contexts.keys();
+					if (keys.hasNext()) {
+						autoConfigReport = contexts.getJSONObject(keys.next());
+					}
 				}
+				
 				for (LiveConditional c : getConditionalsFromPositiveMatches(autoConfigReport)) {
 					allConditionals.add(c);
 				}
+				
 				for (LiveConditional c : getConditionalsFromNegativeMatches(autoConfigReport)) {
 					allConditionals.add(c);
 				}
@@ -135,8 +143,7 @@ public class LiveConditionalParser {
 		return conditions;
 	}
 
-	private void parseConditionalsFromContentList(List<LiveConditional> conditionals, String typeInfo,
-			JSONArray contentList) {
+	private void parseConditionalsFromContentList(List<LiveConditional> conditionals, String typeInfo, JSONArray contentList) {
 		for (Object content : contentList) {
 			if (content instanceof JSONObject) {
 				JSONObject conditionalJson = (JSONObject) content;
@@ -154,9 +161,7 @@ public class LiveConditionalParser {
 		}
 	}
 
-
-	public static LiveConditional[] parse(String autoConfigRecord, String appProcessId,
-			String appProcessName) {
+	public static LiveConditional[] parse(String autoConfigRecord, String appProcessId, String appProcessName) {
 		return new LiveConditionalParser(autoConfigRecord, appProcessId, appProcessName).parse();
 	}
 }
