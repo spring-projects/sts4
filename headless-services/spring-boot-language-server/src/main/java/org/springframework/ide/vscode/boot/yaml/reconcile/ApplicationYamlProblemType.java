@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,9 @@ package org.springframework.ide.vscode.boot.yaml.reconcile;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
 
+import java.util.List;
+
+import org.eclipse.lsp4j.DiagnosticTag;
 import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
@@ -32,19 +35,25 @@ public enum ApplicationYamlProblemType implements ProblemType {
 	YAML_EXPECT_MAPPING("Expecting a 'mapping' node but found something else"),
 	YAML_EXPECT_BEAN_PROPERTY_NAME("Expecting a 'bean property' name but found something more complex"),
 	YAML_INVALID_BEAN_PROPERTY("Accessing a named property in a type that doesn't provide a property accessor with that name"),
-	YAML_DEPRECATED_ERROR(ERROR, "Property is marked as Deprecated(Error)"),
-	YAML_DEPRECATED_WARNING(WARNING, "Property is marked as Deprecated(Warning)"),
+	YAML_DEPRECATED_ERROR(ERROR, "Property is marked as Deprecated(Error)", null, List.of(DiagnosticTag.Deprecated)),
+	YAML_DEPRECATED_WARNING(WARNING, "Property is marked as Deprecated(Warning)", null, List.of(DiagnosticTag.Deprecated)),
 	YAML_DUPLICATE_KEY("A mapping node contains multiple entries for the same key"),
 	YAML_SHOULD_ESCAPE(WARNING, "This key contains special characters and should probably be escaped by surrounding it with '[]'");
 
 	private final ProblemSeverity defaultSeverity;
-	private String description;
+	private final String description;
 	private String label;
+	private final List<DiagnosticTag> tags;
 
-	private ApplicationYamlProblemType(ProblemSeverity defaultSeverity, String description, String label) {
+	private ApplicationYamlProblemType(ProblemSeverity defaultSeverity, String description, String label, List<DiagnosticTag> tags) {
 		this.description = description;
 		this.defaultSeverity = defaultSeverity;
 		this.label = label;
+		this.tags = tags;
+	}
+
+	private ApplicationYamlProblemType(ProblemSeverity defaultSeverity, String description, String label) {
+		this(defaultSeverity, description, label, null);
 	}
 
 	private ApplicationYamlProblemType(ProblemSeverity defaultSeverity, String description) {
@@ -62,7 +71,7 @@ public enum ApplicationYamlProblemType implements ProblemType {
 
 
 	public String getLabel() {
-		if (label==null) {
+		if (label == null) {
 			label = createDefaultLabel();
 		}
 		return label;
@@ -85,6 +94,11 @@ public enum ApplicationYamlProblemType implements ProblemType {
 	@Override
 	public ProblemCategory getCategory() {
 		return SpringProblemCategories.YAML;
+	}
+
+	@Override
+	public List<DiagnosticTag> getTags() {
+		return tags;
 	}
 
 }

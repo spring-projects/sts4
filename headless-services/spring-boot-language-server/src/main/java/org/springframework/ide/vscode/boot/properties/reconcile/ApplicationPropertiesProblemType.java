@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,9 @@ package org.springframework.ide.vscode.boot.properties.reconcile;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
 
+import java.util.List;
+
+import org.eclipse.lsp4j.DiagnosticTag;
 import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
@@ -31,18 +34,24 @@ public enum ApplicationPropertiesProblemType implements ProblemType {
 	PROP_VALUE_TYPE_MISMATCH("Expecting a value of a certain type, but value doesn't parse as such"),
 	PROP_INVALID_BEAN_PROPERTY("Accessing a named property in a type that doesn't provide a property accessor with that name"),
 	PROP_UNKNOWN_PROPERTY(WARNING, "Property-key not found in any configuration metadata on the project's classpath"),
-	PROP_DEPRECATED(WARNING, "Property is marked as Deprecated"),
+	PROP_DEPRECATED(WARNING, "Property is marked as Deprecated", null, List.of(DiagnosticTag.Deprecated)),
 	PROP_DUPLICATE_KEY("Multiple assignments to the same property value"),
 	PROP_SYNTAX_ERROR("Syntax Error");
 
 	private final ProblemSeverity defaultSeverity;
-	private String description;
+	private final String description;
 	private String label;
+	private final List<DiagnosticTag> tags;
 
-	private ApplicationPropertiesProblemType(ProblemSeverity defaultSeverity, String description, String label) {
+	private ApplicationPropertiesProblemType(ProblemSeverity defaultSeverity, String description, String label, List<DiagnosticTag> tags) { 
 		this.description = description;
 		this.defaultSeverity = defaultSeverity;
 		this.label = label;
+		this.tags = tags;
+	}
+
+	private ApplicationPropertiesProblemType(ProblemSeverity defaultSeverity, String description, String label) {
+		this(defaultSeverity, description, label, null);
 	}
 
 	private ApplicationPropertiesProblemType(ProblemSeverity defaultSeverity, String description) {
@@ -58,7 +67,7 @@ public enum ApplicationPropertiesProblemType implements ProblemType {
 	}
 
 	public String getLabel() {
-		if (label==null) {
+		if (label == null) {
 			label = createDefaultLabel();
 		}
 		return label;
@@ -81,6 +90,11 @@ public enum ApplicationPropertiesProblemType implements ProblemType {
 	@Override
 	public ProblemCategory getCategory() {
 		return SpringProblemCategories.PROPERTIES;
+	}
+
+	@Override
+	public List<DiagnosticTag> getTags() {
+		return tags;
 	}
 
 }

@@ -850,10 +850,14 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 						Diagnostic d = new Diagnostic();
 						d.setCode(problem.getCode());
 						d.setMessage(problem.getMessage());
+
 						Range rng = docRef.get().toRange(problem.getOffset(), problem.getLength());
 						d.setRange(rng);
+
 						d.setSeverity(severity);
 						d.setSource(getServer().EXTENSION_ID);
+						d.setTags(problem.getType().getTags());
+						
 						List<QuickfixData<?>> fixes = problem.getQuickfixes();
 
 						// Copy original diagnsotic without the data field to avoid stackoverflow is hashCode() method call

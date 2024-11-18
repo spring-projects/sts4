@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,10 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.reconcile;
+
+import java.util.List;
+
+import org.eclipse.lsp4j.DiagnosticTag;
 
 public class ProblemTypes {
 	
@@ -24,7 +28,7 @@ public class ProblemTypes {
 	 * @return A newly create problem type.
 	 */
 	@Deprecated
-	public static ProblemType create(String typeName, ProblemSeverity defaultSeverity, ProblemCategory category) {
+	public static ProblemType create(String typeName, ProblemSeverity defaultSeverity, ProblemCategory category, List<DiagnosticTag> tags) {
 		return new ProblemType() {
 			@Override
 			public String toString() {
@@ -49,6 +53,10 @@ public class ProblemTypes {
 			@Override
 			public ProblemCategory getCategory() {
 				return category;
+			}
+			@Override
+			public List<DiagnosticTag> getTags() {
+				return tags;
 			}
 		};
 	}

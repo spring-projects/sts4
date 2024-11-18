@@ -12,6 +12,9 @@ package org.springframework.ide.vscode.boot.java.cron;
 
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
 
+import java.util.List;
+
+import org.eclipse.lsp4j.DiagnosticTag;
 import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
@@ -23,17 +26,23 @@ public enum CronProblemType implements ProblemType {
 	FIELD(ERROR, "Field", "Cron Expression field");
 
 	private final ProblemSeverity defaultSeverity;
-	private String description;
+	private final String description;
 	private String label;
+	private final List<DiagnosticTag> tags;
 
-	private CronProblemType(ProblemSeverity defaultSeverity, String description) {
-		this(defaultSeverity, description, null);
-	}
-
-	private CronProblemType(ProblemSeverity defaultSeverity, String description, String label) {
+	private CronProblemType(ProblemSeverity defaultSeverity, String description, String label, List<DiagnosticTag> tags) {
 		this.description = description;
 		this.defaultSeverity = defaultSeverity;
 		this.label = label;
+		this.tags = tags;
+	}
+
+	private CronProblemType(ProblemSeverity defaultSeverity, String description, String label) {
+		this(defaultSeverity, description, label, null);
+	}
+
+	private CronProblemType(ProblemSeverity defaultSeverity, String description) {
+		this(defaultSeverity, description, null);
 	}
 
 	@Override
@@ -42,7 +51,7 @@ public enum CronProblemType implements ProblemType {
 	}
 
 	public String getLabel() {
-		if (label==null) {
+		if (label == null) {
 			label = createDefaultLabel();
 		}
 		return label;
@@ -66,5 +75,10 @@ public enum CronProblemType implements ProblemType {
 	@Override
 	public ProblemCategory getCategory() {
 		return SpringProblemCategories.CRON;
+	}
+
+	@Override
+	public List<DiagnosticTag> getTags() {
+		return tags;
 	}
 }
