@@ -81,31 +81,34 @@ public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 			
 			private void processWebAnnotation(Annotation a) {
 				if (isApplicableWebAnnotation(a)) {
-						ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, a.getStartPosition(), a.getLength());
-						String uri = docUri.toASCIIString();
-						Range range = ReconcileUtils.createOpenRewriteRange(cu, a);
-						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
+
+					ASTNode nodeForProblemRange = getNodeForProblemRange(a);
+					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, nodeForProblemRange.getStartPosition(), nodeForProblemRange.getLength());
+
+					String uri = docUri.toASCIIString();
+					Range range = ReconcileUtils.createOpenRewriteRange(cu, a);
+					ReconcileUtils.setRewriteFixes(registry, problem, List.of(
 							new FixDescriptor(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), List.of(uri), FIX_LABEL)
-									.withRangeScope(range)
-									.withRecipeScope(RecipeScope.NODE),
+								.withRangeScope(range)
+								.withRecipeScope(RecipeScope.NODE),
 							new FixDescriptor(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), List.of(uri),
 									ReconcileUtils.buildLabel(FIX_LABEL_PLURAL, RecipeScope.FILE))
-									.withRecipeScope(RecipeScope.FILE),
+								.withRecipeScope(RecipeScope.FILE),
 							new FixDescriptor(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), List.of(uri),
 									ReconcileUtils.buildLabel(FIX_LABEL_PLURAL, RecipeScope.PROJECT))
-									.withRecipeScope(RecipeScope.PROJECT)
-						));
-						problemCollector.accept(problem);
-					}
+								.withRecipeScope(RecipeScope.PROJECT)
+							));
+					problemCollector.accept(problem);
 				}
+			}
 		};
 	}
 	
-	private static boolean isApplicableWebAnnotation(Annotation a) {
-		if (a.isSingleMemberAnnotation() || a.isNormalAnnotation()) {
-			String typeName = a.getTypeName().getFullyQualifiedName();
-			String annotationParam = getAnnotationParameter(a);
-			String variableName = getParameterName(a);
+	private static boolean isApplicableWebAnnotation(Annotation annotation) {
+		if (annotation.isSingleMemberAnnotation() || annotation.isNormalAnnotation()) {
+			String typeName = annotation.getTypeName().getFullyQualifiedName();
+			String annotationParam = getAnnotationParameter(annotation);
+			String variableName = getParameterName(annotation);
 			if (PARAM_ANNOTATIONS.contains(typeName) && annotationParam != null && variableName != null) {
 				if(Objects.equals(annotationParam, variableName))
 					return true;
@@ -115,24 +118,41 @@ public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static String getAnnotationParameter(Annotation a) {
+	private static String getAnnotationParameter(Annotation annotation) {
 		Expression value = null;
-		if (a.isSingleMemberAnnotation()) {
-			value = ((SingleMemberAnnotation) a).getValue();
-		} else if (a.isNormalAnnotation()) {
-			for (MemberValuePair pair : (List<MemberValuePair>) ((NormalAnnotation) a).values()) {
+		
+		if (annotation.isSingleMemberAnnotation()) {
+			value = ((SingleMemberAnnotation) annotation).getValue();
+		} else if (annotation.isNormalAnnotation()) {
+			for (MemberValuePair pair : (List<MemberValuePair>) ((NormalAnnotation) annotation).values()) {
 				String identifier = pair.getName().toString();
 				value = identifier.equals("value") || identifier.equals("name") ? pair.getValue() : value;
 			}
 		}
+		
 		if (value instanceof StringLiteral) {
 			return ((StringLiteral) value).getLiteralValue();
 		}
 		return null;
 	}
+	
+	@SuppressWarnings("unchecked")
+	private static ASTNode getNodeForProblemRange(Annotation annotation) {
+		if (annotation.isSingleMemberAnnotation()) {
+			return ((SingleMemberAnnotation) annotation).getValue();
+		} else if (annotation.isNormalAnnotation()) {
+			for (MemberValuePair pair : (List<MemberValuePair>) ((NormalAnnotation) annotation).values()) {
+				String identifier = pair.getName().toString();
+				if (identifier.equals("value") || identifier.equals("name")) {
+					return pair;
+				}
+			}
+		}
+		return annotation;
+	}
 
-	private static String getParameterName(Annotation a) {
-		ASTNode parent = a.getParent();
+	private static String getParameterName(Annotation annotation) {
+		ASTNode parent = annotation.getParent();
 		if (parent instanceof SingleVariableDeclaration) {
 			SingleVariableDeclaration svd = (SingleVariableDeclaration) parent;
 		    return svd.getName().getIdentifier();

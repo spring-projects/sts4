@@ -68,7 +68,7 @@ public class ImplicitWebAnnotationNamesReconcilerTest extends BaseReconcilerTest
 		assertEquals(Boot2JavaProblemType.WEB_ANNOTATION_NAMES, problem.getType());
 		
 		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
-		assertEquals("@PathVariable(\"message\")", markedStr);
+		assertEquals("\"message\"", markedStr);
 
 		assertEquals(3, problem.getQuickfixes().size());
 		assertEquals("Remove implicit web annotation name", problems.get(0).getQuickfixes().get(0).title);
@@ -130,7 +130,7 @@ public class ImplicitWebAnnotationNamesReconcilerTest extends BaseReconcilerTest
 		assertEquals(Boot2JavaProblemType.WEB_ANNOTATION_NAMES, problem.getType());
 		
 		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
-		assertEquals("@PathVariable(value=\"message\")", markedStr);
+		assertEquals("value=\"message\"", markedStr);
 
 		assertEquals(3, problem.getQuickfixes().size());
 		
@@ -164,7 +164,7 @@ public class ImplicitWebAnnotationNamesReconcilerTest extends BaseReconcilerTest
 		assertEquals(Boot2JavaProblemType.WEB_ANNOTATION_NAMES, problem.getType());
 		
 		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
-		assertEquals("@RequestParam(name=\"message\", defaultValue = \"world\")", markedStr);
+		assertEquals("name=\"message\"", markedStr);
 
 		assertEquals(3, problem.getQuickfixes().size());
 		
@@ -200,10 +200,10 @@ public class ImplicitWebAnnotationNamesReconcilerTest extends BaseReconcilerTest
 		assertEquals(Boot2JavaProblemType.WEB_ANNOTATION_NAMES, problem2.getType());
 		
 		String markedStr1 = source.substring(problem1.getOffset(), problem1.getOffset() + problem1.getLength());
-		assertEquals("@PathVariable(value=\"message\", required=false)", markedStr1);
+		assertEquals("value=\"message\"", markedStr1);
 		
 		String markedStr2 = source.substring(problem2.getOffset(), problem2.getOffset() + problem2.getLength());
-		assertEquals("@PathVariable(value=\"name\")", markedStr2);
+		assertEquals("value=\"name\"", markedStr2);
 
 		assertEquals(3, problem1.getQuickfixes().size());
 		assertEquals(3, problem2.getQuickfixes().size());
