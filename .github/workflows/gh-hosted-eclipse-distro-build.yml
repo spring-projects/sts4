@@ -47,7 +47,7 @@ jobs:
             .github
             eclipse-distribution
             eclipse-extensions
-      - name: Set up JDK 17
+      - name: Set up JDK ${{ inputs.java_version }}
         uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
         with:
           java-version: ${{ inputs.java_version }}

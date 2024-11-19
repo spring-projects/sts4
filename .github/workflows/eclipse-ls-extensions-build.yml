@@ -46,10 +46,10 @@ jobs:
             .github
             headless-services
             eclipse-language-servers
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
       - name: Enforce https instead of http
         run: ./nohttp.sh
