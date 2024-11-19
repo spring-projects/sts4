@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2023 VMware, Inc.
+ * Copyright (c) 2022, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,27 +18,22 @@ import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 
 final public class FixDescriptor {
 	
+	private static final String[] EMPTY_STRING_ARRAY = new String[0];
+	
 	private String recipeId;
-	
 	private RecipeScope recipeScope;
-	
 	private Range rangeScope;
-	
 	private List<String> docUris;
-	
 	private Map<String, Object> parameters;
-	
 	private String label;
-	
 	private String[] typeStubs;
-	
 	private boolean preferred;
 	
 	public FixDescriptor(String recipeId, List<String> docUris, String label) {
 		this.recipeId = recipeId;
 		this.docUris = docUris;
 		this.label = label;
-		this.typeStubs = new String[0];
+		this.typeStubs = EMPTY_STRING_ARRAY;
 	}
 	
 	public FixDescriptor withRecipeScope(RecipeScope recipeScope) {
