@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.beans.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.util.List;
@@ -123,6 +124,25 @@ public class QualifierReferencesProviderTest {
 
 		Location foundLocation = references.get(0);
 		assertEquals(expectedLocation, foundLocation);
+	}
+
+	@Test
+	public void testQualifierRefersToNothing() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.stereotype.Component;
+				import org.springframework.beans.factory.annotation.Qualifier;
+
+				@Component
+				@Qualifier("nonExisting<*>Bean")
+				public class TestDependsOnClass {
+				}""", tempJavaDocUri);
+		
+		List<? extends Location> references = editor.getReferences();
+		assertNull(references);
 	}
 
 }
