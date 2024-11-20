@@ -14,12 +14,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
@@ -64,12 +66,18 @@ public class NamedDefinitionProvider implements IJavaDefinitionProvider {
 	}
 
 	private List<LocationLink> findBeansWithName(IJavaProject project, String beanName) {
-		Bean[] beans = this.springIndex.getBeansWithName(project.getElementName(), beanName);
+		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
 		
-		return Arrays.stream(beans)
-				.map(bean -> {
-					return new LocationLink(bean.getLocation().getUri(), bean.getLocation().getRange(), bean.getLocation().getRange());
-				})
+		Stream<Location> namedLocationFromBeans = Arrays.stream(beans)
+				// annotations from beans themselves
+				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
+				.filter(annotation -> Annotations.NAMED_ANNOTATIONS.contains(annotation.getAnnotationType()))
+				.filter(annotation -> annotation.getAttributes() != null && annotation.getAttributes().containsKey("value") && annotation.getAttributes().get("value").length == 1)
+				.filter(annotation -> annotation.getAttributes().get("value")[0].getName().equals(beanName))
+				.map(annotation -> annotation.getAttributes().get("value")[0].getLocation());
+		
+		return namedLocationFromBeans
+				.map(location -> new LocationLink(location.getUri(), location.getRange(), location.getRange()))
 				.collect(Collectors.toList());
 	}
 

@@ -10,10 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans.test;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +32,7 @@ import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -62,6 +62,8 @@ public class NamedDefinitionProviderTest {
 	private String tempJavaDocUri1;
 	private String tempJavaDocUri2;
 	private String tempJavaDocUri;
+	private Location locationNamedAnnotation1;
+	private Location locationNamedAnnotation2;
 
 	@BeforeEach
 	public void setup() throws Exception {
@@ -79,8 +81,14 @@ public class NamedDefinitionProviderTest {
         tempJavaDocUri1 = directory.toPath().resolve("src/main/java/org/test/TempClass1.java").toUri().toString();
         tempJavaDocUri2 = directory.toPath().resolve("src/main/java/org/test/TempClass2.java").toUri().toString();
 
-        bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri1, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {});
-		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri2, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {});
+        locationNamedAnnotation1 = new Location(tempJavaDocUri1, new Range(new Position(1, 10), new Position(1, 20)));
+        locationNamedAnnotation2 = new Location(tempJavaDocUri2, new Range(new Position(2, 10), new Position(2, 20)));
+        
+        AnnotationMetadata annotationBean1 = new AnnotationMetadata("jakarta.inject.Named", false, null, Map.of("value", new AnnotationAttributeValue[] {new AnnotationAttributeValue("named1", locationNamedAnnotation1)}));
+        AnnotationMetadata annotationBean2 = new AnnotationMetadata("jakarta.inject.Named", false, null, Map.of("value", new AnnotationAttributeValue[] {new AnnotationAttributeValue("named2", locationNamedAnnotation2)}));
+
+        bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri1, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {annotationBean1});
+		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri2, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {annotationBean2});
 		
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
 	}
@@ -92,18 +100,15 @@ public class NamedDefinitionProviderTest {
 
 				import jakarta.inject.Named;
 
-				@Named("bean1")
+				@Named("named1")
 				public class TestDependsOnClass {
 				}""", tempJavaDocUri);
 		
-        Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean1");
-        assertEquals(1, beans.length);
-
-		LocationLink expectedLocation = new LocationLink(tempJavaDocUri1,
-				beans[0].getLocation().getRange(), beans[0].getLocation().getRange(),
+		LocationLink expectedLocation = new LocationLink(locationNamedAnnotation1.getUri(),
+				locationNamedAnnotation1.getRange(), locationNamedAnnotation1.getRange(),
 				null);
 
-		editor.assertLinkTargets("bean1", List.of(expectedLocation));
+		editor.assertLinkTargets("named1", List.of(expectedLocation));
 	}
 
 	@Test
@@ -117,19 +122,16 @@ public class NamedDefinitionProviderTest {
 				@Component
 				public class TestDependsOnClass {
 				
-					public void setDependency(@Named("bean1") Object bean) {
+					public void setDependency(@Named("named1") Object bean) {
 					}
 				
 				}""", tempJavaDocUri);
 		
-        Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean1");
-        assertEquals(1, beans.length);
-
-		LocationLink expectedLocation = new LocationLink(tempJavaDocUri1,
-				beans[0].getLocation().getRange(), beans[0].getLocation().getRange(),
+		LocationLink expectedLocation = new LocationLink(locationNamedAnnotation1.getUri(),
+				locationNamedAnnotation1.getRange(), locationNamedAnnotation1.getRange(),
 				null);
 
-		editor.assertLinkTargets("bean1", List.of(expectedLocation));
+		editor.assertLinkTargets("named1", List.of(expectedLocation));
 	}
 
 	@Test
@@ -143,12 +145,12 @@ public class NamedDefinitionProviderTest {
 				@Component
 				public class TestDependsOnClass {
 				
-					public void setDependency(@Named("XXX") Object bean1) {
+					public void setDependency(@Named("bean1") Object bean1) {
 					}
 				
 				}""", tempJavaDocUri1);
 		
-		editor.assertNoLinkTargets("XXX");
+		editor.assertNoLinkTargets("bean1");
 	}
 
 }

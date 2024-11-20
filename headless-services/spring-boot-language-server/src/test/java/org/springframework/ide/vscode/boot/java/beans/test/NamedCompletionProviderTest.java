@@ -95,53 +95,53 @@ public class NamedCompletionProviderTest {
 	}
 	
 	@Test
-	public void testQualifierCompletionWithoutQuotesWithoutPrefix() throws Exception {
-		assertCompletions("@Named(<*>)", new String[] {"named1", "named2", "bean1", "bean2"}, 0, "@Named(\"named1\"<*>)");
+	public void testNamedCompletionWithoutQuotesWithoutPrefix() throws Exception {
+		assertCompletions("@Named(<*>)", new String[] {"named1", "named2"}, 0, "@Named(\"named1\"<*>)");
 	}
 
 	@Test
-	public void testQualifierCompletionWithoutQuotesWithPrefix() throws Exception {
-		assertCompletions("@Named(be<*>)", 2, "@Named(\"bean1\"<*>)");
+	public void testNamedCompletionWithoutQuotesWithPrefix() throws Exception {
+		assertCompletions("@Named(be<*>)", 0, null);
 	}
 
 	@Test
-	public void testQualifierCompletionWithoutQuotesWithPrefixFromExistingQualifier() throws Exception {
+	public void testNamedCompletionWithoutQuotesWithPrefixFromExistingQualifier() throws Exception {
 		assertCompletions("@Named(na<*>)", new String[] {"named1", "named2"}, 0, "@Named(\"named1\"<*>)");
 	}
 
 	@Test
-	public void testQualifierCompletionWithoutQuotesWithAttributeName() throws Exception {
-		assertCompletions("@Named(value=<*>)", 4, "@Named(value=\"named1\"<*>)");
+	public void testNamedCompletionWithoutQuotesWithAttributeName() throws Exception {
+		assertCompletions("@Named(value=<*>)", 2, "@Named(value=\"named1\"<*>)");
 	}
 
 	@Test
-	public void testQualifierCompletionInsideOfQuotesWithoutPrefix() throws Exception {
-		assertCompletions("@Named(\"<*>\")", 4, "@Named(\"named1<*>\")");
+	public void testNamedCompletionInsideOfQuotesWithoutPrefix() throws Exception {
+		assertCompletions("@Named(\"<*>\")", 2, "@Named(\"named1<*>\")");
 	}
 
 	@Test
-	public void testQualifierCompletionInsideOfQuotesWithPrefix() throws Exception {
-		assertCompletions("@Named(\"be<*>\")", 2, "@Named(\"bean1<*>\")");
+	public void testNAmedCompletionInsideOfQuotesWithPrefix() throws Exception {
+		assertCompletions("@Named(\"na<*>\")", 2, "@Named(\"named1<*>\")");
 	}
 
 	@Test
-	public void testQualifierCompletionInsideOfQuotesWithPrefixButWithoutMatches() throws Exception {
+	public void testNamedCompletionInsideOfQuotesWithPrefixButWithoutMatches() throws Exception {
 		assertCompletions("@Named(\"XXX<*>\")", 0, null);
 	}
 
 	@Test
-	public void testQualifierCompletionOutsideOfAnnotation1() throws Exception {
+	public void testNamedCompletionOutsideOfAnnotation1() throws Exception {
 		assertCompletions("@Named(\"XXX\")<*>", 0, null);
 	}
 
 	@Test
-	public void testQualifierCompletionOutsideOfAnnotation2() throws Exception {
+	public void testNamedCompletionOutsideOfAnnotation2() throws Exception {
 		assertCompletions("@Named<*>(\"XXX\")", 0, null);
 	}
 
 	@Test
-	public void testQualifierCompletionInsideOfQuotesWithPrefixAndReplacedPostfix() throws Exception {
-		assertCompletions("@Named(\"be<*>xxx\")", 2, "@Named(\"bean1<*>\")");
+	public void testNamedCompletionInsideOfQuotesWithPrefixAndReplacedPostfix() throws Exception {
+		assertCompletions("@Named(\"na<*>xxx\")", 2, "@Named(\"named1<*>\")");
 	}
 	
 	private void assertCompletions(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine) throws Exception {

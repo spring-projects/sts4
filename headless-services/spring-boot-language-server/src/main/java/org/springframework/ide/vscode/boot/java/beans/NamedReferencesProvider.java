@@ -71,11 +71,6 @@ public class NamedReferencesProvider implements ReferenceProvider {
 	private List<? extends Location> provideReferences(IJavaProject project, String value) {
 		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
 		
-		// beans with name
-		Stream<Location> beanLocations = Arrays.stream(beans)
-				.filter(bean -> bean.getName().equals(value))
-				.map(bean -> bean.getLocation());
-		
 		Stream<Location> namedLocationFromBeans = Arrays.stream(beans)
 				// annotations from beans themselves
 				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
@@ -95,7 +90,7 @@ public class NamedReferencesProvider implements ReferenceProvider {
 				.filter(annotation -> annotation.getAttributes().get("value")[0].getName().equals(value))
 				.map(annotation -> annotation.getAttributes().get("value")[0].getLocation());
 		
-		return Stream.concat(beanLocations, Stream.concat(namedLocationFromBeans, namedLocationsFromInjectionPoints)).toList();
+		return Stream.concat(namedLocationFromBeans, namedLocationsFromInjectionPoints).toList();
 	}
 
 }

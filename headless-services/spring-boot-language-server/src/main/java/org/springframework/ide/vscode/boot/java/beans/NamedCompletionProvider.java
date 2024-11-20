@@ -39,9 +39,7 @@ public class NamedCompletionProvider implements AnnotationAttributeCompletionPro
 
 		Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
 
-		return Stream.concat(
-				findAllNamedValues(beans),
-				Arrays.stream(beans).map(bean -> bean.getName()))
+		return findAllNamedValues(beans)
 				.distinct()
 				.map(beanName -> new AnnotationAttributeProposal(beanName))
 				.collect(Collectors.toList());
