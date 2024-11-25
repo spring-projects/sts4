@@ -24,7 +24,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.openrewrite.java.spring.BeanMethodsNotPublic;
+import org.openrewrite.java.spring.framework.BeanMethodsNotPublic;
 import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
