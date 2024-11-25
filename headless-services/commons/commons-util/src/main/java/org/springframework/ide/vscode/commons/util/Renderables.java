@@ -210,7 +210,8 @@ public class Renderables {
 				buffer.append(']');
 				if (url != null) {
 					buffer.append('(');
-					buffer.append(url);
+					// Escape parenthesis for the MD format
+					buffer.append(url.replace("(", "%28").replace(")", "%29"));
 					buffer.append(')');
 				}
 			}
