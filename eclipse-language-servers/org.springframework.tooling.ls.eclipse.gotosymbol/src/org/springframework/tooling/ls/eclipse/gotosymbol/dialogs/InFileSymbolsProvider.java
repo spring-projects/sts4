@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.jface.text.IDocument;
@@ -39,20 +40,21 @@ import com.google.common.collect.ImmutableList;
 @SuppressWarnings("restriction")
 public class InFileSymbolsProvider implements SymbolsProvider {
 	
-	private IDocument doc;
+	private Supplier<IDocument> doc;
 
-	public InFileSymbolsProvider(IDocument doc) {
+	public InFileSymbolsProvider(Supplier<IDocument> doc) {
 		super();
 		this.doc = doc;
 	}
 
 	@Override
 	public List<SymbolContainer> fetchFor(String query) throws Exception {
-		if (doc != null) {
-			DocumentSymbolParams params = new DocumentSymbolParams(new TextDocumentIdentifier(LSPEclipseUtils.toUri(doc).toASCIIString()));
+		final IDocument document = doc.get();
+		if (document != null) {
+			DocumentSymbolParams params = new DocumentSymbolParams(new TextDocumentIdentifier(LSPEclipseUtils.toUri(document).toASCIIString()));
 
 			CompletableFuture<List<List<Either<SymbolInformation, DocumentSymbol>>>> symbolsFuture = LanguageServers
-					.forDocument(doc)
+					.forDocument(document)
 					.withFilter(capabilities -> LSPEclipseUtils.hasCapability(capabilities.getDocumentSymbolProvider()))
 					.collectAll(ls -> ls.getTextDocumentService().documentSymbol(params));
 				
@@ -67,15 +69,15 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 	}
 
 	public static SymbolsProvider createFor(LiveExpression<DocumentData> documentData) {
-		DocumentData data = documentData.getValue();
-		return new InFileSymbolsProvider(data == null ? null : data.getDocument());
+		Supplier<IDocument> supllier = () -> documentData == null ? null : documentData.getValue().getDocument();
+		return new InFileSymbolsProvider(supllier);
 	}
 
 	public static SymbolsProvider createFor(ITextEditor textEditor) {
-		IDocument document = LSPEclipseUtils.getDocument(textEditor);
-		return new InFileSymbolsProvider(document);
+		Supplier<IDocument> supplier = () -> LSPEclipseUtils.getDocument(textEditor);
+		return new InFileSymbolsProvider(supplier);
 	}
-
+	
 	@Override
 	public String getName() {
 		return "Symbols in File";
@@ -83,8 +85,9 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 
 	@Override
 	public boolean fromFile(SymbolContainer symbol) {
-		if (symbol != null) {
-			URI uri = LSPEclipseUtils.toUri(doc);
+		IDocument document = doc.get();
+		if (symbol != null && document != null) {
+			URI uri = LSPEclipseUtils.toUri(document);
 			if (symbol.isSymbolInformation() && symbol.getSymbolInformation().getLocation() != null) {
 				String symbolUri = symbol.getSymbolInformation().getLocation().getUri();
 
