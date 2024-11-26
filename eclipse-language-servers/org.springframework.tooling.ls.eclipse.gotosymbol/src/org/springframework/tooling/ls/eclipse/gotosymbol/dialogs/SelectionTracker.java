@@ -77,11 +77,16 @@ public class SelectionTracker extends AbstractDisposable {
 	// there is a selection change
 	static class DocumentData implements Disposable {
 
-		public final IFileEditorInput input;
-		private final IDocumentProvider documentProvider;
+		private final IFile file;
+		
+		private IFileEditorInput input;
+		private IDocumentProvider documentProvider;
 
 		public DocumentData(IFile file) {
-			super();
+			this.file = file;
+		}
+		
+		private void init() {
 			this.input = new FileEditorInput(file);
 			this.documentProvider = DocumentProviderRegistry.getDefault().getDocumentProvider(input);
 			if (this.documentProvider != null) {
@@ -105,13 +110,22 @@ public class SelectionTracker extends AbstractDisposable {
 			}
 		}
 
+		/**
+		 * May load the contents of the file into a document if there is no editor
+		 * opened for the file therefore do not execute on the UI thread
+		 * 
+		 * @return the document
+		 */
 		public IDocument getDocument() {
+			if (input == null) {
+				init();
+			}
 			return this.documentProvider != null ? this.documentProvider.getDocument(input) : null;
 		}
 
 		@Override
 		public String toString() {
-			return "DocumentData [file=" + input.getFile() + "]";
+			return "DocumentData [file=" + file + "]";
 		}
 
 	}
