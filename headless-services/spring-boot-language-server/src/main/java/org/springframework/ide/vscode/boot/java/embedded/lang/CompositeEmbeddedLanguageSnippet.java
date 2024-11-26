@@ -8,7 +8,7 @@
  * Contributors:
  *     Broadcom, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.embadded.lang;
+package org.springframework.ide.vscode.boot.java.embedded.lang;
 
 import java.util.ArrayList;
 import java.util.Collection;

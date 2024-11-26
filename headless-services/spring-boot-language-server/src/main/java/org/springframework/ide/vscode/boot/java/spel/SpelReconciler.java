@@ -18,7 +18,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;
-import org.springframework.ide.vscode.boot.java.embadded.lang.AntlrReconciler;
+import org.springframework.ide.vscode.boot.java.embedded.lang.AntlrReconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.Region;

@@ -18,7 +18,7 @@ import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticToke
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryProblemType;
-import org.springframework.ide.vscode.boot.java.embadded.lang.AntlrReconcilerWithSpel;
+import org.springframework.ide.vscode.boot.java.embedded.lang.AntlrReconcilerWithSpel;
 import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;

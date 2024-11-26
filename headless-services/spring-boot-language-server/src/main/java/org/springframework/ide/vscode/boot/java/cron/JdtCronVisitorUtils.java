@@ -17,8 +17,8 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TextBlock;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLangAstUtils;
-import org.springframework.ide.vscode.boot.java.embadded.lang.EmbeddedLanguageSnippet;
+import org.springframework.ide.vscode.boot.java.embedded.lang.EmbeddedLangAstUtils;
+import org.springframework.ide.vscode.boot.java.embedded.lang.EmbeddedLanguageSnippet;
 
 public class JdtCronVisitorUtils {
 	
