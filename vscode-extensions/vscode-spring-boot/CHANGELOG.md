@@ -1,3 +1,30 @@
+## 2024-12-04 (4.27.0 RELEASE, incl. language servers version 1.59.0)
+
+#### important highlights
+
+* _(Spring Boot)_ Support for `@ConditionalOnProperty` annotations: completions, navigate to definition and find references
+* _(Spring Boot)_ Find references support for property keys in `@Value` annotation
+* _(Spring Boot)_ Support concatenated Strings for data queries inside `@Query` annotations
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ create more precise range for implicit web annotation names validation [#1411](https://github.com/spring-projects/sts4/issues/1411)
+* _(Spring Boot)_ analyze memory footprint of newly introduced location information inside of annotation metadata in spring index [#1406](https://github.com/spring-projects/sts4/issues/1406)
+* _(Spring Boot)_ take setter injection methods into account for new spring index [#1405](https://github.com/spring-projects/sts4/issues/1405)
+* _(Spring Boot)_ internal index needs more precise location information for annotations and their attributes [#1400](https://github.com/spring-projects/sts4/issues/1400)
+* _(Spring Boot)_ take property keys inside of annotations into account when looking for property key references [#1397](https://github.com/spring-projects/sts4/issues/1397)
+* _(Spring Boot)_ Correct typo from 'propeties' to 'properties' [#1389](https://github.com/spring-projects/sts4/pull/1389)
+* _(Spring Boot)_ improve type proposals for `ConditionalOnBean` with shorter labels [#1386](https://github.com/spring-projects/sts4/issues/1386)
+* _(Spring Boot)_ use DiagnosticTag.Unnecessary for validations that point out unnecessary things [#1345](https://github.com/spring-projects/sts4/issues/1345)
+* _(Spring Boot)_ add find references support for property keys in `@Value` annotation [#1306](https://github.com/spring-projects/sts4/issues/1306)
+* _(Spring Boot)_ add support for `@ConditionalOnProperty` annotations [#1305](https://github.com/spring-projects/sts4/issues/1305)
+* _(Spring Boot)_ JPQL syntax - Support Concatenated Strings [#1262](https://github.com/spring-projects/sts4/issues/1262)
+* _(Spring Boot)_ live hover for `@ConditionalOnProperty` doesn't work for Boot 3.x [#1410](https://github.com/spring-projects/sts4/issues/1410)
+* _(Spring Boot)_ content-assist proposals show up for annotation attribute names [#1409](https://github.com/spring-projects/sts4/issues/1409)
+* _(Spring Boot)_ Refactoring does not work [#1408](https://github.com/spring-projects/sts4/issues/1408)
+* _(Spring Boot)_ `NoSuchFileException` beim AdHocSpringPropertyProvider [#1404](https://github.com/spring-projects/sts4/issues/1404)
+* _(Spring Boot)_ VSCode - Error reported when using collate on `@Query` annotation [#1393](https://github.com/spring-projects/sts4/issues/1393)
+
 ## 2024-10-23 (4.26.0 RELEASE, incl. language servers version 1.58.0)
 
 #### important highlights
