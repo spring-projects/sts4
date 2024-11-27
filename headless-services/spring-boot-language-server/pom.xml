@@ -134,6 +134,11 @@
 			<artifactId>json</artifactId>
 			<version>20231013</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-text</artifactId>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.eclipse.lemminx</groupId>

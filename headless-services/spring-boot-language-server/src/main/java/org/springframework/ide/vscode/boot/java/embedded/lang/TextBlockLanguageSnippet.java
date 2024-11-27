@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.embedded.lang;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.jdt.core.dom.TextBlock;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.Region;
@@ -26,8 +27,12 @@ public class TextBlockLanguageSnippet implements EmbeddedLanguageSnippet {
 	private transient int startOffset;
 	private transient List<Region> specialRegions;
 	
+	private static String getLiteralValueStr(String escaped) {
+		return StringEscapeUtils.unescapeJava(escaped.substring(3, escaped.length() - 3));
+	}
+
 	public TextBlockLanguageSnippet(TextBlock block) {
-		this(block.getEscapedValue(), block.getLiteralValue(), block.getStartPosition());
+		this(block.getEscapedValue(), getLiteralValueStr(block.getEscapedValue()), block.getStartPosition());
 	}
 	
 	public TextBlockLanguageSnippet(String escapedValue, String literalValue, int literalOffset) {

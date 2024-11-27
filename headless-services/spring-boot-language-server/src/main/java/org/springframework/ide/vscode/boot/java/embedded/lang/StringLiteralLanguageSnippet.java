@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.embedded.lang;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.Region;
@@ -31,8 +32,12 @@ public class StringLiteralLanguageSnippet implements EmbeddedLanguageSnippet {
 	 */
 	private transient List<Region> specialRegions;
 	
+	private static String getLiteralValueStr(String escaped) {
+		return StringEscapeUtils.unescapeJava(escaped.substring(1, escaped.length() - 1));
+	}
+	
 	public StringLiteralLanguageSnippet(StringLiteral literal) {
-		this(literal.getEscapedValue(), literal.getLiteralValue(), literal.getStartPosition());
+		this(literal.getEscapedValue(), getLiteralValueStr(literal.getEscapedValue()), literal.getStartPosition());
 	}
 	
 	public StringLiteralLanguageSnippet(String escapedValue, String literalValue, int literalOffset) {
