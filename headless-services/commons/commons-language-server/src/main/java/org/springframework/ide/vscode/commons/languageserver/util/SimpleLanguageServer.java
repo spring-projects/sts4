@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2023 VMware Inc.
+ * Copyright (c) 2016, 2024 VMware Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -111,6 +111,7 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
+import org.springframework.ide.vscode.commons.util.text.LazyTextDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -760,8 +761,15 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 			TextDocument doc = documents.getLatestSnapshot(docId.getUri());
 			
 			if (doc == null) {
-				//Do not bother reconciling if document doesn't exist anymore (got closed in the meantime)
-				return;
+				// If document doesn't exist anymore it likely got closed in the meantime. Still needs validation.
+				LanguageComputer languageDetector = appContext.getBean(LanguageComputer.class);
+				if (languageDetector != null) {
+					doc = new LazyTextDocument(uri.toASCIIString(), languageDetector.computeLanguage(uri));
+				} else {
+					// Cannot determine the language? Give up.
+					log.warn("Cannot determine the language for document: " + uri);
+					return;
+				}
 			}
 
 			if (testListener != null) {
