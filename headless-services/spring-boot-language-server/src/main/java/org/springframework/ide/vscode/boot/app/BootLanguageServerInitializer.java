@@ -190,7 +190,16 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				TextDocument doc = params.getDocument();
 				server.validateWith(doc.getId(), reconcileEngine);
 			});
-
+			server.getTextDocumentService().onDidClose(doc -> {
+				if (doc.hasChangedSinceLastSave()) {
+					/*
+					 *  If doc is changed since last save closing it would ignore the latest changes.
+					 *  Therefore the file requires to be validated again. 
+					 */
+					server.validateWith(doc.getId(), reconcileEngine);
+				}
+				
+			});
 //			ServerUtils.listenToClassFileChanges(server.getWorkspaceService().getFileObserver(), projectFinder, project -> validateAll(components, server, project));
 		});
 		config.addListener(evt -> {

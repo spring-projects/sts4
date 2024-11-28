@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2021 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,6 +37,7 @@ public class TextDocument implements IDocument {
 	private final String uri;
 	private Text text = new Text("");
 	private int version;
+	private boolean changedSinceLastSave = false;
 
 	public TextDocument(String uri, LanguageId languageId) {
 		this(uri, languageId, 0, "");
@@ -48,6 +49,7 @@ public class TextDocument implements IDocument {
 		this.text = other.text;
 		this.lineTracker.set(text.toString());
 		this.version = other.version;
+		this.changedSinceLastSave = other.changedSinceLastSave;
 	}
 
 	public TextDocument(String uri, LanguageId languageId, int version, String text) {
@@ -95,6 +97,7 @@ public class TextDocument implements IDocument {
 				apply(change);
 			}
 			this.version = newVersion;
+			this.changedSinceLastSave = true;
 		} else {
 			log.warn("Change event with bad version ignored");
 		}
@@ -297,5 +300,13 @@ public class TextDocument implements IDocument {
 			return new TextDocumentIdentifier(uri);
 		}
 		return null;
+	}
+
+	public void saved() {
+		this.changedSinceLastSave = false;
+	}
+
+	public boolean hasChangedSinceLastSave() {
+		return this.changedSinceLastSave;
 	}
 }

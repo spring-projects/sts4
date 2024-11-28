@@ -29,7 +29,7 @@ public class LazyTextDocument extends TextDocument {
 	}
 	
 	public LazyTextDocument(String uri, LanguageId languageId) {
-		this(uri, LanguageId.JAVA, () -> {
+		this(uri, languageId, () -> {
 			try {
 				InputStream stream = URI.create(uri).toURL().openStream();
 				return IOUtil.toString(stream);

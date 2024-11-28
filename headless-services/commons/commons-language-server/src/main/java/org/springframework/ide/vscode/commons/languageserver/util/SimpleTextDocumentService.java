@@ -640,6 +640,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 				if (url != null) {
 					TextDocument doc = getLatestSnapshot(url);
 					if (doc != null) {
+						doc.saved();
 						for (Consumer<TextDocumentSaveChange> l : documentSaveListeners) {
 							l.accept(new TextDocumentSaveChange(doc));
 						}
