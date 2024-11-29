@@ -209,6 +209,39 @@ public class ConditionalOnPropertyCompletionTest {
         assertEquals("prop3", completions.get(0).getTextEdit().getLeft().getNewText());
     }
 
+    @Test
+    @Disabled
+    public void testConditionalOnPropertyCompletionWithEmptyPrefixAndEmptyNameAttribute() throws Exception {
+    	List<CompletionItem> completions = getCompletions("@ConditionalOnProperty(prefix = , name = <*>)");
+        assertEquals(3, completions.size());
+        
+        assertEquals("data.prop2", completions.get(0).getLabel());
+        assertEquals("else.prop3", completions.get(1).getLabel());
+        assertEquals("spring.boot.prop1", completions.get(2).getLabel());
+    }
+
+    @Test
+    @Disabled
+    public void testConditionalOnPropertyCompletionWithEmptyPrefixAndEmptyNameAttributeInQuotes() throws Exception {
+    	List<CompletionItem> completions = getCompletions("@ConditionalOnProperty(prefix = , name = \"<*>\")");
+        assertEquals(3, completions.size());
+        
+        assertEquals("data.prop2", completions.get(0).getLabel());
+        assertEquals("else.prop3", completions.get(1).getLabel());
+        assertEquals("spring.boot.prop1", completions.get(2).getLabel());
+    }
+    
+    @Test
+    public void testConditionalOnPropertyCompletionForPrefixWithAdditionalEmptyNameAttribute() throws Exception {
+        List<CompletionItem> completions = getCompletions("@ConditionalOnProperty(prefix = <*>, name = )");
+        assertEquals(4, completions.size());
+        
+        assertEquals("data", completions.get(0).getLabel());
+        assertEquals("else", completions.get(1).getLabel());
+        assertEquals("spring", completions.get(2).getLabel());
+        assertEquals("spring.boot", completions.get(3).getLabel());
+    }
+
     private void assertCompletions(String completionLine, int noOfExpectedCompletions, int selectedProposal, String expectedCompletedLine) throws Exception {
         String editorContent = """
 				package org.test;
