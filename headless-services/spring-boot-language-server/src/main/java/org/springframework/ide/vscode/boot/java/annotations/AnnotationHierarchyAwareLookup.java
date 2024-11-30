@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.springframework.ide.vscode.commons.util.Assert;
 
@@ -58,7 +59,7 @@ public class AnnotationHierarchyAwareLookup<T> {
 	 *                           in addition to the more specific binding.
 	 * @param value
 	 */
-	public void put(String fqName,  boolean overrideSuperTypes, T value) {
+	private void put(String fqName,  boolean overrideSuperTypes, T value) {
 		Assert.isLegal(bindings.get(fqName)==null, "Multiple bindings to the same fqName are not supported");
 		bindings.put(fqName, new Binding<>(value, overrideSuperTypes));
 	}
@@ -85,9 +86,9 @@ public class AnnotationHierarchyAwareLookup<T> {
 	 * a symbol provider for Components should be asked to produce symbols for Component, Controller and RestController,
 	 * so should result in 3 separate calls to the symbols provider.
 	 */
-	public Collection<T> get(ITypeBinding annotationType) {
+	public Collection<T> get(AnnotationHierarchies annotationHierarchies, IAnnotationBinding annotationType) {
 		ImmutableList.Builder<T> found = ImmutableList.builder();
-		findElements(annotationType, new LinkedHashSet<>(), found::add);
+		findElements(annotationHierarchies, annotationType.getAnnotationType(), new LinkedHashSet<>(), found::add);
 		return found.build();
 	}
 
@@ -98,8 +99,8 @@ public class AnnotationHierarchyAwareLookup<T> {
 		return found.build();
 	}
 
-	private void findElements(ITypeBinding typeBinding, HashSet<String> seen, Consumer<T> requestor) {
-		String qname = typeBinding.getQualifiedName();
+	private void findElements(AnnotationHierarchies annotationHierarchies, ITypeBinding annotationType, HashSet<String> seen, Consumer<T> requestor) {
+		String qname = annotationType.getQualifiedName();
 		if (seen.add(qname)) {
 			Binding<T> binding = bindings.get(qname);
 			
@@ -110,9 +111,8 @@ public class AnnotationHierarchyAwareLookup<T> {
 			}
 
 			if (!isOverriding) {
-				Collection<ITypeBinding> directSuperAnnotations = AnnotationHierarchies.getDirectSuperAnnotations(typeBinding);
-				for (ITypeBinding superAnnotation : directSuperAnnotations) {
-					findElements(superAnnotation, seen, requestor);
+				for (IAnnotationBinding superAnnotation : annotationHierarchies.getDirectSuperAnnotationBindings(annotationType)) {
+					findElements(annotationHierarchies, superAnnotation.getAnnotationType(), seen, requestor);
 				}
 			}
 		}

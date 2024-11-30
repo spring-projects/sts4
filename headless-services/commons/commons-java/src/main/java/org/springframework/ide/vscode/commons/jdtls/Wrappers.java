@@ -567,7 +567,7 @@ public class Wrappers {
 
 			@Override
 			public String getBindingKey() {
-				return JavaUtils.typeFqNametoBindingKey(getFullyQualifiedName());
+				return JavaUtils.typeFqNameToBindingKey(getFullyQualifiedName());
 			}
 
 			@Override

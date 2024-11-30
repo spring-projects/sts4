@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedQueryExpression;
 import org.springframework.ide.vscode.boot.java.embedded.lang.AntlrReconcilerWithSpel;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
@@ -54,11 +55,12 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 
 	@Override
 	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 		return new ASTVisitor() {
 
 			@Override
 			public boolean visit(NormalAnnotation node) {
-				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
+				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, node);
 				if (q != null) {
 					Optional<Reconciler> reconcilerOpt = q.isNative() ? getSqlReconciler(project) : Optional.of(getQueryReconciler(project));
 					reconcilerOpt.ifPresent(r -> r.reconcile(q.query().getText(), q.query()::toSingleJavaRange, problemCollector));
@@ -68,7 +70,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
-				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
+				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, node);
 				if (q != null) {
 					getQueryReconciler(project).reconcile(q.query().getText(), q.query()::toSingleJavaRange, problemCollector);
 				}

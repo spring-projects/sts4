@@ -98,29 +98,28 @@ public class AnnotationHierarchiesTests {
 		}
 		""");
 		
-		SpringIndexerJava.createParser(project, true).createASTs(new String[] { file.toFile().toString() }, null, new String[0], new FileASTRequestor() {
+		SpringIndexerJava.createParser(project, new AnnotationHierarchies(), true).createASTs(new String[] { file.toFile().toString() }, null, new String[0], new FileASTRequestor() {
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
+				AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 				cu.accept(new ASTVisitor() {
 
 					@Override
 					public boolean visit(MarkerAnnotation node) {
 						ITypeBinding binding = node.resolveTypeBinding();
 						assertThat(binding).isNotNull();
+						IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
+						assertThat(annotationBinding).isNotNull();						
 						assertThat(binding.getQualifiedName()).isEqualTo("test.CustomComponent1");
 						
-						assertThat(AnnotationHierarchies.hasTransitiveSuperAnnotationType(binding, "test.CustomComponent2")).isTrue();
-						assertThat(AnnotationHierarchies.hasTransitiveSuperAnnotationType(binding, "org.springframework.context.annotation.Configuration")).isFalse();
-						assertThat(AnnotationHierarchies.getMetaAnnotations(binding, qn -> true).stream().toList().size()).isEqualTo(3);
-						assertThat(AnnotationHierarchies.isMetaAnnotation(binding, "org.springframework.context.annotation.Configuration"::equals)).isFalse();
-						assertThat(AnnotationHierarchies.getDirectSuperAnnotations(binding).stream().toList().size()).isEqualTo(2);
+						assertThat(annotationHierarchies.isAnnotatedWith(binding, "test.CustomComponent2")).isTrue();
+						assertThat(annotationHierarchies.isAnnotatedWith(binding, "org.springframework.context.annotation.Configuration")).isFalse();
+						assertThat(annotationHierarchies.getAllAnnotations(binding).size()).isEqualTo(3);
+						assertThat(annotationHierarchies.getDirectSuperAnnotationBindings(binding).stream().toList().size()).isEqualTo(2);
+						assertThat(annotationHierarchies.isAnnotatedWith(annotationBinding, "test.CustomComponent2")).isTrue();
+						assertThat(annotationHierarchies.isAnnotatedWith(annotationBinding, "org.springframework.stereotype.Component")).isTrue();
+						assertThat(annotationHierarchies.isAnnotatedWith(annotationBinding, "org.springframework.context.annotation.Configuration")).isFalse();
 						
-						IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
-						assertThat(annotationBinding).isNotNull();
-						assertThat(AnnotationHierarchies.getDirectSuperAnnotationBindings(annotationBinding).stream().toList().size()).isEqualTo(2);
-						assertThat(AnnotationHierarchies.isSubtypeOf(node, "test.CustomComponent2")).isTrue();
-						assertThat(AnnotationHierarchies.isSubtypeOf(node, "org.springframework.stereotype.Component")).isTrue();
-						assertThat(AnnotationHierarchies.isSubtypeOf(node, "org.springframework.context.annotation.Configuration")).isFalse();
 						return super.visit(node);
 					}
 					
@@ -145,33 +144,32 @@ public class AnnotationHierarchiesTests {
 		}
 		""");
 		
-		SpringIndexerJava.createParser(project, true).createASTs(new String[] { file.toFile().toString() }, null, new String[0], new FileASTRequestor() {
+		SpringIndexerJava.createParser(project, new AnnotationHierarchies(), true).createASTs(new String[] { file.toFile().toString() }, null, new String[0], new FileASTRequestor() {
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
+				AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 				cu.accept(new ASTVisitor() {
 
 					@Override
 					public boolean visit(MarkerAnnotation node) {
 						ITypeBinding binding = node.resolveTypeBinding();
 						assertThat(binding).isNotNull();
+						IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
+						assertThat(annotationBinding).isNotNull();						
 						assertThat(binding.getQualifiedName()).isEqualTo("org.springframework.boot.autoconfigure.SpringBootApplication");
 						
-						assertThat(AnnotationHierarchies.hasTransitiveSuperAnnotationType(binding, "test.CustomComponent2")).isFalse();
-						assertThat(AnnotationHierarchies.hasTransitiveSuperAnnotationType(binding, "org.springframework.context.annotation.Configuration")).isTrue();
-						assertThat(AnnotationHierarchies.hasTransitiveSuperAnnotationType(binding, "org.springframework.boot.autoconfigure.SpringBootApplication")).isTrue();
-						assertThat(AnnotationHierarchies.hasTransitiveSuperAnnotationType(binding, "org.springframework.stereotype.Component")).isTrue();
-						List<ITypeBinding> metaAnnotations = AnnotationHierarchies.getMetaAnnotations(binding, qn -> true).stream().toList();
+						assertThat(annotationHierarchies.isAnnotatedWith(binding, "test.CustomComponent2")).isFalse();
+						assertThat(annotationHierarchies.isAnnotatedWith(binding, "org.springframework.context.annotation.Configuration")).isTrue();
+						assertThat(annotationHierarchies.isAnnotatedWith(binding, "org.springframework.boot.autoconfigure.SpringBootApplication")).isTrue();
+						assertThat(annotationHierarchies.isAnnotatedWith(binding, "org.springframework.stereotype.Component")).isTrue();
+						List<IAnnotationBinding> metaAnnotations = annotationHierarchies.getAllAnnotations(binding);
 						assertThat(metaAnnotations.size()).isEqualTo(8);
-						assertThat(AnnotationHierarchies.isMetaAnnotation(binding, "org.springframework.context.annotation.Configuration"::equals)).isTrue();
-						assertThat(AnnotationHierarchies.getDirectSuperAnnotations(binding).stream().toList().size()).isEqualTo(3);
+						assertThat(annotationHierarchies.getDirectSuperAnnotationBindings(binding).stream().toList().size()).isEqualTo(3);
+						assertThat(annotationHierarchies.isAnnotatedWith(annotationBinding, "test.CustomComponent2")).isFalse();
+						assertThat(annotationHierarchies.isAnnotatedWith(annotationBinding, "org.springframework.context.annotation.Configuration")).isTrue();
+						assertThat(annotationHierarchies.isAnnotatedWith(annotationBinding, "org.springframework.boot.autoconfigure.SpringBootApplication")).isTrue();
+						assertThat(annotationHierarchies.isAnnotatedWith(annotationBinding, "org.springframework.stereotype.Component")).isTrue();
 						
-						IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
-						assertThat(annotationBinding).isNotNull();
-						assertThat(AnnotationHierarchies.getDirectSuperAnnotationBindings(annotationBinding).stream().toList().size()).isEqualTo(3);
-						assertThat(AnnotationHierarchies.isSubtypeOf(node, "test.CustomComponent2")).isFalse();
-						assertThat(AnnotationHierarchies.isSubtypeOf(node, "org.springframework.context.annotation.Configuration")).isTrue();
-						assertThat(AnnotationHierarchies.isSubtypeOf(node, "org.springframework.boot.autoconfigure.SpringBootApplication")).isTrue();
-						assertThat(AnnotationHierarchies.isSubtypeOf(node, "org.springframework.stereotype.Component")).isTrue();
 						return super.visit(node);
 					}
 					

@@ -18,6 +18,7 @@ import java.util.Optional;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -36,6 +37,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
@@ -195,9 +197,10 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	protected void extractLiveHintsForAnnotation(Annotation annotation, TextDocument doc, IJavaProject project,
 			SpringProcessLiveData[] processLiveData, Collection<CodeLens> result) {
-		ITypeBinding type = annotation.resolveTypeBinding();
+		IAnnotationBinding type = annotation.resolveAnnotationBinding();
 		if (type != null) {
-			for (HoverProvider provider : this.hoverProviders.get(type)) {
+			AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(annotation);
+			for (HoverProvider provider : this.hoverProviders.get(annotationHierarchies, type)) {
 				Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, annotation, doc, processLiveData);
 				if (hints!=null) {
 					result.addAll(hints);
@@ -287,17 +290,19 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	private Hover provideHoverForAnnotation(CancelChecker cancelToken, ASTNode exactNode, Annotation annotation, int offset, TextDocument doc, IJavaProject project,
 			SpringProcessLiveData[] processLiveData) {
-		ITypeBinding type = annotation.resolveTypeBinding();
+		IAnnotationBinding type = annotation.resolveAnnotationBinding();
 		if (type != null) {
 			logger.debug("Hover requested for "+type.getName());
 
 			if (processLiveData.length > 0) {
+				
+				AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(annotation);
 
-				for (HoverProvider provider : this.hoverProviders.get(type)) {
+				for (HoverProvider provider : this.hoverProviders.get(annotationHierarchies, type)) {
 					
 					cancelToken.checkCanceled();
 					
-					Hover hover = provider.provideHover(exactNode, annotation, type, offset, doc, project, processLiveData);
+					Hover hover = provider.provideHover(exactNode, annotation, type.getAnnotationType(), offset, doc, project, processLiveData);
 					if (hover != null) {
 						logger.debug("Hover found: "+hover);
 						//TODO: compose multiple hovers somehow instead of just returning the first one?

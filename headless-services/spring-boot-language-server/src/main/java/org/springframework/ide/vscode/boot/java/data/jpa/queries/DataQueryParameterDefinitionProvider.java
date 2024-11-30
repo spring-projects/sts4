@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.IJavaDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -48,8 +49,9 @@ public class DataQueryParameterDefinitionProvider implements IJavaDefinitionProv
 	public List<LocationLink> getDefinitions(CancelChecker cancelToken, IJavaProject project,
 			TextDocumentIdentifier docId, CompilationUnit cu, ASTNode n, int offset) {
 		if (n instanceof StringLiteral || n instanceof TextBlock) {
+			AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 			
-			ASTNode a = JdtQueryDocHighlightsProvider.findQueryAnnotation(n);
+			ASTNode a = JdtQueryDocHighlightsProvider.findQueryAnnotation(annotationHierarchies, n);
 			
 			TextDocument doc = documents.getLatestSnapshot(docId.getUri());
 				

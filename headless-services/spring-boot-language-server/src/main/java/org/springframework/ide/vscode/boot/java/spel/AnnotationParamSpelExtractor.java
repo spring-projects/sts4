@@ -94,7 +94,7 @@ public final class AnnotationParamSpelExtractor {
 			return Optional.empty();
 		}
 		
-		if (!AnnotationHierarchies.hasTransitiveSuperAnnotationType(a.resolveTypeBinding(), this.annotationType)) {
+		if (!AnnotationHierarchies.get(a).isAnnotatedWith(a.resolveAnnotationBinding(), this.annotationType)) {
 			return Optional.empty();
 		}
 			
@@ -122,7 +122,7 @@ public final class AnnotationParamSpelExtractor {
 			return Optional.empty();
 		}
 		
-		if (!AnnotationHierarchies.hasTransitiveSuperAnnotationType(a.resolveTypeBinding(), this.annotationType)) {
+		if (!AnnotationHierarchies.get(a).isAnnotatedWith(a.resolveAnnotationBinding(), this.annotationType)) {
 			return Optional.empty();
 		}
 		

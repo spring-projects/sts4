@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.springframework.ide.vscode.boot.java.JdtSemanticTokensProvider;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedQueryExpression;
 import org.springframework.ide.vscode.boot.java.embedded.lang.EmbeddedLanguageSnippet;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
@@ -64,10 +65,11 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 
 	@Override
 	public ASTVisitor getTokensComputer(IJavaProject jp, TextDocument doc, CompilationUnit cu, Collector<SemanticTokenData> tokensData) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 		return new ASTVisitor() {
 			@Override
 			public boolean visit(NormalAnnotation a) {
-				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(a);
+				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, a);
 				if (q != null) {
 					computeSemanticTokens(jp, q.query(), q.isNative()).forEach(tokensData::accept);
 				}
@@ -76,7 +78,7 @@ public class JdtDataQuerySemanticTokensProvider implements JdtSemanticTokensProv
 
 			@Override
 			public boolean visit(SingleMemberAnnotation a) {
-				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(a);
+				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, a);
 				if (q != null) {
 					computeSemanticTokens(jp, q.query(), q.isNative()).forEach(tokensData::accept);
 				}

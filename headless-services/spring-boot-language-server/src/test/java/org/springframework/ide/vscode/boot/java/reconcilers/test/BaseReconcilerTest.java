@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.reconcilers.CompositeASTVisitor;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
@@ -88,7 +89,7 @@ public abstract class BaseReconcilerTest {
 		TestProblemCollector problemCollector = new TestProblemCollector();
 		AtomicBoolean requiredCompleteAst = new AtomicBoolean(false);
 		String[] sources = Stream.concat(Arrays.stream(additionalSources), Stream.of(path)).map(p -> p.toFile().toString()).toArray(String[]::new);
-		SpringIndexerJava.createParser(project, !isCompleteAst).createASTs(sources, null, new String[0], new FileASTRequestor() {
+		SpringIndexerJava.createParser(project, new AnnotationHierarchies(), !isCompleteAst).createASTs(sources, null, new String[0], new FileASTRequestor() {
 
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {

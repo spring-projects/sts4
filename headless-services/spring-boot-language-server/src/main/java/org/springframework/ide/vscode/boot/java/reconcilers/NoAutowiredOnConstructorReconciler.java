@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.openrewrite.java.spring.NoAutowiredOnConstructor;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
@@ -57,6 +58,7 @@ public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 
 	@Override
 	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 
 		return new ASTVisitor() {
 
@@ -80,7 +82,7 @@ public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 					}
 					
 					if (constructor != null) {
-						Annotation autowiredAnnotation = ReconcileUtils.findAnnotation(constructor,
+						Annotation autowiredAnnotation = ReconcileUtils.findAnnotation(annotationHierarchies, constructor,
 								Annotations.AUTOWIRED, false);
 						if (autowiredAnnotation != null) {
 							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL,

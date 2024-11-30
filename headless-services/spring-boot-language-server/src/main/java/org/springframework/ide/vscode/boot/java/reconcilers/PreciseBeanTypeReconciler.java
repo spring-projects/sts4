@@ -14,7 +14,6 @@ import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.spri
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -59,6 +58,7 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 
 	@Override
 	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		final AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 
 		return new ASTVisitor() {
 			
@@ -70,8 +70,7 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 			public boolean visit(MethodDeclaration method) {
 				IMethodBinding methodBinding = method.resolveBinding();
 				if (methodBinding != null) {
-					boolean isBeanMethod = Arrays.stream(methodBinding.getAnnotations())
-							.anyMatch(a -> AnnotationHierarchies.findTransitiveSuperAnnotationBindings(a).anyMatch(an -> Annotations.BEAN.equals(an.getAnnotationType().getQualifiedName())));
+					boolean isBeanMethod = annotationHierarchies.isAnnotatedWith(methodBinding, Annotations.BEAN);
 					if (isBeanMethod) {
 						if (isCompleteAst) {
 							if (currentMethod == null)  {// Do not jump into anonymous class methods

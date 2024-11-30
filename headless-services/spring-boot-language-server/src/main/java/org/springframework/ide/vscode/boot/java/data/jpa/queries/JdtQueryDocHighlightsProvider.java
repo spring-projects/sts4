@@ -29,6 +29,7 @@ import org.eclipse.lsp4j.DocumentHighlightKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.JdtAstDocHighlightsProvider;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -49,7 +50,8 @@ public class JdtQueryDocHighlightsProvider implements JdtAstDocHighlightsProvide
 	public List<DocumentHighlight> getDocHighlights(IJavaProject project, TextDocument doc, CompilationUnit cu,
 			ASTNode node, int offset) {
 		if (node instanceof StringLiteral || node instanceof TextBlock) {
-			Annotation a = findQueryAnnotation(node);
+			AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
+			Annotation a = findQueryAnnotation(annotationHierarchies, node);
 			if (a != null && a.getParent() instanceof MethodDeclaration m && !m.parameters().isEmpty()) {
 				Collector<SemanticTokenData> collector = new Collector<>();
 				a.accept(semanticTokensProvider.getTokensComputer(project, doc, cu, collector));
@@ -74,13 +76,13 @@ public class JdtQueryDocHighlightsProvider implements JdtAstDocHighlightsProvide
 		return Collections.emptyList();
 	}
 	
-	static Annotation findQueryAnnotation(ASTNode node) {
+	static Annotation findQueryAnnotation(AnnotationHierarchies annotationHierarchies, ASTNode node) {
 		if (node.getParent() instanceof MemberValuePair pair
 				&& node.getParent().getParent() instanceof NormalAnnotation na && "value".equals(pair.getName().getIdentifier())
-				&& JdtQueryVisitorUtils.isQueryAnnotation(na)) {
+				&& JdtQueryVisitorUtils.isQueryAnnotation(annotationHierarchies, na)) {
 			return na;
 		} else if (node.getParent() instanceof SingleMemberAnnotation sm
-				&& JdtQueryVisitorUtils.isQueryAnnotation(sm)) {
+				&& JdtQueryVisitorUtils.isQueryAnnotation(annotationHierarchies, sm)) {
 			return sm;
 		}
 		return null;

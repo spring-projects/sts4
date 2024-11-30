@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.openrewrite.java.spring.security5.WebSecurityConfigurerAdapter;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.Version;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -85,6 +86,7 @@ public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler 
 
 	@Override
 	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 		return new ASTVisitor() {
 			
 			@Override
@@ -92,7 +94,7 @@ public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler 
 				Type type = typeDecl.getSuperclassType();
 				if (isWebSecurityConfigurerAdapter(cu, type)) {
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, type.getStartPosition(), type.getLength());
-					if (ReconcileUtils.findAnnotation(typeDecl, Annotations.CONFIGURATION, true) != null) {
+					if (ReconcileUtils.findAnnotation(annotationHierarchies, typeDecl, Annotations.CONFIGURATION, true) != null) {
 						ITypeBinding resolveBinding = type.resolveBinding();
 						String[] typeStubs = resolveBinding == null || resolveBinding.isRecovered() ? new String[] { STUB_WEB_SECURITY_CONFIG_ADAPTER } : new String[0];
 						String uri = docUri.toASCIIString();
