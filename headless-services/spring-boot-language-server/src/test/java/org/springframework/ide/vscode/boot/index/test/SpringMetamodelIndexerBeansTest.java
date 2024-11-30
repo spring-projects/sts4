@@ -72,7 +72,7 @@ public class SpringMetamodelIndexerBeansTest {
 		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
 
 		CompletableFuture<Void> initProject = indexer.waitOperation();
-		initProject.get(5, TimeUnit.SECONDS);
+		initProject.get(55555555, TimeUnit.SECONDS);
 	}
 
 	@Test

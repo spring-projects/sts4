@@ -12,8 +12,8 @@ package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
@@ -30,18 +30,18 @@ public class JdtQueryVisitorUtils {
 	
 	public record EmbeddedQueryExpression(EmbeddedLanguageSnippet query, boolean isNative) {};
 	
-	public static EmbeddedQueryExpression extractQueryExpression(SingleMemberAnnotation a) {
-		if (isQueryAnnotation(a)) {
+	public static EmbeddedQueryExpression extractQueryExpression(AnnotationHierarchies annotationHierarchies, SingleMemberAnnotation a) {
+		if (isQueryAnnotation(annotationHierarchies, a)) {
 			EmbeddedLanguageSnippet expression = EmbeddedLangAstUtils.extractEmbeddedExpression(a.getValue());
 			return expression == null ? null : new EmbeddedQueryExpression(expression, false);
 		}
 		return null;
 	}
 	
-	public static EmbeddedQueryExpression extractQueryExpression(NormalAnnotation a) {
+	public static EmbeddedQueryExpression extractQueryExpression(AnnotationHierarchies annotationHierarchies, NormalAnnotation a) {
 		Expression queryExpression = null;
 		boolean isNative = false;
-		if (isQueryAnnotation(a)) {
+		if (isQueryAnnotation(annotationHierarchies, a)) {
 			for (Object value : a.values()) {
 				if (value instanceof MemberValuePair) {
 					MemberValuePair pair = (MemberValuePair) value;
@@ -64,7 +64,7 @@ public class JdtQueryVisitorUtils {
 					}
 				}
 			}
-		} else if (isNamedQueryAnnotation(a)) {
+		} else if (isNamedQueryAnnotation(annotationHierarchies, a)) {
 			for (Object value : a.values()) {
 				if (value instanceof MemberValuePair) {
 					MemberValuePair pair = (MemberValuePair) value;
@@ -101,23 +101,20 @@ public class JdtQueryVisitorUtils {
 		return null;
 	}
 	
-	static boolean isQueryAnnotation(Annotation a) {
+	static boolean isQueryAnnotation(AnnotationHierarchies annotationHierarchies, Annotation a) {
 		if (Annotations.DATA_QUERY.equals(a.getTypeName().getFullyQualifiedName()) || QUERY.equals(a.getTypeName().getFullyQualifiedName())) {
-			ITypeBinding type = a.resolveTypeBinding();
-			if (type != null) {
-				return AnnotationHierarchies.hasTransitiveSuperAnnotationType(type, Annotations.DATA_QUERY);
-			}
+			return annotationHierarchies.isAnnotatedWith(a.resolveAnnotationBinding(), Annotations.DATA_QUERY);
 		}
 		return false;
 	}
 
-	static boolean isNamedQueryAnnotation(Annotation a) {
+	static boolean isNamedQueryAnnotation(AnnotationHierarchies annotationHierarchies, Annotation a) {
 		if (NAMED_QUERY.equals(a.getTypeName().getFullyQualifiedName()) || Annotations.JPA_JAKARTA_NAMED_QUERY.equals(a.getTypeName().getFullyQualifiedName())
 				|| Annotations.JPA_JAVAX_NAMED_QUERY.equals(a.getTypeName().getFullyQualifiedName())) {
-			ITypeBinding type = a.resolveTypeBinding();
+			IAnnotationBinding type = a.resolveAnnotationBinding();
 			if (type != null) {
-				return AnnotationHierarchies.hasTransitiveSuperAnnotationType(type, Annotations.JPA_JAKARTA_NAMED_QUERY)
-						|| AnnotationHierarchies.hasTransitiveSuperAnnotationType(type, Annotations.JPA_JAVAX_NAMED_QUERY);
+				return annotationHierarchies.isAnnotatedWith(type, Annotations.JPA_JAKARTA_NAMED_QUERY)
+						|| annotationHierarchies.isAnnotatedWith(type, Annotations.JPA_JAVAX_NAMED_QUERY);
 			}
 		}
 		return false;

@@ -35,6 +35,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
@@ -67,18 +68,18 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 
 	@Override
 	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
-
 		Path sourceFile = Paths.get(docUri);
 		// Check if source file belongs to non-test java sources folder
 		if (IClasspathUtil.getProjectJavaSourceFoldersWithoutTests(project.getClasspath())
 				.anyMatch(f -> sourceFile.startsWith(f.toPath()))) {
+			final AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 			
 			return new ASTVisitor() {
 
 				@Override
 				public boolean visit(FieldDeclaration field) {
 					if (field.fragments().size() == 1) {
-						Annotation annotation = ReconcileUtils.findAnnotation(field, Annotations.AUTOWIRED,
+						Annotation annotation = ReconcileUtils.findAnnotation(annotationHierarchies, field, Annotations.AUTOWIRED,
 								false);
 						if (annotation != null && field.getParent() instanceof TypeDeclaration) {
 							TypeDeclaration typeDecl = (TypeDeclaration) field.getParent();
@@ -101,7 +102,7 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 								}
 							} else {
 								List<MethodDeclaration> autowiredConstructors = constructors.stream()
-										.filter(constr -> ReconcileUtils.findAnnotation(constr,
+										.filter(constr -> ReconcileUtils.findAnnotation(annotationHierarchies, constr,
 												Annotations.AUTOWIRED, true) != null)
 										.limit(2).collect(Collectors.toList());
 								if (autowiredConstructors.size() == 1) {

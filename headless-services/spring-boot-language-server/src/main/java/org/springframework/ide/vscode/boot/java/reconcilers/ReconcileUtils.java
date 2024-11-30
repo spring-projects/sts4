@@ -74,15 +74,15 @@ public class ReconcileUtils {
 		}
 	}
 	
-	public static Annotation findAnnotation(BodyDeclaration decl, String annotationFqType, boolean includeMetaHierarchy) {
+	public static Annotation findAnnotation(AnnotationHierarchies annotationHiererachies, BodyDeclaration decl, String annotationFqType, boolean includeMetaHierarchy) {
 		for (Iterator<?> itr = decl.modifiers().iterator(); itr.hasNext();) {
 			Object mod = itr.next();
 			if (mod instanceof Annotation) {
 				Annotation a = (Annotation) mod;
 				ITypeBinding aType = a.resolveTypeBinding();
-				if (aType != null && (
-						(includeMetaHierarchy && AnnotationHierarchies.isSubtypeOf(a, annotationFqType)) || (!includeMetaHierarchy && annotationFqType.equals(aType.getQualifiedName()))
-				)) {
+				if (aType != null && 
+						(annotationFqType.equals(aType.getQualifiedName()) || (includeMetaHierarchy && annotationHiererachies.isAnnotatedWith(aType, annotationFqType)))
+				) {
 					return (Annotation) mod;
 				}
 			}

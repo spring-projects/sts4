@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -27,6 +28,7 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.IMemberValuePairBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -35,12 +37,13 @@ import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.TypeParameter;
-import org.openrewrite.internal.lang.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.JavaUtils;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
@@ -68,6 +71,7 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 
 	@Override
 	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 
 		return new ASTVisitor() {
 
@@ -78,15 +82,18 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 				IAnnotationBinding repoDefAnnotationType = null;
 				Annotation repoDefAnnotation = null;
 				for (Annotation a : ASTUtils.getAnnotations(typeDecl)) {
-					if (AnnotationHierarchies.isSubtypeOf(a, Annotations.NO_REPO_BEAN)) {
+					if (annotationHierarchies.isAnnotatedWith(a.resolveAnnotationBinding(), Annotations.NO_REPO_BEAN)) {
 						return true;
 					}
-					if (repoDefAnnotationType == null) {
-						repoDefAnnotationType = AnnotationHierarchies
-								.findTransitiveSuperAnnotationBindings(a.resolveAnnotationBinding())
-								.filter(at -> Annotations.REPOSITORY_DEFINITION
-										.equals(at.getAnnotationType().getQualifiedName()))
-								.findFirst().orElse(null);
+					IAnnotationBinding annotationBinding = a.resolveAnnotationBinding();
+					if (repoDefAnnotationType == null && annotationHierarchies.isAnnotatedWith(annotationBinding, Annotations.REPOSITORY_DEFINITION)) {
+						String bindingKey = JavaUtils.typeFqNameToBindingKey(Annotations.REPOSITORY_DEFINITION);
+						for (Iterator<IAnnotationBinding> itr = annotationHierarchies.iterator(annotationBinding); itr.hasNext() && repoDefAnnotationType == null;) {
+							IAnnotationBinding ab = itr.next();
+							if (bindingKey.equals(ab.getAnnotationType().getKey())) {
+								repoDefAnnotationType = ab;
+							}
+						}
 						if (repoDefAnnotationType != null) {
 							repoDefAnnotation = a;
 						}
@@ -228,7 +235,7 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 			}
 
 			private List<ITypeBinding> findIdType(ITypeBinding type) {
-				List<ITypeBinding> idTypes = findAnnotatedIdTypes(type, new HashSet<>());
+				List<ITypeBinding> idTypes = findAnnotatedIdTypes(annotationHierarchies, type, new HashSet<>());
 				if (idTypes.isEmpty() && considerIdField) {
 					ITypeBinding idType = findIdFieldType(type);
 					if (idType != null) {
@@ -326,7 +333,7 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 		return null;
 	}
 
-	private static List<ITypeBinding> findAnnotatedIdTypes(ITypeBinding type, Set<String> visited) {
+	private static List<ITypeBinding> findAnnotatedIdTypes(AnnotationHierarchies annotationHierarchies, ITypeBinding type, Set<String> visited) {
 		List<ITypeBinding> idTypes = new ArrayList<>();
 		for (IAnnotationBinding a : type.getAnnotations()) {
 			switch (a.getAnnotationType().getQualifiedName()) {
@@ -341,7 +348,7 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 		List<String> idAnnotations = List.of(Annotations.SPRING_ENTITY_ID, Annotations.JPA_JAKARTA_ENTITY_ID, Annotations.JPA_JAVAX_ENTITY_ID, Annotations.JPA_JAKARTA_EMBEDDED_ID, Annotations.JPA_JAVAX_EMBEDDED_ID);
 		for (IVariableBinding m : type.getDeclaredFields()) {
 			String s = fieldSignature(m);
-			if (!visited.contains(s) && isAnnotationCompatible(m.getAnnotations(), idAnnotations)) {
+			if (!visited.contains(s) && isAnnotationCompatible(annotationHierarchies, m, idAnnotations)) {
 				idTypes.add(m.getType());
 			}
 			visited.add(s);
@@ -349,13 +356,13 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 		if (!type.isRecord()) {
 			for (IMethodBinding m : type.getDeclaredMethods()) {
 				String s = methodSignature(m);
-				if (!visited.contains(s) && isAnnotationCompatible(m.getAnnotations(), idAnnotations)) {
+				if (!visited.contains(s) && isAnnotationCompatible(annotationHierarchies, m, idAnnotations)) {
 					idTypes.add(m.getReturnType());
 				}
 				visited.add(s);
 			}
 			if (type.getSuperclass() != null) {
-				idTypes.addAll(findAnnotatedIdTypes(type.getSuperclass(), visited));
+				idTypes.addAll(findAnnotatedIdTypes(annotationHierarchies, type.getSuperclass(), visited));
 			}
 		}
 		return idTypes;
@@ -364,17 +371,16 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 	private static String fieldSignature(IVariableBinding f) {
 		return f.getName();
 	}
-
-	private static boolean isAnnotationCompatible(IAnnotationBinding[] annotations, Collection<String> fqNames) {
-		for (IAnnotationBinding a : annotations) {
-			if (AnnotationHierarchies.findTransitiveSuperAnnotationBindings(a)
-					.anyMatch(at -> fqNames.contains(at.getAnnotationType().getQualifiedName()))) {
+	
+	private static boolean isAnnotationCompatible(AnnotationHierarchies annotationHierarchies, IBinding binding, Collection<String> fqNames) {
+		for (String fqName : fqNames) {
+			if (annotationHierarchies.isAnnotatedWith(binding, fqName)) {
 				return true;
 			}
 		}
 		return false;
 	}
-
+	
 	private static String methodSignature(IMethodBinding m) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(m.getName());

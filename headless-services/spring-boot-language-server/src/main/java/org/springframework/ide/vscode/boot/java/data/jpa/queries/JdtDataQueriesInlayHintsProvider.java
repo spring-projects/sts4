@@ -23,6 +23,7 @@ import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintKind;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.JdtInlayHintsProvider;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedQueryExpression;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData;
@@ -47,12 +48,13 @@ public class JdtDataQueriesInlayHintsProvider implements JdtInlayHintsProvider {
 	@Override
 	public ASTVisitor getInlayHintsComputer(IJavaProject project, TextDocument doc, CompilationUnit cu,
 			Collector<InlayHint> collector) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 		return new ASTVisitor() {
 
 			@Override
 			public boolean visit(NormalAnnotation node) {
 				if (node.getParent() instanceof MethodDeclaration m && !m.parameters().isEmpty()) {
-					EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
+					EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, node);
 					if (q != null) {
 						processQuery(project, doc, collector, m, q);
 					}
@@ -63,7 +65,7 @@ public class JdtDataQueriesInlayHintsProvider implements JdtInlayHintsProvider {
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
 				if (node.getParent() instanceof MethodDeclaration m && !m.parameters().isEmpty()) {
-					EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
+					EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, node);
 					if (q != null) {
 						processQuery(project, doc, collector, m, q);
 					}

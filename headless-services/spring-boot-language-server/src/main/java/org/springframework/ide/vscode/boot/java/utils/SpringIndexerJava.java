@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +40,7 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
+import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -268,7 +270,7 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private void scanFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception {
 		final boolean ignoreMethodBodies = false;
-		ASTParserCleanupEnabled parser = createParser(project, ignoreMethodBodies);
+		ASTParserCleanupEnabled parser = createParser(project, new AnnotationHierarchies(), ignoreMethodBodies);
 		
 		String docURI = updatedDoc.getDocURI();
 		long lastModified = updatedDoc.getLastModified();
@@ -422,11 +424,12 @@ public class SpringIndexerJava implements SpringIndexer {
 			}
 		};
 
+		AnnotationHierarchies annotationHierarchies = new AnnotationHierarchies();
 		List<String[]> chunks = createChunks(javaFiles, this.scanChunkSize);
 		for(int i = 0; i < chunks.size(); i++) {
 			log.info("scan java files, AST parse, chunk {} for files: {}", i, javaFiles.length);
 			
-			ASTParserCleanupEnabled parser = createParser(project, ignoreMethodBodies);
+			ASTParserCleanupEnabled parser = createParser(project, annotationHierarchies, ignoreMethodBodies);
 			parser.createASTs(chunks.get(i), null, new String[0], requestor, null);
 			parser.cleanup();
 		}
@@ -509,14 +512,15 @@ public class SpringIndexerJava implements SpringIndexer {
 			};
 			
 			List<String[]> chunks = createChunks(javaFiles, this.scanChunkSize);
+			AnnotationHierarchies annotations = new AnnotationHierarchies();
 			for (int i = 0; i < chunks.size(); i++) {
 
 				log.info("scan java files, AST parse, chunk {} for files: {}", i, javaFiles.length);
-	            String[] pass2Files = scanFiles(project, chunks.get(i), generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.ONE);
+	            String[] pass2Files = scanFiles(project, annotations, chunks.get(i), generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.ONE);
 
 	            if (pass2Files.length > 0) {
 					log.info("scan java files, AST parse, pass 2, chunk {} for files: {}", i, javaFiles.length);
-					scanFiles(project, pass2Files, generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.TWO);
+					scanFiles(project, annotations, pass2Files, generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.TWO);
 				}
 	        }
 			
@@ -553,7 +557,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		log.info("reconciling stats - timer: " + reconciler.getStatsTimer());
 	}
 
-	private String[] scanFiles(IJavaProject project, String[] javaFiles, List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans,
+	private String[] scanFiles(IJavaProject project, AnnotationHierarchies annotations, String[] javaFiles, List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans,
 			BiConsumer<String, Diagnostic> diagnosticsAggregator, SCAN_PASS pass) throws Exception {
 		
 		PercentageProgressTask progressTask = this.progressService.createPercentageProgressTask(INDEX_FILES_TASK_ID + project.getElementName(),
@@ -582,7 +586,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				}
 			};
 	
-			ASTParserCleanupEnabled parser = createParser(project, ignoreMethodBodies);
+			ASTParserCleanupEnabled parser = createParser(project, annotations, ignoreMethodBodies);
 			parser.createASTs(javaFiles, null, new String[0], requestor, null);
 			parser.cleanup();
 
@@ -735,14 +739,26 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private void extractSymbolInformation(Annotation node, final SpringIndexerJavaContext context) throws Exception {
-		ITypeBinding typeBinding = node.resolveTypeBinding();
+		IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
 
-		if (typeBinding != null) {
+		if (annotationBinding != null) {
+			
+			ITypeBinding typeBinding = annotationBinding.getAnnotationType();
 			
 			// symbol and index scanning
-			Collection<SymbolProvider> providers = symbolProviders.get(typeBinding);
-			Collection<ITypeBinding> metaAnnotations = AnnotationHierarchies.getMetaAnnotations(typeBinding, symbolProviders::containsKey);
+			List<ITypeBinding> metaAnnotations = new ArrayList<>();
+			AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(node);
+			for (Iterator<IAnnotationBinding> itr = annotationHierarchies.iterator(typeBinding); itr.hasNext();) {
+				IAnnotationBinding ab = itr.next();
+				/*
+				 * If meta annotations of the current annotation is a "sub-type" of one of the annotations from symbol providers then add it to meta annotations
+				 */
+				if (annotationHierarchies.isAnnotatedWith(ab, symbolProviders::containsKey)) {
+					metaAnnotations.add(ab.getAnnotationType());
+				}
+			}
 			
+			Collection<SymbolProvider> providers = symbolProviders.get(annotationHierarchies, annotationBinding);
 			if (!providers.isEmpty()) {
 				TextDocument doc = DocumentUtils.getTempTextDocument(context.getDocURI(), context.getDocRef(), context.getContent());
 				for (SymbolProvider provider : providers) {
@@ -784,11 +800,11 @@ public class SpringIndexerJava implements SpringIndexer {
 		return jakartaAnnnotations.contains(qualifiedName);
 	}
 
-	public static ASTParserCleanupEnabled createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
+	public static ASTParserCleanupEnabled createParser(IJavaProject project, AnnotationHierarchies annotationHierarchies, boolean ignoreMethodBodies) throws Exception {
 		String[] classpathEntries = getClasspathEntries(project);
 		String[] sourceEntries = getSourceEntries(project);
 		
-		return new ASTParserCleanupEnabled(classpathEntries, sourceEntries, ignoreMethodBodies);
+		return new ASTParserCleanupEnabled(classpathEntries, sourceEntries, annotationHierarchies, ignoreMethodBodies);
 	}
 
 	private static String[] getClasspathEntries(IJavaProject project) throws Exception {

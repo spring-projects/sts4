@@ -179,10 +179,10 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 	private boolean isComponentAnnotatedType(TypeDeclaration typeDeclaration) {
 		List<?> modifiers = typeDeclaration.modifiers();
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(typeDeclaration);
 		for (Object modifier : modifiers) {
 			if (modifier instanceof Annotation) {
-				ITypeBinding typeBinding = ((Annotation) modifier).resolveTypeBinding();
-				if (AnnotationHierarchies.hasTransitiveSuperAnnotationType(typeBinding, Annotations.COMPONENT)) {
+				if (annotationHierarchies.isAnnotatedWith(((Annotation) modifier).resolveAnnotationBinding(), Annotations.COMPONENT)) {
 					return true;
 				}
 			}

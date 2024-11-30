@@ -283,8 +283,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 	private LiveBean getDefinedBeanForTypeDeclaration(TypeDeclaration declaringType) {
 		if (declaringType != null) {
+			AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(declaringType);
 			for (Annotation annotation : ASTUtils.getAnnotations(declaringType)) {
-				if (AnnotationHierarchies.isSubtypeOf(annotation, Annotations.COMPONENT)) {
+				if (annotationHierarchies.isAnnotatedWith(annotation.resolveAnnotationBinding(), Annotations.COMPONENT)) {
 					return ComponentInjectionsHoverProvider.getDefinedBeanForComponent(annotation);
 				}
 			}

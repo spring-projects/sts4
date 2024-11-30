@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CompletionItemKind;
@@ -25,9 +24,9 @@ import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
-import org.springframework.ide.vscode.boot.java.beans.DependsOnCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.beans.BeanNamesCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.beans.BeanTypesCompletionProcessor;
+import org.springframework.ide.vscode.boot.java.beans.DependsOnCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.beans.NamedCompletionProvider;
 import org.springframework.ide.vscode.boot.java.beans.ProfileCompletionProvider;
 import org.springframework.ide.vscode.boot.java.beans.QualifierCompletionProvider;
@@ -189,15 +188,7 @@ public class BootJavaCompletionEngineConfigurer {
 			if (type != null) {
 				ITypeBinding binding = type.resolveBinding();
 				if (binding != null) {
-					IAnnotationBinding[] annotations = binding.getAnnotations();
-					if (annotations != null) {
-						for (int i = 0; i < annotations.length; i++) {
-							ITypeBinding annotationType = annotations[i].getAnnotationType();
-							if (AnnotationHierarchies.hasTransitiveSuperAnnotationType(annotationType, requiredAnnotation)) {
-								return true;
-							}
-						}
-					}
+					return AnnotationHierarchies.get(node).isAnnotatedWith(binding, requiredAnnotation);
 				}
 			}
 			return false;

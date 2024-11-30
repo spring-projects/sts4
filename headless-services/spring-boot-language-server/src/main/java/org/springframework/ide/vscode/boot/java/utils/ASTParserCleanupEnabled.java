@@ -18,6 +18,7 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 
 /**
  * Wrapper around a JDT AST parser to enable cleanup functionality on the lookup environment,
@@ -30,8 +31,11 @@ public class ASTParserCleanupEnabled {
 	private final Map<String, String> options;
 //	private final int flags;
 //	private final int apiLevel;
-
-	public ASTParserCleanupEnabled(String[] classpathEntries, String[] sourceEntries, boolean ignoreMethodBodies) {
+	
+	private final AnnotationHierarchies annotationHierachies;
+	
+	public ASTParserCleanupEnabled(String[] classpathEntries, String[] sourceEntries, AnnotationHierarchies annotationHierarchies, boolean ignoreMethodBodies) {
+		this.annotationHierachies = annotationHierarchies; 
 		parser = ASTParser.newParser(AST.JLS21);
 		options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_21, options);
@@ -62,6 +66,10 @@ public class ASTParserCleanupEnabled {
 
 	}
 
+//	public ASTParserCleanupEnabled(String[] classpathEntries, String[] sourceEntries, boolean ignoreMethodBodies) {
+//		this(classpathEntries, sourceEntries, new AnnotationHierarchies(), ignoreMethodBodies);
+//	}
+
 	public void setUnitName(String unitName) {
 		this.parser.setUnitName(unitName);
 	}
@@ -71,14 +79,17 @@ public class ASTParserCleanupEnabled {
 	}
 	
 	public ASTNode createAST(IProgressMonitor monitor) {
-		return this.parser.createAST(monitor);
+		ASTNode n = this.parser.createAST(monitor);
+		AnnotationHierarchies.set(n, annotationHierachies);
+		return n;
 	}
 	
 	public void createASTs(String[] sourceFilePaths, String[] encodings, String[] bindingKeys,
 			FileASTRequestor requestor, IProgressMonitor monitor) {
 		
 //		CUResolver.resolve(sourceFilePaths, encodings, bindingKeys, requestor, apiLevel, options, flags, environment);
-		this.parser.createASTs(sourceFilePaths, encodings, bindingKeys, requestor, monitor);
+		this.parser.createASTs(sourceFilePaths, encodings, bindingKeys, new DelegatingFileASTRequestor(requestor,
+				(p, cu) -> AnnotationHierarchies.set(cu, annotationHierachies)), monitor);
 	}
 	
 	public void cleanup() {

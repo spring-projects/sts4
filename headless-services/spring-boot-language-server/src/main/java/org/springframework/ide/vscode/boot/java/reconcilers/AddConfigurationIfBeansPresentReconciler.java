@@ -19,7 +19,6 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -124,12 +123,12 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 		}
 
 		// check if '@Configuration' is already over the class
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 		for (Iterator<?> itr = classDecl.modifiers().iterator(); itr.hasNext();) {
 			Object mod = itr.next();
 			if (mod instanceof Annotation) {
 				Annotation a = (Annotation) mod;
-				ITypeBinding aType = a.resolveTypeBinding();
-				if (aType != null && AnnotationHierarchies.isSubtypeOf(a, Annotations.CONFIGURATION)) {
+				if (annotationHierarchies.isAnnotatedWith(a.resolveAnnotationBinding(), Annotations.CONFIGURATION)) {
 					// Found '@Configuration' annotation
 					return false;
 				}
@@ -178,12 +177,12 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 	}
 
 	private static boolean isBeanMethod(MethodDeclaration m) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(m);
 		for (Iterator<?> itr = m.modifiers().iterator(); itr.hasNext();) {
 			Object mod = itr.next();
 			if (mod instanceof Annotation) {
 				Annotation a = (Annotation) mod;
-				ITypeBinding aType = a.resolveTypeBinding();
-				if (aType != null && AnnotationHierarchies.isSubtypeOf(a, Annotations.BEAN)) {
+				if (annotationHierarchies.isAnnotatedWith(a.resolveAnnotationBinding(), Annotations.BEAN)) {
 					// Found '@Bean' annotation
 					return true;
 				}

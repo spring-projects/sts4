@@ -44,6 +44,7 @@ import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
 import org.eclipse.jdt.internal.core.INameEnvironmentWithProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -77,6 +78,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private final Cache<URI, CompletableFuture<CompilationUnit>> uriToCu;
 	private final Cache<URI, Set<URI>> projectToDocs;
 	private final Cache<URI, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
+	private final Cache<URI, AnnotationHierarchies> annotationHierarchies;
 	
 	private final ReentrantReadWriteLock environmentCacheLock = new ReentrantReadWriteLock(true);
 	private CompletableFuture<Void> debounceClassFileChanges = CompletableFuture.completedFuture(null);
@@ -117,6 +119,8 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			}
 			
 		}).build();
+		
+		this.annotationHierarchies = CacheBuilder.newBuilder().build();
 
 		this.documentService = server == null ? null : server.getTextDocumentService();
 
@@ -261,7 +265,8 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 					Tuple2<List<Classpath>, INameEnvironmentWithProgress> lookupEnvTuple = loadLookupEnvTuple(project);
 					String utiStr = uri.toASCIIString();
 					String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
-					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2());
+					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2(),
+							annotationHierarchies.get(project.getLocationUri(), AnnotationHierarchies::new));
 
 					logger.debug("CU Cache: created new AST for {}", uri.toASCIIString());
 
@@ -288,15 +293,18 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 	public static CompilationUnit parse2(char[] source, String docURI, String unitName, IJavaProject project) throws Exception {
 		List<Classpath> classpaths = createClasspath(getClasspathEntries(project));
-		return parse2(source, docURI, unitName, classpaths, null);
+		return parse2(source, docURI, unitName, classpaths, null, null);
 	}
 	
-	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths, INameEnvironmentWithProgress environment) throws Exception {
+	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths, INameEnvironmentWithProgress environment, AnnotationHierarchies annotations) throws Exception {
 		Map<String, String> options = JavaCore.getOptions();
 		String apiLevel = JavaCore.VERSION_21;
 		JavaCore.setComplianceOptions(apiLevel, options);
 		if (environment == null) {
 			environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
+		}
+		if (annotations == null) {
+			annotations = new AnnotationHierarchies();
 		}
 		
 		BasicCompilationUnit sourceUnit = new BasicCompilationUnit(source, null, unitName, (IJavaElement) null);
@@ -316,6 +324,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		
 		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS21, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
 
+		AnnotationHierarchies.set(cu, annotations);
 		return cu;
 	}
 	
@@ -368,7 +377,9 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		WriteLock lock = environmentCacheLock.writeLock();
 		lock.lock();
 		try {
-			lookupEnvCache.invalidate(project.getLocationUri());
+			URI uri = project.getLocationUri();
+			lookupEnvCache.invalidate(uri);
+			annotationHierarchies.invalidate(uri);
 		} finally {
 			lock.unlock();
 		}
