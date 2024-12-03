@@ -51,25 +51,6 @@ jobs:
           gcloud auth activate-service-account --key-file=./gcp.json
           rm -f gcp.json
           gcloud storage cp $VSIX_FILE $GCP_BUCKET/$URL_PATH/$VSIX_FILE
-      - id: tools-team-slack
-        uses: slackapi/slack-github-action@v1.26
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
-        with:
-          channel-id: "C0188MENU2J"
-          payload: |
-            {
-              "text": "Published release `$VSIX_FILE`",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Published release `$VSIX_FILE`<https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>"
-                  }
-                }
-              ]
-            }
       - name: GChat spring-tools-team notification
         run: |
           curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
@@ -87,14 +68,14 @@ jobs:
                           {
                             \"keyValue\": {
                               \"topLabel\": \"VSCode Marketplace\",
-                              \"content\": \"<a href=\"https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}\">${VSIX_FILE}</a>\",
+                              \"content\": \"<a href=https://marketplace.visualstudio.com/items?itemName=vmware.${{ inputs.extension-name }}|${{ inputs.extension-name }}>${VSIX_FILE}</a>\",
                               \"contentMultiline\": true
                             }
                           },
                           {
                             \"keyValue\": {
                               \"topLabel\": \"Open VSX Registry\",
-                              \"content\": \"<a href=\"https://open-vsx.org/extension/VMware/${{ inputs.extension-name }}\">${VSIX_FILE}</a>\",
+                              \"content\": \"<a href=https://open-vsx.org/extension/VMware/${{ inputs.extension-name }}>${VSIX_FILE}</a>\",
                               \"contentMultiline\": true
                             }
                           }
