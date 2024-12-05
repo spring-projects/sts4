@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
@@ -243,4 +244,59 @@ public class CompilationUnitCacheTest {
         assertNotNull(cuAnother);
         assertNotNull(cuAnother);
     }
+    
+    @Test
+    void annotation_hierarchies_unchanged_when_doc_changed() throws Exception {
+        harness.useProject(ProjectsHarness.dummyProject());
+        harness.intialize(null);
+
+        TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
+                "\n" +
+                "public class SomeClass {\n" +
+                "\n" +
+                "}\n");
+
+        harness.newEditorFromFileUri(doc.getUri(), doc.getLanguageId());
+        CompilationUnit cu = getCompilationUnit(doc);
+        assertNotNull(cu);
+        AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
+
+        harness.changeDocument(doc.getUri(), 0, 0, "     ");
+        CompilationUnit cuAnother = getCompilationUnit(doc);
+        assertNotNull(cuAnother);
+        AnnotationHierarchies anotherAnnotationHierarchies = AnnotationHierarchies.get(cuAnother);
+        assertTrue(anotherAnnotationHierarchies == annotationHierarchies);
+
+        CompilationUnit cuYetAnother = getCompilationUnit(doc);
+        AnnotationHierarchies yetAnotherAnnotationHierarchies = AnnotationHierarchies.get(cuYetAnother);
+        assertTrue(anotherAnnotationHierarchies == yetAnotherAnnotationHierarchies);
+    }
+    
+    @Test
+    void annotation_hierarchies_reset_by_project_change() throws Exception {
+        File directory = new File(
+                ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+        String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri().toString();
+        MavenJavaProject project = projects.mavenProject("test-request-mapping-live-hover");
+        harness.useProject(project);
+        harness.intialize(directory);
+
+        URI fileUri = new URI(docUri);
+        Path path = Paths.get(fileUri);
+        String content = new String(Files.readAllBytes(path));
+
+        TextDocument document = new TextDocument(docUri, LanguageId.JAVA, 0, content);
+
+        CompilationUnit cu = getCompilationUnit(document);
+        assertNotNull(cu);
+        AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
+        
+        projectObserver.doWithListeners(l -> l.changed(project));
+        CompilationUnit cuAnother = getCompilationUnit(document);
+        AnnotationHierarchies anotherAnnotationHierarchies = AnnotationHierarchies.get(cuAnother);
+        assertNotNull(cuAnother);
+        assertTrue(anotherAnnotationHierarchies != annotationHierarchies);
+    }
+
+
 }

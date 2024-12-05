@@ -753,7 +753,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				/*
 				 * If meta annotations of the current annotation is a "sub-type" of one of the annotations from symbol providers then add it to meta annotations
 				 */
-				if (annotationHierarchies.isAnnotatedWith(ab, symbolProviders::containsKey)) {
+				if (annotationHierarchies.isAnnotatedWithAnnotationByBindingKey(ab, symbolProviders::containsKey)) {
 					metaAnnotations.add(ab.getAnnotationType());
 				}
 			}

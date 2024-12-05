@@ -3,18 +3,18 @@ package org.springframework.ide.vscode.boot.java.annotations;
 import java.util.Collection;
 import java.util.function.Predicate;
 
-record AnnotationTypeInformation(String fqn, Collection<String> inheritedAnnotations) {
+record AnnotationTypeInformation(String bindingKey, Collection<String> inheritedAnnotations) {
 	
-	public boolean inherits(String fullyQualifiedAnnotationType) {
-		return fqn.equals(fullyQualifiedAnnotationType) || inheritedAnnotations.contains(fullyQualifiedAnnotationType);
+	public boolean inherits(String annotationBindingKey) {
+		return bindingKey.equals(annotationBindingKey) || inheritedAnnotations.contains(annotationBindingKey);
 	}
 	
-	public boolean inherits(Predicate<String> annotationFqnTest) {
-		if (annotationFqnTest.test(fqn)) {
+	public boolean inherits(Predicate<String> annotationBindingKeyTest) {
+		if (annotationBindingKeyTest.test(bindingKey)) {
 			return true;
 		}
 		for (String fqn : inheritedAnnotations) {
-			if (annotationFqnTest.test(fqn)) {
+			if (annotationBindingKeyTest.test(fqn)) {
 				return true;
 			}
 		}

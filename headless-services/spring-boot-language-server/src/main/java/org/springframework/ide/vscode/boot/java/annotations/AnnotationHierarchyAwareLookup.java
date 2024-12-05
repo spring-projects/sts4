@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.springframework.ide.vscode.commons.java.JavaUtils;
 import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.common.collect.ImmutableList;
@@ -51,7 +52,7 @@ public class AnnotationHierarchyAwareLookup<T> {
 	/**
 	 * Associates a value with a given annotation type (and all its subtypes implicitly).
 	 *
-	 * @param fqName Fully qualified type name for the annotation.
+	 * @param bindingKey Fully qualified type name for the annotation.
 	 * @param overrideSuperTypes Determines whether the binding has 'override' behavior. Override behavior
 	 *                           means that this binding stops the search for additional bindings associated
 	 *                           with a super type. If override behavior is disabled the search will continue
@@ -59,9 +60,9 @@ public class AnnotationHierarchyAwareLookup<T> {
 	 *                           in addition to the more specific binding.
 	 * @param value
 	 */
-	private void put(String fqName,  boolean overrideSuperTypes, T value) {
-		Assert.isLegal(bindings.get(fqName)==null, "Multiple bindings to the same fqName are not supported");
-		bindings.put(fqName, new Binding<>(value, overrideSuperTypes));
+	private void put(String bindingKey,  boolean overrideSuperTypes, T value) {
+		Assert.isLegal(bindings.get(bindingKey)==null, "Multiple bindings to the same fqName are not supported");
+		bindings.put(bindingKey, new Binding<>(value, overrideSuperTypes));
 	}
 
 	/**
@@ -100,9 +101,9 @@ public class AnnotationHierarchyAwareLookup<T> {
 	}
 
 	private void findElements(AnnotationHierarchies annotationHierarchies, ITypeBinding annotationType, HashSet<String> seen, Consumer<T> requestor) {
-		String qname = annotationType.getQualifiedName();
-		if (seen.add(qname)) {
-			Binding<T> binding = bindings.get(qname);
+		String bindingKey = annotationType.getKey();
+		if (seen.add(bindingKey)) {
+			Binding<T> binding = bindings.get(bindingKey);
 			
 			boolean isOverriding = false;
 			if (binding != null) {
@@ -118,8 +119,8 @@ public class AnnotationHierarchyAwareLookup<T> {
 		}
 	}
 
-	public void put(String annotationName, T value) {
-		put(annotationName, true, value);
+	public void put(String fqn, T value) {
+		put(JavaUtils.typeFqNameToBindingKey(fqn), true, value);
 	}
 
 	public boolean containsKey(String fqName) {

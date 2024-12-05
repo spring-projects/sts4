@@ -10,12 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.annotations;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
@@ -30,6 +29,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.java.JavaUtils;
 
 import com.google.common.collect.ImmutableList;
 
@@ -124,10 +124,13 @@ public class AnnotationHierarchies {
 	 * @return iterator over annotations hierarchy
 	 */
 	public Iterator<IAnnotationBinding> iterator(IBinding binding) {
+		return iterator(binding, new LinkedHashSet<>());
+	}
+	
+	private Iterator<IAnnotationBinding> iterator(IBinding binding, Set<String> seen) {
 		return new Iterator<>() {
 			
-			private HashSet<String> seen = new HashSet<>();
-			private Queue<IAnnotationBinding> queue = new LinkedList<>();
+			private Queue<IAnnotationBinding> queue = new ArrayDeque<>(10);
 
 			{
 				if (binding instanceof IAnnotationBinding ab) {
@@ -154,8 +157,7 @@ public class AnnotationHierarchies {
 				IAnnotationBinding next = queue.poll();
 				for (IAnnotationBinding a : getDirectSuperAnnotationBindings(next.getAnnotationType())) {
 					String key = a.getAnnotationType().getKey();
-					if (!seen.contains(key)) {
-						seen.add(key);
+					if (seen.add(key)) {
 						queue.add(a);
 					}
 				}
@@ -192,55 +194,48 @@ public class AnnotationHierarchies {
 	
 	private AnnotationTypeInformation compute(ITypeBinding typeBinding) {
 		Set<String> inherited = new LinkedHashSet<>();
-		String fqn = typeBinding.getQualifiedName();
-		// Add itself to the set to flag it as been seen
-		inherited.add(fqn);
-		collectInheritedAnnotations(typeBinding, inherited);
-		// remove itself from `inherited` set as we'd like to leave only inherited annotations FQNs 
-		inherited.remove(fqn);
-		return new AnnotationTypeInformation(fqn, inherited);
+		// Iterating over all inherited annotations must fill in the `inherited` set with annotation binding keys
+		for (Iterator<IAnnotationBinding> itr = iterator(typeBinding, inherited); itr.hasNext(); itr.next()) {
+			// nothing to do
+		} 
+		// remove itself from `inherited` set as we'd like to leave only inherited annotations binding keys in the set 
+		String key = typeBinding.getKey();
+		inherited.remove(key);
+		return new AnnotationTypeInformation(key, inherited);
 	}
 	
-	
-	// recursively collect annotations of the given annotation type
-	private void collectInheritedAnnotations(ITypeBinding annotationType, Set<String> inherited) {
-		for (IAnnotationBinding annotation : getDirectSuperAnnotationBindings(annotationType)) {
-			ITypeBinding type = annotation.getAnnotationType();
-			boolean notSeenYet = inherited.add(type.getQualifiedName());
-			if (notSeenYet) {
-				collectInheritedAnnotations(type, inherited);
+	public boolean isAnnotatedWithAnnotationByBindingKey(IBinding binding, Predicate<String> bindingKeyTest) {
+		if (binding instanceof IAnnotationBinding ab) {
+			return annotationInfo(ab.getAnnotationType()).map(info -> info.inherits(bindingKeyTest)).orElse(false);
+		} else if (binding instanceof ITypeBinding tb && tb.isAnnotation()) {
+			return annotationInfo(tb).map(info -> info.inherits(bindingKeyTest)).orElse(false);
+		} else {
+			for (IAnnotationBinding ab : getDirectSuperAnnotationBindings(binding)) {
+				if (isAnnotatedWithAnnotationByBindingKey(ab.getAnnotationType(), bindingKeyTest)) {
+					return true;
+				}
 			}
 		}
+		return false;
 	}
 
-	public boolean isAnnotatedWith(IBinding binding, Predicate<String> annotationFqnTest) {
+	public boolean isAnnotatedWithAnnotationByBindingKey(IBinding binding, String annotationBindingKey) {
 		if (binding instanceof IAnnotationBinding ab) {
-			return annotationInfo(ab.getAnnotationType()).map(info -> info.inherits(annotationFqnTest)).orElse(false);
+			return annotationInfo(ab.getAnnotationType()).map(info -> info.inherits(annotationBindingKey)).orElse(false);
 		} else if (binding instanceof ITypeBinding tb && tb.isAnnotation()) {
-			return annotationInfo(tb).map(info -> info.inherits(annotationFqnTest)).orElse(false);
+			return annotationInfo(tb).map(info -> info.inherits(annotationBindingKey)).orElse(false);
 		} else {
 			for (IAnnotationBinding ab : getDirectSuperAnnotationBindings(binding)) {
-				if (isAnnotatedWith(ab.getAnnotationType(), annotationFqnTest)) {
+				if (isAnnotatedWithAnnotationByBindingKey(ab.getAnnotationType(), annotationBindingKey)) {
 					return true;
 				}
 			}
 		}
 		return false;
 	}
-	
+
 	public boolean isAnnotatedWith(IBinding binding, String annotationTypeFqn) {
-		if (binding instanceof IAnnotationBinding ab) {
-			return annotationInfo(ab.getAnnotationType()).map(info -> info.inherits(annotationTypeFqn)).orElse(false);
-		} else if (binding instanceof ITypeBinding tb && tb.isAnnotation()) {
-			return annotationInfo(tb).map(info -> info.inherits(annotationTypeFqn)).orElse(false);
-		} else {
-			for (IAnnotationBinding ab : getDirectSuperAnnotationBindings(binding)) {
-				if (isAnnotatedWith(ab.getAnnotationType(), annotationTypeFqn)) {
-					return true;
-				}
-			}
-		}
-		return false;
+		return isAnnotatedWithAnnotationByBindingKey(binding, JavaUtils.typeFqNameToBindingKey(annotationTypeFqn));
 	}
 	
 }
