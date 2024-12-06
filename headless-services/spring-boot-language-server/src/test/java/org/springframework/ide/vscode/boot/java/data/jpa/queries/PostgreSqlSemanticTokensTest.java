@@ -332,4 +332,19 @@ public class PostgreSqlSemanticTokensTest {
 		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(34, 39, "variable", new String[0])); // test1
 	}
 	
+	@Test
+	void placeholder() {
+		List<SemanticTokenData> tokens = provider.computeTokens("CALL {h-schema}calcRequest( :i_session_id );");
+		assertThat(tokens.size()).isEqualTo(8);
+		
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 4, "keyword", new String[0])); // CALL
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(5, 15, "parameter", new String[0])); // {h-schema} 
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(15, 26, "method", new String[0])); // calcRequest
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(26, 27, "operator", new String[0])); // (
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(28, 29, "operator", new String[0])); // :
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(29, 41, "parameter", new String[0])); // i_session_id
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(42, 43, "operator", new String[0])); // )
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(43, 44, "operator", new String[0])); // ;
+	}
+	
 }

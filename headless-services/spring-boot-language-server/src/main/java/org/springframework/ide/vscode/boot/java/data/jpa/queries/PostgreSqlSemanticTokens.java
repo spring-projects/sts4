@@ -111,6 +111,8 @@ public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 					semantics.put(token, "comment");
 				} else if (type == PostgreSqlLexer.SPEL) {
 					tokens.addAll(JpqlSemanticTokens.computeTokensFromSpelNode(node, 0, optSpelTokens));
+				} else if (type == PostgreSqlLexer.PLACEHOLDER) {
+					semantics.put(token, "parameter");
 				}
 			}
 			
@@ -126,7 +128,7 @@ public class PostgreSqlSemanticTokens implements SemanticTokensDataProvider {
 
 			@Override
 			public void exitFunc_name(Func_nameContext funcName) {
-				AntlrUtils.getAllLeafs(funcName).filter(t -> t.getType() != PostgreSqlLexer.DOT)
+				AntlrUtils.getAllLeafs(funcName).filter(t -> t.getType() != PostgreSqlLexer.DOT && t.getType() != PostgreSqlLexer.PLACEHOLDER)
 						.forEach(t -> semantics.put(t, "method"));
 			}
 			

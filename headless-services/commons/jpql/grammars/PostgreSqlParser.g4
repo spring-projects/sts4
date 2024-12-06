@@ -4109,7 +4109,7 @@ qualified_name_list
     ;
 
 qualified_name
-    : colid indirection?
+    : PLACEHOLDER? colid indirection?
     ;
 
 name_list
@@ -4130,8 +4130,8 @@ file_name
 
 func_name
     : builtin_function_name
-    | type_function_name
-    | colid indirection
+    | PLACEHOLDER? type_function_name
+    | PLACEHOLDER? colid indirection
     | LEFT
     | RIGHT
     ;
@@ -4210,7 +4210,7 @@ colid
     | LEFT
     | RIGHT
     ;
-
+    
 table_alias
     : identifier
     | unreserved_keyword
