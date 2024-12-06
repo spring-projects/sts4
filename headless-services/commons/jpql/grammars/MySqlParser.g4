@@ -2846,6 +2846,7 @@ keywordsCanBeId
     | FLUSH
     | FOLLOWS
     | FOUND
+    | FROM
     | FULL
     | FUNCTION
     | GENERAL
@@ -3095,6 +3096,7 @@ keywordsCanBeId
     | TEMPORARY
     | TEMPTABLE
     | THAN
+    | TO
     | TP_CONNECTION_ADMIN
     | TRADITIONAL
     | TRANSACTION
