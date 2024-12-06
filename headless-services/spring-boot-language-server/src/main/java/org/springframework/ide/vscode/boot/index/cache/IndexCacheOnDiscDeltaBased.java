@@ -66,6 +66,7 @@ import com.google.gson.stream.JsonReader;
 public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 	private final File cacheDirectory;
+	private final Map<IndexCacheKey, Map<String, Long>> timestamps;
 
 	private static final Logger log = LoggerFactory.getLogger(IndexCacheOnDiscDeltaBased.class);
 
@@ -79,6 +80,8 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		if (!this.cacheDirectory.exists()) {
 			log.warn("symbol cache directory does not exist and cannot be created: " + this.cacheDirectory.toString());
 		}
+		
+		this.timestamps = new ConcurrentHashMap<>();
 	}
 
 	@Override
@@ -101,6 +104,10 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 		IndexCacheStore<T> store = new IndexCacheStore<T>(timestampedFiles, elements, dependencies.asMap(), type);
 		persist(cacheKey, new DeltaSnapshot<T>(store), false);
+		
+		// update local timestamp cache
+		ConcurrentHashMap<String, Long> timestampMap = new ConcurrentHashMap<>(timestampedFiles);
+		this.timestamps.put(cacheKey, timestampMap);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -134,6 +141,9 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 							dependencies.replaceValues(entry.getKey(), entry.getValue());
 						}
 					}
+					
+					// update local timestamp cache
+					this.timestamps.put(cacheKey, new ConcurrentHashMap<>(timestampedFiles));
 
 					return Pair.of(
 							(T[]) symbols.toArray((T[]) Array.newInstance(type, symbols.size())),
@@ -150,12 +160,20 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 	@Override
 	public <T extends IndexCacheable> void removeFile(IndexCacheKey cacheKey, String file, Class<T> type) {
-		persist(cacheKey, new DeltaDelete<T>(new String[] {file}), true);
+		removeFiles(cacheKey, new String[] {file}, type);
 	}
 
 	@Override
 	public <T extends IndexCacheable> void removeFiles(IndexCacheKey cacheKey, String[] files, Class<T> type) {
 		persist(cacheKey, new DeltaDelete<T>(files), true);
+		
+		// update local timestamp cache
+		Map<String, Long> timestampsMap = this.timestamps.get(cacheKey);
+		if (timestampsMap != null) {
+			for (String file : files) {
+				timestampsMap.remove(file);
+			}
+		}
 	}
 
 	@Override
@@ -164,6 +182,9 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		if (cacheStore.exists()) {
 			cacheStore.delete();
 		}
+		
+		// update local timestamp cache
+		this.timestamps.remove(cacheKey);
 	}
 
 	@Override
@@ -182,6 +203,10 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 		IndexCacheStore<T> deltaStore = new IndexCacheStore<T>(timestampsDelta, generatedSymbols, dependenciesDelta, type);
 		persist(cacheKey, new DeltaUpdate<T>(deltaStore), true);
+		
+		// update local timestamp cache
+		Map<String, Long> timestampsMap = this.timestamps.computeIfAbsent(cacheKey, (s) -> new ConcurrentHashMap<>());
+		timestampsMap.put(file, lastModified);
 	}
 
 	@Override
@@ -202,18 +227,23 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 		IndexCacheStore<T> deltaStore = new IndexCacheStore<T>(timestampsDelta, generatedSymbols, dependenciesDelta, type);
 		persist(cacheKey, new DeltaUpdate<T>(deltaStore), true);
+		
+		// update local timestamp cache
+		Map<String, Long> timestampsMap = this.timestamps.computeIfAbsent(cacheKey, (s) -> new ConcurrentHashMap<>());
+		for (int i = 0; i < files.length; i++) {
+			timestampsMap.put(files[i], lastModified[i]);
+		}
 	}
 
 	@Override
 	public long getModificationTimestamp(IndexCacheKey cacheKey, String file) {
-//		IndexCacheStore<? extends IndexCacheable> cacheStore = this.stores.get(cacheKey);
-//		
-//		if (cacheStore != null) {
-//			Long result = cacheStore.getTimestampedFiles().get(file);
-//			if (result != null) {
-//				return result;
-//			}
-//		}
+		Map<String, Long> timestampsMap = this.timestamps.get(cacheKey);
+		if (timestampsMap != null) {
+			Long result = timestampsMap.get(file);
+			if (result != null) {
+				return result;
+			}
+		}
 
 		return 0;
 	}
