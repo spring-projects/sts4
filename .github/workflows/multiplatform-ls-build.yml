@@ -59,7 +59,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd headless-services
-          mvnw.cmd --batch-mode clean install -DskipTests=${{ inputs.skip_tests }}
+          .\mvnw.cmd --batch-mode clean install -DskipTests=${{ inputs.skip_tests }}
       - name: Build Language Servers JARs on Mac OSX
         if: matrix.os == 'macos-latest'
         run: |
