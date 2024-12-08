@@ -27,7 +27,8 @@ on:
         type: boolean
 
 jobs:
-  platform_matrix:
+  build-ls-jars:
+    name: Build Language Server JARs
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
