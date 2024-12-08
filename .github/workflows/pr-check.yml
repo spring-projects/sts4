@@ -1,0 +1,15 @@
+name: Check Pull Request
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - 'main'
+
+jobs:
+  build:
+    uses: ./.github/workflows/multiplatform-ls-build.yml
+    with:
+      java_version: '21'
+      skip_tests: false
+    secrets: inherit
