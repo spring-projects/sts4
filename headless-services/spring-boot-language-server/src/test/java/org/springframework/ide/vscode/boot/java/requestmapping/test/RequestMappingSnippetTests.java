@@ -254,7 +254,7 @@ public class RequestMappingSnippetTests {
         for (int i = 0; i < expected.length; i++) {
     		Editor clonedEditor = editor.clone();
     		clonedEditor.apply(completions.get(i));
-    		assertEquals(expected[i], clonedEditor.getText());
+    		assertEquals(expected[i].replace(System.lineSeparator(), "\n"), clonedEditor.getText().replace(System.lineSeparator(), "\n"));
         }
 	}
 

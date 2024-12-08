@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,8 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -81,6 +84,8 @@ public class RequestMappingSymbolProviderTest {
     }
 
     @Test
+    //TODO: Enable when JDT Core 3.41 or higher is adopted. See: https://github.com/eclipse-jdt/eclipse.jdt.core/pull/3416
+	@DisabledOnOs(OS.WINDOWS)
     void testSimpleRequestMappingSymbolFromConstantInDifferentClass() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
         String constantsUri = directory.toPath().resolve("src/main/java/org/test/Constants.java").toUri().toString();
@@ -95,7 +100,7 @@ public class RequestMappingSymbolProviderTest {
         TestFileScanListener fileScanListener = new TestFileScanListener();
         indexer.getJavaIndexer().setFileScanListener(fileScanListener);
 
-        CompletableFuture<Void> updateFuture = indexer.updateDocument(constantsUri, FileUtils.readFileToString(UriUtil.toFile(constantsUri)), "test triggered");
+        CompletableFuture<Void> updateFuture = indexer.updateDocument(constantsUri, FileUtils.readFileToString(UriUtil.toFile(constantsUri), Charset.defaultCharset()), "test triggered");
         updateFuture.get(5, TimeUnit.SECONDS);
 
         fileScanListener.assertScannedUris(constantsUri, docUri);
@@ -104,6 +109,8 @@ public class RequestMappingSymbolProviderTest {
     }
 
     @Test
+    //TODO: Enable when JDT Core 3.41 or higher is adopted. See: https://github.com/eclipse-jdt/eclipse.jdt.core/pull/3416
+	@DisabledOnOs(OS.WINDOWS)
     void testUpdateDocumentWithConstantFromDifferentClass() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
         String constantsUri = directory.toPath().resolve("src/main/java/org/test/Constants.java").toUri().toString();
@@ -118,7 +125,7 @@ public class RequestMappingSymbolProviderTest {
         TestFileScanListener fileScanListener = new TestFileScanListener();
         indexer.getJavaIndexer().setFileScanListener(fileScanListener);
 
-        CompletableFuture<Void> updateFuture = indexer.updateDocument(docUri, FileUtils.readFileToString(UriUtil.toFile(docUri)), "test triggered");
+        CompletableFuture<Void> updateFuture = indexer.updateDocument(docUri, FileUtils.readFileToString(UriUtil.toFile(docUri), Charset.defaultCharset()), "test triggered");
         updateFuture.get(5, TimeUnit.SECONDS);
 
         assertEquals(ImmutableSet.of("Lorg/test/Constants;"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
@@ -129,6 +136,8 @@ public class RequestMappingSymbolProviderTest {
     }
 
     @Test
+    //TODO: Enable when JDT Core 3.41 or higher is adopted. See: https://github.com/eclipse-jdt/eclipse.jdt.core/pull/3416
+	@DisabledOnOs(OS.WINDOWS)
     void testCyclicalRequestMappingDependency() throws Exception {
         //Cyclical dependency:
         //file a => file b => file a
@@ -352,7 +361,7 @@ public class RequestMappingSymbolProviderTest {
 		assertTrue(maybeSymbol.isPresent());
 		
 		TextDocument doc = new TextDocument(docUri, LanguageId.JAVA);
-		doc.setText(FileUtils.readFileToString(UriUtil.toFile(docUri)));
+		doc.setText(FileUtils.readFileToString(UriUtil.toFile(docUri), Charset.defaultCharset()));
 		
 		WorkspaceSymbol symbol = maybeSymbol.get();
 		Location loc = symbol.getLocation().getLeft();

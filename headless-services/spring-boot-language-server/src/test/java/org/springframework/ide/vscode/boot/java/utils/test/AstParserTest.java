@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
-import java.net.URL;
+import java.nio.charset.Charset;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -50,13 +50,11 @@ public class AstParserTest {
 
     @Test
     void test1() throws Exception {
-        URL sourceUrl = SourceLinks.source(jp, "org.springframework.boot.SpringApplication").get();
-
-        URI uri = sourceUrl.toURI();
+    	URI uri = SourceLinks.source(jp, "org.springframework.boot.SpringApplication").get();
 
         String unitName = "SpringApplication";
 
-        char[] content = IOUtils.toString(uri).toCharArray();
+        char[] content = IOUtils.toString(uri, Charset.defaultCharset()).toCharArray();
 
         CompilationUnit cu = CompilationUnitCache.parse2(content, uri.toASCIIString(), unitName, jp);
 

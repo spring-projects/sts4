@@ -41,6 +41,7 @@ import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
 public class BootLanguageServerHarness extends LanguageServerHarness {
@@ -155,7 +156,7 @@ public class BootLanguageServerHarness extends LanguageServerHarness {
 		IClasspath classpath = getProjectFinder().find(null).get().getClasspath();
 		for (CPE cpe : classpath.getClasspathEntries()) {
 			if (Classpath.isSource(cpe)) {
-				if (cpe.getPath().endsWith("main/java")) {
+				if (cpe.getPath().endsWith(ClasspathTestUtil.MAIN_JAVA)) {
 					return Paths.get(cpe.getOutputFolder());
 				}
 			}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2023 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.links;
 
 import java.net.URI;
-import java.net.URL;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -54,12 +53,12 @@ public class DefaultJavaElementLocationProvider implements JavaElementLocationPr
 		URI docUri = javaDocUriProvider.docUri(project, fqName);
 		if (docUri != null) {
 			loc.setUri(docUri.toASCIIString());
-			Optional<URL> url = SourceLinks.source(project, fqName);
-			if (url.isPresent()) {
+			Optional<URI> uriOpt = SourceLinks.source(project, fqName);
+			if (uriOpt.isPresent()) {
 					String memberBindingKey = member.getBindingKey();
 
 					try {
-						URI uri = url.get().toURI();
+						URI uri = uriOpt.get();
 						Range r = cuCache.withCompilationUnit(project, uri, (cu) -> {
 							AtomicReference<Range> range = new AtomicReference<>(null);
 							if (cu == null) {

@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.spel;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -149,9 +148,9 @@ public class SpelDefinitionProvider implements IJavaDefinitionProvider {
 		try {
 			if (className.startsWith("T")) {
 				String classFqName = className.substring(2, className.length() - 1);
-				Optional<URL> sourceUrl = SourceLinks.source(project, classFqName);
-				if (sourceUrl.isPresent()) {
-					docUri = sourceUrl.get().toURI();
+				Optional<URI> sourceUriOpt = SourceLinks.source(project, classFqName);
+				if (sourceUriOpt.isPresent()) {
+					docUri = sourceUriOpt.get();
 				}
 			} else if (className.startsWith("@")) {
 				String bean = className.substring(1);

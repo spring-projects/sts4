@@ -263,9 +263,9 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 				try {
 					logger.info("Started parsing CU for " + uri);
 					Tuple2<List<Classpath>, INameEnvironmentWithProgress> lookupEnvTuple = loadLookupEnvTuple(project);
-					String utiStr = uri.toASCIIString();
-					String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
-					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2(),
+					String uriStr = uri.toASCIIString();
+					String unitName = uriStr.substring(uriStr.lastIndexOf("/") + 1); // skip over '/'
+					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), uriStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2(),
 							annotationHierarchies.get(project.getLocationUri(), AnnotationHierarchies::new));
 
 					logger.debug("CU Cache: created new AST for {}", uri.toASCIIString());

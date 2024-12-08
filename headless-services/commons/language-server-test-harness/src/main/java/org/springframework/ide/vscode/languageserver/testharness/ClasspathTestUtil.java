@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.languageserver.testharness;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -19,10 +20,12 @@ import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 
 public class ClasspathTestUtil {
 
+	public static final String MAIN_JAVA = "main" + File.separatorChar + "java";
+
 	public static Path getOutputFolder(IJavaProject jp) throws Exception {
 		for (CPE cpe : jp.getClasspath().getClasspathEntries()) {
 			if (Classpath.isSource(cpe)) {
-				if (cpe.getPath().endsWith("main/java")) {
+				if (cpe.getPath().endsWith(MAIN_JAVA)) {
 					return Paths.get(cpe.getOutputFolder());
 				}
 			}

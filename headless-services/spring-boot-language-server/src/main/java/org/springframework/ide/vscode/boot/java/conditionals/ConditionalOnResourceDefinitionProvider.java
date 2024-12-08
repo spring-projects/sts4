@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.conditionals;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,15 +23,11 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.IJavaDefinitionProvider;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 public class ConditionalOnResourceDefinitionProvider implements IJavaDefinitionProvider {
-
-    private static final Logger log = LoggerFactory.getLogger(ConditionalOnResourceDefinitionProvider.class);
 
     @Override
     public List<LocationLink> getDefinitions(CancelChecker cancelToken, IJavaProject project,
@@ -53,12 +50,10 @@ public class ConditionalOnResourceDefinitionProvider implements IJavaDefinitionP
     private List<LocationLink> getDefinitionForClasspathResource(IJavaProject project, CompilationUnit cu, StringLiteral valueNode, String literalValue) {
         literalValue = literalValue.substring("classpath:".length());
 
-        String[] resources = findResources(project, literalValue);
-
         List<LocationLink> result = new ArrayList<>();
 
-        for (String resource : resources) {
-            String uri = "file://" + resource;
+        for (Path resource : findResources(project, literalValue)) {
+            String uri = resource.toUri().toASCIIString();
 
             Position startPosition = new Position(cu.getLineNumber(valueNode.getStartPosition()) - 1,
                     cu.getColumnNumber(valueNode.getStartPosition()));
@@ -77,13 +72,10 @@ public class ConditionalOnResourceDefinitionProvider implements IJavaDefinitionP
         return result;
     }
 
-    private String[] findResources(IJavaProject project, String resource) {
-        String[] resources = IClasspathUtil.getClasspathResourcesFullPaths(project.getClasspath())
+    private Path[] findResources(IJavaProject project, String resource) {
+        return IClasspathUtil.getClasspathResourcesFullPaths(project.getClasspath())
                 .filter(path -> path.toString().endsWith(resource))
-                .map(path -> path.toString())
-                .toArray(String[]::new);
-
-        return resources;
+                .toArray(Path[]::new);
     }
 
 }

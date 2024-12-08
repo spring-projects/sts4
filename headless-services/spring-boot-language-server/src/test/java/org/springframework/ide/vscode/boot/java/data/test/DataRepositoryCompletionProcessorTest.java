@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.data.test;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class DataRepositoryCompletionProcessorTest {
 
     @Test
     void testPrefixSensitiveCompletionsNoPrefix() throws Exception {
-    	prepareCase("{\n}", "{\n<*>");
+    	prepareCase("{%s}".formatted(System.lineSeparator()), "{\n<*>");
     	assertStandardCompletions();
     }
 
@@ -318,14 +319,14 @@ public class DataRepositoryCompletionProcessorTest {
     }
     
     private void checkCompletionResult(String prefix, String completionLabel, String result) throws Exception {
-		prepareCase("{\n}", "{\n\t" + prefix + "<*>\n}");
+		prepareCase("{%s}".formatted(System.lineSeparator()), "{\n\t" + prefix + "<*>\n}");
 		List<CompletionItem> completions = editor.getCompletions();
 
 		for (CompletionItem foundCompletion : completions) {
 			if (foundCompletion.getLabel().contains(completionLabel)) {
 				Editor clonedEditor = editor.clone();
 				clonedEditor.apply(foundCompletion);
-				assertEquals(result, clonedEditor.getText());
+				assertEquals(result.replace(System.lineSeparator(), "\n"), clonedEditor.getText().replace(System.lineSeparator(), "\n"));
 				return;
 			}
 		}
@@ -333,13 +334,13 @@ public class DataRepositoryCompletionProcessorTest {
     }
 
 	private void checkCompletions(String alredyPresent, String... expectedCompletions) throws Exception {
-		prepareCase("{\n}", "{\n\t" + alredyPresent + "<*>");
+		prepareCase("{%s}".formatted(System.lineSeparator()), "{\n\t" + alredyPresent + "<*>");
     	assertContainsAnnotationCompletions(Arrays.stream(expectedCompletions).map(expected -> "\t" + expected + "<*>").toArray(String[]::new));
 	}
 
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-spring-data-symbols/src/main/java/org/test/TestCustomerRepositoryForCompletions.java");
-		String content = IOUtils.toString(resource);
+		String content = IOUtils.toString(resource, Charset.defaultCharset());
 
 		content = content.replace(selectedAnnotation, annotationStatementBeforeTest);
 		editor = new Editor(harness, content, LanguageId.JAVA);
