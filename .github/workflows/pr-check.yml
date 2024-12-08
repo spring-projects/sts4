@@ -7,7 +7,7 @@ on:
       - 'main'
 
 jobs:
-  build:
+  language-servers-build:
     uses: ./.github/workflows/multiplatform-ls-build.yml
     with:
       java_version: '21'

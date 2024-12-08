@@ -12,12 +12,20 @@ on:
 
 jobs:
 
+  language-servers-multiplatform-build:
+    uses: ./.github/workflows/multiplatform-ls-build.yml
+    with:
+      java_version: '21'
+      skip_tests: false
+    secrets: inherit
+
   eclipse-ls-extensions:
+    needs: [ language-servers-multiplatform-build ]
     uses: ./.github/workflows/eclipse-ls-extensions-build.yml
     with:
       eclipse_profile: 'e432'
       build_type: 'snapshot'
-      skip_tests: false
+      skip_tests: true
     secrets: inherit
 
   e432-distro:
@@ -48,24 +56,28 @@ jobs:
     secrets: inherit
 
   vscode-spring-boot:
+    needs: [ language-servers-multiplatform-build ]
     uses: ./.github/workflows/snapshot-vscode-extension.yml
     with:
       extension-name: vscode-spring-boot
     secrets: inherit
 
   vscode-concourse:
+    needs: [ language-servers-multiplatform-build ]
     uses: ./.github/workflows/snapshot-vscode-extension.yml
     with:
       extension-name: vscode-concourse
     secrets: inherit
 
   vscode-manifest-yaml:
+    needs: [ language-servers-multiplatform-build ]
     uses: ./.github/workflows/snapshot-vscode-extension.yml
     with:
       extension-name: vscode-manifest-yaml
     secrets: inherit
 
   vscode-bosh:
+    needs: [ language-servers-multiplatform-build ]
     uses: ./.github/workflows/snapshot-vscode-extension.yml
     with:
       extension-name: vscode-bosh
