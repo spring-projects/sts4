@@ -766,7 +766,7 @@ public class LanguageServerHarness {
 		if (extension == null) {
 			extension = getFileExtension();
 		}
-		return File.createTempFile("workingcopy", extension).toURI().toASCIIString();
+		return File.createTempFile("workingcopy", extension).toPath().toUri().toASCIIString();
 	}
 
 	public void assertCompletion(String textBefore, String expectTextAfter) throws Exception {

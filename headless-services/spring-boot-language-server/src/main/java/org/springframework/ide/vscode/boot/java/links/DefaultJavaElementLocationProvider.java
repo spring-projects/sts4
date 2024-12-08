@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.links;
 
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -59,7 +60,8 @@ public class DefaultJavaElementLocationProvider implements JavaElementLocationPr
 					String memberBindingKey = member.getBindingKey();
 
 					try {
-						URI uri = url.get().toURI();
+						URL sourceUrl = url.get();
+						URI uri = sourceUrl.getProtocol().equals("file") ? Paths.get(sourceUrl.toURI()).toFile().toPath().toUri() : sourceUrl.toURI();
 						Range r = cuCache.withCompilationUnit(project, uri, (cu) -> {
 							AtomicReference<Range> range = new AtomicReference<>(null);
 							if (cu == null) {

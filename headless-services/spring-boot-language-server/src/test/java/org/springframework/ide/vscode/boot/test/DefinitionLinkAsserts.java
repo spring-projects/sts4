@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.test;
 
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -266,7 +267,8 @@ public class DefinitionLinkAsserts {
 				loc.setUri(docUri.toASCIIString());
 
 				String typeName = fqName.substring(fqName.lastIndexOf('.') + 1);
-				URI sourceUri = sourceUrl.get().toURI();
+				URL url = sourceUrl.get();
+				URI sourceUri = url.getProtocol().equals("file") ? Paths.get(sourceUrl.get().toURI()).toFile().toPath().toUri() : url.toURI();
 				Range r = cuCache.withCompilationUnit(project, sourceUri, (cu) -> {
 					try {
 						TextDocument doc = new TextDocument(sourceUrl.get().toString(), LanguageId.JAVA);
