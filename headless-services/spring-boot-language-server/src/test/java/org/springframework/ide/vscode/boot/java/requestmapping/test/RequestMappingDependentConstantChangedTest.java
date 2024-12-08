@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.requestmapping.test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,8 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
@@ -76,6 +79,8 @@ public class RequestMappingDependentConstantChangedTest {
 	}
 
     @Test
+    //TODO: Enable when JDT Core 3.41 or higher is adopted. See: https://github.com/eclipse-jdt/eclipse.jdt.core/pull/3416
+	@DisabledOnOs(OS.WINDOWS)
     void testSimpleRequestMappingSymbolFromConstantInDifferentClass() throws Exception {
         String docUri = directory.resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
         String constantsUri = directory.resolve("src/main/java/org/test/Constants.java").toUri().toString();
@@ -144,6 +149,8 @@ public class RequestMappingDependentConstantChangedTest {
     }
 
     @Test
+    //TODO: Enable when JDT Core 3.41 or higher is adopted. See: https://github.com/eclipse-jdt/eclipse.jdt.core/pull/3416
+	@DisabledOnOs(OS.WINDOWS)
     void testCyclicalDependency() throws Exception {
         //cyclical dependency between two files (ping refers pong and vice versa)
         
@@ -228,7 +235,7 @@ public class RequestMappingDependentConstantChangedTest {
 		assertTrue(maybeSymbol.isPresent());
 		
 		TextDocument doc = new TextDocument(docUri, LanguageId.JAVA);
-		doc.setText(FileUtils.readFileToString(UriUtil.toFile(docUri)));
+		doc.setText(FileUtils.readFileToString(UriUtil.toFile(docUri), Charset.defaultCharset()));
 		
 		WorkspaceSymbol symbol = maybeSymbol.get();
 		Location loc = symbol.getLocation().getLeft();
