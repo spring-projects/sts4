@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -72,6 +73,7 @@ public interface SourceLinks {
 			})
 			.map(url -> {
 				try {
+					// .toFile().toPath() to get on Win: file:
 					return Paths.get(url.toURI());
 				} catch (URISyntaxException e) {
 					log.warn("Failed to convert URL {} to path. {}", url, fqName, e);
@@ -82,29 +84,23 @@ public interface SourceLinks {
 			.findFirst();
 	}
 
-	public static Optional<URL> source(IJavaProject project, String fqName) {
+	public static Optional<URI> source(IJavaProject project, String fqName) {
 		// Try to find in a source JAR
 		IJavaModuleData classpathResourceContainer = project.getIndex().findClasspathResourceContainer(fqName);
 		if (classpathResourceContainer != null) {
-			Optional<URL> url = IClasspathUtil.sourceContainer(project.getClasspath(), classpathResourceContainer.getContainer()).map(file -> {
+			Optional<URI> uri = IClasspathUtil.sourceContainer(project.getClasspath(), classpathResourceContainer.getContainer()).map(file -> {
 				try {
-					return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(file, fqName, classpathResourceContainer.getModule());
+					return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(file, fqName, classpathResourceContainer.getModule()).toURI();
 				} catch (Exception e) {
 					throw new IllegalStateException(e);
 				}
 			});
 
-			if (!url.isPresent()) {
+			if (!uri.isPresent()) {
 				// Try Source folder
-				url = sourceFromSourceFolder(fqName, project.getClasspath()).map(p -> {
-					try {
-						return p.toUri().toURL();
-					} catch (MalformedURLException e) {
-						throw new IllegalStateException(e);
-					}
-				});
+				uri = sourceFromSourceFolder(fqName, project.getClasspath()).map(p -> p.toUri());
 			}
-			return url;
+			return uri;
 		}
 		return Optional.empty();
 	}

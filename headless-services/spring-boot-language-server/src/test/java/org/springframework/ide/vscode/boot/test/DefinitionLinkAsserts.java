@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2023 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,8 +11,6 @@
 package org.springframework.ide.vscode.boot.test;
 
 import java.net.URI;
-import java.net.URL;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -85,17 +83,17 @@ public class DefinitionLinkAsserts {
 		
 		public Location getLocation(CompilationUnitCache cuCache, JavaDocumentUriProvider javaDocumentUriProvider, IJavaProject project) throws Exception {
 			Location loc = new Location();
-			Optional<URL> sourceUrl = SourceLinks.source(project, fqName);
-			if (sourceUrl.isPresent()) {
+			Optional<URI> sourceUriOpt = SourceLinks.source(project, fqName);
+			if (sourceUriOpt.isPresent()) {
 
 				URI docUri = javaDocumentUriProvider.docUri(project, fqName);
 				loc.setUri(docUri.toASCIIString());
 
-				URI sourceUri = sourceUrl.get().toURI();
+				URI sourceUri = sourceUriOpt.get();
 				Range r = cuCache.withCompilationUnit(project, sourceUri, (cu) -> {
 					try {
 						AtomicReference<Range> range = new AtomicReference<>(null);
-						TextDocument doc = new TextDocument(sourceUrl.get().toString(), LanguageId.JAVA);
+						TextDocument doc = new TextDocument(sourceUri.toASCIIString(), LanguageId.JAVA);
 						doc.setText(cuCache.fetchContent(sourceUri));
 						String typeName = fqName.substring(fqName.lastIndexOf('.') + 1);
 						String[] nameTokens = typeName.split("\\$");
@@ -162,10 +160,10 @@ public class DefinitionLinkAsserts {
 		public Location getLocation(CompilationUnitCache cuCache, JavaDocumentUriProvider javaDocumentUriProvider, IJavaProject project) throws Exception {
 			Location loc = new Location();
 
-			Optional<URL> sourceUrl = SourceLinks.source(project, fqName);
-			if (sourceUrl.isPresent()) {
+			Optional<URI> sourceUriOpt = SourceLinks.source(project, fqName);
+			if (sourceUriOpt.isPresent()) {
 
-				URI sourceUri = sourceUrl.get().toURI();
+				URI sourceUri = sourceUriOpt.get();
 
 				URI docUri = javaDocumentUriProvider.docUri(project, fqName);
 				loc.setUri(docUri.toASCIIString());
@@ -175,7 +173,7 @@ public class DefinitionLinkAsserts {
 				Range r = cuCache.withCompilationUnit(project, sourceUri, (cu) -> {
 					try {
 						AtomicReference<Range> range = new AtomicReference<>(null);
-						TextDocument doc = new TextDocument(sourceUrl.get().toString(), LanguageId.JAVA);
+						TextDocument doc = new TextDocument(sourceUri.toASCIIString(), LanguageId.JAVA);
 						doc.setText(cuCache.fetchContent(sourceUri));
 						cu.accept(new ASTVisitor() {
 
@@ -260,18 +258,17 @@ public class DefinitionLinkAsserts {
 		
 		public Location getLocation(CompilationUnitCache cuCache, JavaDocumentUriProvider javaDocumentUriProvider, IJavaProject project) throws Exception {
 			Location loc = new Location();
-			Optional<URL> sourceUrl = SourceLinks.source(project, fqName);
-			if (sourceUrl.isPresent()) {
+			Optional<URI> sourceUriOpt = SourceLinks.source(project, fqName);
+			if (sourceUriOpt.isPresent()) {
 
 				URI docUri = javaDocumentUriProvider.docUri(project, fqName);
 				loc.setUri(docUri.toASCIIString());
 
 				String typeName = fqName.substring(fqName.lastIndexOf('.') + 1);
-				URL url = sourceUrl.get();
-				URI sourceUri = url.getProtocol().equals("file") ? Paths.get(sourceUrl.get().toURI()).toFile().toPath().toUri() : url.toURI();
+				URI sourceUri = sourceUriOpt.get();
 				Range r = cuCache.withCompilationUnit(project, sourceUri, (cu) -> {
 					try {
-						TextDocument doc = new TextDocument(sourceUrl.get().toString(), LanguageId.JAVA);
+						TextDocument doc = new TextDocument(sourceUri.toASCIIString(), LanguageId.JAVA);
 						doc.setText(cuCache.fetchContent(sourceUri));
 						AtomicReference<Range> range = new AtomicReference<>(null);
 						String[] nameTokens = typeName.split("\\$");
