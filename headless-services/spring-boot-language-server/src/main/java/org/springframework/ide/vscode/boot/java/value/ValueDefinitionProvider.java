@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.value;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -165,12 +166,10 @@ public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 	private List<LocationLink> getDefinitionForClasspathResource(IJavaProject project, CompilationUnit cu, StringLiteral valueNode, String literalValue) {
 		literalValue = literalValue.substring("classpath:".length());
 		
-		String[] resources = findResources(project, literalValue);
-		
 		List<LocationLink> result = new ArrayList<>();
 		
-		for (String resource : resources) {
-			String uri = "file://" + resource;
+		for (Path resource : findResources(project, literalValue)) {
+			String uri = resource.toUri().toASCIIString();
 			
 			Position startPosition = new Position(cu.getLineNumber(valueNode.getStartPosition()) - 1,
 					cu.getColumnNumber(valueNode.getStartPosition()));
@@ -189,13 +188,10 @@ public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 		return result;
 	}
 	
-	private String[] findResources(IJavaProject project, String resource) {
-		String[] resources = IClasspathUtil.getClasspathResourcesFullPaths(project.getClasspath())
+	private Path[] findResources(IJavaProject project, String resource) {
+		return IClasspathUtil.getClasspathResourcesFullPaths(project.getClasspath())
 			.filter(path -> path.toString().endsWith(resource))
-			.map(path -> path.toString())
-			.toArray(String[]::new);
-
-		return resources;
+			.toArray(Path[]::new);
 	}
 
 }

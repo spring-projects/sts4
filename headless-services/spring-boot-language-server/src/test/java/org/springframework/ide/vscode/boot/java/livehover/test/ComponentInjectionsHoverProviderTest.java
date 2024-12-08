@@ -12,6 +12,8 @@ package org.springframework.ide.vscode.boot.java.livehover.test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Collections;
 
@@ -698,7 +700,7 @@ public class ComponentInjectionsHoverProviderTest {
                 .add(LiveBean.builder()
                         .id("dependencyA")
                         .type("com.example.DependencyA")
-                        .fileResource(harness.getOutputFolder() + "/com/example/DependencyA.class")
+                        .fileResource(harness.getOutputFolder().resolve(Paths.get("com/example/DependencyA.class")).toFile().toString())
                         .build()
                 )
                 .add(LiveBean.builder()
@@ -730,16 +732,16 @@ public class ComponentInjectionsHoverProviderTest {
         );
         editor.assertHighlights("@Component", "AutowiredClass", "depA", "depB");
         editor.assertTrimmedHover("@Component",
-                "**&#8592; `DependencyA` `DependencyB`**\n" +
+                ("**&#8592; `DependencyA` `DependencyB`**\n" +
                         "- Bean: `dependencyA`  \n" +
                         "  Type: `com.example.DependencyA`  \n" +
-                        "  Resource: `com/example/DependencyA.class`\n" +
+                        "  Resource: `com%sexample%sDependencyA.class`\n" +
                         "- Bean: `dependencyB`  \n" +
                         "  Type: `com.example.DependencyB`  \n" +
                         "  Resource: `com/example/DependencyB.class`\n" +
                         "  \n" +
                         "Bean id: `autowiredClass`  \n" +
-                        "Process [PID=111, name=`the-app`]\n"
+                        "Process [PID=111, name=`the-app`]\n").formatted(File.separatorChar, File.separatorChar)
         );
     }
 

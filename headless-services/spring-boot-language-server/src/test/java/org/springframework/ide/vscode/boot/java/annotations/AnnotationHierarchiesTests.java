@@ -98,7 +98,7 @@ public class AnnotationHierarchiesTests {
 		}
 		""");
 		
-		SpringIndexerJava.createParser(project, new AnnotationHierarchies(), true).createASTs(new String[] { file.toFile().toString() }, null, new String[0], new FileASTRequestor() {
+		SpringIndexerJava.createParser(project, new AnnotationHierarchies(), true).createASTs(new String[] { file.toString() }, null, new String[0], new FileASTRequestor() {
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);

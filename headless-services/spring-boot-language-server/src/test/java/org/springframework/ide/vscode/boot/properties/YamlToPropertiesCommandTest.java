@@ -257,7 +257,7 @@ public class YamlToPropertiesCommandTest {
 			assertThat(Files.exists(yamlFilePath)).isTrue();
 		}
 		
-		assertThat(Files.readString(propsFilePath)).isEqualTo(propsContent);
+		assertThat(Files.readString(propsFilePath).replace(System.lineSeparator(), "\n")).isEqualTo(propsContent.replace(System.lineSeparator(), "\n"));
 	}
 
 }

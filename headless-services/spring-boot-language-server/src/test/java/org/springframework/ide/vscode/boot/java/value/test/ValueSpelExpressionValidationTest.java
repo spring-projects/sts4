@@ -353,7 +353,9 @@ public class ValueSpelExpressionValidationTest {
         assertEquals(1, problems.size());
         
         ReconcileProblem problem = problems.get(0);
-        assertEquals(199, problem.getOffset());
+        String lookingFor = "#{${property.";
+        int offset = doc.get().indexOf(lookingFor);
+        assertEquals(offset + lookingFor.length(), problem.getOffset());
         assertEquals(0, problem.getLength());
         assertEquals(SpelProblemType.PROPERTY_PLACE_HOLDER_SYNTAX, problem.getType());
         assertTrue(problem.getMessage().startsWith("Place-Holder:"));

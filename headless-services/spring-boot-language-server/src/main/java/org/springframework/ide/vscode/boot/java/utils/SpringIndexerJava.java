@@ -280,7 +280,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			content = new String(Files.readAllBytes(path));
 		}
 		
-		String unitName = docURI.substring(docURI.lastIndexOf("/"));
+		String unitName = docURI.substring(docURI.lastIndexOf("/") + 1); // skip over '/'
 		parser.setUnitName(unitName);
 		log.debug("Scan file: {}", unitName);
 		parser.setSource(content.toCharArray());
