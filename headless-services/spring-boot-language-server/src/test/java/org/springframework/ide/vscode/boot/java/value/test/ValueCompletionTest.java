@@ -288,10 +288,8 @@ public class ValueCompletionTest {
         assertClasspathCompletions();
     }
 
-// The parser removes the (spring.) piece from the AST in this case, so there is no way
-// to clearly identify this case    
     @Test
-    @Disabled
+    @Disabled // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/3420
     void testComplexPrefixCompletionParamNameCursorRightAfterDot() throws Exception {
         prepareCase("@Value(\"onField\")", "@Value(spring.<*>)");
 
@@ -321,19 +319,16 @@ public class ValueCompletionTest {
         assertClasspathCompletions();
     }
 
-// The parser removes the (spring.) piece from the AST in this case, so there is no way
-// to clearly identify this case
-//
-//    @Test
-//    void testPrefixCompletionWithParamNameCursorRightAfterDot() throws Exception {
-//        prepareCase("@Value(\"onField\")", "@Value(value=spring.<*>)");
-//        prepareDefaultIndexData();
-//
-//        assertPropertyCompletions(
-//                "@Value(value=\"${spring.prop1}\"<*>)");
-//        
-//        assertClasspathCompletions();
-//    }
+    @Test
+    @Disabled // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/3421
+    void testPrefixCompletionWithParamNameCursorRightAfterDot() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(value=spring.<*>)");
+
+        assertPropertyCompletions(
+                "@Value(value=\"${spring.prop1}\"<*>)");
+        
+        assertClasspathCompletions();
+    }
 
     @Test
     void testComplexPrefixCompletionWithParamName() throws Exception {

@@ -189,7 +189,7 @@ public class ConditionalOnPropertyCompletionTest {
     }
 
     @Test
-    @Disabled
+    @Disabled // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/3260
     public void testConditionalOnPropertyCompletionWithPrefixAndAttributeWithNameAttribute() throws Exception {
         List<CompletionItem> completions = getCompletions("@ConditionalOnProperty(prefix = \"else\", name=<*>)");
         assertEquals(1, completions.size());
@@ -210,7 +210,7 @@ public class ConditionalOnPropertyCompletionTest {
     }
 
     @Test
-    @Disabled
+    @Disabled // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/3419
     public void testConditionalOnPropertyCompletionWithEmptyPrefixAndEmptyNameAttribute() throws Exception {
     	List<CompletionItem> completions = getCompletions("@ConditionalOnProperty(prefix = , name = <*>)");
         assertEquals(3, completions.size());
@@ -221,7 +221,7 @@ public class ConditionalOnPropertyCompletionTest {
     }
 
     @Test
-    @Disabled
+    @Disabled // https://github.com/eclipse-jdt/eclipse.jdt.core/issues/3419
     public void testConditionalOnPropertyCompletionWithEmptyPrefixAndEmptyNameAttributeInQuotes() throws Exception {
     	List<CompletionItem> completions = getCompletions("@ConditionalOnProperty(prefix = , name = \"<*>\")");
         assertEquals(3, completions.size());
