@@ -137,7 +137,7 @@
 <!--	<bundle id="javax.ws.rs"/> -->
 <!--	<bundle id="javax.xml.bind"/> -->
 <!--	<bundle id="javax.xml.bind.source"/> -->
-	<bundle id="javax.xml.stream"/>
+<!--	<bundle id="javax.xml.stream"/> -->
 	<bundle id="org.aopalliance"/>
 	<bundle id="org.apache.log4j"/>
 	<bundle id="org.yaml.snakeyaml"/>
@@ -155,7 +155,7 @@
 	<bundle id="com.google.gson"/>
 	<bundle id="org.jcodings"/>
 	<bundle id="org.joni"/>
-	<bundle id="org.json"/>
+	<bundle id="json"/>
 	<bundle id="org.jsoup"/>
 	<bundle id="org.apache.commons.lang3"/>
 	<bundle id="org.apache.commons.collections"/>
