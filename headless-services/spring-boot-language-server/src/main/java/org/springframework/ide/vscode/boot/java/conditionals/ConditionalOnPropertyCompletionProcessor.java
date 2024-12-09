@@ -139,7 +139,7 @@ public class ConditionalOnPropertyCompletionProcessor implements AnnotationAttri
 					if (valuePairName != null && "prefix".equals(valuePairName)
 							&& valuePair.getValue() != null && valuePair.getValue() instanceof StringLiteral) {
 						StringLiteral prefixLiteral = (StringLiteral) valuePair.getValue();
-						String valuePairValue = prefixLiteral.getLiteralValue();
+						String valuePairValue = ASTUtils.getLiteralValue(prefixLiteral);
 						return valuePairValue;
 					}
 				}

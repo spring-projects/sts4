@@ -30,6 +30,7 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.IJavaDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -54,7 +55,7 @@ public class ValueDefinitionProvider implements IJavaDefinitionProvider {
 		if (n instanceof StringLiteral) {
 			StringLiteral valueNode = (StringLiteral) n;
 			
-			String literalValue = valueNode.getLiteralValue();
+			String literalValue = ASTUtils.getLiteralValue(valueNode);
 			if (literalValue != null) {
 				if (literalValue.startsWith("classpath")) {
 					return getDefinitionForClasspathResource(project, cu, valueNode, literalValue);

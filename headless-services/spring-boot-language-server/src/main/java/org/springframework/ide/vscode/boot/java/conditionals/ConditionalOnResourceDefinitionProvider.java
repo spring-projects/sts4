@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.boot.java.IJavaDefinitionProvider;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
@@ -36,7 +37,7 @@ public class ConditionalOnResourceDefinitionProvider implements IJavaDefinitionP
         if (n instanceof StringLiteral) {
             StringLiteral valueNode = (StringLiteral) n;
 
-            String literalValue = valueNode.getLiteralValue();
+            String literalValue = ASTUtils.getLiteralValue(valueNode);
             if (literalValue != null) {
                 if (literalValue.startsWith("classpath")) {
                     return getDefinitionForClasspathResource(project, cu, valueNode, literalValue);

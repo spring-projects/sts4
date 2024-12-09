@@ -72,7 +72,7 @@ public class ConditionalOnBeanDefinitionProvider implements IJavaDefinitionProvi
     }
 
     private List<LocationLink> getDefinitions(IJavaProject project, StringLiteral valueNode) {
-		String value = valueNode.getLiteralValue();
+		String value = ASTUtils.getLiteralValue(valueNode);
 
 		if (value != null && value.length() > 0) {
 			return getDefinitionsForValue(project, valueNode, value);

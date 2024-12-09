@@ -31,6 +31,7 @@ import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -141,7 +142,7 @@ public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 		}
 		
 		if (value instanceof StringLiteral) {
-			return ((StringLiteral) value).getLiteralValue();
+			return ASTUtils.getLiteralValue((StringLiteral) value);
 		}
 		return null;
 	}

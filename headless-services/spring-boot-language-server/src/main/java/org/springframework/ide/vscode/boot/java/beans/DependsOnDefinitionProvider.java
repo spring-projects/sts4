@@ -52,7 +52,7 @@ public class DependsOnDefinitionProvider implements IJavaDefinitionProvider {
 				Annotation a = (Annotation) parent;
 				IAnnotationBinding binding = a.resolveAnnotationBinding();
 				if (binding != null && binding.getAnnotationType() != null && Annotations.DEPENDS_ON.equals(binding.getAnnotationType().getQualifiedName())) {
-					String beanName = valueNode.getLiteralValue();
+					String beanName = ASTUtils.getLiteralValue(valueNode);
 					
 					if (beanName != null && beanName.length() > 0) {
 						return findBeansWithName(project, beanName);

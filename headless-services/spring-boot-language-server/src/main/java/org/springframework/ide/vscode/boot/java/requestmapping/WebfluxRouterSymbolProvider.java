@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2023 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
@@ -157,7 +158,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 					StringLiteral stringLiteral = WebfluxUtils.extractStringLiteralArgument(methodInvocation);
 					if (stringLiteral != null) {
 						Range range = doc.toRange(stringLiteral.getStartPosition(), stringLiteral.getLength());
-						return new WebfluxRouteElement(stringLiteral.getLiteralValue(), range);
+						return new WebfluxRouteElement(ASTUtils.getLiteralValue(stringLiteral), range);
 					}
 				}
 			}

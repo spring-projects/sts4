@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 
 public class PropertyExtractor {
 	
@@ -40,27 +41,27 @@ public class PropertyExtractor {
 
 				Annotations.VALUE, (annotation, memberValuePair, stringLiteral) -> {
 					if (annotation.isSingleMemberAnnotation()) {
-						return extractPropertyKey(stringLiteral.getLiteralValue());
+						return extractPropertyKey(ASTUtils.getLiteralValue(stringLiteral));
 					} else if (annotation.isNormalAnnotation() && PARAM_VALUE.equals(memberValuePair.getName().getIdentifier())) {
-						return extractPropertyKey(stringLiteral.getLiteralValue());
+						return extractPropertyKey(ASTUtils.getLiteralValue(stringLiteral));
 					}
 					return null;
 				},
 
 				Annotations.CONDITIONAL_ON_PROPERTY, (annotation, memberValuePair, stringLiteral) -> {
 					if (annotation.isSingleMemberAnnotation()) {
-						return stringLiteral.getLiteralValue();
+						return ASTUtils.getLiteralValue(stringLiteral);
 					} else if (annotation.isNormalAnnotation()) {
 						switch (memberValuePair.getName().getIdentifier()) {
 						case PARAM_VALUE:
-							return stringLiteral.getLiteralValue();
+							return ASTUtils.getLiteralValue(stringLiteral);
 						case PARAM_NAME:
 							String prefix = extractAnnotationParameter(annotation, PARAM_PREFIX);
-							String name = stringLiteral.getLiteralValue();
+							String name = ASTUtils.getLiteralValue(stringLiteral);
 							return prefix != null && !prefix.isBlank() ? prefix + "." + name : name;
 						case PARAM_PREFIX:
 							name = extractAnnotationParameter(annotation, PARAM_NAME);
-							prefix = stringLiteral.getLiteralValue();
+							prefix = ASTUtils.getLiteralValue(stringLiteral);
 							return prefix != null && !prefix.isBlank() ? prefix + "." + name : name;
 						}
 					}
@@ -121,7 +122,7 @@ public class PropertyExtractor {
 			}
 		}
 		if (value instanceof StringLiteral) {
-			return ((StringLiteral) value).getLiteralValue();
+			return ASTUtils.getLiteralValue((StringLiteral) value);
 		}
 		return null;
 	}

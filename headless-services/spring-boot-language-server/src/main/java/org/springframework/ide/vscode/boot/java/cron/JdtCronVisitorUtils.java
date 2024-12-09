@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.dom.TextBlock;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.embedded.lang.EmbeddedLangAstUtils;
 import org.springframework.ide.vscode.boot.java.embedded.lang.EmbeddedLanguageSnippet;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 
 public class JdtCronVisitorUtils {
 	
@@ -48,7 +49,7 @@ public class JdtCronVisitorUtils {
 	private static boolean isCronExpression(Expression e) {
 		String value = null;
 		if (e instanceof StringLiteral sl) {
-			value = sl.getLiteralValue();
+			value = ASTUtils.getLiteralValue(sl);
 		} else if (e instanceof TextBlock tb) {
 			value = tb.getLiteralValue();
 		}

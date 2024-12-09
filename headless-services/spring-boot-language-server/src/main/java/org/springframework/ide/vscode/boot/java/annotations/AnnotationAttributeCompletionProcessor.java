@@ -29,6 +29,7 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
@@ -235,8 +236,7 @@ public class AnnotationAttributeCompletionProcessor implements CompletionProvide
 			List<?> expressions = arrayNode.expressions();
 			for (Object expression : expressions) {
 				if (expression instanceof StringLiteral) {
-					StringLiteral stringExr = (StringLiteral) expression;
-					String value = stringExr.getLiteralValue();
+					String value = ASTUtils.getLiteralValue((StringLiteral) expression);
 					result.add(value);
 				}
 			}

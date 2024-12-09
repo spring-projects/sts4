@@ -41,6 +41,7 @@ import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.embedded.lang.EmbeddedLanguageSnippet;
 import org.springframework.ide.vscode.boot.java.spel.AnnotationParamSpelExtractor;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -298,7 +299,7 @@ public class CopilotCodeLensProvider implements CodeLensProvider {
 		} else if (expression instanceof SimpleName) {
 			return ((SimpleName) expression).getIdentifier();
 		} else if (expression instanceof StringLiteral) {
-			String literalValue = ((StringLiteral) expression).getLiteralValue();
+			String literalValue = ASTUtils.getLiteralValue((StringLiteral) expression);
 			StringBuilder pointcuts = new StringBuilder();
 			for (Map.Entry<String, String> entry : pointcutMap.entrySet()) {
 				if (literalValue.contains(entry.getKey())) {

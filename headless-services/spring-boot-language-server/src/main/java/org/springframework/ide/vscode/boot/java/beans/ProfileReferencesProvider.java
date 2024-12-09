@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 
@@ -48,20 +49,20 @@ public class ProfileReferencesProvider implements ReferenceProvider {
 			// case: @Value("prefix<*>")
 			if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(project, ((StringLiteral) node).getLiteralValue());
+					return provideReferences(project, ASTUtils.getLiteralValue((StringLiteral) node));
 				}
 			}
 			// case: @Value(value="prefix<*>")
 			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(project, ((StringLiteral) node).getLiteralValue());
+					return provideReferences(project, ASTUtils.getLiteralValue((StringLiteral) node));
 				}
 			}
 			// case: @Qualifier({"prefix<*>"})
 			else if (node instanceof StringLiteral && node.getParent() instanceof ArrayInitializer) {
 				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(project, ((StringLiteral) node).getLiteralValue());
+					return provideReferences(project, ASTUtils.getLiteralValue((StringLiteral) node));
 				}
 			}
 		}

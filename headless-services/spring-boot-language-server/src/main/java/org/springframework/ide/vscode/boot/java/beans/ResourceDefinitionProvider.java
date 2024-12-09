@@ -54,7 +54,7 @@ public class ResourceDefinitionProvider implements IJavaDefinitionProvider {
 				if (binding != null && binding.getAnnotationType() != null
 						&& (Annotations.RESOURCE_JAVAX.equals(binding.getAnnotationType().getQualifiedName())
 							|| Annotations.RESOURCE_JAKARTA.equals(binding.getAnnotationType().getQualifiedName()))) {
-					String beanName = valueNode.getLiteralValue();
+					String beanName = ASTUtils.getLiteralValue(valueNode);
 					
 					if (beanName != null && beanName.length() > 0) {
 						return findBeansWithName(project, beanName);

@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProposal;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeProposal;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -195,7 +196,8 @@ public class ValueCompletionProcessor implements CompletionProvider {
 			completions.add(proposal);
 		}
 
-		String unfilteredPrefix = node.getLiteralValue().substring(0, offset - (node.getStartPosition() + 1));
+		String literalValue = ASTUtils.getLiteralValue(node);
+		String unfilteredPrefix = literalValue.substring(0, offset - (node.getStartPosition() + 1));
 		addClasspathResourceProposals(project, doc, startOffset, endOffset, unfilteredPrefix, false, completions);
 	}
 
