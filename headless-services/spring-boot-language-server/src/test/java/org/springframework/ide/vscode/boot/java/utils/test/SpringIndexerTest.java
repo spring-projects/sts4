@@ -10,10 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils.test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -159,7 +163,7 @@ public class SpringIndexerTest {
 
         assertTrue(containsSymbol(indexer.getSymbols(changedDocURI), "@/mapping1", changedDocURI));
 
-        String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI))).replace("mapping1", "mapping1-CHANGED");
+        String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI)), Charset.defaultCharset()).replace("mapping1", "mapping1-CHANGED");
         CompletableFuture<Void> updateFuture = indexer.updateDocument(changedDocURI, newContent, "test triggered");
         updateFuture.get(5, TimeUnit.SECONDS);
 
@@ -220,7 +224,7 @@ public class SpringIndexerTest {
                     "\n" +
                     "}\n" +
                     "";
-            FileUtils.write(new File(new URI(createdDocURI)), content);
+            FileUtils.write(new File(new URI(createdDocURI)), content, Charset.defaultCharset());
             CompletableFuture<Void> createFuture = indexer.createDocument(createdDocURI);
             createFuture.get(5, TimeUnit.SECONDS);
 
