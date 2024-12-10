@@ -367,7 +367,7 @@ public class BootLanguageServerBootApp {
 
 			@Override
 			public LanguageId computeLanguage(URI uri) {
-				Path path = Paths.get(uri);
+				Path path = Paths.get(uri.getPath());
 				String fileName = path.getFileName().toString();
 				switch (Files.getFileExtension(fileName)) {
 				case "properties":
@@ -379,7 +379,9 @@ public class BootLanguageServerBootApp {
 					return LanguageId.BOOT_PROPERTIES_YAML;
 				case "java":
 					return LanguageId.JAVA;
-				case "xml":
+				case "class":
+					return LanguageId.CLASS;
+ 				case "xml":
 					return LanguageId.XML;
 				case "factories":
 					return LanguageId.SPRING_FACTORIES;
