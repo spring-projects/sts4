@@ -105,8 +105,8 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	@Override
-	public boolean isInterestedIn(String docURI) {
-		return docURI.endsWith(".xml");
+	public boolean isInterestedIn(String resource) {
+		return resource.endsWith(".xml");
 	}
 
 	@Override

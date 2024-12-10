@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2022 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 public interface SpringIndexer {
 
 	String[] getFileWatchPatterns();
-	boolean isInterestedIn(String docURI);
+	boolean isInterestedIn(String resource); // note that this might be a document URI or a standard file path on the system
 	
 	List<EnhancedSymbolInformation> computeSymbols(IJavaProject project, String docURI, String content) throws Exception;
 

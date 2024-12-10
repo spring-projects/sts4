@@ -90,9 +90,9 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 	}
 
 	@Override
-	public boolean isInterestedIn(String docURI) {
-		if (docURI.endsWith(".factories")) {
-			Path path = Paths.get(URI.create(docURI));
+	public boolean isInterestedIn(String resource) {
+		if (resource.endsWith(".factories")) {
+			Path path = Paths.get(URI.create(resource));
 			return FILE_GLOB_PATTERN.matches(path);
 		}
 		return false;

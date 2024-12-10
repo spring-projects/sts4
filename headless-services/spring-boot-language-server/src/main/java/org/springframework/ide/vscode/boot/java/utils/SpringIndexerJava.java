@@ -148,8 +148,8 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	@Override
-	public boolean isInterestedIn(String docURI) {
-		return docURI.endsWith(".java");
+	public boolean isInterestedIn(String resource) {
+		return resource.endsWith(".java") && !resource.endsWith("package-info.java");
 	}
 
 	@Override
@@ -841,7 +841,7 @@ public class SpringIndexerJava implements SpringIndexer {
 					return Stream.empty();
 				}
 			})
-			.filter(path -> path.getFileName().toString().endsWith(".java"))
+			.filter(path -> isInterestedIn(path.getFileName().toString()))
 			.filter(Files::isRegularFile)
 			.map(path -> path.toAbsolutePath().toString())
 			.toArray(String[]::new);
