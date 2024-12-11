@@ -10,10 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.index.cache;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
@@ -59,8 +62,10 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.google.gson.Strictness;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
 
 /**
  * @author Martin Lippert
@@ -119,45 +124,40 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		File cacheStore = new File(cacheDirectory, cacheKey.toString() + ".json");
 		if (cacheStore.exists()) {
 
-			try (JsonReader reader = new JsonReader(new FileReader(cacheStore))) {
-				IndexCacheStore<T> store = retrieveStoreFromIncrementalStorage(cacheKey, type);
+			IndexCacheStore<T> store = retrieveStoreFromIncrementalStorage(cacheKey, type);
 
-				SortedMap<String, Long> timestampedFiles = Arrays.stream(files)
-						.filter(file -> new File(file).exists())
-						.collect(Collectors.toMap(file -> file, file -> {
-							try {
-								return Files.getLastModifiedTime(new File(file).toPath()).toMillis();
-							} catch (IOException e) {
-								throw new RuntimeException(e);
-							}
-						},  (v1,v2) -> { throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));}, TreeMap::new));
-
-				if (isFileMatch(timestampedFiles, store.getTimestampedFiles())) {
-
-					List<T> symbols = store.getSymbols();
-
-					Map<String, Collection<String>> storedDependencies = store.getDependencies();
-					Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
-
-					if (storedDependencies!=null && !storedDependencies.isEmpty()) {
-						for (Entry<String, Collection<String>> entry : storedDependencies.entrySet()) {
-							dependencies.replaceValues(entry.getKey(), entry.getValue());
+			SortedMap<String, Long> timestampedFiles = Arrays.stream(files)
+					.filter(file -> new File(file).exists())
+					.collect(Collectors.toMap(file -> file, file -> {
+						try {
+							return Files.getLastModifiedTime(new File(file).toPath()).toMillis();
+						} catch (IOException e) {
+							throw new RuntimeException(e);
 						}
-					}
-					
-					// update local timestamp cache
-					ConcurrentMap<InternalFileIdentifier, Long> timestampMap = timestampedFiles.entrySet().stream()
-							.collect(Collectors.toConcurrentMap(e -> InternalFileIdentifier.fromPath(e.getKey()), e -> e.getValue()));
-					this.timestamps.put(cacheKey, timestampMap);
+					},  (v1,v2) -> { throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));}, TreeMap::new));
 
-					return Pair.of(
-							(T[]) symbols.toArray((T[]) Array.newInstance(type, symbols.size())),
-							MultimapBuilder.hashKeys().hashSetValues().build(dependencies)
-					);
+			if (isFileMatch(timestampedFiles, store.getTimestampedFiles())) {
+
+				List<T> symbols = store.getSymbols();
+
+				Map<String, Collection<String>> storedDependencies = store.getDependencies();
+				Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
+
+				if (storedDependencies!=null && !storedDependencies.isEmpty()) {
+					for (Entry<String, Collection<String>> entry : storedDependencies.entrySet()) {
+						dependencies.replaceValues(entry.getKey(), entry.getValue());
+					}
 				}
-			}
-			catch (Exception e) {
-				log.error("error reading cached symbols", e);
+
+				// update local timestamp cache
+				ConcurrentMap<InternalFileIdentifier, Long> timestampMap = timestampedFiles.entrySet().stream()
+						.collect(Collectors.toConcurrentMap(e -> InternalFileIdentifier.fromPath(e.getKey()), e -> e.getValue()));
+				this.timestamps.put(cacheKey, timestampMap);
+
+				return Pair.of(
+						(T[]) symbols.toArray((T[]) Array.newInstance(type, symbols.size())),
+						MultimapBuilder.hashKeys().hashSetValues().build(dependencies)
+						);
 			}
 		}
 		return null;
@@ -292,7 +292,7 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	private <T extends IndexCacheable> void persist(IndexCacheKey cacheKey, DeltaElement<T> delta, boolean append) {
 		DeltaStorage<T> deltaStorage = new DeltaStorage<T>(delta);
 
-		try (FileWriter writer = new FileWriter(new File(cacheDirectory, cacheKey.toString() + ".json"), append))
+		try (Writer writer = new BufferedWriter(new FileWriter(new File(cacheDirectory, cacheKey.toString() + ".json"), append)))
 		{
 			Gson gson = createGson();
 			gson.toJson(deltaStorage, writer);
@@ -313,15 +313,14 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		if (cacheStore.exists()) {
 
 			Gson gson = createGson();
-			
 
-			try (JsonReader reader = new JsonReader(new FileReader(cacheStore))) {
-				
-				DeltaStorage<T> readElement;
-				while ((readElement = gson.fromJson(reader, DeltaStorage.class)) != null) {
-					DeltaElement<T> delta = readElement.storedElement;
-					store = delta.apply(store);
+			try (JsonReader reader = new JsonReader(new BufferedReader(new FileReader(cacheStore)))) {
+				reader.setStrictness(Strictness.LENIENT);
+				while (reader.peek() != JsonToken.END_DOCUMENT) {
+					DeltaStorage<T> delta = gson.fromJson(reader, DeltaStorage.class);
+					store = delta.storedElement.apply(store);
 				}
+				
 			}
 			catch (Exception e) {
 				log.error("error reading cached symbols", e);
