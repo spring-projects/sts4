@@ -30,8 +30,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.lsp4j.Location;
 import org.slf4j.Logger;
@@ -66,7 +68,7 @@ import com.google.gson.stream.JsonReader;
 public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 	private final File cacheDirectory;
-	private final Map<IndexCacheKey, Map<String, Long>> timestamps;
+	private final Map<IndexCacheKey, ConcurrentMap<InternalFileIdentifier, Long>> timestamps;
 
 	private static final Logger log = LoggerFactory.getLogger(IndexCacheOnDiscDeltaBased.class);
 
@@ -106,7 +108,8 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		persist(cacheKey, new DeltaSnapshot<T>(store), false);
 		
 		// update local timestamp cache
-		ConcurrentHashMap<String, Long> timestampMap = new ConcurrentHashMap<>(timestampedFiles);
+		ConcurrentMap<InternalFileIdentifier, Long> timestampMap = timestampedFiles.entrySet().stream()
+				.collect(Collectors.toConcurrentMap(e -> InternalFileIdentifier.fromPath(e.getKey()), e -> e.getValue()));
 		this.timestamps.put(cacheKey, timestampMap);
 	}
 
@@ -143,7 +146,9 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 					}
 					
 					// update local timestamp cache
-					this.timestamps.put(cacheKey, new ConcurrentHashMap<>(timestampedFiles));
+					ConcurrentMap<InternalFileIdentifier, Long> timestampMap = timestampedFiles.entrySet().stream()
+							.collect(Collectors.toConcurrentMap(e -> InternalFileIdentifier.fromPath(e.getKey()), e -> e.getValue()));
+					this.timestamps.put(cacheKey, timestampMap);
 
 					return Pair.of(
 							(T[]) symbols.toArray((T[]) Array.newInstance(type, symbols.size())),
@@ -168,10 +173,10 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		persist(cacheKey, new DeltaDelete<T>(files), true);
 		
 		// update local timestamp cache
-		Map<String, Long> timestampsMap = this.timestamps.get(cacheKey);
+		Map<InternalFileIdentifier, Long> timestampsMap = this.timestamps.get(cacheKey);
 		if (timestampsMap != null) {
 			for (String file : files) {
-				timestampsMap.remove(file);
+				timestampsMap.remove(InternalFileIdentifier.fromPath(file));
 			}
 		}
 	}
@@ -205,8 +210,8 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		persist(cacheKey, new DeltaUpdate<T>(deltaStore), true);
 		
 		// update local timestamp cache
-		Map<String, Long> timestampsMap = this.timestamps.computeIfAbsent(cacheKey, (s) -> new ConcurrentHashMap<>());
-		timestampsMap.put(file, lastModified);
+		Map<InternalFileIdentifier, Long> timestampsMap = this.timestamps.computeIfAbsent(cacheKey, (s) -> new ConcurrentHashMap<>());
+		timestampsMap.put(InternalFileIdentifier.fromPath(file), lastModified);
 	}
 
 	@Override
@@ -229,17 +234,19 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		persist(cacheKey, new DeltaUpdate<T>(deltaStore), true);
 		
 		// update local timestamp cache
-		Map<String, Long> timestampsMap = this.timestamps.computeIfAbsent(cacheKey, (s) -> new ConcurrentHashMap<>());
+		Map<InternalFileIdentifier, Long> timestampsMap = this.timestamps.computeIfAbsent(cacheKey, (s) -> new ConcurrentHashMap<>());
 		for (int i = 0; i < files.length; i++) {
-			timestampsMap.put(files[i], lastModified[i]);
+			timestampsMap.put(InternalFileIdentifier.fromPath(files[i]), lastModified[i]);
 		}
 	}
 
 	@Override
 	public long getModificationTimestamp(IndexCacheKey cacheKey, String file) {
-		Map<String, Long> timestampsMap = this.timestamps.get(cacheKey);
+		InternalFileIdentifier fileID = InternalFileIdentifier.fromPath(file);
+		
+		Map<InternalFileIdentifier, Long> timestampsMap = this.timestamps.get(cacheKey);
 		if (timestampsMap != null) {
-			Long result = timestampsMap.get(file);
+			Long result = timestampsMap.get(fileID);
 			if (result != null) {
 				return result;
 			}
@@ -335,10 +342,104 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 				.create();
 	}
 	
+	
+	/**
+	 * just keep a md5 hash internally for identifying files to save memory 
+	 */
+	private static class InternalFileIdentifier {
+		
+		public static InternalFileIdentifier fromPath(String fileName) {
+			byte[] id = DigestUtils.md5(fileName);
+			return new InternalFileIdentifier( id);
+		}
+
+		private byte[] id;
+
+		private InternalFileIdentifier(byte[] id) {
+			this.id = id;
+		}
+
+		@Override
+		public int hashCode() {
+			return Arrays.hashCode(id);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			InternalFileIdentifier other = (InternalFileIdentifier) obj;
+			return Arrays.equals(id, other.id);
+		}
+		
+	}
+	
+
+	
+
+	/**
+	 * internal storage structure
+	 */
+	private static class IndexCacheStore<T extends IndexCacheable> {
+
+		@SuppressWarnings("unused")
+		private final String elementType;
+
+		private final SortedMap<String, Long> timestampedFiles;
+		private final List<T> elements;
+		private final Map<String, Collection<String>> dependencies;
+
+		public IndexCacheStore(SortedMap<String, Long> timestampedFiles, List<T> elements, Map<String, Collection<String>> dependencies, Class<T> elementType) {
+			this.timestampedFiles = timestampedFiles;
+			this.elements = elements;
+			this.dependencies = dependencies;
+			this.elementType = elementType.getName();
+		}
+
+		public Map<String, Collection<String>> getDependencies() {
+			return dependencies;
+		}
+
+		public List<T> getSymbols() {
+			return elements;
+		}
+
+		public SortedMap<String, Long> getTimestampedFiles() {
+			return timestampedFiles;
+		}
+		
+	}
+	
+
+	//
+	//
+	// internal delta-based storage structure: snapshots, updates, and deletions
+	//
+	//
+	
+	
 	private static record DeltaStorage<T extends IndexCacheable> (DeltaElement<T> storedElement) {}
 	
 	private static interface DeltaElement<T extends IndexCacheable> {
 		public IndexCacheStore<T> apply(IndexCacheStore<T> store);
+	}
+	
+	private static class DeltaSnapshot<T extends IndexCacheable> implements DeltaElement<T> {
+		
+		private IndexCacheStore<T> store;
+
+		public DeltaSnapshot(IndexCacheStore<T> store) {
+			this.store = store;
+		}
+		
+		@Override
+		public IndexCacheStore<T> apply(IndexCacheStore<T> store) {
+			return this.store;
+		}
 	}
 	
 	private static class DeltaDelete<T extends IndexCacheable> implements DeltaElement<T> {
@@ -433,53 +534,12 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		
 	}
 	
-	private static class DeltaSnapshot<T extends IndexCacheable> implements DeltaElement<T> {
-		
-		private IndexCacheStore<T> store;
 
-		public DeltaSnapshot(IndexCacheStore<T> store) {
-			this.store = store;
-		}
-		
-		@Override
-		public IndexCacheStore<T> apply(IndexCacheStore<T> store) {
-			return this.store;
-		}
-	}
-	
-
-	/**
-	 * internal storage structure
-	 */
-	private static class IndexCacheStore<T extends IndexCacheable> {
-
-		@SuppressWarnings("unused")
-		private final String elementType;
-
-		private final SortedMap<String, Long> timestampedFiles;
-		private final List<T> elements;
-		private final Map<String, Collection<String>> dependencies;
-
-		public IndexCacheStore(SortedMap<String, Long> timestampedFiles, List<T> elements, Map<String, Collection<String>> dependencies, Class<T> elementType) {
-			this.timestampedFiles = timestampedFiles;
-			this.elements = elements;
-			this.dependencies = dependencies;
-			this.elementType = elementType.getName();
-		}
-
-		public Map<String, Collection<String>> getDependencies() {
-			return dependencies;
-		}
-
-		public List<T> getSymbols() {
-			return elements;
-		}
-
-		public SortedMap<String, Long> getTimestampedFiles() {
-			return timestampedFiles;
-		}
-		
-	}
+	//
+	//
+	// GSON serialize / deserialize adapters for the various types involved here that have special needs around JSON
+	//
+	//
 	
 	private static class IndexCacheStoreAdapter implements JsonDeserializer<IndexCacheStore<?>> {
 
