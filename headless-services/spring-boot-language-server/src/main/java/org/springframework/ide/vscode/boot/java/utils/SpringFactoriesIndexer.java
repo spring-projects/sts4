@@ -40,7 +40,6 @@ import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
-import org.springframework.ide.vscode.boot.java.beans.SpringFactoryInformation;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -61,7 +60,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 	
 	// whenever the implementation of the indexer changes in a way that the stored data in the cache is no longer valid,
 	// we need to change the generation - this will result in a re-indexing due to no up-to-date cache data being found
-	private static final String GENERATION = "GEN-5";
+	private static final String GENERATION = "GEN-6";
 	
 	private static final String FILE_PATTERN = "**/META-INF/spring/*.factories";
 	
@@ -125,8 +124,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 									BeansSymbolProvider.beanLabel(false, beanId, fqName, Paths.get(URI.create(docURI)).getFileName().toString()),
 									SymbolKind.Interface,
 									Either.forLeft(new Location(docURI, range))), new SymbolAddOnInformation[] {
-											new BeansSymbolAddOnInformation(beanId, fqName),
-											new SpringFactoryInformation(key)
+											new BeansSymbolAddOnInformation(beanId, fqName)
 									}));
 						} catch (Exception e) {
 							log.error("", e);
