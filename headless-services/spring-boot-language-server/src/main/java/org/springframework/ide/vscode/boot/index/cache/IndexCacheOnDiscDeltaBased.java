@@ -74,6 +74,10 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 	private final File cacheDirectory;
 	private final Map<IndexCacheKey, ConcurrentMap<InternalFileIdentifier, Long>> timestamps;
+	private final Map<IndexCacheKey, Integer> compactingCounter;
+	private final int compactingCounterBoundary;
+	
+	private static final int DEFAULT_COMPACTING_TRIGGER = 20;
 
 	private static final Logger log = LoggerFactory.getLogger(IndexCacheOnDiscDeltaBased.class);
 
@@ -89,6 +93,8 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		}
 		
 		this.timestamps = new ConcurrentHashMap<>();
+		this.compactingCounter = new ConcurrentHashMap<>();
+		this.compactingCounterBoundary = DEFAULT_COMPACTING_TRIGGER;
 	}
 
 	@Override
@@ -116,6 +122,9 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		ConcurrentMap<InternalFileIdentifier, Long> timestampMap = timestampedFiles.entrySet().stream()
 				.collect(Collectors.toConcurrentMap(e -> InternalFileIdentifier.fromPath(e.getKey()), e -> e.getValue()));
 		this.timestamps.put(cacheKey, timestampMap);
+
+		this.compactingCounter.put(cacheKey, 0);
+		deleteOutdatedCacheFiles(cacheKey);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -124,7 +133,8 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		File cacheStore = new File(cacheDirectory, cacheKey.toString() + ".json");
 		if (cacheStore.exists()) {
 
-			IndexCacheStore<T> store = retrieveStoreFromIncrementalStorage(cacheKey, type);
+			Pair<IndexCacheStore<T>, Integer> result = retrieveStoreFromIncrementalStorage(cacheKey, type);
+			IndexCacheStore<T> store = result.getLeft();
 
 			SortedMap<String, Long> timestampedFiles = Arrays.stream(files)
 					.filter(file -> new File(file).exists())
@@ -153,6 +163,8 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 				ConcurrentMap<InternalFileIdentifier, Long> timestampMap = timestampedFiles.entrySet().stream()
 						.collect(Collectors.toConcurrentMap(e -> InternalFileIdentifier.fromPath(e.getKey()), e -> e.getValue()));
 				this.timestamps.put(cacheKey, timestampMap);
+				this.compactingCounter.put(cacheKey, result.getRight());
+				compact(cacheKey, type);
 
 				return Pair.of(
 						(T[]) symbols.toArray((T[]) Array.newInstance(type, symbols.size())),
@@ -179,6 +191,9 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 				timestampsMap.remove(InternalFileIdentifier.fromPath(file));
 			}
 		}
+		
+		this.compactingCounter.merge(cacheKey, 1, Integer::sum);
+		compact(cacheKey, type);
 	}
 
 	@Override
@@ -190,6 +205,7 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		
 		// update local timestamp cache
 		this.timestamps.remove(cacheKey);
+		this.compactingCounter.remove(cacheKey);
 	}
 
 	@Override
@@ -212,6 +228,8 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		// update local timestamp cache
 		Map<InternalFileIdentifier, Long> timestampsMap = this.timestamps.computeIfAbsent(cacheKey, (s) -> new ConcurrentHashMap<>());
 		timestampsMap.put(InternalFileIdentifier.fromPath(file), lastModified);
+		this.compactingCounter.merge(cacheKey, 1, Integer::sum);
+		compact(cacheKey, type);
 	}
 
 	@Override
@@ -238,6 +256,8 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		for (int i = 0; i < files.length; i++) {
 			timestampsMap.put(InternalFileIdentifier.fromPath(files[i]), lastModified[i]);
 		}
+		this.compactingCounter.merge(cacheKey, 1, Integer::sum);
+		compact(cacheKey, type);
 	}
 
 	@Override
@@ -254,6 +274,10 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 		return 0;
 	}
+	
+	public int getCompactingCounterBoundary() {
+		return compactingCounterBoundary;
+	}
 
 	private boolean isFileMatch(SortedMap<String, Long> files1, SortedMap<String, Long> files2) {
 		if (files1.size() != files2.size()) return false;
@@ -265,8 +289,18 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 		return true;
 	}
+	
+	private <T extends IndexCacheable> void compact(IndexCacheKey cacheKey, Class<T> type) {
+		if (this.compactingCounter.get(cacheKey) > this.compactingCounterBoundary) {
+			IndexCacheStore<T> compactedData = retrieveStoreFromIncrementalStorage(cacheKey, type).getLeft();
+			persist(cacheKey, new DeltaSnapshot<T>(compactedData), false);
+			this.compactingCounter.put(cacheKey, 0);
+			
+			deleteOutdatedCacheFiles(cacheKey);
+		}
+	}
 
-	private void cleanupCache(IndexCacheKey cacheKey) {
+	private void deleteOutdatedCacheFiles(IndexCacheKey cacheKey) {
 		File[] cacheFiles = this.cacheDirectory.listFiles();
 
 		for (int i = 0; i < cacheFiles.length; i++) {
@@ -298,16 +332,15 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 			gson.toJson(deltaStorage, writer);
 			
 			writer.write("\n");
-			
-			cleanupCache(cacheKey);
 		}
 		catch (Exception e) {
 			log.error("cannot write symbol cache", e);
 		}
 	}
 	
-	private <T extends IndexCacheable> IndexCacheStore<T> retrieveStoreFromIncrementalStorage(IndexCacheKey cacheKey, Class<T> type) {
+	private <T extends IndexCacheable> Pair<IndexCacheStore<T>, Integer> retrieveStoreFromIncrementalStorage(IndexCacheKey cacheKey, Class<T> type) {
 		IndexCacheStore<T> store = new IndexCacheStore<>(new TreeMap<>(), new ArrayList<T>(), new HashMap<>(), type);
+		int deltaCounter = 0;
 
 		File cacheStore = new File(cacheDirectory, cacheKey.toString() + ".json");
 		if (cacheStore.exists()) {
@@ -319,6 +352,7 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 				while (reader.peek() != JsonToken.END_DOCUMENT) {
 					DeltaStorage<T> delta = gson.fromJson(reader, DeltaStorage.class);
 					store = delta.storedElement.apply(store);
+					deltaCounter++;
 				}
 				
 			}
@@ -326,7 +360,7 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 				log.error("error reading cached symbols", e);
 			}
 		}
-		return store;
+		return Pair.of(store, deltaCounter);
 	}
 
 

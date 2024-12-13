@@ -334,6 +334,58 @@ public class IndexCacheOnDiscDeltaBasedTest {
     }
 
     @Test
+    void testStorageFileIncrementallyUpdatedAndCompacted() throws Exception {
+        Path file1 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile1");
+        Files.createFile(file1);
+
+        FileTime timeFile1 = Files.getLastModifiedTime(file1);
+        String[] files = {file1.toAbsolutePath().toString()};
+
+        String doc1URI = UriUtil.toUri(file1.toFile()).toString();
+
+        List<CachedSymbol> generatedSymbols1 = new ArrayList<>();
+        WorkspaceSymbol symbol1 = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location("docURI", new Range(new Position(3, 10), new Position(3, 20)))));
+        EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
+        generatedSymbols1.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1));
+
+        cache.store(CACHE_KEY_VERSION_1, files, generatedSymbols1, null, CachedSymbol.class);
+
+        Path path = tempDir.resolve(Paths.get(CACHE_KEY_VERSION_1.toString() + STORAGE_FILE_EXTENSION));
+        long initialCacheStorageSize = Files.size(path);
+        long lastCacheStorageSize = initialCacheStorageSize;
+        
+        int compactingBoundary = cache.getCompactingCounterBoundary();
+
+        for (int i = 0; i < compactingBoundary; i++) {
+            cache.update(CACHE_KEY_VERSION_1, file1.toAbsolutePath().toString(), timeFile1.toMillis() + (100 * i), generatedSymbols1, null, CachedSymbol.class);
+
+            // check storage size (to see if updates are stored incrementally
+            long updatedCacheStorageSize = Files.size(path);
+            assertTrue(updatedCacheStorageSize > lastCacheStorageSize, "cache storage size in iteration: " + i);
+            
+            lastCacheStorageSize = updatedCacheStorageSize;
+
+            // check internal timestamp updates
+            long newModificationTimestamp = cache.getModificationTimestamp(CACHE_KEY_VERSION_1, file1.toString());
+            assertEquals(timeFile1.toMillis() + (100 * i), newModificationTimestamp);
+
+        }
+        
+        // test compacting after trigger boundary
+        cache.update(CACHE_KEY_VERSION_1, file1.toAbsolutePath().toString(), timeFile1.toMillis() + (100 * compactingBoundary), generatedSymbols1, null, CachedSymbol.class);
+
+        // check storage size (to see if updates are stored incrementally
+        long updatedCacheStorageSize = Files.size(path);
+        assertTrue(updatedCacheStorageSize < lastCacheStorageSize, "cache storage size after compacting");
+        
+        lastCacheStorageSize = updatedCacheStorageSize;
+
+        // check internal timestamp updates
+        long newModificationTimestamp = cache.getModificationTimestamp(CACHE_KEY_VERSION_1, file1.toString());
+        assertEquals(timeFile1.toMillis() + (100 * compactingBoundary), newModificationTimestamp);
+    }
+
+    @Test
     void testSymbolsAddedToMultipleFiles() throws Exception {
 
         // create 3 files with one symbol each
