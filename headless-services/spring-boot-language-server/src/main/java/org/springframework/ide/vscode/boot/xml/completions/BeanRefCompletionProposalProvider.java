@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml.completions;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -19,15 +20,14 @@ import org.eclipse.lemminx.dom.DOMAttr;
 import org.eclipse.lemminx.dom.DOMNode;
 import org.eclipse.lemminx.dom.parser.Scanner;
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
-import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.xml.XMLCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -40,11 +40,11 @@ import reactor.util.function.Tuples;
 public class BeanRefCompletionProposalProvider implements XMLCompletionProvider {
 
 	private final JavaProjectFinder projectFinder;
-	private final SpringSymbolIndex symbolIndex;
+	private final SpringMetamodelIndex index;
 
-	public BeanRefCompletionProposalProvider(JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex) {
+	public BeanRefCompletionProposalProvider(JavaProjectFinder projectFinder, SpringMetamodelIndex index) {
 		this.projectFinder = projectFinder;
-		this.symbolIndex = symbolIndex;
+		this.index = index;
 	}
 
 	@Override
@@ -66,11 +66,9 @@ public class BeanRefCompletionProposalProvider implements XMLCompletionProvider 
 
 			final String searchPrefix = prefix;
 
-			List<SymbolAddOnInformation> addonInfos = symbolIndex.getAllAdditionalInformation(addonInfo -> addonInfo instanceof BeansSymbolAddOnInformation);
-
-			List<ICompletionProposal> completionItems = addonInfos.stream()
-				.map(info -> (BeansSymbolAddOnInformation) info)
-				.map(beanInfo -> beanInfo.getBeanID())
+			Bean[] beansOfProject = this.index.getBeansOfProject(project.getElementName());
+			List<ICompletionProposal> completionItems = Arrays.stream(beansOfProject)
+				.map(bean -> bean.getName())
 				.filter(beanID -> beanID != null && beanID.length() > 0)
 				.map(beanID -> Tuples.of(beanID, FuzzyMatcher.matchScore(searchPrefix, beanID)))
 				.filter(tuple -> tuple.getT2() != 0.0)

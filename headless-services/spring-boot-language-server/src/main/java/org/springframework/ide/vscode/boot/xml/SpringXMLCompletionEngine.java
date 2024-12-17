@@ -59,6 +59,7 @@ import org.eclipse.lemminx.dom.parser.XMLScanner;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.xml.completions.BeanRefCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.ConstructorArgNameCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.GenericXMLCompletionProposal;
@@ -91,7 +92,8 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 	public SpringXMLCompletionEngine(
 			SimpleLanguageServer server, 
 			JavaProjectFinder projectFinder, 
-			SpringSymbolIndex symbolIndex, 
+			SpringSymbolIndex symbolIndex,
+			SpringMetamodelIndex springIndex,
 			BootJavaConfig config
 	) {
 
@@ -102,7 +104,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 		TypeCompletionProposalProvider classesAndInterfacesProvider = new TypeCompletionProposalProvider(server, projectFinder, true, true, true, false);
 		TypeCompletionProposalProvider packagesProvider = new TypeCompletionProposalProvider(server, projectFinder, true, false, false, false);
 
-		BeanRefCompletionProposalProvider beanRefProvider = new BeanRefCompletionProposalProvider(projectFinder, symbolIndex);
+		BeanRefCompletionProposalProvider beanRefProvider = new BeanRefCompletionProposalProvider(projectFinder, springIndex);
 		PropertyNameCompletionProposalProvider propertyNameProvider = new PropertyNameCompletionProposalProvider(projectFinder);
 		ConstructorArgNameCompletionProposalProvider constructorArgNameProvider = new ConstructorArgNameCompletionProposalProvider(projectFinder);
 		

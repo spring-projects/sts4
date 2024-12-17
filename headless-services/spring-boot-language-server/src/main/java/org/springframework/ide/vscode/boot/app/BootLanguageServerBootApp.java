@@ -282,8 +282,8 @@ public class BootLanguageServerBootApp {
 		return new JdtReconciler(cuCache, config, reconcilers, projectObserver);
 	}
 	
-	@Bean SpringXMLCompletionEngine xmlCompletionEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, BootJavaConfig config) {
-		return new SpringXMLCompletionEngine(server, projectFinder, symbolIndex, config);
+	@Bean SpringXMLCompletionEngine xmlCompletionEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, SpringMetamodelIndex springIndex, BootJavaConfig config) {
+		return new SpringXMLCompletionEngine(server, projectFinder, symbolIndex, springIndex, config);
 	}
 	
 	@Bean SpringPropertiesCompletionEngine propertiesCompletionEngine(BootLanguageServerParams params, JavaProjectFinder projectFinder, SourceLinks sourceLinks, BootJavaConfig config) {
