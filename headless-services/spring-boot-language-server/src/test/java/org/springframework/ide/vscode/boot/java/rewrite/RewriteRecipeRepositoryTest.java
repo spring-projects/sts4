@@ -38,7 +38,7 @@ public class RewriteRecipeRepositoryTest {
 		assertEquals(11, recipes.size());
 		
 		recipes = recipeRepo.getSubRecipes("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1", List.of(0, 2)).get();
-		assertEquals(20, recipes.size());
+		assertEquals(22, recipes.size());
 		
 		recipes = recipeRepo.getSubRecipes("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1",List.of(0, 345)).get();
 		assertEquals(0, recipes.size());
