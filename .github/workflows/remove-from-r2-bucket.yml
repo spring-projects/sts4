@@ -1,0 +1,23 @@
+name: Remove from the Location in the Bucket
+
+# configure manual trigger
+on:
+  workflow_dispatch:
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.CDN_S3_ACCESS_KEY }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.CDN_S3_SECRET_KEY  }}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_ENDPOINT_URL_S3:  ${{ secrets.CDN_S3_ENDPOINT }}
+  AWS_S3_BUCKET: ${{ secrets.CDN_BUCKET }}/spring-tools
+  DOWNLOAD_URL_ROOT: https://cdn.spring.io/spring-tools
+  CDN_BUCKET: ${{ secrets.CDN_BUCKET }}
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove
+        run: |
+          aws s3 mv s3://$AWS_S3_BUCKET/exes-to-sign ./exes --recursive --exclude "*" --include "*.exe" --exclude "*/*"
+
