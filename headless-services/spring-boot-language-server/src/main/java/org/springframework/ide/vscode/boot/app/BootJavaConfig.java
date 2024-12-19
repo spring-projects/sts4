@@ -107,7 +107,7 @@ public class BootJavaConfig implements InitializingBean {
 	public String[] xmlBeansFoldersToScan() {
 		String foldersStr = settings.getString("boot-java", "support-spring-xml-config", "scan-folders");
 		if (foldersStr != null) {
-			foldersStr = foldersStr.trim();
+			foldersStr = foldersStr.trim().replace("/", File.separator);
 		}
 		String[] folders = foldersStr == null || foldersStr.isEmpty()? new String[0] : foldersStr.split("\\s*,\\s*");
 		List<String> cleanedFolders = new ArrayList<>(folders.length);
