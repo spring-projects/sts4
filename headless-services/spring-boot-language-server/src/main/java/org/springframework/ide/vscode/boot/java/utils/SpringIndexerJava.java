@@ -587,7 +587,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			};
 	
 			ASTParserCleanupEnabled parser = createParser(project, annotations, ignoreMethodBodies);
-			parser.createASTs(javaFiles, null, new String[0], requestor, null);
+			parser.createASTs(javaFiles, new String[javaFiles.length], new String[0], requestor, null);
 			parser.cleanup();
 
 			return (String[]) nextPassFiles.toArray(new String[nextPassFiles.size()]);

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -18,6 +19,8 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
+import org.eclipse.jdt.core.dom.JavacCompilationUnitResolver;
+import org.eclipse.jdt.internal.core.dom.ICompilationUnitResolver;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 
 /**
@@ -48,6 +51,17 @@ public class ASTParserCleanupEnabled {
 		parser.setIgnoreMethodBodies(ignoreMethodBodies);
 
 		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
+		
+		try {
+			Field field = parser.getClass().getDeclaredField("unitResolver");
+			field.setAccessible(true);
+			
+			ICompilationUnitResolver resolver = new JavacCompilationUnitResolver();
+			field.set(parser, resolver);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 
 //		List<Classpath> classpaths = CUResolver.getClasspath(parser);
 //		environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
