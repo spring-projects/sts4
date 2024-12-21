@@ -24,7 +24,6 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -172,7 +171,7 @@ public class XMLBeansHyperlinkTest {
     }
 
     @Test
-    @Disabled
+//    @Disabled
     void testBeanRefHyperlink() throws Exception {
     	log.debug("------------------ testBeanRefHyperlink ----------------------");
         Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");

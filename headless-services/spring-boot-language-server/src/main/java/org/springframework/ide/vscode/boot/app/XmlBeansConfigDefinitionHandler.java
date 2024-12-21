@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2021 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -61,6 +61,7 @@ import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.xml.XMLElementKey;
 import org.springframework.ide.vscode.boot.xml.hyperlinks.BeanRefHyperlinkProvider;
@@ -93,7 +94,7 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 	public XmlBeansConfigDefinitionHandler(SimpleTextDocumentService documents,
 			BootJavaConfig config,
 			JavaElementLocationProvider locationProvider,
-			SpringSymbolIndex symbolIndex,
+			SpringMetamodelIndex springIndex,
 			BootLanguageServerParams serverParams) {
 		this.documents = documents;
 		this.config = config;
@@ -101,7 +102,7 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 		
 		JavaTypeHyperlinkProvider javaTypeHyperlinkProvider = new JavaTypeHyperlinkProvider(projectFinder, locationProvider);
 		PropertyNameHyperlinkProvider propertyNameHyperlinkProvider = new PropertyNameHyperlinkProvider(projectFinder, locationProvider);
-		BeanRefHyperlinkProvider beanRefHyperlinkProvider = new BeanRefHyperlinkProvider(projectFinder, symbolIndex);
+		BeanRefHyperlinkProvider beanRefHyperlinkProvider = new BeanRefHyperlinkProvider(projectFinder, springIndex);
 		
 		List<JavaTypeHyperlinkProvider> typeHandlersOnly = Arrays.asList(javaTypeHyperlinkProvider);
 		List<PropertyNameHyperlinkProvider> propertyNameHandlers = Arrays.asList(propertyNameHyperlinkProvider);
@@ -184,15 +185,22 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 	
 										List<? extends XMLHyperlinkProvider> providers = hyperlinkProviders.get(key);
 										if (providers != null) {
+
 											ImmutableList.Builder<LocationLink> listBuilder = ImmutableList.builder();
 											for (XMLHyperlinkProvider provider : providers) {
-												Location location = provider.getDefinition(doc, namespace, node, attributeAt);
-												if (location != null) {
+												
+												List<Location> locations = provider.getDefinition(doc, namespace, node, attributeAt);
+												if (locations != null) {
+
 													int start = attributeAt.getNodeAttrValue().getStart() + 1;
 													int end = attributeAt.getNodeAttrValue().getEnd() - 1;
-													listBuilder.add(new LocationLink(location.getUri(),
-															location.getRange(), location.getRange(),
-															doc.toRange(start, Math.max(0, end - start))));
+													
+													for (Location location : locations) {
+														listBuilder.add(new LocationLink(location.getUri(),
+																location.getRange(), location.getRange(),
+																doc.toRange(start, Math.max(0, end - start))));
+														
+													}
 												}
 											}
 											return listBuilder.build();

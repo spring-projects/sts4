@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml.hyperlinks;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.lemminx.dom.DOMAttr;
@@ -35,7 +36,7 @@ public class JavaTypeHyperlinkProvider implements XMLHyperlinkProvider {
 	}
 
 	@Override
-	public Location getDefinition(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt) {
+	public List<Location> getDefinition(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt) {
 		Optional<IJavaProject> foundProject = this.projectFinder.find(doc.getId());
 		if (foundProject.isPresent()) {
 			IJavaProject project = foundProject.get();
@@ -43,7 +44,7 @@ public class JavaTypeHyperlinkProvider implements XMLHyperlinkProvider {
 			if (fqName != null) {
 				IType type = project.getIndex().findType(fqName);
 				if (type != null) {
-					return locationProvider.findLocation(project, type);
+					return List.of(locationProvider.findLocation(project, type));
 				}
 			}
 		}

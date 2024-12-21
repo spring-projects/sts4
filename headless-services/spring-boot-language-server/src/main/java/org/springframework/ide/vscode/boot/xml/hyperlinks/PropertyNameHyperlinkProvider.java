@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml.hyperlinks;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.lemminx.dom.DOMAttr;
@@ -35,18 +36,19 @@ public class PropertyNameHyperlinkProvider implements XMLHyperlinkProvider {
 	}
 
 	@Override
-	public Location getDefinition(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt) {
+	public List<Location> getDefinition(TextDocument doc, String namespace, DOMNode node, DOMAttr attributeAt) {
 		Optional<IJavaProject> foundProject = this.projectFinder.find(doc.getId());
 		String propertyName = attributeAt.getValue();
+
 		if (foundProject.isPresent() && propertyName != null && !propertyName.isEmpty()) {
 			IJavaProject project = foundProject.get();
 			String beanClass = PropertyNameCompletionProposalProvider.identifyBeanClass(node);
+
 			if (beanClass != null && beanClass.length() > 0) {
 				return PropertyNameCompletionProposalProvider.propertyNameCandidateMethods(project, beanClass)
 					.filter(method -> propertyName.equals(PropertyNameCompletionProposalProvider.getPropertyName(method)))
 					.map(method -> locationProvider.findLocation(project, method))
-					.findFirst()
-					.orElse(null);
+					.toList();
 			}
 		}
 		return null;
