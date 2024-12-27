@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -563,36 +564,38 @@ public class SpringIndexerJava implements SpringIndexer {
 		PercentageProgressTask progressTask = this.progressService.createPercentageProgressTask(INDEX_FILES_TASK_ID + project.getElementName(),
 				javaFiles.length, "Spring Tools: Indexing Java Sources for '" + project.getElementName() + "'");
 
+		List<String> nextPassFiles = new ArrayList<>();
+		final boolean ignoreMethodBodies = SCAN_PASS.ONE.equals(pass);
+
+		FileASTRequestor requestor = new FileASTRequestor() {
+
+			@Override
+			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
+				File file = new File(sourceFilePath);
+				String docURI = UriUtil.toUri(file).toASCIIString();
+				long lastModified = file.lastModified();
+				AtomicReference<TextDocument> docRef = new AtomicReference<>();
+
+				IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
+
+				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
+						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, pass, nextPassFiles, !ignoreMethodBodies);
+
+				scanAST(context, true);
+				progressTask.increment();
+			}
+		};
+
+		ASTParserCleanupEnabled parser = createParser(project, annotations, ignoreMethodBodies);
 		try {
-			List<String> nextPassFiles = new ArrayList<>();
-			final boolean ignoreMethodBodies = SCAN_PASS.ONE.equals(pass);
-	
-			FileASTRequestor requestor = new FileASTRequestor() {
-
-				@Override
-				public void acceptAST(String sourceFilePath, CompilationUnit cu) {
-					File file = new File(sourceFilePath);
-					String docURI = UriUtil.toUri(file).toASCIIString();
-					long lastModified = file.lastModified();
-					AtomicReference<TextDocument> docRef = new AtomicReference<>();
-	
-					IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
-
-					SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-							lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, pass, nextPassFiles, !ignoreMethodBodies);
-	
-					scanAST(context, true);
-					progressTask.increment();
-				}
-			};
-	
-			ASTParserCleanupEnabled parser = createParser(project, annotations, ignoreMethodBodies);
 			parser.createASTs(javaFiles, null, new String[0], requestor, null);
-			parser.cleanup();
-
 			return (String[]) nextPassFiles.toArray(new String[nextPassFiles.size()]);
+		} catch (Throwable t) {
+			log.error("Failed to index project '%s'".formatted(project.getElementName()), t);
+			return new String[0];
 		}
 		finally {
+			parser.cleanup();
 			progressTask.done();
 		}
 	}
@@ -803,8 +806,14 @@ public class SpringIndexerJava implements SpringIndexer {
 	public static ASTParserCleanupEnabled createParser(IJavaProject project, AnnotationHierarchies annotationHierarchies, boolean ignoreMethodBodies) throws Exception {
 		String[] classpathEntries = getClasspathEntries(project);
 		String[] sourceEntries = getSourceEntries(project);
+		String complianceJavaVersion = getComplianceJavaVersion(project.getClasspath().getJavaVersion());
 		
-		return new ASTParserCleanupEnabled(classpathEntries, sourceEntries, annotationHierarchies, ignoreMethodBodies);
+		return new ASTParserCleanupEnabled(classpathEntries, sourceEntries, complianceJavaVersion, annotationHierarchies, ignoreMethodBodies);
+	}
+
+	private static String getComplianceJavaVersion(String javaVersion) {
+		// Currently the java version in the classpath seems to be 1.8, 17, 21 etc.
+		return javaVersion == null || javaVersion.isBlank() ? JavaCore.VERSION_21 : javaVersion;
 	}
 
 	private static String[] getClasspathEntries(IJavaProject project) throws Exception {

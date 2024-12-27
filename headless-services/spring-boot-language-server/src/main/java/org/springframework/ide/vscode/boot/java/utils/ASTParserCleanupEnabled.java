@@ -34,11 +34,11 @@ public class ASTParserCleanupEnabled {
 	
 	private final AnnotationHierarchies annotationHierachies;
 	
-	public ASTParserCleanupEnabled(String[] classpathEntries, String[] sourceEntries, AnnotationHierarchies annotationHierarchies, boolean ignoreMethodBodies) {
+	public ASTParserCleanupEnabled(String[] classpathEntries, String[] sourceEntries, String complianceVersion, AnnotationHierarchies annotationHierarchies, boolean ignoreMethodBodies) {
 		this.annotationHierachies = annotationHierarchies; 
 		parser = ASTParser.newParser(AST.JLS21);
 		options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_21, options);
+		JavaCore.setComplianceOptions(complianceVersion, options);
 
 		parser.setCompilerOptions(options);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
