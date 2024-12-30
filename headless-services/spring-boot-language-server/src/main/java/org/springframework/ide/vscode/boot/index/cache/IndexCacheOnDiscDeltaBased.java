@@ -292,6 +292,8 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	
 	private <T extends IndexCacheable> void compact(IndexCacheKey cacheKey, Class<T> type) {
 		if (this.compactingCounter.get(cacheKey) > this.compactingCounterBoundary) {
+			log.info("compacting...");
+			
 			IndexCacheStore<T> compactedData = retrieveStoreFromIncrementalStorage(cacheKey, type).getLeft();
 			persist(cacheKey, new DeltaSnapshot<T>(compactedData), false);
 			this.compactingCounter.put(cacheKey, 0);

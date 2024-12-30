@@ -42,7 +42,7 @@ import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.index.cache.IndexCache;
-import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDisc;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDiscDeltaBased;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
 import org.springframework.ide.vscode.boot.java.beans.DependsOnDefinitionProvider;
@@ -150,7 +150,7 @@ public class BootLanguageServerBootApp {
 	@Bean
 	IndexCache symbolCache(BootLsConfigProperties props) {
 		if (props.isSymbolCacheEnabled()) {
-			return new IndexCacheOnDisc(new File(props.getSymbolCacheDir()));
+			return new IndexCacheOnDiscDeltaBased(new File(props.getSymbolCacheDir()));
 		} else {
 			return new IndexCacheVoid();
 		}
