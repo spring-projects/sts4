@@ -613,10 +613,10 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	/**
 	 * gson adapter to store subtype information for symbol addon informations
 	 */
-	private static class DeltaStorageAdapter implements JsonSerializer<DeltaStorage>, JsonDeserializer<DeltaStorage> {
+	private static class DeltaStorageAdapter implements JsonSerializer<DeltaStorage<?>>, JsonDeserializer<DeltaStorage<?>> {
 
 	    @Override
-	    public JsonElement serialize(DeltaStorage deltaElement, Type typeOfSrc, JsonSerializationContext context) {
+	    public JsonElement serialize(DeltaStorage<?> deltaElement, Type typeOfSrc, JsonSerializationContext context) {
 	        JsonObject result = new JsonObject();
 	        result.add("type", new JsonPrimitive(deltaElement.storedElement.getClass().getName()));
 	        result.add("data", context.serialize(deltaElement.storedElement));
@@ -624,13 +624,13 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	    }
 
 	    @Override
-	    public DeltaStorage deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
+	    public DeltaStorage<?> deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
 	        JsonObject parsedObject = json.getAsJsonObject();
 	        String className = parsedObject.get("type").getAsString();
 	        JsonElement element = parsedObject.get("data");
 
 	        try {
-	            return new DeltaStorage(context.deserialize(element, Class.forName(className)));
+	            return new DeltaStorage<>(context.deserialize(element, Class.forName(className)));
 	        } catch (ClassNotFoundException cnfe) {
 	            throw new JsonParseException("cannot parse data from unknown SymbolAddOnInformation subtype: " + type, cnfe);
 	        }
