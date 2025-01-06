@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,32 +11,23 @@
 package org.springframework.ide.vscode.boot.java.reconcilers.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 
-import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.SymbolKind;
-import org.eclipse.lsp4j.WorkspaceSymbol;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.context.ApplicationContext;
-import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
-import org.springframework.ide.vscode.boot.java.beans.ConfigBeanSymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.beans.FeignClientBeanSymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.reconcilers.AddConfigurationIfBeansPresentReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 
 public class AddConfigurationIfBeansPresentReconcilerTest extends BaseReconcilerTest {
 
@@ -52,7 +43,7 @@ public class AddConfigurationIfBeansPresentReconcilerTest extends BaseReconciler
 
 	@Override
 	protected JdtAstReconciler getReconciler() {
-		return new AddConfigurationIfBeansPresentReconciler(new QuickfixRegistry());
+		return new AddConfigurationIfBeansPresentReconciler(new QuickfixRegistry(), null);
 	}
 
 	@BeforeEach
@@ -81,7 +72,11 @@ public class AddConfigurationIfBeansPresentReconcilerTest extends BaseReconciler
 					
 				}
 				""";
-		List<ReconcileProblem> problems = reconcile("A.java", source, false);
+		List<ReconcileProblem> problems = reconcile(() -> {
+			SpringMetamodelIndex springIndex = new SpringMetamodelIndex();
+			AddConfigurationIfBeansPresentReconciler r = new AddConfigurationIfBeansPresentReconciler(new QuickfixRegistry(), springIndex);
+			return r;
+		}, "A.java", source, false);
 		
 		assertEquals(1, problems.size());
 		
@@ -93,7 +88,6 @@ public class AddConfigurationIfBeansPresentReconcilerTest extends BaseReconciler
 		assertEquals("A", markedStr);
 
 		assertEquals(2, problem.getQuickfixes().size());
-		
 	}
 
 	@Test
@@ -113,26 +107,20 @@ public class AddConfigurationIfBeansPresentReconcilerTest extends BaseReconciler
 				}
 				""";
 		List<ReconcileProblem> problems = reconcile(() -> {
-			AddConfigurationIfBeansPresentReconciler r = new AddConfigurationIfBeansPresentReconciler(new QuickfixRegistry());
-			
-			WorkspaceSymbol workspaceSymbol = new WorkspaceSymbol("testConfig", SymbolKind.Class, Either.forLeft(new Location("file:///someUri", new Range())));
-			ConfigBeanSymbolAddOnInformation beanSymbolAddOn = new ConfigBeanSymbolAddOnInformation("a", "example.demo.A");
-			EnhancedSymbolInformation beanSymbol = new EnhancedSymbolInformation(workspaceSymbol, new SymbolAddOnInformation[] { beanSymbolAddOn });
-			
-			SpringSymbolIndex mockSymbolIndex = mock(SpringSymbolIndex.class);
-			
-			when(mockSymbolIndex.getEnhancedSymbols(any(IJavaProject.class))).thenReturn(List.of(beanSymbol));
-			
-			ApplicationContext context = mock(ApplicationContext.class);
-			when(context.getBean(SpringSymbolIndex.class)).thenReturn(mockSymbolIndex);
-			
-			r.setApplicationContext(context);
+			SpringMetamodelIndex springIndex = new SpringMetamodelIndex();
+
+			AnnotationMetadata annotationMetadata = new AnnotationMetadata(Annotations.CONFIGURATION, false, null, Map.of());
+			AnnotationMetadata[] annotations = new AnnotationMetadata[] {annotationMetadata};
+			Bean configBean = new Bean("a", "example.demo.A", null, null, null, annotations);
+			Bean[] beans = new Bean[] {configBean};
+			springIndex.updateBeans(getProjectName(), beans);
+		
+			AddConfigurationIfBeansPresentReconciler r = new AddConfigurationIfBeansPresentReconciler(new QuickfixRegistry(), springIndex);
 			
 			return r;
 		}, "A.java", source, false);
 		
 		assertEquals(0, problems.size());
-		
 	}
 
 	@Test
@@ -152,25 +140,19 @@ public class AddConfigurationIfBeansPresentReconcilerTest extends BaseReconciler
 				}
 				""";
 		List<ReconcileProblem> problems = reconcile(() -> {
-			AddConfigurationIfBeansPresentReconciler r = new AddConfigurationIfBeansPresentReconciler(new QuickfixRegistry());
+			SpringMetamodelIndex springIndex = new SpringMetamodelIndex();
 			
-			WorkspaceSymbol workspaceSymbol = new WorkspaceSymbol("testConfig", SymbolKind.Class, Either.forLeft(new Location("file:///someUri", new Range())));
-			FeignClientBeanSymbolAddOnInformation beanSymbolAddOn = new FeignClientBeanSymbolAddOnInformation("b", "example.demo.B", "example.demo.A");
-			EnhancedSymbolInformation beanSymbol = new EnhancedSymbolInformation(workspaceSymbol, new SymbolAddOnInformation[] { beanSymbolAddOn });
+			AnnotationMetadata annotationMetadata = new AnnotationMetadata(Annotations.FEIGN_CLIENT, false, null, Map.of("configuration", new AnnotationAttributeValue[] {new AnnotationAttributeValue("example.demo.A", null)}));
+			AnnotationMetadata[] annotations = new AnnotationMetadata[] {annotationMetadata};
+			Bean configBean = new Bean("feignClient", "example.demo.FeignClientExample", null, null, null, annotations);
+			Bean[] beans = new Bean[] {configBean};
+			springIndex.updateBeans(getProjectName(), beans);
 			
-			SpringSymbolIndex mockSymbolIndex = mock(SpringSymbolIndex.class);
-			
-			when(mockSymbolIndex.getEnhancedSymbols(any(IJavaProject.class))).thenReturn(List.of(beanSymbol));
-			
-			ApplicationContext context = mock(ApplicationContext.class);
-			when(context.getBean(SpringSymbolIndex.class)).thenReturn(mockSymbolIndex);
-			
-			r.setApplicationContext(context);
+			AddConfigurationIfBeansPresentReconciler r = new AddConfigurationIfBeansPresentReconciler(new QuickfixRegistry(), springIndex);
 			
 			return r;
 		}, "A.java", source, false);
 		
 		assertEquals(0, problems.size());
-		
 	}
 }

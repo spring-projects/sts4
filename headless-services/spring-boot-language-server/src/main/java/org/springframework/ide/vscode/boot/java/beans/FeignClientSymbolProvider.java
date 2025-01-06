@@ -13,20 +13,16 @@ package org.springframework.ide.vscode.boot.java.beans;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.core.dom.TypeLiteral;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
@@ -86,7 +82,7 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType == null ? "" : beanType.getName()), SymbolKind.Interface,
 				Either.forLeft(location));
 		
-		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new FeignClientBeanSymbolAddOnInformation(beanName, beanType == null ? "" : beanType.getQualifiedName(), getConfigClass(node))};
+		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType == null ? "" : beanType.getQualifiedName())};
 		
 		InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(type, doc);
 		
@@ -159,31 +155,4 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 		return BeanUtils.getBeanNameFromType(typeDecl.getName().getIdentifier());
 	}
 	
-	private String[] getConfigClass(Annotation node) {
-		if (node.isNormalAnnotation()) {
-			NormalAnnotation normalAnnotation = (NormalAnnotation) node;
-			for (Object o : normalAnnotation.values()) {
-				if (o instanceof MemberValuePair) {
-					MemberValuePair pair = (MemberValuePair) o;
-					if ("configuration".equals(pair.getName().getIdentifier())) {
-						if (pair.getValue() instanceof TypeLiteral) {
-							ITypeBinding b = ((TypeLiteral) pair.getValue()).getType().resolveBinding();
-							return new String[] { b.getQualifiedName() };
-						} else if (pair.getValue() instanceof ArrayInitializer){
-							List<?> expressions = (List<?>) ((ArrayInitializer) pair.getValue()).expressions();
-							return expressions.stream()
-								.filter(TypeLiteral.class::isInstance)
-								.map(TypeLiteral.class::cast)
-								.map(tl -> tl.getType().resolveBinding())
-								.filter(Objects::nonNull)
-								.map(b -> b.getQualifiedName())
-								.toArray(String[]::new);
-						}
-					}
-				}
-			}
-		}
-		return new String[0];
-	}
-
 }

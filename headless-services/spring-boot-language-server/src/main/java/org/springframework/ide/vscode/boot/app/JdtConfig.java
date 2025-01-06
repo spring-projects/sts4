@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.cron.CronExpressionsInlayHintsProvider;
 import org.springframework.ide.vscode.boot.java.cron.CronReconciler;
 import org.springframework.ide.vscode.boot.java.cron.CronSemanticTokens;
@@ -63,8 +64,8 @@ public class JdtConfig {
 		return new BeanMethodNotPublicReconciler(server.getQuickfixRegistry());
 	}
 	
-	@Bean AddConfigurationIfBeansPresentReconciler addConfigurationIfBeansPresentReconciler(SimpleLanguageServer server) {
-		return new AddConfigurationIfBeansPresentReconciler(server.getQuickfixRegistry());
+	@Bean AddConfigurationIfBeansPresentReconciler addConfigurationIfBeansPresentReconciler(SimpleLanguageServer server, SpringMetamodelIndex springIndex) {
+		return new AddConfigurationIfBeansPresentReconciler(server.getQuickfixRegistry(), springIndex);
 	}
 	
 	@Bean AutowiredFieldIntoConstructorParameterReconciler autowiredFieldIntoConstructorParameterReconciler(SimpleLanguageServer server) {
