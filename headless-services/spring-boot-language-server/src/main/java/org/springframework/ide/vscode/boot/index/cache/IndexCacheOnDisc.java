@@ -476,8 +476,11 @@ public class IndexCacheOnDisc implements IndexCache {
 	        
 	        JsonElement annotationsObject = parsedObject.get("annotations");
 	        AnnotationMetadata[] annotations = annotationsObject == null ? DefaultValues.EMPTY_ANNOTATIONS : context.deserialize(annotationsObject, AnnotationMetadata[].class);
+	        
+	        JsonElement isConfigurationObject = parsedObject.get("isConfiguration");
+	        boolean isConfiguration = context.deserialize(isConfigurationObject, boolean.class);
 
-	        return new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations);
+	        return new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, isConfiguration);
 	    }
 	}
 	

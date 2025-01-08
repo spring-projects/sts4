@@ -115,7 +115,7 @@ public class ResourceDefinitionProviderTest {
         String expectedDefinitionUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
         
         List<Bean> beansOfDoc = new ArrayList<>(List.of(springIndex.getBeansOfDocument(expectedDefinitionUri)));
-        beansOfDoc.add(new Bean("bean1", "type", new Location(expectedDefinitionUri, new Range(new Position(20, 1), new Position(20, 10))), null, null, null));
+        beansOfDoc.add(new Bean("bean1", "type", new Location(expectedDefinitionUri, new Range(new Position(20, 1), new Position(20, 10))), null, null, null, false));
         springIndex.updateBeans(project.getElementName(), expectedDefinitionUri, beansOfDoc.toArray(new Bean[0]));
         
         Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean1");

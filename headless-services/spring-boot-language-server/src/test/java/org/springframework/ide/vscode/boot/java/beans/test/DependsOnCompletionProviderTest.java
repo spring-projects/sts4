@@ -76,8 +76,8 @@ public class DependsOnCompletionProviderTest {
 		indexedBeans = springIndex.getBeansOfProject(project.getElementName());
 		
         tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
-		bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);
-		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);
+		bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
 		
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
 	}
@@ -196,7 +196,7 @@ public class DependsOnCompletionProviderTest {
 	
 	@Test
 	public void testDependsOnCompletionInsideOfArrayBetweenExistingElements() throws Exception {
-		Bean bean3 = new Bean("bean3", "type3", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null);
+		Bean bean3 = new Bean("bean3", "type3", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, bean3});
 		
 		assertCompletions("@DependsOn({\"bean1\",<*>\"bean2\"})", 1, "@DependsOn({\"bean1\",\"bean3\",<*>\"bean2\"})");

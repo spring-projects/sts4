@@ -90,10 +90,12 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType.getName()), SymbolKind.Interface,
 				Either.forLeft(location));
 		
+		boolean isConfiguration = false;
 		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[0];
 		if (Annotations.CONFIGURATION.equals(annotationType.getQualifiedName())
 				|| metaAnnotations.stream().anyMatch(t -> Annotations.CONFIGURATION.equals(t.getQualifiedName()))) {
 			addon = new SymbolAddOnInformation[] {new ConfigBeanSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
+			isConfiguration = true;
 		} else {
 			addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
 		}
@@ -112,7 +114,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				.map(an -> new AnnotationMetadata(an.getQualifiedName(), true, null, null)))
 				.toArray(AnnotationMetadata[]::new);
 		
-		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations);
+		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration);
 
 		return Tuple.two(new EnhancedSymbolInformation(symbol, addon), beanDefinition);
 	}

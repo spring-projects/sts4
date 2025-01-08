@@ -87,6 +87,8 @@ public class SpringMetamodelIndexerBeansTest {
 		assertEquals(1, beans.length);
 		assertEquals("bean1", beans[0].getName());
 		assertEquals("org.test.BeanClass1", beans[0].getType());
+		
+		assertFalse(beans[0].isConfiguration());
 	}
 
 	@Test
@@ -123,6 +125,7 @@ public class SpringMetamodelIndexerBeansTest {
 		assertEquals(1, beans.length);
 		assertEquals("configurationWithoutInjection", beans[0].getName());
 		assertEquals("org.test.injections.ConfigurationWithoutInjection", beans[0].getType());
+		assertTrue(beans[0].isConfiguration());
 	}
 
 	@Test

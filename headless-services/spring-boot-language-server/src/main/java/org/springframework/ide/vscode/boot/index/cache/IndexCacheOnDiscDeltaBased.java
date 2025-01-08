@@ -688,7 +688,10 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	        JsonElement annotationsObject = parsedObject.get("annotations");
 	        AnnotationMetadata[] annotations = annotationsObject == null ? DefaultValues.EMPTY_ANNOTATIONS : context.deserialize(annotationsObject, AnnotationMetadata[].class);
 
-	        return new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations);
+	        JsonElement isConfigurationObject = parsedObject.get("isConfiguration");
+	        boolean isConfiguration = context.deserialize(isConfigurationObject, boolean.class);
+
+	        return new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, isConfiguration);
 	    }
 	}
 	

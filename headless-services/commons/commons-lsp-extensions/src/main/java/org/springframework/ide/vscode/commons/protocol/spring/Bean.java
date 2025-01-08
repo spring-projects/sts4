@@ -24,11 +24,20 @@ public class Bean {
 	private final InjectionPoint[] injectionPoints;
 	private final Set<String> supertypes;
 	private final AnnotationMetadata[] annotations;
+	private final boolean isConfiguration;
 
-	public Bean(String name, String type, Location location, InjectionPoint[] injectionPoints, Set<String> supertypes, AnnotationMetadata[] annotations) {
+	public Bean(
+			String name,
+			String type,
+			Location location,
+			InjectionPoint[] injectionPoints,
+			Set<String> supertypes,
+			AnnotationMetadata[] annotations, boolean isConfiguration) {
+
 		this.name = name;
 		this.type = type;
 		this.location = location;
+		this.isConfiguration = isConfiguration;
 		
 		if (injectionPoints != null && injectionPoints.length == 0) {
 			this.injectionPoints = DefaultValues.EMPTY_INJECTION_POINTS;
@@ -77,6 +86,10 @@ public class Bean {
 	
 	public AnnotationMetadata[] getAnnotations() {
 		return annotations;
+	}
+	
+	public boolean isConfiguration() {
+		return isConfiguration;
 	}
 	
 	@Override
