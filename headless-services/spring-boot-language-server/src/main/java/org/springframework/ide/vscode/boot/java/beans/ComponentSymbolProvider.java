@@ -90,15 +90,10 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType.getName()), SymbolKind.Interface,
 				Either.forLeft(location));
 		
-		boolean isConfiguration = false;
-		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[0];
-		if (Annotations.CONFIGURATION.equals(annotationType.getQualifiedName())
-				|| metaAnnotations.stream().anyMatch(t -> Annotations.CONFIGURATION.equals(t.getQualifiedName()))) {
-			addon = new SymbolAddOnInformation[] {new ConfigBeanSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
-			isConfiguration = true;
-		} else {
-			addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
-		}
+		boolean isConfiguration = Annotations.CONFIGURATION.equals(annotationType.getQualifiedName())
+				|| metaAnnotations.stream().anyMatch(t -> Annotations.CONFIGURATION.equals(t.getQualifiedName()));
+
+		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
 		
 		InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(type, doc);
 		
