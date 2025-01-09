@@ -102,7 +102,18 @@ public class SpringMetamodelIndex {
 		Bean[] allBeans = this.beansPerProject.get(project);
 		
 		if (allBeans != null) {
-			return Arrays.stream(allBeans).filter(bean -> bean.getName().equals(name)).collect(Collectors.toList()).toArray(new Bean[0]);
+			return Arrays.stream(allBeans).filter(bean -> bean.getName().equals(name)).toArray(Bean[]::new);
+		}
+		else {
+			return null;
+		}
+	}
+
+	public Bean[] getBeansWithType(String project, String type) {
+		Bean[] allBeans = this.beansPerProject.get(project);
+		
+		if (allBeans != null) {
+			return Arrays.stream(allBeans).filter(bean -> bean.getType().equals(type)).toArray(Bean[]::new);
 		}
 		else {
 			return null;

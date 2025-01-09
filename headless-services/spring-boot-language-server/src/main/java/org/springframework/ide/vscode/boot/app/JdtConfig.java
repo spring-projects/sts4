@@ -120,8 +120,8 @@ public class JdtConfig {
 		return new BeanPostProcessingIgnoreInAotReconciler(server.getQuickfixRegistry());
 	}
 	
-	@Bean NotRegisteredBeansReconciler notRegisteredBeansReconciler(SimpleLanguageServer server) {
-		return new NotRegisteredBeansReconciler(server.getQuickfixRegistry());
+	@Bean NotRegisteredBeansReconciler notRegisteredBeansReconciler(SimpleLanguageServer server, SpringMetamodelIndex springIndex) {
+		return new NotRegisteredBeansReconciler(server.getQuickfixRegistry(), springIndex);
 	}
 	
 	@Bean EntityIdForRepoReconciler entityIdForRepoReconciler(SimpleLanguageServer server) {
