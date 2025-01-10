@@ -93,7 +93,7 @@ public class WebFluxMappingSymbolProviderTest {
         assertTrue(containsSymbol(symbols, "@/quotes -- GET - Accept: application/stream+json", docUri, 25, 5, 25, 94));
 
         List<? extends SymbolAddOnInformation> addons = indexer.getAdditonalInformation(docUri);
-        assertEquals(10, addons.size());
+        assertEquals(8, addons.size());
 
         WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/hello", "GET").get(0);
         assertEquals("/hello", handlerInfo1.getPath());
@@ -138,7 +138,7 @@ public class WebFluxMappingSymbolProviderTest {
         assertTrue(containsSymbol(symbols, "@/person -- GET - Accept: application/json", docUri, 28, 7, 28, 60));
 
         List<? extends SymbolAddOnInformation> addons = indexer.getAdditonalInformation(docUri);
-        assertEquals(8, addons.size());
+        assertEquals(6, addons.size());
 
         WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/{id}", "GET").get(0);
         assertEquals("/person/{id}", handlerInfo1.getPath());
@@ -175,7 +175,7 @@ public class WebFluxMappingSymbolProviderTest {
         assertTrue(containsSymbol(symbols, "@/person -- GET,HEAD - Accept: text/plain,application/json", docUri, 30, 7, 30, 113));
 
         List<? extends SymbolAddOnInformation> addons = indexer.getAdditonalInformation(docUri);
-        assertEquals(8, addons.size());
+        assertEquals(6, addons.size());
 
         WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/{id}", "GET").get(0);
         assertEquals("/person/{id}", handlerInfo1.getPath());
@@ -216,7 +216,7 @@ public class WebFluxMappingSymbolProviderTest {
         assertTrue(containsSymbol(symbols, "@/nestedDelete -- DELETE", docUri, 35, 42, 35, 93));
 
         List<? extends SymbolAddOnInformation> addons = indexer.getAdditonalInformation(docUri);
-        assertEquals(14, addons.size());
+        assertEquals(12, addons.size());
 
         WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/sub1/sub2/{id}", "GET").get(0);
         assertEquals("/person/sub1/sub2/{id}", handlerInfo1.getPath());
