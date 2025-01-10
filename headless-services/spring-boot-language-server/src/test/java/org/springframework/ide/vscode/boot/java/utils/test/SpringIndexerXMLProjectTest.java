@@ -30,8 +30,6 @@ import org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.XmlBeansTestConf;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
-import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
@@ -92,37 +90,9 @@ public class SpringIndexerXMLProjectTest {
         assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 12, 14, 12, 45));
         assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'persistenceExceptionTranslationPostProcessor' PersistenceExceptionTranslationPostProcessor", docUri, 18, 10, 18, 97));
 
-        List<? extends SymbolAddOnInformation> addon = symbolIndex.getAdditonalInformation(docUri);
-        assertEquals(4, addon.size());
-
-        assertEquals(1, addon.stream()
-                .filter(info -> info instanceof BeansSymbolAddOnInformation)
-                .filter(info -> "transactionManager".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
-                .count());
-
-        assertEquals(1, addon.stream()
-                .filter(info -> info instanceof BeansSymbolAddOnInformation)
-                .filter(info -> "jdbcTemplate".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
-                .count());
-
-        assertEquals(1, addon.stream()
-                .filter(info -> info instanceof BeansSymbolAddOnInformation)
-                .filter(info -> "namedParameterJdbcTemplate".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
-                .count());
-
-        assertEquals(1, addon.stream()
-                .filter(info -> info instanceof BeansSymbolAddOnInformation)
-                .filter(info -> "persistenceExceptionTranslationPostProcessor".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
-                .count());
-
-
         String beansOnClasspathDocUri = directory.toPath().resolve("src/main/resources/beans.xml").toUri().toString();
         assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'sb' SimpleBean", beansOnClasspathDocUri, 6, 14, 6, 21));
 
-        addon = symbolIndex.getAdditonalInformation(beansOnClasspathDocUri);
-        assertEquals(1, addon.size());
-        assertEquals("sb", ((BeansSymbolAddOnInformation) addon.get(0)).getBeanID());
-        
         Bean[] beans = springIndex.getBeansOfProject("test-annotation-indexing-xml-project");
         assertEquals(5, beans.length);
         

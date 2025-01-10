@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
@@ -87,7 +86,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 								beanLabel(isFunction, nameAndRegion.getT1(), beanType.getName(), "@Bean" + markerString),
 								SymbolKind.Interface,
 								Either.forLeft(location)),
-						new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(nameAndRegion.getT1(), beanType.getQualifiedName())}
+						null
 				);
 
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(method, doc);
@@ -121,7 +120,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 						Either.forLeft(new Location(doc.getUri(), doc.toRange(functionBean.getT3()))));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(),
-						new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(functionBean.getT1(), functionBean.getT2().getQualifiedName())})));
+						new EnhancedSymbolInformation(symbol, null)));
 
 			} catch (BadLocationException e) {
 				log.error("", e);

@@ -10,14 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,9 +26,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
-import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -44,6 +44,7 @@ public class SpringIndexerFunctionBeansTest {
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private SpringSymbolIndex indexer;
 	@Autowired private JavaProjectFinder projectFinder;
+	@Autowired private SpringMetamodelIndex springIndex;
 
 	private File directory;
 
@@ -70,18 +71,14 @@ public class SpringIndexerFunctionBeansTest {
                 SpringIndexerHarness.symbol("@Bean", "@> 'uppercase' (@Bean) Function<String,String>")
         );
 
-        List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
-        assertEquals(2, addon.size());
-
-        assertEquals(1, addon.stream()
-                .filter(info -> info instanceof BeansSymbolAddOnInformation)
-                .filter(info -> "functionClass".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
-                .count());
-
-        assertEquals(1, addon.stream()
-                .filter(info -> info instanceof BeansSymbolAddOnInformation)
-                .filter(info -> "uppercase".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
-                .count());
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(2, beans.length);
+        
+        Bean configBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("functionClass")).findFirst().get();
+        Bean functionBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("uppercase")).findFirst().get();
+        
+        assertEquals("org.test.FunctionClass", configBean.getType());
+        assertEquals("java.util.function.Function<java.lang.String,java.lang.String>", functionBean.getType());
     }
 
     @Test

@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
@@ -82,8 +81,6 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType == null ? "" : beanType.getName()), SymbolKind.Interface,
 				Either.forLeft(location));
 		
-		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType == null ? "" : beanType.getQualifiedName())};
-		
 		InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(type, doc);
 		
 		Set<String> supertypes = new HashSet<>();
@@ -100,7 +97,7 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 		
 		Bean beanDefinition = new Bean(beanName, beanType == null ? "" : beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false);
 
-		return Tuple.two(new EnhancedSymbolInformation(symbol, addon), beanDefinition);
+		return Tuple.two(new EnhancedSymbolInformation(symbol, null), beanDefinition);
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {

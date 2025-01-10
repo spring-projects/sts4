@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,10 +31,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
-import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerInformation;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -47,14 +48,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @Import(SymbolProviderTestConf.class)
 public class WebFluxMappingSymbolProviderTest {
 
-	@Autowired
-	private BootLanguageServerHarness harness;
-
-	@Autowired
-	private SpringSymbolIndex indexer;
-
-	@Autowired
-	JavaProjectFinder projectFinder;
+	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private SpringSymbolIndex indexer;
+	@Autowired private JavaProjectFinder projectFinder;
+	@Autowired private SpringMetamodelIndex springIndex;
 
 	private File directory;
 
@@ -79,9 +76,10 @@ public class WebFluxMappingSymbolProviderTest {
         assertTrue(containsSymbol(symbols, "@/users -- GET - Content-Type: application/json", docUri, 13, 1, 13, 74));
         assertTrue(containsSymbol(symbols, "@/users/{username} -- GET - Content-Type: application/json", docUri, 18, 1, 18, 85));
 
-        List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
-        assertEquals(1, addon.size());
-        assertEquals("userController", ((BeansSymbolAddOnInformation) addon.get(0)).getBeanID());
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(1, beans.length);
+        assertEquals("userController", beans[0].getName());
+        assertEquals("org.test.UserController", beans[0].getType());
     }
 
     @Test

@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.DefaultSymbolProvider;
@@ -93,8 +92,6 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		boolean isConfiguration = Annotations.CONFIGURATION.equals(annotationType.getQualifiedName())
 				|| metaAnnotations.stream().anyMatch(t -> Annotations.CONFIGURATION.equals(t.getQualifiedName()));
 
-		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
-		
 		InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(type, doc);
 		
 		Set<String> supertypes = new HashSet<>();
@@ -111,7 +108,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		
 		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration);
 
-		return Tuple.two(new EnhancedSymbolInformation(symbol, addon), beanDefinition);
+		return Tuple.two(new EnhancedSymbolInformation(symbol, null), beanDefinition);
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {

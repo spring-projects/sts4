@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,9 +30,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
-import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -47,6 +48,7 @@ public class DataRepositorySymbolProviderTest {
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private SpringSymbolIndex indexer;
+	@Autowired private SpringMetamodelIndex springIndex;
 
 	private File directory;
 
@@ -71,10 +73,14 @@ public class DataRepositorySymbolProviderTest {
         assertEquals(1, symbols.size());
         assertTrue(containsSymbol(symbols, "@+ 'customerRepository' (Customer) Repository<Customer,Long>", docUri, 6, 17, 6, 35));
 
-        List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
-        assertEquals(1, addon.size());
-
-        assertEquals("customerRepository", ((BeansSymbolAddOnInformation) addon.get(0)).getBeanID());
+        Bean[] repoBean = this.springIndex.getBeansWithName("test-spring-data-symbols", "customerRepository");
+        assertEquals(1, repoBean.length);
+        assertEquals("customerRepository", repoBean[0].getName());
+        assertEquals("org.test.CustomerRepository", repoBean[0].getType());
+        
+        Bean[] matchingBeans = springIndex.getMatchingBeans("test-spring-data-symbols", "org.springframework.data.repository.CrudRepository");
+        assertEquals(2, matchingBeans.length);
+        ArrayUtils.contains(matchingBeans, repoBean[0]);
     }
 
 	private boolean containsSymbol(List<? extends WorkspaceSymbol> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

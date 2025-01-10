@@ -24,11 +24,9 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
-import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.beans.CachedBean;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
@@ -65,8 +63,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 						SymbolKind.Interface,
 						Either.forLeft(location));
 
-				SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(repositoryBean.getT1(), repositoryBean.getT2().getQualifiedName())};
-				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, addon);
+				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
 
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
 				

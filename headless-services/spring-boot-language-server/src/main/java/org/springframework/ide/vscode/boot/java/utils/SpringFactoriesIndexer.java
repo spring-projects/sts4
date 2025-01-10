@@ -38,10 +38,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
-import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
@@ -123,9 +121,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 							symbols.add(new EnhancedSymbolInformation(new WorkspaceSymbol(
 									BeansSymbolProvider.beanLabel(false, beanId, fqName, Paths.get(URI.create(docURI)).getFileName().toString()),
 									SymbolKind.Interface,
-									Either.forLeft(new Location(docURI, range))), new SymbolAddOnInformation[] {
-											new BeansSymbolAddOnInformation(beanId, fqName)
-									}));
+									Either.forLeft(new Location(docURI, range))), null));
 						} catch (Exception e) {
 							log.error("", e);
 						}

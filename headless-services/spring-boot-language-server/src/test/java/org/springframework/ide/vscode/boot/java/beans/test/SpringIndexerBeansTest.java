@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.boot.java.beans.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
-import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -26,9 +26,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
-import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -43,9 +43,10 @@ public class SpringIndexerBeansTest {
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
+	@Autowired private SpringSymbolIndex indexer;
+	@Autowired private SpringMetamodelIndex springIndex;
 
 	private File directory;
-	@Autowired private SpringSymbolIndex indexer;
 
 	@BeforeEach
 	public void setup() throws Exception {
@@ -69,19 +70,15 @@ public class SpringIndexerBeansTest {
                 SpringIndexerHarness.symbol("@Configuration", "@+ 'simpleConfiguration' (@Configuration <: @Component) SimpleConfiguration"),
                 SpringIndexerHarness.symbol("@Bean", "@+ 'simpleBean' (@Bean) BeanClass")
         );
-
-        List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
-        assertEquals(2, addon.size());
-
-        assertEquals(1, addon.stream()
-                .filter(info -> info instanceof BeansSymbolAddOnInformation)
-                .filter(info -> "simpleConfiguration".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
-                .count());
-
-        assertEquals(1, addon.stream()
-                .filter(info -> info instanceof BeansSymbolAddOnInformation)
-                .filter(info -> "simpleBean".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
-                .count());
+        
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(2, beans.length);
+        
+        Bean simpleConfigBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("simpleConfiguration")).findFirst().get();
+        Bean simpleBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("simpleBean")).findFirst().get();
+        
+        assertEquals("org.test.SimpleConfiguration", simpleConfigBean.getType());
+        assertEquals("org.test.BeanClass", simpleBean.getType());
     }
 
     @Test
