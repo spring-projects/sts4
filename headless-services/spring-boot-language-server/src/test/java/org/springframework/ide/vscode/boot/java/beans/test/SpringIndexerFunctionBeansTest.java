@@ -87,6 +87,13 @@ public class SpringIndexerFunctionBeansTest {
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
                 SpringIndexerHarness.symbol("ScannedFunctionClass", "@> 'scannedFunctionClass' Function<String,String>")
         );
+        
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(1, beans.length);
+        
+        Bean functionClassBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("scannedFunctionClass")).findFirst().get();
+        
+        assertEquals("org.test.ScannedFunctionClass", functionClassBean.getType());
     }
 
     @Test
@@ -95,6 +102,13 @@ public class SpringIndexerFunctionBeansTest {
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
                 SpringIndexerHarness.symbol("FunctionFromSpecializedClass", "@> 'functionFromSpecializedClass' Function<String,String>")
         );
+
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(1, beans.length);
+        
+        Bean functionClassBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("functionFromSpecializedClass")).findFirst().get();
+        
+        assertEquals("org.test.FunctionFromSpecializedClass", functionClassBean.getType());
     }
 
     @Test
@@ -103,18 +117,31 @@ public class SpringIndexerFunctionBeansTest {
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
                 SpringIndexerHarness.symbol("FunctionFromSpecializedInterface", "@> 'functionFromSpecializedInterface' Function<String,String>")
         );
+
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(1, beans.length);
+        
+        Bean functionClassBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("functionFromSpecializedInterface")).findFirst().get();
+        
+        assertEquals("org.test.FunctionFromSpecializedInterface", functionClassBean.getType());
     }
 
     @Test
     void testNoSymbolForAbstractClasses() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/SpecializedFunctionClass.java").toUri().toString();
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri);
+        
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(0, beans.length);
     }
 
     @Test
     void testNoSymbolForSubInterfaces() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/SpecializedFunctionInterface.java").toUri().toString();
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri);
+
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(0, beans.length);
     }
 
 }

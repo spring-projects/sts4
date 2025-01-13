@@ -114,13 +114,30 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		Tuple3<String, ITypeBinding, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
 		if (functionBean != null) {
 			try {
+				String beanName = functionBean.getT1();
+				ITypeBinding beanType = functionBean.getT2();
+				Location beanLocation = new Location(doc.getUri(), doc.toRange(functionBean.getT3()));
+
 				WorkspaceSymbol symbol = new WorkspaceSymbol(
-						beanLabel(true, functionBean.getT1(), functionBean.getT2().getName(), null),
+						beanLabel(true, beanName, beanType.getName(), null),
 						SymbolKind.Interface,
-						Either.forLeft(new Location(doc.getUri(), doc.toRange(functionBean.getT3()))));
+						Either.forLeft(beanLocation));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(),
 						new EnhancedSymbolInformation(symbol, null)));
+
+				
+				ITypeBinding concreteBeanType = typeDeclaration.resolveBinding();
+				Set<String> supertypes = new HashSet<>();
+				ASTUtils.findSupertypes(concreteBeanType, supertypes);
+				
+				Collection<Annotation> annotationsOnTypeDeclaration = ASTUtils.getAnnotations(typeDeclaration);
+				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(annotationsOnTypeDeclaration, doc);
+
+				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
+
+				Bean beanDefinition = new Bean(beanName, concreteBeanType.getQualifiedName(), beanLocation, injectionPoints, supertypes, annotations, false);
+				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 
 			} catch (BadLocationException e) {
 				log.error("", e);
