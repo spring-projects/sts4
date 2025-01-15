@@ -1,30 +1,30 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2024 Broadcom
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Pivotal, Inc. - initial API and implementation
+ *     Broadcom - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.commons.protocol.spring.AbstractSpringIndexElement;
 
-/**
- * @author Martin Lippert
- */
-public class WebfluxElementsInformation implements SymbolAddOnInformation {
-	
+public class WebfluxRouteElementRangesIndexElement extends AbstractSpringIndexElement {
+
+	private static final Range[] NO_RANGES = new Range[0];
+
 	private Range[] ranges;
 
-	public WebfluxElementsInformation(Range... ranges) {
-		this.ranges = ranges;
+	public WebfluxRouteElementRangesIndexElement(Range... ranges) {
+		super(AbstractSpringIndexElement.NO_CHILDREN);
+		this.ranges = ranges != null ? ranges : NO_RANGES;
 	}
-	
+
 	public Range[] getRanges() {
 		return ranges;
 	}
@@ -35,10 +35,10 @@ public class WebfluxElementsInformation implements SymbolAddOnInformation {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * returns true if position1 is the same or before position2 in a document
 	 */

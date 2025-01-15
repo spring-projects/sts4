@@ -40,8 +40,6 @@ import org.springframework.ide.vscode.boot.index.cache.AbstractIndexCacheable;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDiscDeltaBased;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxElementsInformation;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
@@ -255,44 +253,6 @@ public class IndexCacheOnDiscDeltaBasedTest {
         cache.store(key2, new String[0], new ArrayList<>(), null, CachedSymbol.class);
         assertTrue(Files.exists(tempDir.resolve(Paths.get(key2.toString() + STORAGE_FILE_EXTENSION))));
         assertTrue(Files.exists(tempDir.resolve(Paths.get(key1.toString() + STORAGE_FILE_EXTENSION))));
-    }
-
-    @Test
-    void testEnhancedInformationSubclasses() throws Exception {
-        Path file1 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile1");
-        Files.createFile(file1);
-
-        FileTime timeFile1 = Files.getLastModifiedTime(file1);
-        String[] files = {file1.toString()};
-        String doc1URI = UriUtil.toUri(file1.toFile()).toString();
-
-        List<CachedSymbol> generatedSymbols = new ArrayList<>();
-
-        WorkspaceSymbol symbol = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20)))));
-        WebfluxElementsInformation addon = new WebfluxElementsInformation(new Range(new Position(4, 4), new Position(5, 5)), new Range(new Position(6, 6), new Position(7, 7)));
-        EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[]{addon});
-
-        generatedSymbols.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol));
-
-        cache.store(CACHE_KEY_VERSION_1, files, generatedSymbols, null, CachedSymbol.class);
-
-        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(CACHE_KEY_VERSION_1, files, CachedSymbol.class);
-        assertNotNull(cachedSymbols);
-        assertEquals(1, cachedSymbols.length);
-
-        assertEquals("symbol1", cachedSymbols[0].getEnhancedSymbol().getSymbol().getName());
-        assertEquals(SymbolKind.Field, cachedSymbols[0].getEnhancedSymbol().getSymbol().getKind());
-        assertEquals(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))), cachedSymbols[0].getEnhancedSymbol().getSymbol().getLocation().getLeft());
-
-        SymbolAddOnInformation[] retrievedAddOns = cachedSymbols[0].getEnhancedSymbol().getAdditionalInformation();
-        assertNotNull(retrievedAddOns);
-        assertEquals(1, retrievedAddOns.length);
-        assertTrue(retrievedAddOns[0] instanceof WebfluxElementsInformation);
-
-        Range[] ranges = ((WebfluxElementsInformation) retrievedAddOns[0]).getRanges();
-        assertEquals(2, ranges.length);
-        assertEquals(new Range(new Position(4, 4), new Position(5, 5)), ranges[0]);
-        assertEquals(new Range(new Position(6, 6), new Position(7, 7)), ranges[1]);
     }
 
     @Test

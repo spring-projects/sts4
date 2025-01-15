@@ -46,6 +46,7 @@ import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
 import com.google.common.collect.ImmutableMultimap;
@@ -374,6 +375,7 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 				.registerTypeAdapter(Bean.class, new BeanJsonAdapter())
 				.registerTypeAdapter(InjectionPoint.class, new InjectionPointJsonAdapter())
 				.registerTypeAdapter(IndexCacheStore.class, new IndexCacheStoreAdapter())
+				.registerTypeAdapter(SpringIndexElement.class, new SpringIndexElementAdapter())
 				.create();
 	}
 	
@@ -575,6 +577,7 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	// GSON serialize / deserialize adapters for the various types involved here that have special needs around JSON
 	//
 	//
+
 	
 	private static class IndexCacheStoreAdapter implements JsonDeserializer<IndexCacheStore<?>> {
 
@@ -610,9 +613,6 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 		
 	}
 
-	/**
-	 * gson adapter to store subtype information for symbol addon informations
-	 */
 	private static class DeltaStorageAdapter implements JsonSerializer<DeltaStorage<?>>, JsonDeserializer<DeltaStorage<?>> {
 
 	    @Override
@@ -637,9 +637,6 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	    }
 	}
 
-	/**
-	 * gson adapter to store subtype information for symbol addon informations
-	 */
 	private static class SymbolAddOnInformationAdapter implements JsonSerializer<SymbolAddOnInformation>, JsonDeserializer<SymbolAddOnInformation> {
 
 	    @Override
@@ -664,9 +661,6 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	    }
 	}
 
-	/**
-	 * gson adapter to store subtype information for beans
-	 */
 	private static class BeanJsonAdapter implements JsonDeserializer<Bean> {
 
 	    @Override
@@ -690,8 +684,11 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 	        JsonElement isConfigurationObject = parsedObject.get("isConfiguration");
 	        boolean isConfiguration = context.deserialize(isConfigurationObject, boolean.class);
+	        
+	        JsonElement childrenObject = parsedObject.get("children");
+	        SpringIndexElement[] children = context.deserialize(childrenObject, SpringIndexElement[].class);
 
-	        return new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, isConfiguration);
+	        return new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, isConfiguration, children);
 	    }
 	}
 	
@@ -713,5 +710,28 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	        return new InjectionPoint(injectionPointName, injectionPointType, location, annotations);
 	    }
 	}
+	
+	private static class SpringIndexElementAdapter implements JsonSerializer<SpringIndexElement>, JsonDeserializer<SpringIndexElement> {
+
+	    @Override
+	    public JsonElement serialize(SpringIndexElement element, Type typeOfSrc, JsonSerializationContext context) {
+	        JsonElement elem = context.serialize(element);
+	        elem.getAsJsonObject().addProperty("type", element.getClass().getName());
+	        return elem;
+	    }
+
+	    @Override
+	    public SpringIndexElement deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
+	        JsonObject jsonObject = json.getAsJsonObject();
+	        String typeName = jsonObject.get("type").getAsString();
+
+	        try {
+	            return context.deserialize(jsonObject, (Class<?>) Class.forName(typeName));
+	        } catch (ClassNotFoundException e) {
+	            throw new JsonParseException(e);
+	        }
+	    }
+	}
+
 	
 }

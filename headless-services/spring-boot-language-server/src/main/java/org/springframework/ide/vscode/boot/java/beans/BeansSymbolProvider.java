@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -34,13 +35,16 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
+import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouterSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -57,13 +61,12 @@ import reactor.util.function.Tuples;
  */
 public class BeansSymbolProvider extends AbstractSymbolProvider {
 	
-	
 	private static final Logger log = LoggerFactory.getLogger(BeansSymbolProvider.class);
 
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
 
 	@Override
-	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+	public void addSymbols(Annotation node, ITypeBinding typeBinding, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		if (node == null) return;
 		
 		ASTNode parent = node.getParent();
@@ -73,7 +76,22 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 
 		if (isMethodAbstract(method)) return;
 
+		boolean isWebfluxRouter = WebfluxRouterSymbolProvider.isWebfluxRouterBean(method);
+		
+		// for webflux details, we need full method body ASTs
+		if (isWebfluxRouter && SCAN_PASS.ONE.equals(context.getPass())) {
+			context.getNextPassFiles().add(context.getFile());
+			return;
+		}
+		
+		List<SpringIndexElement> childElements = new ArrayList<>();
+		
+		if (isWebfluxRouter) {
+			WebfluxRouterSymbolProvider.createWebfluxElements(method, context, doc, childElements);
+		}
+		
 		boolean isFunction = isFunctionBean(method);
+
 		ITypeBinding beanType = getBeanType(method);
 		String markerString = getAnnotations(method);
 
@@ -97,7 +115,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 				Collection<Annotation> annotationsOnMethod = ASTUtils.getAnnotations(method);
 				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(annotationsOnMethod, doc);
 				
-				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false);
+				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false, childElements.toArray(SpringIndexElement[]::new));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));

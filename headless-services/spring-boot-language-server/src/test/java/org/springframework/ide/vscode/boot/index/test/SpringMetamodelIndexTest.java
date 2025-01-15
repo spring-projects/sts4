@@ -29,12 +29,15 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
-import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDisc;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDiscDeltaBased;
+import org.springframework.ide.vscode.commons.protocol.spring.AbstractSpringIndexElement;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
+import org.springframework.ide.vscode.commons.protocol.spring.RequestMapping;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 
 import com.google.gson.Gson;
 
@@ -250,7 +253,7 @@ public class SpringMetamodelIndexTest {
 		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, new InjectionPoint[] {point1, point2}, Set.of("supertype1", "supertype2"), emptyAnnotations, true);
 		String serialized = bean1.toString();
 		
-		Gson gson = IndexCacheOnDisc.createGson();
+		Gson gson = IndexCacheOnDiscDeltaBased.createGson();
 		Bean deserializedBean = gson.fromJson(serialized, Bean.class);
 		
 		assertEquals("beanName1", deserializedBean.getName());
@@ -301,7 +304,7 @@ public class SpringMetamodelIndexTest {
 		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes, emptyAnnotations, false);
 		String serialized = bean1.toString();
 		
-		Gson gson = IndexCacheOnDisc.createGson();
+		Gson gson = IndexCacheOnDiscDeltaBased.createGson();
 		Bean deserializedBean = gson.fromJson(serialized, Bean.class);
 		
 		assertEquals("beanName1", deserializedBean.getName());
@@ -394,6 +397,91 @@ public class SpringMetamodelIndexTest {
 		assertSame(bean4, matchingBeans[0]);
 		
 		matchingBeans = index.getMatchingBeans("otherProject", "supertype1");
+	}
+	
+	@Test
+	void testBasicSpringIndexStructure() {
+		SubType1 child1 = new SubType1(AbstractSpringIndexElement.NO_CHILDREN);
+		SpringIndexElement[] children = new SpringIndexElement[] {child1};
+		Bean bean1 = new Bean("beanName1", "beanType1", locationForDoc1, emptyInjectionPoints, Set.of("supertype1", "supertype2"), emptyAnnotations, false, children);
+		
+		SpringIndexElement[] children2 = bean1.getChildren();
+		assertEquals(1, children2.length);
+		assertSame(child1, children2[0]);
+	}
+		
+	@Test
+	void testSpringIndexStructurePolymorphicSerialization() {
+		Gson gson = IndexCacheOnDiscDeltaBased.createGson();
+		
+		SubType2 subNode = new SubType2(null);
+		
+		SubType1 node1 = new SubType1(new SpringIndexElement[] {subNode});
+		SubType2 node2 = new SubType2(null);
+		
+		Root root = new Root(new SpringIndexElement[] {node1, node2});
+
+		String json = gson.toJson(root);
+		Root deserializedRoot = gson.fromJson(json, Root.class);
+		
+		SpringIndexElement[] children = deserializedRoot.getChildren();
+		assertEquals(2, children.length);
+		
+		SubType1 deserializedNode1 = (SubType1) java.util.Arrays.stream(children).filter(node -> node instanceof SubType1).findAny().get();
+		SubType2 deserializedNode2 = (SubType2) java.util.Arrays.stream(children).filter(node -> node instanceof SubType2).findAny().get();
+		
+		assertNotNull(deserializedNode1);
+		assertNotNull(deserializedNode2);
+		
+		SpringIndexElement[] deserializedChild2 = deserializedNode1.getChildren();
+		assertEquals(1, deserializedChild2.length);
+		assertTrue(deserializedChild2[0] instanceof SubType2);
+	}
+	
+	@Test
+	void testSerializeDeserializeBeansWithChildElements() {
+
+		Gson gson = IndexCacheOnDiscDeltaBased.createGson();
+
+		SubType2 childOfChild = new SubType2(null);
+		SubType1 child1 = new SubType1(new SpringIndexElement[] {childOfChild});
+		SubType2 child2 = new SubType2(null);
+		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes, emptyAnnotations, true, new SpringIndexElement[] {child1, child2});
+
+		String serialized = gson.toJson(bean1);
+		Bean deserializedBean = gson.fromJson(serialized, Bean.class);
+		
+		SpringIndexElement[] children = deserializedBean.getChildren();
+		assertEquals(2, children.length);
+		
+		SpringIndexElement deserializedChild1 = java.util.Arrays.stream(children).filter(element -> element instanceof SubType1).findAny().get();
+		assertNotNull(deserializedChild1);
+		
+		SpringIndexElement[] childrenOfChild = deserializedChild1.getChildren();
+		assertEquals(1, childrenOfChild.length);
+		assertTrue(childrenOfChild[0] instanceof SubType2);
+		
+		SpringIndexElement deserializedChild2 = java.util.Arrays.stream(children).filter(element -> element instanceof SubType2).findAny().get();
+		assertNotNull(deserializedChild2);
+		assertEquals(0, deserializedChild2.getChildren().length);
+	}
+
+	static class SubType1 extends AbstractSpringIndexElement {
+		public SubType1(SpringIndexElement[] children) {
+			super(children);
+		}
+	}
+
+	static class SubType2 extends AbstractSpringIndexElement {
+		public SubType2(SpringIndexElement[] children) {
+			super(children);
+		}
+	}
+
+	static class Root extends AbstractSpringIndexElement {
+		public Root(SpringIndexElement[] children) {
+			super(children);
+		}
 	}
 		
 }

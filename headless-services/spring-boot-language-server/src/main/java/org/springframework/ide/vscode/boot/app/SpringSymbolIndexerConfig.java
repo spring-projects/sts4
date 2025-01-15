@@ -21,7 +21,6 @@ import org.springframework.ide.vscode.boot.java.beans.FeignClientSymbolProvider;
 import org.springframework.ide.vscode.boot.java.data.DataRepositorySymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
-import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouterSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.RestrictedDefaultSymbolProvider;
 
 @Configuration(proxyBeanMethods = false)
@@ -36,7 +35,6 @@ public class SpringSymbolIndexerConfig {
 		ComponentSymbolProvider componentSymbolProvider = new ComponentSymbolProvider();
 		RestrictedDefaultSymbolProvider restrictedDefaultSymbolProvider = new RestrictedDefaultSymbolProvider();
 		DataRepositorySymbolProvider dataRepositorySymbolProvider = new DataRepositorySymbolProvider();
-		WebfluxRouterSymbolProvider webfluxRouterSymbolProvider = new WebfluxRouterSymbolProvider();
 
 		providers.put(Annotations.SPRING_REQUEST_MAPPING, requestMappingSymbolProvider);
 		providers.put(Annotations.SPRING_GET_MAPPING, requestMappingSymbolProvider);
@@ -72,7 +70,6 @@ public class SpringSymbolIndexerConfig {
 		providers.put(Annotations.CONDITIONAL_ON_SINGLE_CANDIDATE, restrictedDefaultSymbolProvider);
 
 		providers.put(Annotations.REPOSITORY, dataRepositorySymbolProvider);
-		providers.put("", webfluxRouterSymbolProvider);
 		
 		providers.put(Annotations.FEIGN_CLIENT, new FeignClientSymbolProvider());
 

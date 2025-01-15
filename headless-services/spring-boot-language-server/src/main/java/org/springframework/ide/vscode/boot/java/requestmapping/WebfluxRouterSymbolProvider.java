@@ -32,24 +32,42 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
+public class WebfluxRouterSymbolProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(WebfluxRouterSymbolProvider.class);
+	
+	public static boolean isWebfluxRouterBean(MethodDeclaration method) {
+		Type returnType = method.getReturnType2();
+		if (returnType != null) {
+			ITypeBinding resolvedBinding = returnType.resolveBinding();
+			if (resolvedBinding != null && WebfluxUtils.ROUTER_FUNCTION_TYPE.equals(resolvedBinding.getBinaryName())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public static SpringIndexElement[] createWebfluxElements(MethodDeclaration methodDeclaration, SpringIndexerJavaContext context, TextDocument doc, List<SpringIndexElement> childElements) {
+		Block methodBody = methodDeclaration.getBody();
+		if (methodBody != null && methodBody.statements() != null && methodBody.statements().size() > 0) {
+			addSymbolsForRouterFunction(methodBody, context, doc, childElements);
+		}
+		
+		return new SpringIndexElement[0];
+	}
 
-	@Override
 	public void addSymbols(MethodDeclaration methodDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		Type returnType = methodDeclaration.getReturnType2();
 		if (returnType != null) {
@@ -60,7 +78,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 
 				Block methodBody = methodDeclaration.getBody();
 				if (methodBody != null && methodBody.statements() != null && methodBody.statements().size() > 0) {
-					addSymbolsForRouterFunction(methodBody, context, doc);
+					addSymbolsForRouterFunction(methodBody, context, doc, new ArrayList<>());
 				}
 				else if (SCAN_PASS.ONE.equals(context.getPass())) {
 					context.getNextPassFiles().add(context.getFile());
@@ -70,7 +88,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	private void addSymbolsForRouterFunction(Block methodBody, SpringIndexerJavaContext context, TextDocument doc) {
+	private static void addSymbolsForRouterFunction(Block methodBody, SpringIndexerJavaContext context, TextDocument doc, List<SpringIndexElement> indexElementsCollector) {
 		methodBody.accept(new ASTVisitor() {
 
 			@Override
@@ -78,7 +96,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 				IMethodBinding methodBinding = node.resolveMethodBinding();
 
 				if (methodBinding != null && WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
-					extractMappingSymbol(node, doc, context);
+					extractMappingSymbol(node, doc, context, indexElementsCollector);
 				}
 
 				return super.visit(node);
@@ -87,7 +105,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		});
 	}
 
-	protected void extractMappingSymbol(MethodInvocation node, TextDocument doc, SpringIndexerJavaContext context) {
+	protected static void extractMappingSymbol(MethodInvocation node, TextDocument doc, SpringIndexerJavaContext context, List<SpringIndexElement> indexElementsCollector) {
 		WebfluxRouteElement[] pathElements = extractPath(node, doc);
 		WebfluxRouteElement[] httpMethods = extractMethods(node, doc);
 		WebfluxRouteElement[] contentTypes = extractContentTypes(node, doc);
@@ -107,15 +125,14 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 			try {
 
 				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, node.getLength() - (methodNameStart - invocationStart)));
-				WebfluxHandlerInformation handler = extractHandlerInformation(node, path, httpMethods, contentTypes, acceptTypes);
-				WebfluxElementsInformation elements = extractElementsInformation(pathElements, httpMethods, contentTypes, acceptTypes);
+				WebfluxHandlerMethodIndexElement handler = extractHandlerInformation(node, path, httpMethods, contentTypes, acceptTypes);
+				WebfluxRouteElementRangesIndexElement elements = extractElementsInformation(pathElements, httpMethods, contentTypes, acceptTypes);
 				
-				SymbolAddOnInformation[] addon = handler != null ?
-						new SymbolAddOnInformation[] {handler, elements} :
-						new SymbolAddOnInformation[] {elements};
-
+				if (handler != null) indexElementsCollector.add(handler);
+				if (elements != null) indexElementsCollector.add(elements);
+				
 				EnhancedSymbolInformation enhancedSymbol = RouteUtils.createRouteSymbol(location, path, getElementStrings(httpMethods),
-						getElementStrings(contentTypes), getElementStrings(acceptTypes), addon);
+						getElementStrings(contentTypes), getElementStrings(acceptTypes), null);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 
@@ -125,7 +142,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	private WebfluxElementsInformation extractElementsInformation(WebfluxRouteElement[] path, WebfluxRouteElement[] methods,
+	private static WebfluxRouteElementRangesIndexElement extractElementsInformation(WebfluxRouteElement[] path, WebfluxRouteElement[] methods,
 			WebfluxRouteElement[] contentTypes, WebfluxRouteElement[] acceptTypes) {
 		List<Range> allRanges = new ArrayList<>();
 
@@ -136,10 +153,10 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 			}
 		}
 
-		return new WebfluxElementsInformation((Range[]) allRanges.toArray(new Range[allRanges.size()]));
+		return new WebfluxRouteElementRangesIndexElement((Range[]) allRanges.toArray(new Range[allRanges.size()]));
 	}
 
-	private WebfluxRouteElement[] extractPath(MethodInvocation routerInvocation, TextDocument doc) {
+	private static WebfluxRouteElement[] extractPath(MethodInvocation routerInvocation, TextDocument doc) {
 		WebfluxPathFinder pathFinder = new WebfluxPathFinder(routerInvocation, doc);
 		List<?> arguments = routerInvocation.arguments();
 		for (Object argument : arguments) {
@@ -171,7 +188,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		return (WebfluxRouteElement[]) path.toArray(new WebfluxRouteElement[path.size()]);
 	}
 
-	private WebfluxRouteElement[] extractMethods(MethodInvocation routerInvocation, TextDocument doc) {
+	private static WebfluxRouteElement[] extractMethods(MethodInvocation routerInvocation, TextDocument doc) {
 		WebfluxMethodFinder methodFinder = new WebfluxMethodFinder(routerInvocation, doc);
 		List<?> arguments = routerInvocation.arguments();
 		for (Object argument : arguments) {
@@ -204,7 +221,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		return (WebfluxRouteElement[]) methods.toArray(new WebfluxRouteElement[methods.size()]);
 	}
 
-	private WebfluxRouteElement[] extractAcceptTypes(MethodInvocation routerInvocation, TextDocument doc) {
+	private static WebfluxRouteElement[] extractAcceptTypes(MethodInvocation routerInvocation, TextDocument doc) {
 		WebfluxAcceptTypeFinder typeFinder = new WebfluxAcceptTypeFinder(doc);
 		List<?> arguments = routerInvocation.arguments();
 		for (Object argument : arguments) {
@@ -237,7 +254,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		return (WebfluxRouteElement[]) acceptTypes.toArray(new WebfluxRouteElement[acceptTypes.size()]);
 	}
 
-	private WebfluxRouteElement[] extractContentTypes(MethodInvocation routerInvocation, TextDocument doc) {
+	private static WebfluxRouteElement[] extractContentTypes(MethodInvocation routerInvocation, TextDocument doc) {
 		WebfluxContentTypeFinder contentTypeFinder = new WebfluxContentTypeFinder(doc);
 		List<?> arguments = routerInvocation.arguments();
 		for (Object argument : arguments) {
@@ -270,7 +287,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		return (WebfluxRouteElement[]) contentTypes.toArray(new WebfluxRouteElement[contentTypes.size()]);
 	}
 
-	private void extractNestedValue(ASTNode node, Collection<WebfluxRouteElement> values, Function<MethodInvocation, WebfluxRouteElement> extractor) {
+	private static void extractNestedValue(ASTNode node, Collection<WebfluxRouteElement> values, Function<MethodInvocation, WebfluxRouteElement> extractor) {
 		if (node == null || node instanceof TypeDeclaration) {
 			return;
 		}
@@ -301,7 +318,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		extractNestedValue(node.getParent(), values, extractor);
 	}
 
-	private WebfluxHandlerInformation extractHandlerInformation(MethodInvocation node, String path, WebfluxRouteElement[] httpMethods,
+	private static WebfluxHandlerMethodIndexElement extractHandlerInformation(MethodInvocation node, String path, WebfluxRouteElement[] httpMethods,
 			WebfluxRouteElement[] contentTypes, WebfluxRouteElement[] acceptTypes) {
 
 		List<?> arguments = node.arguments();
@@ -319,7 +336,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 						String handlerMethod = methodBinding.getMethodDeclaration().toString();
 						if (handlerMethod != null) handlerMethod = handlerMethod.trim();
 
-						return new WebfluxHandlerInformation(handlerClass, handlerMethod, path, getElementStrings(httpMethods), getElementStrings(contentTypes), getElementStrings(acceptTypes));
+						return new WebfluxHandlerMethodIndexElement(handlerClass, handlerMethod, path, getElementStrings(httpMethods), getElementStrings(contentTypes), getElementStrings(acceptTypes));
 					}
 				}
 			}
@@ -328,7 +345,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		return null;
 	}
 
-	private String[] getElementStrings(WebfluxRouteElement[] routeElements) {
+	private static String[] getElementStrings(WebfluxRouteElement[] routeElements) {
 		List<String> result = new ArrayList<>();
 
 		for (int i = 0; i < routeElements.length; i++) {

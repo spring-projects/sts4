@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,8 +18,9 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -29,10 +30,10 @@ public class WebfluxRouteHighlightProdivder implements HighlightProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(WebfluxRouteHighlightProdivder.class);
 
-	private final SpringSymbolIndex springIndexer;
+	private final SpringMetamodelIndex springIndex;
 
-	public WebfluxRouteHighlightProdivder(SpringSymbolIndex indexer) {
-		this.springIndexer = indexer;
+	public WebfluxRouteHighlightProdivder(SpringMetamodelIndex springIndex) {
+		this.springIndex = springIndex;
 	}
 
 	@Override
@@ -41,19 +42,13 @@ public class WebfluxRouteHighlightProdivder implements HighlightProvider {
 		
 		cancelToken.checkCanceled();
 
-		this.springIndexer.getAdditonalInformation(document.getUri())
-			.stream()
-			.filter(addon -> {
-				if (addon instanceof WebfluxElementsInformation) {
-					WebfluxElementsInformation handlerInfo = (WebfluxElementsInformation) addon;
-
-					if (handlerInfo.contains(position)) {
-						return true;
-					}
-				}
-				return false;
-			})
-			.flatMap(addon -> Arrays.asList(((WebfluxElementsInformation) addon).getRanges()).stream())
+		Bean[] beans = springIndex.getBeans();
+		Arrays.stream(beans)
+			.flatMap(bean -> Arrays.stream(bean.getChildren()))
+			.filter(element -> element instanceof WebfluxRouteElementRangesIndexElement)
+			.map(element -> (WebfluxRouteElementRangesIndexElement) element)
+			.filter(rangesElement -> rangesElement.contains(position))
+			.flatMap(rangesElement -> Arrays.stream(rangesElement.getRanges()))
 			.forEach(range -> resultAccumulator.add(new DocumentHighlight(range)));
 	}
 

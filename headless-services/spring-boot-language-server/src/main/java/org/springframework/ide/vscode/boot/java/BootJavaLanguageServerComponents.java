@@ -187,7 +187,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		
 		spelSemanticTokens = appContext.getBean(SpelSemanticTokens.class);
 
-		codeLensHandler = createCodeLensEngine(springSymbolIndex, projectFinder, server, spelSemanticTokens);
+		codeLensHandler = createCodeLensEngine(springIndex, projectFinder, server, spelSemanticTokens);
 
 		highlightsEngine = createDocumentHighlightEngine(appContext);
 		documents.onDocumentHighlight(highlightsEngine);
@@ -328,9 +328,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return new BootJavaReferencesHandler(this, cuCache, projectFinder, providers);
 	}
 
-	protected BootJavaCodeLensEngine createCodeLensEngine(SpringSymbolIndex index, JavaProjectFinder projectFinder, SimpleLanguageServer server, SpelSemanticTokens spelSemanticTokens) {
+	protected BootJavaCodeLensEngine createCodeLensEngine(SpringMetamodelIndex springIndex, JavaProjectFinder projectFinder, SimpleLanguageServer server, SpelSemanticTokens spelSemanticTokens) {
 		Collection<CodeLensProvider> codeLensProvider = new ArrayList<>();
-		codeLensProvider.add(new WebfluxHandlerCodeLensProvider(index));
+		codeLensProvider.add(new WebfluxHandlerCodeLensProvider(springIndex));
 		codeLensProvider.add(new CopilotCodeLensProvider(projectFinder, server, spelSemanticTokens));
 
 		return new BootJavaCodeLensEngine(this, codeLensProvider);
@@ -338,7 +338,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	protected BootJavaDocumentHighlightEngine createDocumentHighlightEngine(ApplicationContext appContext) {
 		Collection<HighlightProvider> highlightProvider = new ArrayList<>();
-		highlightProvider.add(new WebfluxRouteHighlightProdivder(appContext.getBean(SpringSymbolIndex.class)));
+		highlightProvider.add(new WebfluxRouteHighlightProdivder(appContext.getBean(SpringMetamodelIndex.class)));
 		
 		Map<String, JdtAstDocHighlightsProvider> astHighlightProviders = appContext.getBeansOfType(JdtAstDocHighlightsProvider.class);
 		if (!astHighlightProviders.isEmpty()) {

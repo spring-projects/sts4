@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2024 Broadcom
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Pivotal, Inc. - initial API and implementation
+ *     Broadcom - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping.test;
 
@@ -16,20 +16,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Test;
-import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxElementsInformation;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouteElementRangesIndexElement;
 
 /**
  * @author Martin Lippert
  */
-public class WebfluxElementsInformationTest {
+public class WebfluxRouteElementRangesIndexElementTest {
 
     @Test
     void testContainsSingleCharacterRange() {
         Range range = new Range(new Position(3, 10), new Position(3, 10));
-        WebfluxElementsInformation information = new WebfluxElementsInformation(new Range[]{range});
+        WebfluxRouteElementRangesIndexElement information = new WebfluxRouteElementRangesIndexElement(new Range[]{range});
 
         assertFalse(information.contains(new Position(3, 9)));
         assertTrue(information.contains(new Position(3, 10)));
@@ -39,7 +36,7 @@ public class WebfluxElementsInformationTest {
     @Test
     void testContainsSingleLineRange() {
         Range range = new Range(new Position(3, 10), new Position(3, 20));
-        WebfluxElementsInformation information = new WebfluxElementsInformation(new Range[]{range});
+        WebfluxRouteElementRangesIndexElement information = new WebfluxRouteElementRangesIndexElement(new Range[]{range});
 
         assertFalse(information.contains(new Position(3, 5)));
         assertTrue(information.contains(new Position(3, 11)));
@@ -53,7 +50,7 @@ public class WebfluxElementsInformationTest {
     @Test
     void testContainsMultipleLineRange() {
         Range range = new Range(new Position(2, 10), new Position(4, 5));
-        WebfluxElementsInformation information = new WebfluxElementsInformation(new Range[]{range});
+        WebfluxRouteElementRangesIndexElement information = new WebfluxRouteElementRangesIndexElement(new Range[]{range});
 
         assertFalse(information.contains(new Position(1, 1)));
         assertFalse(information.contains(new Position(1, 11)));
@@ -82,7 +79,7 @@ public class WebfluxElementsInformationTest {
         Range range3 = new Range(new Position(10, 10), new Position(20, 20));
         Range range4 = new Range(new Position(4, 40), new Position(6, 3));
 
-        WebfluxElementsInformation information = new WebfluxElementsInformation(new Range[]{range1, range2, range3, range4});
+        WebfluxRouteElementRangesIndexElement information = new WebfluxRouteElementRangesIndexElement(new Range[]{range1, range2, range3, range4});
 
         assertFalse(information.contains(new Position(2, 9)));
         assertTrue(information.contains(new Position(2, 10)));

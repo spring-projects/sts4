@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,7 +9,7 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
-
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -19,9 +19,9 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -30,10 +30,10 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 
-	private final SpringSymbolIndex springIndexer;
+	private final SpringMetamodelIndex springIndex;
 
-	public WebfluxHandlerCodeLensProvider(SpringSymbolIndex springIndexer) {
-		this.springIndexer = springIndexer;
+	public WebfluxHandlerCodeLensProvider(SpringMetamodelIndex springIndex) {
+		this.springIndex = springIndex;
 	}
 
 	@Override
@@ -59,21 +59,11 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 			final String handlerMethod = methodBinding.getMethodDeclaration().toString().trim();
 			
 			cancelToken.checkCanceled();
-
-			List<SymbolAddOnInformation> handlerInfos = this.springIndexer.getAllAdditionalInformation((addon) -> {
-				if (addon instanceof WebfluxHandlerInformation) {
-					WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) addon;
-					return handlerInfo.getHandlerClass() != null && handlerInfo.getHandlerClass().equals(handlerClass)
-							&& handlerInfo.getHandlerMethod() != null && handlerInfo.getHandlerMethod().equals(handlerMethod);
-				}
-				return false;
-			});
-
-			if (handlerInfos != null && handlerInfos.size() > 0) {
-				for (Object object : handlerInfos) {
+			
+			List<WebfluxHandlerMethodIndexElement> matchingHandlerMethods = findMatchingHandlerMethogs(handlerClass, handlerMethod);
+			if (matchingHandlerMethods.size() > 0) {
+				for (WebfluxHandlerMethodIndexElement handlerInfo : matchingHandlerMethods) {
 					try {
-						WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) object;
-
 						CodeLens codeLens = new CodeLens();
 						codeLens.setRange(document.toRange(node.getName().getStartPosition(), node.getName().getLength()));
 
@@ -99,6 +89,18 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 				}
 			}
 		}
+	}
+
+	private List<WebfluxHandlerMethodIndexElement> findMatchingHandlerMethogs(String handlerClass, String handlerMethod) {
+		Bean[] beans = springIndex.getBeans();
+		
+		return Arrays.stream(beans)
+			.flatMap(bean -> Arrays.stream(bean.getChildren()))
+			.filter(element -> element instanceof WebfluxHandlerMethodIndexElement)
+			.map(element -> (WebfluxHandlerMethodIndexElement) element)
+			.filter(webfluxElement -> webfluxElement.getHandlerClass() != null && webfluxElement.getHandlerClass().equals(handlerClass)
+					&& webfluxElement.getHandlerMethod() != null && webfluxElement.getHandlerMethod().equals(handlerMethod))
+			.toList();
 	}
 
 }

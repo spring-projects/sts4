@@ -16,7 +16,7 @@ import org.eclipse.lsp4j.Location;
 
 import com.google.gson.Gson;
 
-public class Bean {
+public class Bean extends AbstractSpringIndexElement {
 	
 	private final String name;
 	private final String type;
@@ -32,7 +32,11 @@ public class Bean {
 			Location location,
 			InjectionPoint[] injectionPoints,
 			Set<String> supertypes,
-			AnnotationMetadata[] annotations, boolean isConfiguration) {
+			AnnotationMetadata[] annotations,
+			boolean isConfiguration,
+			SpringIndexElement[] children) {
+		
+		super(children);
 
 		this.name = name;
 		this.type = type;
@@ -63,6 +67,18 @@ public class Bean {
 			this.annotations = annotations;
 		}
 	}
+	
+	public Bean(
+			String name,
+			String type,
+			Location location,
+			InjectionPoint[] injectionPoints,
+			Set<String> supertypes,
+			AnnotationMetadata[] annotations,
+			boolean isConfiguration) {
+		this(name, type, location, injectionPoints, supertypes, annotations, isConfiguration, AbstractSpringIndexElement.NO_CHILDREN);
+	}
+
 	
 	public String getName() {
 		return name;
