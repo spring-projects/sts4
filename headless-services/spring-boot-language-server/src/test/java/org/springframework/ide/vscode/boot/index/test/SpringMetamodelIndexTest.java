@@ -36,7 +36,6 @@ import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
-import org.springframework.ide.vscode.commons.protocol.spring.RequestMapping;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 
 import com.google.gson.Gson;
