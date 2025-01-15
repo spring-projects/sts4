@@ -129,7 +129,7 @@ class JavaProjectCache implements IJavaProjectProvider {
 
 	void start() {
 		// Register handler for the classpath change callback command
-		commandService.registerCommand(callbackCommandId, (params, cancelChecker) -> handleClasspathChanged(params));
+		commandService.registerCommand(callbackCommandId, (params, sharedSettings, cancelChecker) -> handleClasspathChanged(params));
 		
 		// Register classpath listener by executing the command below
 		final ExecuteCommandParams execCmdParams = new ExecuteCommandParams(JAVA_EXECUTE_WORKSPACE_COMMAND, Arrays.asList("sts.java.addClasspathListener", callbackCommandId, true));
