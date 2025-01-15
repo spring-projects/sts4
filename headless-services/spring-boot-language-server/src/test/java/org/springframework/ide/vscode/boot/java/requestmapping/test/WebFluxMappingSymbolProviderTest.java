@@ -89,10 +89,10 @@ public class WebFluxMappingSymbolProviderTest {
         String docUri = directory.toPath().resolve("src/main/java/org/test/QuoteRouter.java").toUri().toString();
         List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
         assertEquals(6, symbols.size());
-        assertTrue(containsSymbol(symbols, "@/hello -- GET - Accept: text/plain", docUri, 22, 5, 22, 70));
-        assertTrue(containsSymbol(symbols, "@/echo -- POST - Accept: text/plain - Content-Type: text/plain", docUri, 23, 5, 23, 101));
-        assertTrue(containsSymbol(symbols, "@/quotes -- GET - Accept: application/json", docUri, 24, 5, 24, 86));
-        assertTrue(containsSymbol(symbols, "@/quotes -- GET - Accept: application/stream+json", docUri, 25, 5, 25, 94));
+        assertTrue(containsSymbol(symbols, "@/hello -- GET - Accept: text/plain", docUri, 23, 5, 23, 70));
+        assertTrue(containsSymbol(symbols, "@/echo -- POST - Accept: text/plain - Content-Type: text/plain", docUri, 24, 5, 24, 101));
+        assertTrue(containsSymbol(symbols, "@/quotes -- GET - Accept: application/json", docUri, 25, 5, 25, 86));
+        assertTrue(containsSymbol(symbols, "@/quotes -- GET - Accept: application/stream+json", docUri, 26, 5, 26, 122));
         
         Bean[] routeBeans = springIndex.getBeansWithName(project.getElementName(), "route");
         assertEquals(1, routeBeans.length);

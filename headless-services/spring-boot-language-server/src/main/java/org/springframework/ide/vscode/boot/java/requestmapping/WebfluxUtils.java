@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -67,8 +67,11 @@ public class WebfluxUtils {
 		List<?> arguments = node.arguments();
 		if (arguments != null && arguments.size() > 0) {
 			Object object = arguments.get(0);
-			if (object instanceof SimpleName) {
-				return (SimpleName) object;
+			if (object instanceof SimpleName sn) {
+				return sn;
+			}
+			else if (object instanceof QualifiedName qn) {
+				return qn.getName();
 			}
 		}
 		return null;
