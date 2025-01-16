@@ -172,34 +172,17 @@ public class BootLaunchConfigurationDelegate extends AbstractBootLaunchConfigura
 
 	@Override
 	public String getProgramArguments(ILaunchConfiguration conf) throws CoreException {
-		Properties props = getApplicationProperties(conf);
-		String profile = getProfile(conf);
-		boolean debugOutput = getEnableDebugOutput(conf);
-		boolean enableAnsiConsole = supportsAnsiConsoleOutput() && getEnableAnsiConsoleOutput(conf);
-		if ((props==null || props.isEmpty()) && !debugOutput && !hasText(profile) && !enableAnsiConsole && !useThinWrapper(conf)) {
-			//shortcut for case where no boot-specific customizations are specified.
-			return super.getProgramArguments(conf);
-		}
-		ArrayList<String> args = new ArrayList<>();
 		if (useThinWrapper(conf)) {
+			ArrayList<String> args = new ArrayList<>();
 			String realMain = super.getMainTypeName(conf);
 			//--thin.main=com.example.SampleApplication
 			// --thin.archive=target/classes - the first one is the main class of the boot app, as already configured in the boot launch config, the second one points to the compiled classes (the entry that was on the regular classpath before without the maven dependencies)
 			args.add("--thin.main="+realMain);
 			args.add("--thin.archive="+getThinArchive(conf));
+			args.addAll(Arrays.asList(DebugPlugin.parseArguments(super.getProgramArguments(conf))));
+			return DebugPlugin.renderArguments(args.toArray(new String[args.size()]), null);
 		}
-		if (debugOutput) {
-			args.add("--debug");
-		}
-		if (hasText(profile)) {
-			args.add(propertyAssignmentArgument("spring.profiles.active", profile));
-		}
-		if (enableAnsiConsole) {
-			args.add(propertyAssignmentArgument("spring.output.ansi.enabled", "always"));
-		}
-		addPropertiesArguments(args, props);
-		args.addAll(Arrays.asList(DebugPlugin.parseArguments(super.getProgramArguments(conf))));
-		return DebugPlugin.renderArguments(args.toArray(new String[args.size()]), null);
+		return super.getProgramArguments(conf);
 	}
 
 	private String getThinArchive(ILaunchConfiguration conf) throws CoreException {
@@ -228,6 +211,22 @@ public class BootLaunchConfigurationDelegate extends AbstractBootLaunchConfigura
 		try {
 			List<String> vmArgs = new ArrayList<>();
 			vmArgs.addAll(Arrays.asList(DebugPlugin.parseArguments(super.getVMArguments(conf))));
+
+			Properties props = getApplicationProperties(conf);
+			String profile = getProfile(conf);
+			boolean debugOutput = getEnableDebugOutput(conf);
+			boolean enableAnsiConsole = supportsAnsiConsoleOutput() && getEnableAnsiConsoleOutput(conf);
+			if (debugOutput) {
+				vmArgs.add("-Ddebug");
+			}
+			if (hasText(profile)) {
+				vmArgs.add(propertyAssignmentArgument("spring.profiles.active", profile, SYSTEM_PROP_PREFIX));
+			}
+			if (enableAnsiConsole) {
+				vmArgs.add(propertyAssignmentArgument("spring.output.ansi.enabled", "always", SYSTEM_PROP_PREFIX));
+			}
+			addPropertiesArguments(vmArgs, props, SYSTEM_PROP_PREFIX);
+
 			// VM args for JMX connection
 			EnumSet<JmxBeanSupport.Feature> enabled = getEnabledJmxFeatures(conf);
 			if (!enabled.isEmpty()) {

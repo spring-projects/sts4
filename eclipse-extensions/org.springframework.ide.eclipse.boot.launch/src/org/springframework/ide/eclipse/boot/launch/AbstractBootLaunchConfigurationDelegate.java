@@ -63,6 +63,9 @@ public abstract class AbstractBootLaunchConfigurationDelegate extends AdvancedJa
 	private static final String BOOT_MAVEN_CLASS_PATH_PROVIDER = "org.springframework.ide.eclipse.boot.launch.BootMavenClassPathProvider";
 	private static final String BUILDSHIP_CLASS_PATH_PROVIDER = "org.eclipse.buildship.core.classpathprovider";
 
+	protected static final String PROGRAM_ARG_PREFIX = "--";
+	protected static final String SYSTEM_PROP_PREFIX = "-D";
+
 	/**
 	 * Spring boot properties are stored as launch confiuration properties with
 	 * an extra prefix added to property name to avoid name clashes with
@@ -253,28 +256,31 @@ public abstract class AbstractBootLaunchConfigurationDelegate extends AdvancedJa
 	}
 
 	@SuppressWarnings("rawtypes")
-	protected void addPropertiesArguments(ArrayList<String> args, Properties props) {
+	protected void addPropertiesArguments(List<String> args, Properties props, String prefix) {
 		for (Map.Entry e : props.entrySet()) {
 			String name = (String) e.getKey();
 			String value = (String) e.getValue();
 			//spring boot doesn't like empty option keys/values so skip those.
 			if (!name.isEmpty()) {
-				args.add(propertyAssignmentArgument(name, value));
+				args.add(propertyAssignmentArgument(name, value, prefix));
 			}
 		}
 	}
 
-	protected String propertyAssignmentArgument(String name, String value) {
+	protected String propertyAssignmentArgument(String name, String value, String prefix) {
 		if (name.contains("=")) {
 			//spring boot has no handling of escape sequences like '\='
 			//so we cannot represent keys containing '='.
 			throw new IllegalArgumentException("property name shouldn't contain '=':"+name);
 		}
-		if (value.isEmpty()) {
-			return "--"+name;
-		} else {
-			return "--"+name + "=" +value;
+		StringBuilder sb = new StringBuilder();
+		sb.append(prefix);
+		sb.append(name);
+		if (!value.isEmpty()) {
+			sb.append('=');
+			sb.append(value);
 		}
+		return sb.toString();
 	}
 
 

@@ -69,14 +69,14 @@ public class BootDevtoolsClientLaunchConfigurationDelegate extends AbstractBootL
 	public String getProgramArguments(ILaunchConfiguration conf) throws CoreException {
 		Properties props = getApplicationProperties(conf);
 		ArrayList<String> args = new ArrayList<>();
-		addPropertiesArguments(args, props);
+		addPropertiesArguments(args, props, PROGRAM_ARG_PREFIX);
 		String secret = getSecret(conf);
 		if (StringUtil.hasText(secret)) {
-			args.add(propertyAssignmentArgument(REMOTE_SECRET, secret));
+			args.add(propertyAssignmentArgument(REMOTE_SECRET, secret, PROGRAM_ARG_PREFIX));
 		}
 		Integer debugPort = localDebugPort.get();
 		if (debugPort!=null) {
-			args.add(propertyAssignmentArgument(DEBUG_PORT, ""+debugPort));
+			args.add(propertyAssignmentArgument(DEBUG_PORT, ""+debugPort, PROGRAM_ARG_PREFIX));
 		}
 		args.add(getRemoteUrl(conf));
 		return DebugPlugin.renderArguments(args.toArray(new String[args.size()]), null);
