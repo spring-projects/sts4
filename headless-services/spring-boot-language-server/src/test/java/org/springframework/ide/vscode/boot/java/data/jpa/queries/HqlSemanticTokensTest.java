@@ -217,4 +217,35 @@ public class HqlSemanticTokensTest {
 		assertThat(tokens.get(30)).isEqualTo(new SemanticTokenData(146, 147, "operator", new String[0])); // )
 		assertThat(tokens.get(31)).isEqualTo(new SemanticTokenData(148, 152, "keyword", new String[0])); // DESC
 	}
+	
+	@Test
+	void spelForEntityName() {
+		List<SemanticTokenData> tokens = provider.computeTokens("from #{#entityName} e where g.order= (select min(sub.order) from #{#entityName} sub)");
+		assertThat(tokens.size()).isEqualTo(24);
+
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 4, "keyword", new String[0])); // from
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(5, 7, "operator", new String[0])); // #{
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(7, 18, "string", new String[0])); // #entityName
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(18, 19, "operator", new String[0])); // }
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(20, 21, "variable", new String[0])); // e
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(22, 27, "keyword", new String[0])); // where
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(28, 29, "variable", new String[0])); // g
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(29, 30, "operator", new String[0])); // .
+		assertThat(tokens.get(8)).isEqualTo(new SemanticTokenData(30, 35, "property", new String[0])); // order
+		assertThat(tokens.get(9)).isEqualTo(new SemanticTokenData(35, 36, "operator", new String[0])); // =
+		assertThat(tokens.get(10)).isEqualTo(new SemanticTokenData(37, 38, "operator", new String[0])); // (
+		assertThat(tokens.get(11)).isEqualTo(new SemanticTokenData(38, 44, "keyword", new String[0])); // select
+		assertThat(tokens.get(12)).isEqualTo(new SemanticTokenData(45, 48, "keyword", new String[0])); // min
+		assertThat(tokens.get(13)).isEqualTo(new SemanticTokenData(48, 49, "operator", new String[0])); // (
+		assertThat(tokens.get(14)).isEqualTo(new SemanticTokenData(49, 52, "variable", new String[0])); // sub
+		assertThat(tokens.get(15)).isEqualTo(new SemanticTokenData(52, 53, "operator", new String[0])); // .
+		assertThat(tokens.get(16)).isEqualTo(new SemanticTokenData(53, 58, "property", new String[0])); // order
+		assertThat(tokens.get(17)).isEqualTo(new SemanticTokenData(58, 59, "operator", new String[0])); // )
+		assertThat(tokens.get(18)).isEqualTo(new SemanticTokenData(60, 64, "keyword", new String[0])); // from
+		assertThat(tokens.get(19)).isEqualTo(new SemanticTokenData(65, 67, "operator", new String[0])); // #{
+		assertThat(tokens.get(20)).isEqualTo(new SemanticTokenData(67, 78, "string", new String[0])); // #entityName
+		assertThat(tokens.get(21)).isEqualTo(new SemanticTokenData(78, 79, "operator", new String[0])); // }
+		assertThat(tokens.get(22)).isEqualTo(new SemanticTokenData(80, 83, "variable", new String[0])); // sub
+		assertThat(tokens.get(23)).isEqualTo(new SemanticTokenData(83, 84, "operator", new String[0])); // )
+	}
 }

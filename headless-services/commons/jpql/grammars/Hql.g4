@@ -680,6 +680,7 @@ parameter
 
 entityName
     : identifier ('.' identifier)*
+    | SPEL
     ;
 
 identifier
