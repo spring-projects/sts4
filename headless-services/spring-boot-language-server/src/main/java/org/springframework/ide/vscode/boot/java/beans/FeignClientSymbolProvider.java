@@ -97,7 +97,7 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 		
 		Bean beanDefinition = new Bean(beanName, beanType == null ? "" : beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false);
 
-		return Tuple.two(new EnhancedSymbolInformation(symbol, null), beanDefinition);
+		return Tuple.two(new EnhancedSymbolInformation(symbol), beanDefinition);
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {

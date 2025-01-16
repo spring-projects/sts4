@@ -62,7 +62,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 			}
 			else if (Annotations.NAMED_ANNOTATIONS.contains(annotationType.getQualifiedName())) {
 				WorkspaceSymbol symbol = DefaultSymbolProvider.provideDefaultSymbol(node, doc);
-				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
+				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol);
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 			}
 		}
@@ -108,7 +108,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		
 		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration);
 
-		return Tuple.two(new EnhancedSymbolInformation(symbol, null), beanDefinition);
+		return Tuple.two(new EnhancedSymbolInformation(symbol), beanDefinition);
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {

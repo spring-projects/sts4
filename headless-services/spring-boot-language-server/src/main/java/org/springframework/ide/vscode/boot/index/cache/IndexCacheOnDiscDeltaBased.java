@@ -41,7 +41,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.lsp4j.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
@@ -371,7 +370,6 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	public static Gson createGson() {
 		return new GsonBuilder()
 				.registerTypeAdapter(DeltaStorage.class, new DeltaStorageAdapter())
-				.registerTypeAdapter(SymbolAddOnInformation.class, new SymbolAddOnInformationAdapter())
 				.registerTypeAdapter(Bean.class, new BeanJsonAdapter())
 				.registerTypeAdapter(InjectionPoint.class, new InjectionPointJsonAdapter())
 				.registerTypeAdapter(IndexCacheStore.class, new IndexCacheStoreAdapter())
@@ -631,30 +629,6 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 	        try {
 	            return new DeltaStorage<>(context.deserialize(element, Class.forName(className)));
-	        } catch (ClassNotFoundException cnfe) {
-	            throw new JsonParseException("cannot parse data from unknown SymbolAddOnInformation subtype: " + type, cnfe);
-	        }
-	    }
-	}
-
-	private static class SymbolAddOnInformationAdapter implements JsonSerializer<SymbolAddOnInformation>, JsonDeserializer<SymbolAddOnInformation> {
-
-	    @Override
-	    public JsonElement serialize(SymbolAddOnInformation addonInfo, Type typeOfSrc, JsonSerializationContext context) {
-	        JsonObject result = new JsonObject();
-	        result.add("type", new JsonPrimitive(addonInfo.getClass().getName()));
-	        result.add("data", context.serialize(addonInfo));
-	        return result;
-	    }
-
-	    @Override
-	    public SymbolAddOnInformation deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
-	        JsonObject parsedObject = json.getAsJsonObject();
-	        String className = parsedObject.get("type").getAsString();
-	        JsonElement element = parsedObject.get("data");
-
-	        try {
-	            return context.deserialize(element, Class.forName(className));
 	        } catch (ClassNotFoundException cnfe) {
 	            throw new JsonParseException("cannot parse data from unknown SymbolAddOnInformation subtype: " + type, cnfe);
 	        }

@@ -39,8 +39,8 @@ import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouterSymb
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
@@ -103,8 +103,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 						new WorkspaceSymbol(
 								beanLabel(isFunction, nameAndRegion.getT1(), beanType.getName(), "@Bean" + markerString),
 								SymbolKind.Interface,
-								Either.forLeft(location)),
-						null
+								Either.forLeft(location))
 				);
 
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(method, doc);
@@ -142,7 +141,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 						Either.forLeft(beanLocation));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(),
-						new EnhancedSymbolInformation(symbol, null)));
+						new EnhancedSymbolInformation(symbol)));
 
 				
 				ITypeBinding concreteBeanType = typeDeclaration.resolveBinding();

@@ -121,7 +121,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 							symbols.add(new EnhancedSymbolInformation(new WorkspaceSymbol(
 									BeansSymbolProvider.beanLabel(false, beanId, fqName, Paths.get(URI.create(docURI)).getFileName().toString()),
 									SymbolKind.Interface,
-									Either.forLeft(new Location(docURI, range))), null));
+									Either.forLeft(new Location(docURI, range)))));
 						} catch (Exception e) {
 							log.error("", e);
 						}

@@ -132,7 +132,7 @@ public class WebfluxRouterSymbolProvider {
 				if (elements != null) indexElementsCollector.add(elements);
 				
 				EnhancedSymbolInformation enhancedSymbol = RouteUtils.createRouteSymbol(location, path, getElementStrings(httpMethods),
-						getElementStrings(contentTypes), getElementStrings(acceptTypes), null);
+						getElementStrings(contentTypes), getElementStrings(acceptTypes));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 

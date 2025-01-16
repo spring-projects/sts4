@@ -92,7 +92,7 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			}
 
 			WorkspaceSymbol symbol = new WorkspaceSymbol("@+ '" + beanID + "' " + beanClass, SymbolKind.Interface, Either.forLeft(new Location(docURI, range)));
-			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol, null);
+			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol);
 
 			CachedSymbol cachedSymbol = new CachedSymbol(docURI, lastModified, fullSymbol);
 			generatedSymbols.add(cachedSymbol);

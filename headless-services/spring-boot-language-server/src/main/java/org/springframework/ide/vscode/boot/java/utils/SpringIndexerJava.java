@@ -770,7 +770,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			} else {
 				WorkspaceSymbol symbol = provideDefaultSymbol(node, context);
 				if (symbol != null) {
-					EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
+					EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol);
 					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				}
 			}

@@ -63,7 +63,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 						SymbolKind.Interface,
 						Either.forLeft(location));
 
-				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
+				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol);
 
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
 				

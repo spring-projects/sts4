@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2023 Pivotal, Inc.
+ * Copyright (c) 2018, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -39,7 +39,7 @@ public class RestrictedDefaultSymbolProvider extends AbstractSymbolProvider {
 		// provide default symbol only in case this annotation is not combined with @Bean annotation
 		if (!isCombinedWithAnnotation(node, Annotations.BEAN)) {
 			try {
-				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(DefaultSymbolProvider.provideDefaultSymbol(node, doc), null);
+				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(DefaultSymbolProvider.provideDefaultSymbol(node, doc));
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 			} catch (Exception e) {
 				log.warn(e.getMessage());
