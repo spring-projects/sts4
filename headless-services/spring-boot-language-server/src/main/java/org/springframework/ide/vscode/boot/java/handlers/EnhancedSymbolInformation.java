@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 Pivotal, Inc.
+ * Copyright (c) 2018, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,21 +18,15 @@ import org.eclipse.lsp4j.WorkspaceSymbol;
 public class EnhancedSymbolInformation {
 	
 	private final WorkspaceSymbol symbol;
-	private final SymbolAddOnInformation[] additionalInformation;
 
-	public EnhancedSymbolInformation(WorkspaceSymbol symbol, SymbolAddOnInformation[] additionalInformation) {
+	public EnhancedSymbolInformation(WorkspaceSymbol symbol) {
 		this.symbol = symbol;
-		this.additionalInformation = additionalInformation;
 	}
 	
 	public WorkspaceSymbol getSymbol() {
 		return symbol;
 	}
 	
-	public SymbolAddOnInformation[] getAdditionalInformation() {
-		return additionalInformation;
-	}
-
 	@Override
 	public String toString() {
 		return "EnhancedSymbolInformation [symbol=" + symbol + "]";

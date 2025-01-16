@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2024 Pivotal, Inc.
+ * Copyright (c) 2019, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -92,7 +92,7 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			}
 
 			WorkspaceSymbol symbol = new WorkspaceSymbol("@+ '" + beanID + "' " + beanClass, SymbolKind.Interface, Either.forLeft(new Location(docURI, range)));
-			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol, null);
+			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol);
 
 			CachedSymbol cachedSymbol = new CachedSymbol(docURI, lastModified, fullSymbol);
 			generatedSymbols.add(cachedSymbol);

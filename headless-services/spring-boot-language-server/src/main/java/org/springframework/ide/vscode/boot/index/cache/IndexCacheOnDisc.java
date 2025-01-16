@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2024 Pivotal, Inc.
+ * Copyright (c) 2019, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,7 +34,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.lsp4j.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
@@ -52,9 +51,6 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
@@ -351,7 +347,6 @@ public class IndexCacheOnDisc implements IndexCache {
 
 	public static Gson createGson() {
 		return new GsonBuilder()
-				.registerTypeAdapter(SymbolAddOnInformation.class, new SymbolAddOnInformationAdapter())
 				.registerTypeAdapter(Bean.class, new BeanJsonAdapter())
 				.registerTypeAdapter(InjectionPoint.class, new InjectionPointJsonAdapter())
 				.registerTypeAdapter(IndexCacheStore.class, new IndexCacheStoreAdapter())
@@ -424,33 +419,6 @@ public class IndexCacheOnDisc implements IndexCache {
 
 		}
 		
-	}
-
-	/**
-	 * gson adapter to store subtype information for symbol addon informations
-	 */
-	private static class SymbolAddOnInformationAdapter implements JsonSerializer<SymbolAddOnInformation>, JsonDeserializer<SymbolAddOnInformation> {
-
-	    @Override
-	    public JsonElement serialize(SymbolAddOnInformation addonInfo, Type typeOfSrc, JsonSerializationContext context) {
-	        JsonObject result = new JsonObject();
-	        result.add("type", new JsonPrimitive(addonInfo.getClass().getName()));
-	        result.add("data", context.serialize(addonInfo));
-	        return result;
-	    }
-
-	    @Override
-	    public SymbolAddOnInformation deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
-	        JsonObject parsedObject = json.getAsJsonObject();
-	        String className = parsedObject.get("type").getAsString();
-	        JsonElement element = parsedObject.get("data");
-
-	        try {
-	            return context.deserialize(element, Class.forName(className));
-	        } catch (ClassNotFoundException cnfe) {
-	            throw new JsonParseException("cannot parse data from unknown SymbolAddOnInformation subtype: " + type, cnfe);
-	        }
-	    }
 	}
 
 	/**

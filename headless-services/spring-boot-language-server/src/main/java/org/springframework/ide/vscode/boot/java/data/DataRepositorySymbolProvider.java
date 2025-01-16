@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2024 Pivotal, Inc.
+ * Copyright (c) 2018, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -63,7 +63,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 						SymbolKind.Interface,
 						Either.forLeft(location));
 
-				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
+				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol);
 
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
 				

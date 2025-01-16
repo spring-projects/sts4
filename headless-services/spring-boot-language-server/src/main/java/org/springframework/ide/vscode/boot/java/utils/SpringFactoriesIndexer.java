@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023, 2024 VMware, Inc.
+ * Copyright (c) 2023, 2025 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -58,7 +58,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 	
 	// whenever the implementation of the indexer changes in a way that the stored data in the cache is no longer valid,
 	// we need to change the generation - this will result in a re-indexing due to no up-to-date cache data being found
-	private static final String GENERATION = "GEN-7";
+	private static final String GENERATION = "GEN-8";
 	
 	private static final String FILE_PATTERN = "**/META-INF/spring/*.factories";
 	
@@ -121,7 +121,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 							symbols.add(new EnhancedSymbolInformation(new WorkspaceSymbol(
 									BeansSymbolProvider.beanLabel(false, beanId, fqName, Paths.get(URI.create(docURI)).getFileName().toString()),
 									SymbolKind.Interface,
-									Either.forLeft(new Location(docURI, range))), null));
+									Either.forLeft(new Location(docURI, range)))));
 						} catch (Exception e) {
 							log.error("", e);
 						}

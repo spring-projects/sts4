@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -93,7 +93,7 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	// whenever the implementation of the indexer changes in a way that the stored data in the cache is no longer valid,
 	// we need to change the generation - this will result in a re-indexing due to no up-to-date cache data being found
-	private static final String GENERATION = "GEN-11";
+	private static final String GENERATION = "GEN-12";
 	private static final String INDEX_FILES_TASK_ID = "index-java-source-files-task-";
 
 	private static final String SYMBOL_KEY = "symbols";
@@ -770,7 +770,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			} else {
 				WorkspaceSymbol symbol = provideDefaultSymbol(node, context);
 				if (symbol != null) {
-					EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
+					EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol);
 					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				}
 			}

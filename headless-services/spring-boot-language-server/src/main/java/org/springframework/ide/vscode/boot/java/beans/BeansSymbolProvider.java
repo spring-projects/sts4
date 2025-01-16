@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -39,8 +40,8 @@ import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouterSymb
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
@@ -62,7 +63,6 @@ import reactor.util.function.Tuples;
 public class BeansSymbolProvider extends AbstractSymbolProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(BeansSymbolProvider.class);
-
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
 
 	@Override
@@ -73,21 +73,23 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		if (parent == null || !(parent instanceof MethodDeclaration)) return;
 		
 		MethodDeclaration method = (MethodDeclaration) parent;
-
 		if (isMethodAbstract(method)) return;
 
+		List<SpringIndexElement> childElements = new ArrayList<>();
+		
 		boolean isWebfluxRouter = WebfluxRouterSymbolProvider.isWebfluxRouterBean(method);
 		
 		// for webflux details, we need full method body ASTs
-		if (isWebfluxRouter && SCAN_PASS.ONE.equals(context.getPass())) {
-			context.getNextPassFiles().add(context.getFile());
-			return;
-		}
-		
-		List<SpringIndexElement> childElements = new ArrayList<>();
-		
 		if (isWebfluxRouter) {
-			WebfluxRouterSymbolProvider.createWebfluxElements(method, context, doc, childElements);
+			Block methodBody = method.getBody();
+			if ((methodBody == null || methodBody.statements() == null || methodBody.statements().size() == 0)
+					&& SCAN_PASS.ONE.equals(context.getPass())) {
+				context.getNextPassFiles().add(context.getFile());
+				return;
+			}
+			else {
+				WebfluxRouterSymbolProvider.createWebfluxElements(method, context, doc, childElements);
+			}
 		}
 		
 		boolean isFunction = isFunctionBean(method);
@@ -103,8 +105,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 						new WorkspaceSymbol(
 								beanLabel(isFunction, nameAndRegion.getT1(), beanType.getName(), "@Bean" + markerString),
 								SymbolKind.Interface,
-								Either.forLeft(location)),
-						null
+								Either.forLeft(location))
 				);
 
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(method, doc);
@@ -142,7 +143,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 						Either.forLeft(beanLocation));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(),
-						new EnhancedSymbolInformation(symbol, null)));
+						new EnhancedSymbolInformation(symbol)));
 
 				
 				ITypeBinding concreteBeanType = typeDeclaration.resolveBinding();

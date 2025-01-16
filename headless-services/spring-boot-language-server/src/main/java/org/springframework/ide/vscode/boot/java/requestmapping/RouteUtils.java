@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,7 +15,6 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 
 /**
  * @author Martin Lippert
@@ -23,7 +22,7 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 public class RouteUtils {
 	
 	public static EnhancedSymbolInformation createRouteSymbol(Location location, String path,
-			String[] httpMethods, String[] contentTypes, String[] acceptTypes, SymbolAddOnInformation[] enhancedInformation) {
+			String[] httpMethods, String[] contentTypes, String[] acceptTypes) {
 		
 		if (path != null && path.length() > 0) {
 			String label = "@" + (path.startsWith("/") ? path : ("/" + path));
@@ -35,7 +34,7 @@ public class RouteUtils {
 			String contentType = WebfluxUtils.getStringRep(contentTypes, WebfluxUtils::getMediaType);
 			label += contentType != null ? " - Content-Type: " + contentType : "";
 
-			return new EnhancedSymbolInformation(new WorkspaceSymbol(label, SymbolKind.Interface, Either.forLeft(location)), enhancedInformation);
+			return new EnhancedSymbolInformation(new WorkspaceSymbol(label, SymbolKind.Interface, Either.forLeft(location)));
 		}
 		else {
 			return null;

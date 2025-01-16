@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2024 Pivotal, Inc.
+ * Copyright (c) 2018, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +39,7 @@ import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerMet
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -284,6 +288,34 @@ public class WebFluxMappingSymbolProviderTest {
         assertEquals("org.test.PersonHandler3", handlerElement6.getHandlerClass());
         assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> deletePerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerElement6.getHandlerMethod());
     }
+    
+    @Test
+    void testUpdatedRouteInChangedDocument() throws Exception {
+        // update document and update index
+        String changedDocURI = directory.toPath().resolve("src/main/java/org/test/QuoteRouter.java").toUri().toString();
+
+        String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI)), Charset.defaultCharset()).replace("/hello", "/hello-updated");
+        CompletableFuture<Void> updateFuture = indexer.updateDocument(changedDocURI, newContent, "test triggered");
+        updateFuture.get(5, TimeUnit.SECONDS);
+        
+        Bean[] routeBeans = springIndex.getBeansWithName(project.getElementName(), "route");
+        assertEquals(1, routeBeans.length);
+        assertEquals("route", routeBeans[0].getName());
+
+        SpringIndexElement[] children = routeBeans[0].getChildren();
+        assertEquals(8, children.length);
+        
+        WebfluxHandlerMethodIndexElement handlerElement1 = getWebfluxIndexElements(children, "/hello-updated", "GET").get(0);
+        assertEquals("/hello-updated", handlerElement1.getPath());
+        assertEquals("[GET]", Arrays.toString(handlerElement1.getHttpMethods()));
+        assertEquals(0, handlerElement1.getContentTypes().length);
+        assertEquals("[TEXT_PLAIN]", Arrays.toString(handlerElement1.getAcceptTypes()));
+        assertEquals("org.test.QuoteHandler", handlerElement1.getHandlerClass());
+        assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> hello(org.springframework.web.reactive.function.server.ServerRequest)", handlerElement1.getHandlerMethod());
+
+    }
+
+
 
 	private boolean containsSymbol(List<? extends WorkspaceSymbol> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
 		for (Iterator<? extends WorkspaceSymbol> iterator = symbols.iterator(); iterator.hasNext();) {

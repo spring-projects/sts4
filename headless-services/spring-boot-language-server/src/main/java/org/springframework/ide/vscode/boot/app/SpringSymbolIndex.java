@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -57,7 +56,6 @@ import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
@@ -747,42 +745,6 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		}
 	}
 
-	public List<SymbolAddOnInformation> getAllAdditionalInformation(Predicate<SymbolAddOnInformation> filter) {
-		if (filter != null) {
-			synchronized(symbols) {
-				return symbols.stream()
-						.map(s -> s.getAdditionalInformation())
-						.filter(Objects::nonNull)
-						.flatMap(i -> Arrays.stream(i))
-						.filter(filter)
-						.collect(Collectors.toList());
-			}
-		}
-		else {
-			return Collections.emptyList();
-		}
-	}
-
-	public List<? extends SymbolAddOnInformation> getAdditonalInformation(String docURI) {
-		List<EnhancedSymbolInformation> info = this.symbolsByDoc.get(docURI);
-
-		if (info != null) {
-			synchronized(info) {
-				ImmutableList.Builder<SymbolAddOnInformation> builder = ImmutableList.builder();
-				for (EnhancedSymbolInformation enhanced : info) {
-					SymbolAddOnInformation[] additionalInformation = enhanced.getAdditionalInformation();
-					if (additionalInformation != null) {
-						builder.add(additionalInformation);
-					}
-				}
-				return builder.build();
-			}
-		}
-		else {
-			return Collections.emptyList();
-		}
-	}
-	
 	@Override
 	public CompletableFuture<List<Bean>> beans(BeansParams params) {
 		String projectName = params.getProjectName();
