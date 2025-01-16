@@ -18,6 +18,7 @@ import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -62,7 +63,6 @@ import reactor.util.function.Tuples;
 public class BeansSymbolProvider extends AbstractSymbolProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(BeansSymbolProvider.class);
-
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
 
 	@Override
@@ -73,21 +73,23 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		if (parent == null || !(parent instanceof MethodDeclaration)) return;
 		
 		MethodDeclaration method = (MethodDeclaration) parent;
-
 		if (isMethodAbstract(method)) return;
 
+		List<SpringIndexElement> childElements = new ArrayList<>();
+		
 		boolean isWebfluxRouter = WebfluxRouterSymbolProvider.isWebfluxRouterBean(method);
 		
 		// for webflux details, we need full method body ASTs
-		if (isWebfluxRouter && SCAN_PASS.ONE.equals(context.getPass())) {
-			context.getNextPassFiles().add(context.getFile());
-			return;
-		}
-		
-		List<SpringIndexElement> childElements = new ArrayList<>();
-		
 		if (isWebfluxRouter) {
-			WebfluxRouterSymbolProvider.createWebfluxElements(method, context, doc, childElements);
+			Block methodBody = method.getBody();
+			if ((methodBody == null || methodBody.statements() == null || methodBody.statements().size() == 0)
+					&& SCAN_PASS.ONE.equals(context.getPass())) {
+				context.getNextPassFiles().add(context.getFile());
+				return;
+			}
+			else {
+				WebfluxRouterSymbolProvider.createWebfluxElements(method, context, doc, childElements);
+			}
 		}
 		
 		boolean isFunction = isFunctionBean(method);
