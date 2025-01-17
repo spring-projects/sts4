@@ -146,6 +146,22 @@ public class SpringIndexerBeansTest {
     }
 
     @Test
+    void testScanComponentClassWithName() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/SpecialNameComponent.java").toUri().toString();
+        SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+                SpringIndexerHarness.symbol("@Component(\"specialName\")", "@+ 'specialName' (@Component) SpecialNameComponent")
+        );
+    }
+
+    @Test
+    void testScanComponentClassWithNameAndAttributeName() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/SpecialNameComponentWithAttributeName.java").toUri().toString();
+        SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+                SpringIndexerHarness.symbol("@Component(value = \"specialNameWithAttributeName\")", "@+ 'specialNameWithAttributeName' (@Component) SpecialNameComponentWithAttributeName")
+        );
+    }
+
+    @Test
     void testScanSimpleControllerClass() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleController.java").toUri().toString();
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
