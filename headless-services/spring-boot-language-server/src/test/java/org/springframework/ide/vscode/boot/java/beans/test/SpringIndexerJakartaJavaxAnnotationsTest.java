@@ -81,13 +81,13 @@ public class SpringIndexerJakartaJavaxAnnotationsTest {
         String docUri = directory.toPath().resolve("src/main/java/org/test/jakarta/NamedComponentWithSpecificName.java").toUri().toString();
         
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
-                SpringIndexerHarness.symbol("@Named(\"specificallyNamedComponent\")", "@+ 'namedComponentWithSpecificName' (@Named) NamedComponentWithSpecificName")
+                SpringIndexerHarness.symbol("@Named(\"specificallyNamedComponent\")", "@+ 'specificallyNamedComponent' (@Named) NamedComponentWithSpecificName")
         );
 
         Bean[] beans = springIndex.getBeansOfDocument(docUri);
         assertEquals(1, beans.length);
         
-        assertEquals("namedComponentWithSpecificName", beans[0].getName());
+        assertEquals("specificallyNamedComponent", beans[0].getName());
         assertEquals("org.test.jakarta.NamedComponentWithSpecificName", beans[0].getType());
      }
 
@@ -96,13 +96,13 @@ public class SpringIndexerJakartaJavaxAnnotationsTest {
         String docUri = directory.toPath().resolve("src/main/java/org/test/javax/NamedComponentWithSpecificName.java").toUri().toString();
         
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
-                SpringIndexerHarness.symbol("@Named(\"specificallyNamedComponent\")", "@+ 'namedComponentWithSpecificName' (@Named) NamedComponentWithSpecificName")
+                SpringIndexerHarness.symbol("@Named(\"specificallyNamedComponent\")", "@+ 'specificallyNamedComponent' (@Named) NamedComponentWithSpecificName")
         );
 
         Bean[] beans = springIndex.getBeansOfDocument(docUri);
         assertEquals(1, beans.length);
         
-        assertEquals("namedComponentWithSpecificName", beans[0].getName());
+        assertEquals("specificallyNamedComponent", beans[0].getName());
         assertEquals("org.test.javax.NamedComponentWithSpecificName", beans[0].getType());
      }
 
