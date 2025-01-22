@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
+import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
@@ -320,6 +321,10 @@ public class ASTUtils {
 	}
 
 	public static Annotation getBeanAnnotation(MethodDeclaration method) {
+		return getAnnotation(method, Annotations.BEAN);
+	}
+	
+	public static Annotation getAnnotation(BodyDeclaration method, String annotationType) {
 		List<?> modifiers = method.modifiers();
 		for (Object modifier : modifiers) {
 			if (modifier instanceof Annotation) {
@@ -327,7 +332,7 @@ public class ASTUtils {
 				ITypeBinding typeBinding = annotation.resolveTypeBinding();
 				if (typeBinding != null) {
 					String fqName = typeBinding.getQualifiedName();
-					if (Annotations.BEAN.equals(fqName)) {
+					if (annotationType.equals(fqName)) {
 						return annotation;
 					}
 				}

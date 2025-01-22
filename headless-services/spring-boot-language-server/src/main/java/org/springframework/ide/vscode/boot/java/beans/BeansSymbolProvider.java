@@ -63,7 +63,6 @@ import reactor.util.function.Tuples;
 public class BeansSymbolProvider extends AbstractSymbolProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(BeansSymbolProvider.class);
-	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
 
 	@Override
 	public void addSymbols(Annotation node, ITypeBinding typeBinding, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
@@ -165,7 +164,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 	}
 
 	protected Collection<Tuple2<String, DocumentRegion>> getBeanNames(Annotation node, TextDocument doc) {
-		Collection<StringLiteral> beanNameNodes = getBeanNameLiterals(node);
+		Collection<StringLiteral> beanNameNodes = BeanUtils.getBeanNameLiterals(node);
 
 		if (beanNameNodes != null && !beanNameNodes.isEmpty()) {
 			ImmutableList.Builder<Tuple2<String,DocumentRegion>> namesAndRegions = ImmutableList.builder();
@@ -202,16 +201,6 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 
 		symbolLabel.append(beanType);
 		return symbolLabel.toString();
-	}
-
-	protected Collection<StringLiteral> getBeanNameLiterals(Annotation node) {
-		ImmutableList.Builder<StringLiteral> literals = ImmutableList.builder();
-		for (String attrib : NAME_ATTRIBUTES) {
-			ASTUtils.getAttribute(node, attrib).ifPresent((valueExp) -> {
-				literals.addAll(ASTUtils.getExpressionValueAsListOfLiterals(valueExp));
-			});
-		}
-		return literals.build();
 	}
 
 	protected ITypeBinding getBeanType(MethodDeclaration method) {

@@ -92,6 +92,11 @@ public class DependsOnCompletionProviderTest {
 		assertCompletions("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
 	}
 
+	@Test
+	public void testDependsOnCompletionWithoutQuotesWithoutPrefixOnBeanMethod() throws Exception {
+		assertCompletionsOnBeanMethod("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
+	}
+
 	// TODO: not yet working, needs more groundwork due to the parser skipping these non-valid parts of the AST
 //	@Test
 //	public void testDependsOnCompletionWithoutQuotesWithoutPrefixWithoutClosingBracket() throws Exception {
@@ -202,6 +207,38 @@ public class DependsOnCompletionProviderTest {
 		assertCompletions("@DependsOn({\"bean1\",<*>\"bean2\"})", 1, "@DependsOn({\"bean1\",\"bean3\",<*>\"bean2\"})");
 	}
 
+	@Test
+	public void testDependsOnCompletionExcludeDefaultBeanNameFromComponent() throws Exception {
+		Bean componentBean = new Bean("testDependsOnClass", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, componentBean});
+		
+		assertCompletions("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
+	}
+
+	@Test
+	public void testDependsOnCompletionExcludeExplicitBeanNameFromComponent() throws Exception {
+		Bean componentBeanWithName = new Bean("explicitBeanName", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, componentBeanWithName});
+		
+		assertCompletionsWithComponentBeanName("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
+	}
+
+	@Test
+	public void testDependsOnCompletionExcludeDefaultBeanNameFromBeanMethod() throws Exception {
+		Bean beanFromMethod = new Bean("beanFromMethod", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, beanFromMethod});
+		
+		assertCompletionsOnBeanMethod("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
+	}
+
+	@Test
+	public void testDependsOnCompletionExcludeExplicitBeanNameFromBeanMethod() throws Exception {
+		Bean beanFromMethodWithName = new Bean("beanFromMethodWithName", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, beanFromMethodWithName});
+		
+		assertCompletionsOnBeanMethodWithName("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
+	}
+
 	private void assertCompletions(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine) throws Exception {
 		String editorContent = """
 				package org.test;
@@ -236,6 +273,147 @@ public class DependsOnCompletionProviderTest {
 					public class TestDependsOnClass {
 					}
 	        		""", editor.getText());
+        }
+	}
+
+	private void assertCompletionsWithComponentBeanName(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine) throws Exception {
+		String editorContent = """
+				package org.test;
+
+        		import org.springframework.stereotype.Component;
+				import org.springframework.context.annotation.DependsOn;
+
+				@Component("explicitBeanName")
+				""" +
+				completionLine + "\n" +
+				"""
+				public class TestDependsOnClass {
+				}
+				""";
+		
+		Editor editor = harness.newEditor(LanguageId.JAVA, editorContent, tempJavaDocUri);
+
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(noOfExpectedCompletions, completions.size());
+        
+        if (noOfExpectedCompletions > 0) {
+	        editor.apply(completions.get(0));
+	        assertEquals("""
+					package org.test;
+	
+	        		import org.springframework.stereotype.Component;
+					import org.springframework.context.annotation.DependsOn;
+	
+					@Component("explicitBeanName")
+					""" + expectedCompletedLine + "\n" +
+					"""
+					public class TestDependsOnClass {
+					}
+	        		""", editor.getText());
+        }
+	}
+
+	private void assertCompletionsOnBeanMethod(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine) throws Exception {
+		String editorContent = """
+				package org.test;
+
+				import org.springframework.context.annotation.DependsOn;
+				import org.springframework.context.annotation.Configuration;
+				import org.springframework.context.annotation.Bean;
+
+				@Configuration
+				public class TestDependsOnClass {
+
+					@Bean
+					""" +
+					completionLine + "\n" +
+					"""
+					public Object beanFromMethod() {
+						return new Object();
+					}
+												
+				}
+				""";
+		
+		Editor editor = harness.newEditor(LanguageId.JAVA, editorContent, tempJavaDocUri);
+
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(noOfExpectedCompletions, completions.size());
+        
+        if (noOfExpectedCompletions > 0) {
+	        editor.apply(completions.get(0));
+	        assertEquals("""
+					package org.test;
+
+					import org.springframework.context.annotation.DependsOn;
+					import org.springframework.context.annotation.Configuration;
+					import org.springframework.context.annotation.Bean;
+
+					@Configuration
+					public class TestDependsOnClass {
+
+						@Bean
+						""" + 
+						expectedCompletedLine + "\n" +
+						"""
+						public Object beanFromMethod() {
+							return new Object();
+						}
+												
+					}
+					""", editor.getText());
+        }
+	}
+
+	private void assertCompletionsOnBeanMethodWithName(String completionLine, int noOfExpectedCompletions, String expectedCompletedLine) throws Exception {
+		String editorContent = """
+				package org.test;
+
+				import org.springframework.context.annotation.DependsOn;
+				import org.springframework.context.annotation.Configuration;
+				import org.springframework.context.annotation.Bean;
+
+				@Configuration
+				public class TestDependsOnClass {
+
+					@Bean("beanFromMethodWithName")
+					""" +
+					completionLine + "\n" +
+					"""
+					public Object beanFromMethod() {
+						return new Object();
+					}
+												
+				}
+				""";
+		
+		Editor editor = harness.newEditor(LanguageId.JAVA, editorContent, tempJavaDocUri);
+
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(noOfExpectedCompletions, completions.size());
+        
+        if (noOfExpectedCompletions > 0) {
+	        editor.apply(completions.get(0));
+	        assertEquals("""
+					package org.test;
+
+					import org.springframework.context.annotation.DependsOn;
+					import org.springframework.context.annotation.Configuration;
+					import org.springframework.context.annotation.Bean;
+
+					@Configuration
+					public class TestDependsOnClass {
+
+						@Bean("beanFromMethodWithName")
+						""" +
+						expectedCompletedLine + "\n" +
+						"""
+						public Object beanFromMethod() {
+							return new Object();
+						}
+												
+					}
+					""", editor.getText());
         }
 	}
 

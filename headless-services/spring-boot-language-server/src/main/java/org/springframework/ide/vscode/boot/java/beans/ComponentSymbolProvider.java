@@ -13,13 +13,11 @@ package org.springframework.ide.vscode.boot.java.beans;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
@@ -82,7 +80,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		
 		TypeDeclaration type = (TypeDeclaration) node.getParent();
 
-		String beanName = getBeanName(node, type);
+		String beanName = BeanUtils.getBeanNameFromComponentAnnotation(node, type);
 		ITypeBinding beanType = getBeanType(type);
 
 		Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
@@ -138,18 +136,6 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		symbolLabel.append(") ");
 		symbolLabel.append(beanType);
 		return symbolLabel.toString();
-	}
-
-	public static String getBeanName(Annotation annotation, TypeDeclaration type) {
-		Optional<Expression> attribute = ASTUtils.getAttribute(annotation, "value");
-		if (attribute.isPresent()) {
-			return ASTUtils.getExpressionValueAsString(attribute.get(), (a) -> {});
-		}
-		else {
-			String beanName = type.getName().toString();
-			return BeanUtils.getBeanNameFromType(beanName);
-		}
-		
 	}
 
 	private ITypeBinding getBeanType(TypeDeclaration type) {
