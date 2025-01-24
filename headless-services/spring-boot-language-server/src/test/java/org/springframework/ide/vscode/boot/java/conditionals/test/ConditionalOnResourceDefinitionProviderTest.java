@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2024 Broadcom, Inc.
+ * Copyright (c) 2024, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,70 +10,60 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.conditionals.test;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.HashSet;
+import java.io.File;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.junit.jupiter.api.AfterEach;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
-import org.springframework.ide.vscode.boot.bootiful.AdHocPropertyHarnessTestConf;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
-@Import({ AdHocPropertyHarnessTestConf.class, ConditionalOnResourceCompletionTest.TestConf.class })
+@Import(SymbolProviderTestConf.class)
 public class ConditionalOnResourceDefinitionProviderTest {
 
-    @Autowired
-    private BootLanguageServerHarness harness;
-    @Autowired
-    private IJavaProject testProject;
+    @Autowired private BootLanguageServerHarness harness;
+    @Autowired private JavaProjectFinder projectFinder;
+    @Autowired private SpringSymbolIndex indexer;
 
-    private Set<Path> createdFiles = new HashSet<>();
+	private String testSourceUri;
+	private String testResourceUri;
 
     @BeforeEach
     public void setup() throws Exception {
         harness.intialize(null);
-    }
 
-    @AfterEach
-    public void tearDown() throws Exception {
-        for (Path f : createdFiles) {
-            Files.deleteIfExists(f);
-        }
-        createdFiles.clear();
-    }
+        File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-conditionalonresource/").toURI());
 
-    private Path projectFile(String relativePath, String content) throws IOException {
-        Path projectPath = Paths.get(testProject.getLocationUri());
-        Path filePath = projectPath.resolve(relativePath);
-        Files.createDirectories(filePath.getParent());
-        Files.write(filePath, content.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
-        createdFiles.add(filePath);
-        return filePath;
+        String projectDir = directory.toURI().toString();
+        projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
+        
+        testResourceUri = directory.toPath().resolve("src/main/java/a-random-resource-root.md").toUri().toASCIIString();
+        testSourceUri = directory.toPath().resolve("src/main/java/org/test/TestConditionalOnResourceCompletion.java").toUri().toASCIIString();
+
+        CompletableFuture<Void> initProject = indexer.waitOperation();
+        initProject.get(5, TimeUnit.SECONDS);
     }
 
     @Test
     void testFindClasspathResource() throws Exception {
-        Path randomResourceFilePath = projectFile("src/main/java/a-random-resource-root.md", "");
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;
 				import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
@@ -83,9 +73,9 @@ public class ConditionalOnResourceDefinitionProviderTest {
 				@ConditionalOnResource("classpath:a-random-resource-root.md")
 				public class TestConditionalOnResourceCompletion {
 					private String value1;
-				}""");
+				}""", testSourceUri);
 
-        LocationLink expectedLocation = new LocationLink(randomResourceFilePath.toUri().toASCIIString(),
+        LocationLink expectedLocation = new LocationLink(testResourceUri,
                 new Range(new Position(0, 0), new Position(0, 0)),
                 new Range(new Position(0, 0), new Position(0, 0)),
                 new Range(new Position(5, 23), new Position(5, 60)));
