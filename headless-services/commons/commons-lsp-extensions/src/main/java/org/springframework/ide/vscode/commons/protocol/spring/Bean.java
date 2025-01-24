@@ -33,11 +33,8 @@ public class Bean extends AbstractSpringIndexElement {
 			InjectionPoint[] injectionPoints,
 			Set<String> supertypes,
 			AnnotationMetadata[] annotations,
-			boolean isConfiguration,
-			SpringIndexElement[] children) {
+			boolean isConfiguration) {
 		
-		super(children);
-
 		this.name = name;
 		this.type = type;
 		this.location = location;
@@ -67,18 +64,6 @@ public class Bean extends AbstractSpringIndexElement {
 			this.annotations = annotations;
 		}
 	}
-	
-	public Bean(
-			String name,
-			String type,
-			Location location,
-			InjectionPoint[] injectionPoints,
-			Set<String> supertypes,
-			AnnotationMetadata[] annotations,
-			boolean isConfiguration) {
-		this(name, type, location, injectionPoints, supertypes, annotations, isConfiguration, AbstractSpringIndexElement.NO_CHILDREN);
-	}
-
 	
 	public String getName() {
 		return name;

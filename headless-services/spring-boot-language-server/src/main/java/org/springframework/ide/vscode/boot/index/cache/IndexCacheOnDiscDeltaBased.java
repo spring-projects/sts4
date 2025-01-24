@@ -660,9 +660,15 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	        boolean isConfiguration = context.deserialize(isConfigurationObject, boolean.class);
 	        
 	        JsonElement childrenObject = parsedObject.get("children");
-	        SpringIndexElement[] children = context.deserialize(childrenObject, SpringIndexElement[].class);
+			Type childrenListType = TypeToken.getParameterized(List.class, SpringIndexElement.class).getType();
+	        List<SpringIndexElement> children = context.deserialize(childrenObject, childrenListType);
 
-	        return new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, isConfiguration, children);
+	        Bean bean = new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, isConfiguration);
+	        for (SpringIndexElement springIndexElement : children) {
+				bean.addChild(springIndexElement);
+			}
+	        
+	        return bean;
 	    }
 	}
 	

@@ -10,19 +10,39 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.spring;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class AbstractSpringIndexElement implements SpringIndexElement {
 	
-	public static final SpringIndexElement[] NO_CHILDREN = new SpringIndexElement[0];
-	
-	private final SpringIndexElement[] children;
+	public static final List<SpringIndexElement> NO_CHILDREN = List.of();
+	private List<SpringIndexElement> children;
 
-	public AbstractSpringIndexElement(SpringIndexElement[] children) {
-		this.children = children != null ? children : NO_CHILDREN;
+	public AbstractSpringIndexElement() {
+		this.children = NO_CHILDREN;
 	}
 
 	@Override
-	public SpringIndexElement[] getChildren() {
+	public List<SpringIndexElement> getChildren() {
 		return children;
 	}
+	
+	public void addChild(SpringIndexElement child) {
+		if (children == NO_CHILDREN) {
+			children = new ArrayList<>();
+		}
+
+		this.children.add(child);
+	}
+	
+	public void removeChild(SpringIndexElement doc) {
+		boolean removed = this.children.remove(doc);
+		
+		if (removed && this.children.size() == 0) {
+			this.children = NO_CHILDREN;
+		}
+	}
+
+
 
 }

@@ -115,7 +115,12 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 				Collection<Annotation> annotationsOnMethod = ASTUtils.getAnnotations(method);
 				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(annotationsOnMethod, doc);
 				
-				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false, childElements.toArray(SpringIndexElement[]::new));
+				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false);
+				if (childElements.size() > 0) {
+					for (SpringIndexElement springIndexElement : childElements) {
+						beanDefinition.addChild(springIndexElement);
+					}
+				}
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));

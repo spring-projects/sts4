@@ -21,7 +21,6 @@ public class WebfluxRouteElementRangesIndexElement extends AbstractSpringIndexEl
 	private Range[] ranges;
 
 	public WebfluxRouteElementRangesIndexElement(Range... ranges) {
-		super(AbstractSpringIndexElement.NO_CHILDREN);
 		this.ranges = ranges != null ? ranges : NO_RANGES;
 	}
 

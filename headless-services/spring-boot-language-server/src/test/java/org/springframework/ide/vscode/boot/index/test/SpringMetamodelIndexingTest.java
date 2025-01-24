@@ -83,7 +83,7 @@ public class SpringMetamodelIndexingTest {
         deleteProject.get(5, TimeUnit.SECONDS);
         
         Bean[] noBeansAnymore = springIndex.getBeansOfProject("test-spring-indexing");
-        assertNull(noBeansAnymore);
+        assertEquals(0, noBeansAnymore.length);
         
 		assertEquals(2, harness.getIndexUpdatedCount()); // 1x project created, 1x project deleted
     }
