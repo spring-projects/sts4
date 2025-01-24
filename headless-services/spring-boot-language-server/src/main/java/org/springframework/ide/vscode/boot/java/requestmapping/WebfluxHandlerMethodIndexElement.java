@@ -23,8 +23,6 @@ public class WebfluxHandlerMethodIndexElement extends AbstractSpringIndexElement
 	private final String[] acceptTypes;
 	
 	public WebfluxHandlerMethodIndexElement(String handlerClass, String handlerMethod, String path, String[] httpMethods, String[] contentTypes, String[] acceptTypes) {
-		super(AbstractSpringIndexElement.NO_CHILDREN);
-		
 		this.handlerClass = handlerClass;
 		this.handlerMethod = handlerMethod;
 		

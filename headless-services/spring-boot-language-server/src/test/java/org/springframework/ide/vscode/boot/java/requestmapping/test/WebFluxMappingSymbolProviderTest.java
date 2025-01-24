@@ -39,7 +39,6 @@ import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerMet
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
-import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -102,8 +101,8 @@ public class WebFluxMappingSymbolProviderTest {
         assertEquals(1, routeBeans.length);
         assertEquals("route", routeBeans[0].getName());
 
-        SpringIndexElement[] children = routeBeans[0].getChildren();
-        assertEquals(8, children.length);
+        List<SpringIndexElement> children = routeBeans[0].getChildren();
+        assertEquals(8, children.size());
         
         WebfluxHandlerMethodIndexElement handlerElement1 = getWebfluxIndexElements(children, "/hello", "GET").get(0);
         assertEquals("/hello", handlerElement1.getPath());
@@ -151,8 +150,8 @@ public class WebFluxMappingSymbolProviderTest {
         assertEquals(1, routeBeans.length);
         assertEquals("routingFunction1", routeBeans[0].getName());
 
-        SpringIndexElement[] children = routeBeans[0].getChildren();
-        assertEquals(6, children.length);
+        List<SpringIndexElement> children = routeBeans[0].getChildren();
+        assertEquals(6, children.size());
         
         WebfluxHandlerMethodIndexElement handlerElement1 = getWebfluxIndexElements(children, "/person/{id}", "GET").get(0);
         assertEquals("/person/{id}", handlerElement1.getPath());
@@ -192,8 +191,8 @@ public class WebFluxMappingSymbolProviderTest {
         assertEquals(1, routeBeans.length);
         assertEquals("routingFunction2", routeBeans[0].getName());
 
-        SpringIndexElement[] children = routeBeans[0].getChildren();
-        assertEquals(6, children.length);
+        List<SpringIndexElement> children = routeBeans[0].getChildren();
+        assertEquals(6, children.size());
         
         WebfluxHandlerMethodIndexElement handlerelement1 = getWebfluxIndexElements(children, "/person/{id}", "GET").get(0);
         assertEquals("/person/{id}", handlerelement1.getPath());
@@ -237,8 +236,8 @@ public class WebFluxMappingSymbolProviderTest {
         assertEquals(1, routeBeans.length);
         assertEquals("routingFunction", routeBeans[0].getName());
 
-        SpringIndexElement[] children = routeBeans[0].getChildren();
-        assertEquals(12, children.length);
+        List<SpringIndexElement> children = routeBeans[0].getChildren();
+        assertEquals(12, children.size());
         
         WebfluxHandlerMethodIndexElement handlerElement1 = getWebfluxIndexElements(children, "/person/sub1/sub2/{id}", "GET").get(0);
         assertEquals("/person/sub1/sub2/{id}", handlerElement1.getPath());
@@ -302,8 +301,8 @@ public class WebFluxMappingSymbolProviderTest {
         assertEquals(1, routeBeans.length);
         assertEquals("route", routeBeans[0].getName());
 
-        SpringIndexElement[] children = routeBeans[0].getChildren();
-        assertEquals(8, children.length);
+        List<SpringIndexElement> children = routeBeans[0].getChildren();
+        assertEquals(8, children.size());
         
         WebfluxHandlerMethodIndexElement handlerElement1 = getWebfluxIndexElements(children, "/hello-updated", "GET").get(0);
         assertEquals("/hello-updated", handlerElement1.getPath());
@@ -334,8 +333,8 @@ public class WebFluxMappingSymbolProviderTest {
 		return false;
 	}
 
-	private List<WebfluxHandlerMethodIndexElement> getWebfluxIndexElements(SpringIndexElement[] indexElements, String path, String httpMethod) {
-		return Arrays.stream(indexElements)
+	private List<WebfluxHandlerMethodIndexElement> getWebfluxIndexElements(List<SpringIndexElement> children, String path, String httpMethod) {
+		return children.stream()
 				.filter((obj) -> obj instanceof WebfluxHandlerMethodIndexElement)
 				.map((obj -> (WebfluxHandlerMethodIndexElement) obj))
 				.filter((addon) -> addon.getPath().equals(path) && Arrays.asList(addon.getHttpMethods()).contains(httpMethod))

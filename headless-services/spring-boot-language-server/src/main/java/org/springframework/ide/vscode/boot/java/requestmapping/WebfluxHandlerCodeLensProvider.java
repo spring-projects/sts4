@@ -95,7 +95,7 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 		Bean[] beans = springIndex.getBeans();
 		
 		return Arrays.stream(beans)
-			.flatMap(bean -> Arrays.stream(bean.getChildren()))
+			.flatMap(bean -> bean.getChildren().stream())
 			.filter(element -> element instanceof WebfluxHandlerMethodIndexElement)
 			.map(element -> (WebfluxHandlerMethodIndexElement) element)
 			.filter(webfluxElement -> webfluxElement.getHandlerClass() != null && webfluxElement.getHandlerClass().equals(handlerClass)
