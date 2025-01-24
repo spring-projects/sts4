@@ -10,125 +10,207 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.index;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.DocumentElement;
+import org.springframework.ide.vscode.commons.protocol.spring.ProjectElement;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 
 public class SpringMetamodelIndex {
 	
-	private final ConcurrentMap<String, Bean[]> beansPerProject;
+	private final ConcurrentMap<String, ProjectElement> projectRootElements;
 
 	public SpringMetamodelIndex() {
-		beansPerProject = new ConcurrentHashMap<>();
+		projectRootElements = new ConcurrentHashMap<>();
 	}
 	
 	public void updateBeans(String projectName, Bean[] beanDefinitions) {
-		beansPerProject.put(projectName, beanDefinitions);
+		ProjectElement projectRoot = new ProjectElement(projectName);
+		
+		Map<String, DocumentElement> documents = new HashMap<>();
+		for (Bean bean : beanDefinitions) {
+			String docURI = bean.getLocation() != null ? bean.getLocation().getUri() : null;
+			
+			if (docURI != null) {
+				
+				DocumentElement document = documents.computeIfAbsent(docURI, uri -> {
+					DocumentElement newDocument = new DocumentElement(uri);
+					projectRoot.addChild(newDocument);
+					return newDocument;
+				});
+
+				document.addChild(bean);
+			}
+			else {
+				projectRoot.addChild(bean);
+			}
+		}
+		
+		projectRootElements.put(projectName, projectRoot);
 	}
 
 	public void updateBeans(String projectName, String docURI, Bean[] beanDefinitions) {
-		Bean[] existingBeans = beansPerProject.putIfAbsent(projectName, beanDefinitions);
-
-		if (existingBeans != null) {
-
-			List<Bean> beans = new ArrayList<>();
-			
-			// add old, unrelated beans
-			for (Bean bean : existingBeans) {
-				if (!bean.getLocation().getUri().equals(docURI)) {
-					beans.add(bean);
-				}
-			}
-
-			// add new beans for doc URI
-			beans.addAll(Arrays.asList(beanDefinitions));
-			
-			// set new beans set
-			beansPerProject.put(projectName, (Bean[]) beans.toArray(new Bean[beans.size()]));
+		ProjectElement project = this.projectRootElements.computeIfAbsent(projectName, name -> new ProjectElement(name));
+		project.removeDocument(docURI);
+		
+		DocumentElement document = new DocumentElement(docURI);
+		for (Bean bean : beanDefinitions) {
+			document.addChild(bean);
 		}
+		
+		project.addChild(document);
 	}
 
 	public void removeBeans(String projectName) {
-		beansPerProject.remove(projectName);
+		projectRootElements.remove(projectName);
 	}
 
 	public void removeBeans(String projectName, String docURI) {
-		Bean[] oldBeans = beansPerProject.get(projectName);
-		if (oldBeans != null) {
-			List<Bean> newBeans = Arrays.stream(oldBeans)
-				.filter(bean -> !bean.getLocation().getUri().equals(docURI))
-				.collect(Collectors.toList());
-			
-			beansPerProject.put(projectName, (Bean[]) newBeans.toArray(new Bean[newBeans.size()]));
+		ProjectElement project = projectRootElements.get(projectName);
+		if (project != null) {
+			project.removeDocument(docURI);
 		}
 	}
 
 	public Bean[] getBeans() {
 		List<Bean> result = new ArrayList<>();
 		
-		for (Bean[] beans : beansPerProject.values()) {
-			for (Bean bean : beans) {
+		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
+		elementsToVisit.addAll(this.projectRootElements.values());
+		
+		while (!elementsToVisit.isEmpty()) {
+			SpringIndexElement element = elementsToVisit.pop();
+
+			if (element instanceof Bean bean) {
 				result.add(bean);
 			}
+			
+			elementsToVisit.addAll(element.getChildren());
 		}
 		
 		return (Bean[]) result.toArray(new Bean[result.size()]);
 	}
 
 	public Bean[] getBeansOfProject(String projectName) {
-		return beansPerProject.get(projectName);
-	}
-	
-	public Bean[] getBeansOfDocument(String docURI) {
 		List<Bean> result = new ArrayList<>();
 		
-		for (Bean[] beans : beansPerProject.values()) {
-			for (Bean bean : beans) {
-				if (bean.getLocation().getUri().equals(docURI)) {
+		ProjectElement project = this.projectRootElements.get(projectName);
+		if (project != null) {
+			ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
+			elementsToVisit.push(project);
+		
+			while (!elementsToVisit.isEmpty()) {
+				SpringIndexElement element = elementsToVisit.pop();
+
+				if (element instanceof Bean bean) {
 					result.add(bean);
 				}
+
+				elementsToVisit.addAll(element.getChildren());
 			}
 		}
 		
 		return (Bean[]) result.toArray(new Bean[result.size()]);
 	}
 	
-	public Bean[] getBeansWithName(String project, String name) {
-		Bean[] allBeans = this.beansPerProject.get(project);
+	public Bean[] getBeansOfDocument(String docURI) {
+		List<Bean> result = new ArrayList<>();
 		
-		if (allBeans != null) {
-			return Arrays.stream(allBeans).filter(bean -> bean.getName().equals(name)).toArray(Bean[]::new);
+		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
+		elementsToVisit.addAll(this.projectRootElements.values());
+		
+		while (!elementsToVisit.isEmpty()) {
+			SpringIndexElement element = elementsToVisit.pop();
+
+			if (element instanceof Bean bean) {
+				result.add(bean);
+			}
+			
+			if (element instanceof DocumentElement doc) {
+				if (doc.getDocURI().equals(docURI)) {
+					elementsToVisit.addAll(doc.getChildren());
+				}
+				// else do not look into other document structures
+			}
+			else {
+				elementsToVisit.addAll(element.getChildren());
+			}
 		}
-		else {
-			return null;
+		
+		return (Bean[]) result.toArray(new Bean[result.size()]);
+	}
+	
+	public Bean[] getBeansWithName(String projectName, String name) {
+		List<Bean> result = new ArrayList<>();
+
+		ProjectElement project = this.projectRootElements.get(projectName);
+		if (project != null) {
+			ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
+			elementsToVisit.push(project);
+
+			while (!elementsToVisit.isEmpty()) {
+				SpringIndexElement element = elementsToVisit.pop();
+
+				if (element instanceof Bean bean && bean.getName().equals(name)) {
+					result.add(bean);
+				}
+
+				elementsToVisit.addAll(element.getChildren());
+			}
 		}
+
+		return (Bean[]) result.toArray(new Bean[result.size()]);
 	}
 
-	public Bean[] getBeansWithType(String project, String type) {
-		Bean[] allBeans = this.beansPerProject.get(project);
-		
-		if (allBeans != null) {
-			return Arrays.stream(allBeans).filter(bean -> bean.getType().equals(type)).toArray(Bean[]::new);
+	public Bean[] getBeansWithType(String projectName, String type) {
+		List<Bean> result = new ArrayList<>();
+
+		ProjectElement project = this.projectRootElements.get(projectName);
+		if (project != null) {
+			ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
+			elementsToVisit.push(project);
+
+			while (!elementsToVisit.isEmpty()) {
+				SpringIndexElement element = elementsToVisit.pop();
+
+				if (element instanceof Bean bean && bean.getType().equals(type)) {
+					result.add(bean);
+				}
+
+				elementsToVisit.addAll(element.getChildren());
+			}
 		}
-		else {
-			return null;
-		}
+
+		return (Bean[]) result.toArray(new Bean[result.size()]);
 	}
 
 	public Bean[] getMatchingBeans(String projectName, String matchType) {
-		Bean[] allBeans = this.beansPerProject.get(projectName);
-		
-		if (allBeans != null) {
-			return Arrays.stream(allBeans).filter(bean -> bean.isTypeCompatibleWith(matchType)).collect(Collectors.toList()).toArray(new Bean[0]);
+		List<Bean> result = new ArrayList<>();
+
+		ProjectElement project = this.projectRootElements.get(projectName);
+		if (project != null) {
+			ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
+			elementsToVisit.push(project);
+
+			while (!elementsToVisit.isEmpty()) {
+				SpringIndexElement element = elementsToVisit.pop();
+
+				if (element instanceof Bean bean && bean.isTypeCompatibleWith(matchType)) {
+					result.add(bean);
+				}
+
+				elementsToVisit.addAll(element.getChildren());
+			}
 		}
-		else {
-			return null;
-		}
+
+		return (Bean[]) result.toArray(new Bean[result.size()]);
 	}
 
 }

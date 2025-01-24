@@ -44,7 +44,7 @@ public class WebfluxRouteHighlightProdivder implements HighlightProvider {
 
 		Bean[] beans = springIndex.getBeans();
 		Arrays.stream(beans)
-			.flatMap(bean -> Arrays.stream(bean.getChildren()))
+			.flatMap(bean -> bean.getChildren().stream())
 			.filter(element -> element instanceof WebfluxRouteElementRangesIndexElement)
 			.map(element -> (WebfluxRouteElementRangesIndexElement) element)
 			.filter(rangesElement -> rangesElement.contains(position))

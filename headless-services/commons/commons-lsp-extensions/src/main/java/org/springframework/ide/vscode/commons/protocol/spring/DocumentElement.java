@@ -10,10 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.spring;
 
-import java.util.List;
+public class DocumentElement extends AbstractSpringIndexElement {
 
-public interface SpringIndexElement {
+	private final String docURI;
+
+	public DocumentElement(String docURI) {
+		this.docURI = docURI;
+	}
 	
-	List<SpringIndexElement> getChildren();
-	
+	public String getDocURI() {
+		return docURI;
+	}
+
 }
