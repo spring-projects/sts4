@@ -94,7 +94,7 @@ public class SpringIndexerTest {
         assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 
         docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
-        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 5, 0, 5, 13));
     }
 
     @Test
@@ -153,7 +153,7 @@ public class SpringIndexerTest {
 
 
         docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
-        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 5, 0, 5, 13));
     }
 
     @Test
@@ -190,7 +190,7 @@ public class SpringIndexerTest {
         assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 
         docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
-        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 5, 0, 5, 13));
     }
 
     @Test
@@ -251,7 +251,7 @@ public class SpringIndexerTest {
             assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 
             docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
-            assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+            assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 5, 0, 5, 13));
 
             assertTrue(containsSymbol(allSymbols, "@/created-mapping1", createdDocURI, 6, 1, 6, 36));
             assertTrue(containsSymbol(allSymbols, "@/created-mapping2", createdDocURI, 11, 1, 11, 36));
@@ -286,7 +286,7 @@ public class SpringIndexerTest {
         assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 
         docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
-        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 5, 0, 5, 13));
     }
 
     @Test
@@ -322,7 +322,7 @@ public class SpringIndexerTest {
         assertFalse(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 
         docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
-        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 5, 0, 5, 13));
     }
 
     @Test
@@ -358,7 +358,7 @@ public class SpringIndexerTest {
         assertTrue(containsSymbol(allSymbols, "@/classlevel/mapping-subpackage", docUri, 7, 1, 7, 38));
 
         docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
-        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+        assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 5, 0, 5, 13));
     }
 
     @Test

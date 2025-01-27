@@ -786,7 +786,9 @@ public class SpringIndexerJava implements SpringIndexer {
 			ITypeBinding type = node.resolveTypeBinding();
 			if (type != null) {
 				String qualifiedName = type.getQualifiedName();
-				if (qualifiedName != null && qualifiedName.startsWith("org.springframework") || isJakartaAnnotationWithDefaultSymbol(qualifiedName)) {
+				if (qualifiedName != null
+						&& ((qualifiedName.startsWith("org.springframework") && !qualifiedName.startsWith("org.springframework.lang"))
+							|| isJakartaAnnotationWithDefaultSymbol(qualifiedName))) {
 					TextDocument doc = DocumentUtils.getTempTextDocument(context.getDocURI(), context.getDocRef(), context.getContent());
 					return DefaultSymbolProvider.provideDefaultSymbol(node, doc);
 				}
