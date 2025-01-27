@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -35,9 +35,13 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingIndexElement;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaDependencyTracker;
 import org.springframework.ide.vscode.boot.java.utils.test.TestFileScanListener;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -58,6 +62,7 @@ public class RequestMappingSymbolProviderTest {
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private SpringSymbolIndex indexer;
+	@Autowired private SpringMetamodelIndex springIndex;
 
 	private File directory;
 
@@ -79,8 +84,24 @@ public class RequestMappingSymbolProviderTest {
     void testSimpleRequestMappingSymbol() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
         List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
-        assertEquals(1, symbols.size());
-        assertTrue(containsSymbol(symbols, "@/greeting", docUri, 6, 1, 6, 29));
+        assertEquals(2, symbols.size());
+        assertTrue(containsSymbol(symbols, "@/greeting", docUri, 8, 1, 8, 29));
+    }
+
+    @Test
+    void testRequestMappingIndexElements() throws Exception {
+        Bean[] beans = springIndex.getBeansWithName("test-request-mapping-symbols", "simpleMappingClass");
+        assertEquals(1, beans.length);
+        
+        List<SpringIndexElement> children = beans[0].getChildren();
+        List<SpringIndexElement> mappingChildren = children.stream()
+        	.filter(child -> child instanceof RequestMappingIndexElement)
+        	.toList();
+        
+        assertEquals(1, mappingChildren.size());
+        
+        RequestMappingIndexElement mappingElement = (RequestMappingIndexElement) mappingChildren.get(0);
+        assertEquals("/greeting", mappingElement.getPath());
     }
 
     @Test
@@ -248,8 +269,33 @@ public class RequestMappingSymbolProviderTest {
     void testMappingPathFromSuperInterfaceEvenIfSuperclassContainsMappingPath() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/inheritance/ControllerAsSubclassAndInterfaceHierarchy.java").toUri().toString();
         List<? extends WorkspaceSymbol> symbols =  indexer.getSymbols(docUri);
-        assertEquals(1, symbols.size());
-        assertTrue(containsSymbol(symbols, "@/superinterface-path/last-path-segment -- GET - Accept: testconsume - Content-Type: text/plain", docUri, 6, 1, 6, 33));
+        assertEquals(2, symbols.size());
+        assertTrue(containsSymbol(symbols, "@/superinterface-path/last-path-segment -- GET - Accept: testconsume - Content-Type: text/plain", docUri, 8, 1, 8, 33));
+    }
+
+    @Test
+    void testMapoingIndexElementsWithDetails() throws Exception {
+        Bean[] beans = springIndex.getBeansWithName("test-request-mapping-symbols", "controllerAsSubclassAndInterfaceHierarchy");
+        assertEquals(1, beans.length);
+        
+        List<SpringIndexElement> children = beans[0].getChildren();
+        List<SpringIndexElement> mappingChildren = children.stream()
+        	.filter(child -> child instanceof RequestMappingIndexElement)
+        	.toList();
+        
+        assertEquals(1, mappingChildren.size());
+        
+        RequestMappingIndexElement mappingElement = (RequestMappingIndexElement) mappingChildren.get(0);
+        assertEquals("/superinterface-path/last-path-segment", mappingElement.getPath());
+
+        assertEquals(1, mappingElement.getHttpMethods().length);
+        assertEquals("GET", mappingElement.getHttpMethods()[0]);
+
+        assertEquals(1, mappingElement.getAcceptTypes().length);
+        assertEquals("testconsume", mappingElement.getAcceptTypes()[0]);
+
+        assertEquals(1, mappingElement.getContentTypes().length);
+        assertEquals("text/plain", mappingElement.getContentTypes()[0]);
     }
 
     @Test
