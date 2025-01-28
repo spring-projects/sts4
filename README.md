@@ -1,6 +1,6 @@
 # STS4
 
-The all-new Spring Tools 4 for Eclipse, Visual Studio Code, and Theia. Learn more at https://spring.io/tools.
+The all-new Spring Tools for Eclipse, Visual Studio Code, and Theia. Learn more at https://spring.io/tools.
 
 ## Getting started
 
@@ -8,8 +8,8 @@ The all-new Spring Tools 4 for Eclipse, Visual Studio Code, and Theia. Learn mor
 
 Depending on your development environment, you can choose between:
 
-- __Spring Tools 4 for Eclipse distribution:__ a ready-to-use distribution of the latest Eclipse Desktop IDE, prepackaged with Spring Tools 4 and a few additional third-party extensions. Download, unpack, and start.
-- __Spring Tools 4 for Eclipse extensions:__ you can install the Spring Tools 4 for Eclipse into an existing Eclipse Desktop IDE installation and use it from there.
+- __Spring Tools for Eclipse distribution:__ a ready-to-use distribution of the latest Eclipse Desktop IDE, prepackaged with Spring Tools and a few additional third-party extensions. Download, unpack, and start.
+- __Spring Tools for Eclipse extensions:__ you can install the Spring Tools for Eclipse into an existing Eclipse Desktop IDE installation and use it from there.
 - __Visual Studio Code:__ We provide extensions for Visual Studio Code if you prefer this lightweight editor for your development.
 - __Eclipse Theia:__ You can install the same extensions into Theia-based environments like gitpod.
 

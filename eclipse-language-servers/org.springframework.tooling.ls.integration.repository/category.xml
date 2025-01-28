@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-	<category-def name="Spring Tools 4 Language Server Integrations for Eclipse" label="Spring Tools 4 Language Server Integrations for Eclipse"/>
+	<category-def name="Spring Tools Language Server Integrations for Eclipse" label="Spring Tools Language Server Integrations for Eclipse"/>
 
    <feature id="org.springframework.tooling.boot.ls.feature">
-      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+      <category name="Spring Tools Language Server Integrations for Eclipse"/>
    </feature>
 
    <feature id="org.springframework.tooling.boot.ls.feature.source">
-      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+      <category name="Spring Tools Language Server Integrations for Eclipse"/>
    </feature>
 
    <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature">
-      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+      <category name="Spring Tools Language Server Integrations for Eclipse"/>
    </feature>
 
    <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature.source">
-      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+      <category name="Spring Tools Language Server Integrations for Eclipse"/>
    </feature>
 
    <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature">
-      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+      <category name="Spring Tools Language Server Integrations for Eclipse"/>
    </feature>
 
    <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature.source">
-      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+      <category name="Spring Tools Language Server Integrations for Eclipse"/>
    </feature>
 
    <feature id="org.springframework.tooling.bosh.ls.feature">
-      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+      <category name="Spring Tools Language Server Integrations for Eclipse"/>
    </feature>
 
    <feature id="org.springframework.tooling.bosh.ls.feature.source">
-      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+      <category name="Spring Tools Language Server Integrations for Eclipse"/>
    </feature>
 
    <feature id="org.springframework.tooling.concourse.ls.feature">
-      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+      <category name="Spring Tools Language Server Integrations for Eclipse"/>
    </feature>
 
    <feature id="org.springframework.tooling.concourse.ls.feature.source">
-      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+      <category name="Spring Tools Language Server Integrations for Eclipse"/>
    </feature>
 
 <!--   <feature id="org.eclipse.mylyn.wikitext.feature"/> -->

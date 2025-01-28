@@ -1,6 +1,6 @@
-= Contributing to Spring Tools 4
+= Contributing to Spring Tools
 
-Spring Tools 4 is released under the Eclipse Public License 1.0 (EPL). If you would like to contribute
+Spring Tools is released under the Eclipse Public License 1.0 (EPL). If you would like to contribute
 something, or simply want to hack on the code this document should help you get started.
 
 == Code of Conduct
@@ -8,7 +8,7 @@ Please see our https://github.com/spring-projects/.github/blob/master/CODE_OF_CO
 
 == Using GitHub issues
 We use GitHub issues to track bugs and enhancements. If you have a general usage question
-please ask on https://stackoverflow.com[Stack Overflow]. The Spring Tools 4 team and the
+please ask on https://stackoverflow.com[Stack Overflow]. The Spring Tools team and the
 broader community monitor the https://stackoverflow.com/tags/spring-tools-4[`spring-tools-4`]
 tag.
 

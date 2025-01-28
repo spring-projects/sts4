@@ -48,9 +48,9 @@ Easy navigation to the provided request mappings of running apps.
 * `//` shows all request mappings of all running Spring Boot apps and opens a browser for the selected endpoint
 
 ## Live application information hovers
-The Spring Tools 4 can connect to running Spring processes to visualize internal information of those running Spring processes inline with your source code. This allows you to see, for example, which beans have bean created at runtime, how they are wired, and more.
+The Spring Tools can connect to running Spring processes to visualize internal information of those running Spring processes inline with your source code. This allows you to see, for example, which beans have bean created at runtime, how they are wired, and more.
 
-The Spring Tools 4 shows hints by highlighting sections of source code with a light green background. Hovering over the highlights with the mouse pointer, data from the running app is displayed in a popup.
+The Spring Tools shows hints by highlighting sections of source code with a light green background. Hovering over the highlights with the mouse pointer, data from the running app is displayed in a popup.
 
 For some types of information, STS 4 may also show a 'quick summary' as a codelens. Codelenses are only supported in Eclipse and Vscode at the moment, not in atom. For Eclipse this has to be enabled via *Preferences >> Language Servers >> Spring Language Servers >> Spring Boot Language Server*.
 
@@ -69,7 +69,7 @@ Live information is scraped from running apps using JMX to connect to [Spring Bo
 
 #### Spring Boot 2.2 and beyond
 
-⚠️ The JMX versions of the actuator endpoints (which the tooling uses under the hood to retrieve live data from the running applications) is not enabled by default anymore since Spring Boot 2.2. In order to allow Spring Tools 4 to continue to visualize live data from the running applications, you need to start the boot app with `-Dspring.jmx.enabled=true` in order to activate the JMX endpoints.
+⚠️ The JMX versions of the actuator endpoints (which the tooling uses under the hood to retrieve live data from the running applications) is not enabled by default anymore since Spring Boot 2.2. In order to allow Spring Tools to continue to visualize live data from the running applications, you need to start the boot app with `-Dspring.jmx.enabled=true` in order to activate the JMX endpoints.
 
 ### Managing Live Data Connections
 
