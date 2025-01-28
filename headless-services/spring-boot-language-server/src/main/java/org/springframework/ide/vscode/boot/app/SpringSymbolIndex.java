@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -83,6 +84,7 @@ import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 import org.springframework.ide.vscode.commons.protocol.spring.MatchingBeansParams;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndex;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -166,7 +168,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 
 		SymbolHandler handler = new SymbolHandler() {
 			@Override
-			public void addSymbols(IJavaProject project, String docURI, EnhancedSymbolInformation[] enhancedSymbols, Bean[] beanDefinitions,
+			public void addSymbols(IJavaProject project, String docURI, EnhancedSymbolInformation[] enhancedSymbols, List<SpringIndexElement> beanDefinitions,
 					List<Diagnostic> diagnostics) {
 
 				if (enhancedSymbols != null) {
@@ -174,7 +176,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 				}
 
 				if (beanDefinitions != null) {
-					springIndex.updateBeans(project.getElementName(), docURI, beanDefinitions);
+					springIndex.updateElements(project.getElementName(), docURI, beanDefinitions.toArray(SpringIndexElement[]::new));
 				}
 				
 				if (diagnostics != null) {
@@ -185,7 +187,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 
 			@Override
 			public void addSymbols(IJavaProject project, EnhancedSymbolInformation[] enhancedSymbols,
-					Bean[] beanDefinitions, Map<String, List<Diagnostic>> diagnosticsPerDoc) {
+					Map<String, List<SpringIndexElement>> beanDefinitionsByDoc, Map<String, List<Diagnostic>> diagnosticsPerDoc) {
 
 				if (enhancedSymbols != null) {
 
@@ -207,21 +209,14 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 					}
 				}
 				
-				if (beanDefinitions != null) {
+				if (beanDefinitionsByDoc != null) {
 
-					// organize beans per doc URI
-					Map<String, List<Bean>> beansPerDoc = new HashMap<>();
-					for (Bean bean : beanDefinitions) {
-						String docURI = bean.getLocation().getUri();
-						beansPerDoc.computeIfAbsent(docURI, k -> new ArrayList<>()).add(bean);
-					}
-					
 					// add beans per doc URI
-					for (Map.Entry<String, List<Bean>> entry : beansPerDoc.entrySet()) {
+					for (Entry<String, List<SpringIndexElement>> entry : beanDefinitionsByDoc.entrySet()) {
 						String docURI = entry.getKey();
-						List<Bean> beans = entry.getValue();
+						List<SpringIndexElement> elements = entry.getValue();
 						
-						springIndex.updateBeans(project.getElementName(), docURI, (Bean[]) beans.toArray(new Bean[beans.size()]));
+						springIndex.updateElements(project.getElementName(), docURI, elements.toArray(SpringIndexElement[]::new));
 					}
 				}
 				
@@ -236,7 +231,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			@Override
 			public void removeSymbols(IJavaProject project, String docURI) {
 				SpringSymbolIndex.this.removeSymbolsByDoc(project, docURI);
-				springIndex.removeBeans(project.getElementName(), docURI);
+				springIndex.removeElements(project.getElementName(), docURI);
 				
 				// TODO remove diagnostics ?!? maybe, maybe not
 				
@@ -382,11 +377,14 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	private CompletableFuture<Void> _initializeProject(IJavaProject project, boolean clean) {
 		try {
 			if (SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)) {
+
 				if (project.getElementName() == null) {
 					// Projects indexed by name. No name  - no index for it
 					log.debug("Project with NULL name is being initialized");
 					return CompletableFuture.completedFuture(null);
+					
 				} else {
+					
 					synchronized(this) { // synchronized since the `indexers` array can change via a settings change
 						@SuppressWarnings("unchecked")
 						CompletableFuture<Void>[] futures = new CompletableFuture[this.indexers.length + 1];
@@ -394,7 +392,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 						// clean future
 						futures[0] = CompletableFuture.runAsync(() -> {
 							removeSymbolsByProject(project);
-							springIndex.removeBeans(project.getElementName());
+							springIndex.removeProject(project.getElementName());
 						}, this.updateQueue);
 						
 						// index futures
@@ -923,7 +921,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			try {
 				for (String doc : this.docURIs) {
 					removeSymbolsByDoc(project, doc);
-					springIndex.removeBeans(project.getElementName(), doc);
+					springIndex.removeElements(project.getElementName(), doc);
 				}
 				
 				for (SpringIndexer index : this.indexer) {
@@ -955,7 +953,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 				for (SpringIndexer index : this.indexer) {
 					index.removeProject(project);
 				}
-				springIndex.removeBeans(project.getElementName());
+				springIndex.removeProject(project.getElementName());
 				server.getClient().indexUpdated();
 				
 				log.debug("{} completed", this);

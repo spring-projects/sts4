@@ -72,7 +72,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
-import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -320,7 +320,7 @@ public class SpringIndexerJava implements SpringIndexer {
 //			dependencyTracker.dump();
 
 			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-			Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
+			List<SpringIndexElement> beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toList();
 			List<Diagnostic> diagnostics = generatedDiagnostics.stream().filter(cachedDiagnostics -> cachedDiagnostics.getDiagnostic() != null).map(cachedDiagnostic -> cachedDiagnostic.getDiagnostic()).collect(Collectors.toList());
 
 			symbolHandler.addSymbols(project, docURI, symbols, beans, diagnostics);
@@ -436,7 +436,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		}
 		
 		EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-		Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
+		Map<String, List<SpringIndexElement>> beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).collect(Collectors.groupingBy(CachedBean::getDocURI, Collectors.mapping(CachedBean::getBean, Collectors.toList())));
 		Map<String, List<Diagnostic>> diagnosticsByDoc = generatedDiagnostics.stream().filter(cachedDiagnostic -> cachedDiagnostic.getDiagnostic() != null).collect(Collectors.groupingBy(CachedDiagnostics::getDocURI, Collectors.mapping(CachedDiagnostics::getDiagnostic, Collectors.toList())));
 		addEmptyDiagnostics(diagnosticsByDoc, javaFiles);
 		symbolHandler.addSymbols(project, symbols, beans, diagnosticsByDoc);
@@ -548,7 +548,7 @@ public class SpringIndexerJava implements SpringIndexer {
 
 		if (symbols != null && beans != null) {
 			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-			Bean[] allBeans = Arrays.stream(beans).filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
+			Map<String, List<SpringIndexElement>> allBeans = Arrays.stream(beans).filter(cachedBean -> cachedBean.getBean() != null).collect(Collectors.groupingBy(CachedBean::getDocURI, Collectors.mapping(CachedBean::getBean, Collectors.toList())));
 			Map<String, List<Diagnostic>> diagnosticsByDoc = Arrays.stream(diagnostics).filter(cachedDiagnostic -> cachedDiagnostic.getDiagnostic() != null).collect(Collectors.groupingBy(CachedDiagnostics::getDocURI, Collectors.mapping(CachedDiagnostics::getDiagnostic, Collectors.toList())));
 			addEmptyDiagnostics(diagnosticsByDoc, javaFiles);
 			symbolHandler.addSymbols(project, enhancedSymbols, allBeans, diagnosticsByDoc);

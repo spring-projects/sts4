@@ -41,7 +41,7 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -142,7 +142,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 		if (symbols != null && beans != null) {
 			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-			Bean[] allBeans = Arrays.stream(beans).filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
+			Map<String, List<SpringIndexElement>> allBeans = Arrays.stream(beans).filter(cachedBean -> cachedBean.getBean() != null).collect(Collectors.groupingBy(CachedBean::getDocURI, Collectors.mapping(CachedBean::getBean, Collectors.toList())));
 			symbolHandler.addSymbols(project, enhancedSymbols, allBeans, null);
 		}
 
@@ -180,7 +180,7 @@ public class SpringIndexerXML implements SpringIndexer {
 		this.cache.update(beansCacheKey, file, updatedDoc.getLastModified(), generatedBeans, null, CachedBean.class);
 
 		EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-		Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
+		List<SpringIndexElement> beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toList();
 		symbolHandler.addSymbols(project, docURI, symbols, beans, null);
 	}
 
@@ -207,7 +207,7 @@ public class SpringIndexerXML implements SpringIndexer {
 			this.cache.update(beansCacheKey, file, updatedDoc.getLastModified(), generatedBeans, null, CachedBean.class);
 			
 			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-			Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
+			List<SpringIndexElement> beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toList();
 			symbolHandler.addSymbols(project, docURI, symbols, beans, null);
 		}
 	}
