@@ -1,4 +1,4 @@
-name: Release VSCode Extension
+name: Publish VSCode Extension Pack
 
 on:
   workflow_dispatch:
@@ -23,7 +23,7 @@ env:
 jobs:
   publish-vscode-extension-pack:
     runs-on: ubuntu-latest
-    name: Release Build and Upload VSCode Extension '${{ inputs.extension-name }}'
+    name: Publish vscode extension pack '${{ inputs.extension-name }}'
     steps:
       - name: Checkout vscode-extension '${{ inputs.extension-name }}'
         uses: actions/checkout@v4
