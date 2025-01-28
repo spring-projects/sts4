@@ -56,23 +56,23 @@ public class SpringMetamodelIndex {
 		projectRootElements.put(projectName, projectRoot);
 	}
 
-	public void updateBeans(String projectName, String docURI, Bean[] beanDefinitions) {
+	public void updateElements(String projectName, String docURI, SpringIndexElement[] beanDefinitions) {
 		ProjectElement project = this.projectRootElements.computeIfAbsent(projectName, name -> new ProjectElement(name));
 		project.removeDocument(docURI);
 		
 		DocumentElement document = new DocumentElement(docURI);
-		for (Bean bean : beanDefinitions) {
+		for (SpringIndexElement bean : beanDefinitions) {
 			document.addChild(bean);
 		}
 		
 		project.addChild(document);
 	}
 
-	public void removeBeans(String projectName) {
+	public void removeProject(String projectName) {
 		projectRootElements.remove(projectName);
 	}
 
-	public void removeBeans(String projectName, String docURI) {
+	public void removeElements(String projectName, String docURI) {
 		ProjectElement project = projectRootElements.get(projectName);
 		if (project != null) {
 			project.removeDocument(docURI);
