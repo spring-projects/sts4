@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -33,10 +35,12 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.XmlBeansTestConf;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.utils.test.MockProjectObserver;
 import org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
@@ -70,6 +74,7 @@ public class XMLBeansHyperlinkTest {
 	@Autowired private SpringSymbolIndex indexer;
 	@Autowired private DefinitionLinkAsserts definitionLinkAsserts;
 	@Autowired private MockProjectObserver projectObserver;
+	@Autowired private SpringMetamodelIndex springIndex;
 	
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	private MavenJavaProject project;
@@ -173,6 +178,12 @@ public class XMLBeansHyperlinkTest {
     @Test
 //    @Disabled
     void testBeanRefHyperlink() throws Exception {
+		Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "simpleObj");
+
+		assertEquals(1, beans.length);
+		assertEquals("simpleObj", beans[0].getName());
+		assertEquals("u.t.r.SimpleObj", beans[0].getType());
+		
     	log.debug("------------------ testBeanRefHyperlink ----------------------");
         Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
         Editor editor = harness.newEditor(LanguageId.XML,

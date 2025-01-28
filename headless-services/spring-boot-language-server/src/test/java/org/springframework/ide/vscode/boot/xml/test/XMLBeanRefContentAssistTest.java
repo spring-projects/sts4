@@ -22,11 +22,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -43,9 +41,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.google.gson.Gson;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-
 /**
  * @author Martin Lippert
  */
@@ -54,25 +49,17 @@ import ch.qos.logback.classic.Logger;
 @Import(SymbolProviderTestConf.class)
 public class XMLBeanRefContentAssistTest {
 	
-	private static final org.slf4j.Logger log = LoggerFactory.getLogger(XMLBeanRefContentAssistTest.class);
-	
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private SpringSymbolIndex indexer;
 
 	private IJavaProject project;
-	private Level originalLevel;
 	private File directory;
 
 	private String tempJavaDocUri;
 
 	@BeforeEach
 	public void setup() throws Exception {
-	    final Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-	    originalLevel = logger.getLevel();
-	    logger.setLevel(Level.INFO);
-	    
-		log.info("-------------------------------------------------");
 		harness.intialize(null);
 		
 		Map<String, Object> supportXML = new HashMap<>();
@@ -98,13 +85,6 @@ public class XMLBeanRefContentAssistTest {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 	
-	@AfterEach
-	public void tearDown() {
-		log.debug("-------------------------------------------------");
-	    final Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-	    logger.setLevel(originalLevel);
-	}
-
     @Test
     void testSimpleBeanRefCompletion() throws Exception {
         Editor editor = harness.newEditor(LanguageId.XML, """
