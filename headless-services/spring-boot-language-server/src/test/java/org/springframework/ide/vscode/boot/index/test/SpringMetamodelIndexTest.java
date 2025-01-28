@@ -136,13 +136,13 @@ public class SpringMetamodelIndexTest {
 		Bean bean2 = new Bean("beanName2", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes, emptyAnnotations, false);
 		Bean bean3 = new Bean("beanName3", "beanType", locationForDoc2, emptyInjectionPoints, emptySupertypes, emptyAnnotations, false);
 		
-		index.updateBeans("someProject", locationForDoc1.getUri(), new Bean[] {bean1, bean2});
-		index.updateBeans("someProject", locationForDoc2.getUri(), new Bean[] {bean3});
+		index.updateElements("someProject", locationForDoc1.getUri(), new Bean[] {bean1, bean2});
+		index.updateElements("someProject", locationForDoc2.getUri(), new Bean[] {bean3});
 		
 		Bean updatedBean1 = new Bean("updated1", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes, emptyAnnotations, false);
 		Bean updatedBean2 = new Bean("updated2", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes, emptyAnnotations, false);
 		
-		index.updateBeans("someProject", locationForDoc1.getUri(), new Bean[] {updatedBean1, updatedBean2});
+		index.updateElements("someProject", locationForDoc1.getUri(), new Bean[] {updatedBean1, updatedBean2});
 
 		Bean[] beans = index.getBeansOfProject("someProject");
 		assertNotNull(beans);
@@ -192,7 +192,7 @@ public class SpringMetamodelIndexTest {
 		index.updateBeans("someProject1", new Bean[] {bean1, bean2});
 		index.updateBeans("someProject2", new Bean[] {bean3});
 		
-		index.removeBeans("someProject1");
+		index.removeProject("someProject1");
 		
 		Bean[] beans = index.getBeansOfProject("someProject2");
 		assertNotNull(beans);
@@ -214,7 +214,7 @@ public class SpringMetamodelIndexTest {
 		Bean bean3 = new Bean("beanName3", "beanType", locationForDoc2, emptyInjectionPoints, emptySupertypes, emptyAnnotations, false);
 		
 		index.updateBeans("someProject", new Bean[] {bean1, bean2, bean3});
-		index.removeBeans("someProject", locationForDoc1.getUri());
+		index.removeElements("someProject", locationForDoc1.getUri());
 		
 		Bean[] beans = index.getBeansOfProject("someProject");
 		assertNotNull(beans);

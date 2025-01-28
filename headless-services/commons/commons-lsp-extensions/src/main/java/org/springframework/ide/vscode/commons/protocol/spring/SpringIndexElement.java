@@ -15,5 +15,8 @@ import java.util.List;
 public interface SpringIndexElement {
 	
 	List<SpringIndexElement> getChildren();
+
+	void addChild(SpringIndexElement child);
+	void removeChild(SpringIndexElement doc);
 	
 }
