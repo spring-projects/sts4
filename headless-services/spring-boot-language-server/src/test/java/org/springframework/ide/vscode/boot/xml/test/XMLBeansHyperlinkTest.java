@@ -100,6 +100,8 @@ public class XMLBeansHyperlinkTest {
 		settings.put("boot-java", bootJavaObj);
 		
 		harness.changeConfiguration(new Settings(new Gson().toJsonTree(settings)));
+		// Configuration change updates indexer hence we need to wait until this occurs as well
+		indexer.waitOperation();
 
 		project = projects.mavenProject("test-xml-hyperlinks");
 		
@@ -178,8 +180,9 @@ public class XMLBeansHyperlinkTest {
     @Test
 //    @Disabled
     void testBeanRefHyperlink() throws Exception {
+		assertEquals(springIndex.getBeans().length, 4);
+		
 		Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "simpleObj");
-
 		assertEquals(1, beans.length);
 		assertEquals("simpleObj", beans[0].getName());
 		assertEquals("u.t.r.SimpleObj", beans[0].getType());

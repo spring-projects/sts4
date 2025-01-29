@@ -387,28 +387,29 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 					log.debug("Project with NULL name is being initialized");
 					return CompletableFuture.completedFuture(null);
 				} else {
+					synchronized(this) { // synchronized since the `indexers` array can change via a settings change
+						@SuppressWarnings("unchecked")
+						CompletableFuture<Void>[] futures = new CompletableFuture[this.indexers.length + 1];
 
-					@SuppressWarnings("unchecked")
-					CompletableFuture<Void>[] futures = new CompletableFuture[this.indexers.length + 1];
+						// clean future
+						futures[0] = CompletableFuture.runAsync(() -> {
+							removeSymbolsByProject(project);
+							springIndex.removeBeans(project.getElementName());
+						}, this.updateQueue);
+						
+						// index futures
+						for (int i = 0; i < this.indexers.length; i++) {
+							InitializeProject initializeItem = new InitializeProject(project, this.indexers[i], clean);
+							futures[i + 1] = CompletableFuture.runAsync(initializeItem, this.updateQueue);
+						}
+						
+						CompletableFuture<Void> future = CompletableFuture.allOf(futures);
+						
+						future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
 
-					// clean future
-					futures[0] = CompletableFuture.runAsync(() -> {
-						removeSymbolsByProject(project);
-						springIndex.removeBeans(project.getElementName());
-					}, this.updateQueue);
-					
-					// index futures
-					for (int i = 0; i < this.indexers.length; i++) {
-						InitializeProject initializeItem = new InitializeProject(project, this.indexers[i], clean);
-						futures[i + 1] = CompletableFuture.runAsync(initializeItem, this.updateQueue);
+						this.latestScheduledTaskByProject.put(project.getElementName(), future);
+						return future;
 					}
-					
-					CompletableFuture<Void> future = CompletableFuture.allOf(futures);
-					
-					future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
-
-					this.latestScheduledTaskByProject.put(project.getElementName(), future);
-					return future;
 				}
 			} else {
 				return deleteProject(project);
@@ -715,15 +716,17 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			ImmutableList.Builder<WorkspaceSymbol> builder = ImmutableList.builder();
 			if (project != null && doc != null) {
 				// Collect symbols from the opened document
-				for (SpringIndexer indexer : this.indexers) {
-					if (indexer.isInterestedIn(docURI)) {
-						try {
-							for (EnhancedSymbolInformation enhanced : indexer.computeSymbols(project, docURI,
-									doc.get())) {
-								builder.add(enhanced.getSymbol());
+				synchronized(this) {
+					for (SpringIndexer indexer : this.indexers) {
+						if (indexer.isInterestedIn(docURI)) {
+							try {
+								for (EnhancedSymbolInformation enhanced : indexer.computeSymbols(project, docURI,
+										doc.get())) {
+									builder.add(enhanced.getSymbol());
+								}
+							} catch (Exception e) {
+								log.error("{}", e);
 							}
-						} catch (Exception e) {
-							log.error("{}", e);
 						}
 					}
 				}

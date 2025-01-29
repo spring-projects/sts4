@@ -73,6 +73,8 @@ public class XMLBeanRefContentAssistTest {
 		settings.put("boot-java", bootJavaObj);
 		
 		harness.changeConfiguration(new Settings(new Gson().toJsonTree(settings)));
+		// Configuration change updates indexer hence we need to wait until this occurs as well
+		indexer.waitOperation();
 
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-xml-hyperlinks/").toURI());
 

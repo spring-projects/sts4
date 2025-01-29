@@ -78,6 +78,8 @@ public class XMLContentAssistTest {
 		settings.put("boot-java", bootJavaObj);
 		
 		harness.changeConfiguration(new Settings(new Gson().toJsonTree(settings)));
+		// Configuration change updates indexer hence we need to wait until this occurs as well
+		indexer.waitOperation();
 
 		project = projects.mavenProject("test-xml-hyperlinks");
 		
