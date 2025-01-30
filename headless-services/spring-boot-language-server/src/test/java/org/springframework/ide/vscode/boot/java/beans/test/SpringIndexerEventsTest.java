@@ -34,6 +34,7 @@ import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.events.EventListenerIndexElement;
+import org.springframework.ide.vscode.boot.java.events.EventPublisherIndexElement;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
@@ -87,6 +88,15 @@ public class SpringIndexerEventsTest {
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
                 SpringIndexerHarness.symbol("@Component", "@+ 'eventListenerPerInterface' (@Component) EventListenerPerInterface"));
     }
+    
+    @Test
+    void testEventPublisherSymbol() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/com/example/events/demo/CustomEventPublisher.java").toUri().toString();
+
+        SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+                SpringIndexerHarness.symbol("@Component", "@+ 'customEventPublisher' (@Component) CustomEventPublisher"),
+                SpringIndexerHarness.symbol("this.publisher.publishEvent(new CustomEvent())", "@EventPublisher (CustomEvent)"));
+    }
 
     @Test
     void testAnnotationBasedEventListenerIndexElements() throws Exception {
@@ -132,6 +142,29 @@ public class SpringIndexerEventsTest {
         assertNotNull(location);
         assertEquals(docUri, location.getUri());
         assertEquals(new Range(new Position(10, 13), new Position(10, 31)), location.getRange());
+    }
+    
+    @Test
+    void testEventPublisherIndexElements() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/com/example/events/demo/CustomEventPublisher.java").toUri().toString();
+
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(1, beans.length);
+        
+        Bean listenerComponentBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("customEventPublisher")).findFirst().get();
+        assertEquals("com.example.events.demo.CustomEventPublisher", listenerComponentBean.getType());
+        
+        List<SpringIndexElement> children = listenerComponentBean.getChildren();
+        assertEquals(1, children.size());
+        assertTrue(children.get(0) instanceof EventPublisherIndexElement);
+        
+        EventPublisherIndexElement publisherElement = (EventPublisherIndexElement) children.get(0);
+        assertEquals("com.example.events.demo.CustomEvent", publisherElement.getEventType());
+        
+        Location location = publisherElement.getLocation();
+        assertNotNull(location);
+        assertEquals(docUri, location.getUri());
+        assertEquals(new Range(new Position(15, 2), new Position(15, 48)), location.getRange());
     }
     
 }
