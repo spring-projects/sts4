@@ -35,6 +35,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.QualifiedName;
@@ -339,6 +340,52 @@ public class ASTUtils {
 			}
 		}
 		return null;
+	}
+	
+	public static boolean isAbstractClass(TypeDeclaration typeDeclaration) {
+		List<?> modifiers = typeDeclaration.modifiers();
+		for (Object object : modifiers) {
+			if (object instanceof Modifier) {
+				if (((Modifier) object).isAbstract()) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+	
+	public static ITypeBinding findInTypeHierarchy(TypeDeclaration typeDeclaration, TextDocument doc, ITypeBinding resolvedType, Set<String> typesToCheck) {
+		ITypeBinding[] interfaces = resolvedType.getInterfaces();
+
+		for (ITypeBinding resolvedInterface : interfaces) {
+			String simplifiedType = null;
+
+			if (resolvedInterface.isParameterizedType()) {
+				simplifiedType = resolvedInterface.getBinaryName();
+			}
+			else {
+				simplifiedType = resolvedType.getQualifiedName();
+			}
+
+			if (typesToCheck.contains(simplifiedType)) {
+				return resolvedInterface;
+			}
+			else {
+				ITypeBinding result = findInTypeHierarchy(typeDeclaration, doc, resolvedInterface, typesToCheck);
+				if (result != null) {
+					return result;
+				}
+			}
+		}
+
+		ITypeBinding superclass = resolvedType.getSuperclass();
+		if (superclass != null) {
+			return findInTypeHierarchy(typeDeclaration, doc, superclass, typesToCheck);
+		}
+		else {
+			return null;
+		}
 	}
 	
 	public static Optional<DocumentEdits> getImportsEdit(CompilationUnit cu, Collection<String> imprts, IDocument doc) {
