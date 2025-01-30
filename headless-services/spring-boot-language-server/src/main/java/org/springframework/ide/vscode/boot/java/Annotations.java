@@ -89,6 +89,8 @@ public class Annotations {
 	public static final Set<String> NAMED_ANNOTATIONS = Set.of(Annotations.NAMED_JAKARTA, Annotations.NAMED_JAVAX);
 	
 	public static final String SCHEDULED = "org.springframework.scheduling.annotation.Scheduled";
+	public static final String EVENT_LISTENER = "org.springframework.context.event.EventListener";
+	public static final String APPLICATION_LISTENER = "org.springframework.context.ApplicationListener";
 	
 	public static final Map<String, String> AOP_ANNOTATIONS = Map.of(
 	        "org.aspectj.lang.annotation.Pointcut", "Pointcut",

@@ -28,8 +28,6 @@ public final class AnnotationParamSpelExtractor {
 	private static final String SPRING_CACHEABLE = "org.springframework.cache.annotation.Cacheable";
 	private static final String SPRING_CACHE_EVICT = "org.springframework.cache.annotation.CacheEvict";
 	
-	private static final String SPRING_EVENT_LISTENER = "org.springframework.context.event.EventListener";
-	
 	private static final String SPRING_PRE_AUTHORIZE = "org.springframework.security.access.prepost.PreAuthorize";
 	private static final String SPRING_PRE_FILTER = "org.springframework.security.access.prepost.PreFilter";
 	private static final String SPRING_POST_AUTHORIZE = "org.springframework.security.access.prepost.PostAuthorize";
@@ -48,7 +46,7 @@ public final class AnnotationParamSpelExtractor {
 			new AnnotationParamSpelExtractor(SPRING_CACHE_EVICT, "key", "", ""),
 			new AnnotationParamSpelExtractor(SPRING_CACHE_EVICT, "condition", "", ""),
 
-			new AnnotationParamSpelExtractor(SPRING_EVENT_LISTENER, "condition", "", ""),
+			new AnnotationParamSpelExtractor(Annotations.EVENT_LISTENER, "condition", "", ""),
 			
 			new AnnotationParamSpelExtractor(SPRING_PRE_AUTHORIZE, null, "", ""),
 			new AnnotationParamSpelExtractor(SPRING_PRE_AUTHORIZE, "value", "", ""),

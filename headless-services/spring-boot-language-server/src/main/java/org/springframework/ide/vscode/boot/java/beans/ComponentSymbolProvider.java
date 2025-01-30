@@ -18,17 +18,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.jsonrpc.messages.Tuple;
-import org.eclipse.lsp4j.jsonrpc.messages.Tuple.Two;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.events.EventListenerIndexElement;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
@@ -39,6 +40,7 @@ import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -53,12 +55,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		try {
 			if (node != null && node.getParent() != null && node.getParent() instanceof TypeDeclaration) {
-				Two<EnhancedSymbolInformation, Bean> result = createSymbol(node, annotationType, metaAnnotations, doc);
-
-				EnhancedSymbolInformation enhancedSymbol = result.getFirst();
-				Bean beanDefinition = result.getSecond();
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
-				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
+				createSymbol(node, annotationType, metaAnnotations, context, doc);
 			}
 			else if (Annotations.NAMED_ANNOTATIONS.contains(annotationType.getQualifiedName())) {
 				WorkspaceSymbol symbol = DefaultSymbolProvider.provideDefaultSymbol(node, doc);
@@ -71,7 +68,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	protected Tuple.Two<EnhancedSymbolInformation, Bean> createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
+	protected void createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) throws BadLocationException {
 		String annotationTypeName = annotationType.getName();
 		
 		Collection<String> metaAnnotationNames = metaAnnotations.stream()
@@ -81,7 +78,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		TypeDeclaration type = (TypeDeclaration) node.getParent();
 
 		String beanName = BeanUtils.getBeanNameFromComponentAnnotation(node, type);
-		ITypeBinding beanType = getBeanType(type);
+		ITypeBinding beanType = type.resolveBinding();
 
 		Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
 		
@@ -107,8 +104,49 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				.toArray(AnnotationMetadata[]::new);
 		
 		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration);
+		
+		// event listener - create child element, if necessary
+		ITypeBinding inTypeHierarchy = ASTUtils.findInTypeHierarchy(type, doc, beanType, Set.of(Annotations.APPLICATION_LISTENER));
+		if (inTypeHierarchy != null) {
 
-		return Tuple.two(new EnhancedSymbolInformation(symbol), beanDefinition);
+			MethodDeclaration handleEventMethod = findHandleEventMethod(type);
+			if (handleEventMethod != null) {
+
+				IMethodBinding methodBinding = handleEventMethod.resolveBinding();
+				ITypeBinding[] parameterTypes = methodBinding.getParameterTypes();
+				if (parameterTypes != null && parameterTypes.length == 1) {
+
+					ITypeBinding eventType = parameterTypes[0];
+					String eventTypeFq = eventType.getQualifiedName();
+					
+					DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, handleEventMethod.getName());
+					Location handleMethodLocation = new Location(doc.getUri(), nodeRegion.asRange());
+					
+					Collection<Annotation> annotationsOnHandleEventMethod = ASTUtils.getAnnotations(handleEventMethod);
+					AnnotationMetadata[] handleEventMethodAnnotations = ASTUtils.getAnnotationsMetadata(annotationsOnHandleEventMethod, doc);
+					
+					EventListenerIndexElement eventElement = new EventListenerIndexElement(eventTypeFq, handleMethodLocation, handleEventMethodAnnotations);
+					beanDefinition.addChild(eventElement);
+				}
+			}
+		}
+
+		context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), new EnhancedSymbolInformation(symbol)));
+		context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
+	}
+
+	private MethodDeclaration findHandleEventMethod(TypeDeclaration type) {
+		MethodDeclaration[] methods = type.getMethods();
+		
+		for (MethodDeclaration method : methods) {
+			IMethodBinding binding = method.resolveBinding();
+			String name = binding.getName();
+			
+			if (name != null && name.equals("onApplicationEvent")) {
+				return method;
+			}
+		}
+		return null;
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {
@@ -136,10 +174,6 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		symbolLabel.append(") ");
 		symbolLabel.append(beanType);
 		return symbolLabel.toString();
-	}
-
-	private ITypeBinding getBeanType(TypeDeclaration type) {
-		return type.resolveBinding();
 	}
 	
 }

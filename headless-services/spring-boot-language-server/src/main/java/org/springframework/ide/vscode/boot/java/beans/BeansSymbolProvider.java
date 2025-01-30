@@ -53,7 +53,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import com.google.common.collect.ImmutableList;
 
 import reactor.util.function.Tuple2;
-import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
 /**
@@ -134,12 +133,12 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 	@Override
 	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		// this checks function beans that are defined as implementations of Function interfaces
-		Tuple3<String, ITypeBinding, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
+		ITypeBinding functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
 		if (functionBean != null) {
 			try {
-				String beanName = functionBean.getT1();
-				ITypeBinding beanType = functionBean.getT2();
-				Location beanLocation = new Location(doc.getUri(), doc.toRange(functionBean.getT3()));
+				String beanName = BeanUtils.getBeanName(typeDeclaration);
+				ITypeBinding beanType = functionBean;
+				Location beanLocation = new Location(doc.getUri(), doc.toRange(ASTUtils.nodeRegion(doc, typeDeclaration.getName())));
 
 				WorkspaceSymbol symbol = new WorkspaceSymbol(
 						beanLabel(true, beanName, beanType.getName(), null),

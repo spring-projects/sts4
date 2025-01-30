@@ -77,5 +77,10 @@ public class BeanUtils {
 		}
 		return typeName;
 	}
+	
+	public static String getBeanName(TypeDeclaration typeDeclaration) {
+		String beanName = typeDeclaration.getName().toString();
+		return BeanUtils.getBeanNameFromType(beanName);
+	}
 
 }
