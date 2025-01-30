@@ -13,14 +13,19 @@ package org.springframework.ide.vscode.boot.java.beans;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolKind;
@@ -30,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.events.EventListenerIndexElement;
+import org.springframework.ide.vscode.boot.java.events.EventPublisherIndexElement;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
@@ -130,9 +136,64 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				}
 			}
 		}
+		
+		// event publisher checks
+		for (InjectionPoint injectionPoint : injectionPoints) {
+			if (Annotations.EVENT_PUBLISHER.equals(injectionPoint.getType())) {
+				context.getNextPassFiles().add(context.getFile());
+			}
+		}
 
 		context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), new EnhancedSymbolInformation(symbol)));
 		context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
+	}
+	
+	@Override
+	protected void addSymbolsPass2(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+		TypeDeclaration type = (TypeDeclaration) node.getParent();
+		type.accept(new ASTVisitor() {
+			
+			@Override
+			public boolean visit(MethodInvocation methodInvocation) {
+				try {
+					String methodName = methodInvocation.getName().toString();
+					if ("publishEvent".equals(methodName)) {
+
+						IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
+						boolean doesInvokeEventPublisher = Annotations.EVENT_PUBLISHER.equals(methodBinding.getDeclaringClass().getQualifiedName());
+						if (doesInvokeEventPublisher) {
+							List<?> arguments = methodInvocation.arguments();
+							if (arguments != null && arguments.size() == 1) {
+
+								ITypeBinding eventTypeBinding = ((Expression) arguments.get(0)).resolveTypeBinding();
+								if (eventTypeBinding != null) {
+
+									DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, methodInvocation);
+									Location location;
+									location = new Location(doc.getUri(), nodeRegion.asRange());
+
+									EventPublisherIndexElement eventPublisherIndexElement = new EventPublisherIndexElement(eventTypeBinding.getQualifiedName(), location);
+									Bean publisherBeanElement = findBean(node, methodInvocation, context, doc);
+									if (publisherBeanElement != null) {
+										publisherBeanElement.addChild(eventPublisherIndexElement);
+									}
+									
+									// symbol
+									String symbolLabel = "@EventPublisher (" + eventTypeBinding.getName() + ")";
+									WorkspaceSymbol symbol = new WorkspaceSymbol(symbolLabel, SymbolKind.Interface, Either.forLeft(location));
+									EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol);
+									context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+								}
+							}
+						}
+					}
+				
+				} catch (BadLocationException e) {
+					log.error("", e);
+				}
+				return super.visit(methodInvocation);
+			}
+		});
 	}
 
 	private MethodDeclaration findHandleEventMethod(TypeDeclaration type) {
@@ -146,6 +207,24 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				return method;
 			}
 		}
+		return null;
+	}
+	
+	private Bean findBean(Annotation annotation, MethodInvocation methodInvocation, SpringIndexerJavaContext context, TextDocument doc) {
+		TypeDeclaration declaringType = ASTUtils.findDeclaringType(methodInvocation);
+		if (declaringType != null) {
+			String beanName = BeanUtils.getBeanNameFromComponentAnnotation(annotation, declaringType);
+			if (beanName != null) {
+				Optional<Bean> first = context.getBeans().stream().filter(cachedBean -> cachedBean.getDocURI().equals(doc.getUri()))
+						.map(cachedBean -> cachedBean.getBean())
+						.filter(bean -> bean instanceof Bean)
+						.map(bean -> (Bean) bean)
+						.filter(bean -> bean.getName().equals(beanName))
+						.findFirst();
+				return first.get();
+			}
+		}
+		
 		return null;
 	}
 

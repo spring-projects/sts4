@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -90,7 +90,9 @@ public class Annotations {
 	
 	public static final String SCHEDULED = "org.springframework.scheduling.annotation.Scheduled";
 	public static final String EVENT_LISTENER = "org.springframework.context.event.EventListener";
+	
 	public static final String APPLICATION_LISTENER = "org.springframework.context.ApplicationListener";
+	public static final String EVENT_PUBLISHER = "org.springframework.context.ApplicationEventPublisher";
 	
 	public static final Map<String, String> AOP_ANNOTATIONS = Map.of(
 	        "org.aspectj.lang.annotation.Pointcut", "Pointcut",
