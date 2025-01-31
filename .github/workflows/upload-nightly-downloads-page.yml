@@ -20,7 +20,7 @@ env:
 jobs:
 
   upload-nightly-downloads-s3-cache:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
