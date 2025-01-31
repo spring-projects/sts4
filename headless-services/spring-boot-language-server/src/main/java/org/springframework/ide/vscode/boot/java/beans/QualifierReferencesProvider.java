@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2024 Broadcom
+ * Copyright (c) 2024, 2025 Broadcom
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
@@ -66,6 +67,11 @@ public class QualifierReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 	
+	@Override
+	public List<? extends Location> provideReferences(CancelChecker cancelToken, IJavaProject project, TextDocument doc, ASTNode node, int offset) {
+		return null;
+	}
+
 	private List<? extends Location> provideReferences(IJavaProject project, String value) {
 		Bean[] beans = this.springIndex.getBeans();
 		
