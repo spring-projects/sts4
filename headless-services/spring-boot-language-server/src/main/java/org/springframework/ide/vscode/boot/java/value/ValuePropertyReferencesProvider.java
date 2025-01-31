@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -101,6 +101,11 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 	
+	@Override
+	public List<? extends Location> provideReferences(CancelChecker cancelToken, IJavaProject project, TextDocument doc, ASTNode node, int offset) {
+		return null;
+	}
+
 	public List<? extends Location> findReferencesToPropertyKey(String propertyKey) {
 		List<? extends Location> fromPropertyFiles = findReferencesFromPropertyFiles(propertyKey);
 		List<? extends Location> fromAnnotations = findReferencesFromAnnotations(propertyKey);

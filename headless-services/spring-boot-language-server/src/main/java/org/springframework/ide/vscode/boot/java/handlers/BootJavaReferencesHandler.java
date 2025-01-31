@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,8 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,7 +24,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
@@ -39,14 +40,17 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 
 	private final JavaProjectFinder projectFinder;
 	private final BootJavaLanguageServerComponents server;
-	private final Map<String, ReferenceProvider> referenceProviders;
+	private final Map<String, ReferenceProvider> annotationSpecificReferenceProviders;
+	private final List<ReferenceProvider> unspecificProviders;
 	private final CompilationUnitCache cuCache;
 
-	public BootJavaReferencesHandler(BootJavaLanguageServerComponents server, CompilationUnitCache cuCache, JavaProjectFinder projectFinder, Map<String, ReferenceProvider> specificProviders) {
+	public BootJavaReferencesHandler(BootJavaLanguageServerComponents server, CompilationUnitCache cuCache, JavaProjectFinder projectFinder,
+			Map<String, ReferenceProvider> specificProviders, List<ReferenceProvider> unspecificProviders) {
 		this.server = server;
 		this.cuCache = cuCache;
 		this.projectFinder = projectFinder;
-		this.referenceProviders = specificProviders;
+		this.annotationSpecificReferenceProviders = specificProviders;
+		this.unspecificProviders = unspecificProviders;
 	}
 
 	@Override
@@ -62,7 +66,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 					
 					cancelToken.checkCanceled();
 					
-					List<? extends Location> referencesResult = provideReferences(cancelToken, doc.getId(), offset);
+					List<? extends Location> referencesResult = provideReferences(cancelToken, doc, offset);
 					if (referencesResult != null) {
 						return referencesResult;
 					}
@@ -78,20 +82,32 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 		return SimpleTextDocumentService.NO_REFERENCES;
 	}
 
-	private List<? extends Location> provideReferences(CancelChecker cancelToken, TextDocumentIdentifier docID, int offset) throws Exception {
-		Optional<IJavaProject> projectOptional = projectFinder.find(docID);
+	private List<? extends Location> provideReferences(CancelChecker cancelToken, TextDocument doc, int offset) throws Exception {
+		Optional<IJavaProject> projectOptional = projectFinder.find(doc.getId());
 
 		if (projectOptional.isPresent()) {
 			IJavaProject project = projectOptional.get();
 
-			URI docUri = URI.create(docID.getUri());
+			URI docUri = URI.create(doc.getUri());
 
 			return cuCache.withCompilationUnit(project, docUri, cu -> {
 				cancelToken.checkCanceled();
 				
 				ASTNode node = NodeFinder.perform(cu, offset, 0);
 				if (node != null) {
-					return provideReferencesForAnnotation(cancelToken, project, node, offset);
+					List<Location> result = new ArrayList<>();
+
+					List<? extends Location> referencesForAnnotation = provideReferencesForAnnotation(cancelToken, project, node, offset);
+					if (referencesForAnnotation != null) {
+						result.addAll(referencesForAnnotation);
+					}
+					
+					List<? extends Location> otherReferences = provideUnspecificReferences(cancelToken, project, doc, node, offset);
+					if (otherReferences != null) {
+						result.addAll(otherReferences);
+					}
+					
+					return result.size() > 0 ? result : null;
 				}
 				else {
 					return null;
@@ -100,6 +116,21 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 		}
 
 		return null;
+	}
+
+	private List<? extends Location> provideUnspecificReferences(CancelChecker cancelToken, IJavaProject project, TextDocument doc, ASTNode node, int offset) {
+		List<Location> result = new ArrayList<>();
+		
+		for (Iterator<ReferenceProvider> iterator = unspecificProviders.iterator(); iterator.hasNext();) {
+			ReferenceProvider referenceProvider = iterator.next();
+			
+			List<? extends Location> references = referenceProvider.provideReferences(cancelToken, project, doc, node, offset);
+			if (references != null) {
+				result.addAll(references);
+			}
+		}
+		
+		return result;
 	}
 
 	private List<? extends Location> provideReferencesForAnnotation(CancelChecker cancelToken, IJavaProject project, ASTNode node, int offset) {
@@ -119,7 +150,7 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 				String qualifiedName = type.getQualifiedName();
 				
 				if (qualifiedName != null) {
-					ReferenceProvider provider = this.referenceProviders.get(qualifiedName);
+					ReferenceProvider provider = this.annotationSpecificReferenceProviders.get(qualifiedName);
 					
 					if (provider != null) {
 						return provider.provideReferences(cancelToken, project, node, annotation, type, offset);

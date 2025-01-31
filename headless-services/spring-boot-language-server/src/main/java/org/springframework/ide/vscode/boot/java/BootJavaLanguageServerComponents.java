@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -33,6 +34,7 @@ import org.springframework.ide.vscode.boot.java.beans.QualifierReferencesProvide
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
 import org.springframework.ide.vscode.boot.java.copilot.CopilotAgentCommandHandler;
 import org.springframework.ide.vscode.boot.java.copilot.util.ResponseModifier;
+import org.springframework.ide.vscode.boot.java.events.EventReferenceProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentHighlightEngine;
@@ -316,16 +318,19 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder,
 			SpringMetamodelIndex index, SpringSymbolIndex symbolIndex, CompilationUnitCache cuCache) {
 		
-		Map<String, ReferenceProvider> providers = new HashMap<>();
+		Map<String, ReferenceProvider> specificProviders = new HashMap<>();
 
-		providers.put(Annotations.VALUE, new ValuePropertyReferencesProvider(projectFinder, index));
-		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, new ValuePropertyReferencesProvider(projectFinder, index));
-		providers.put(Annotations.QUALIFIER, new QualifierReferencesProvider(index));
-		providers.put(Annotations.NAMED_JAKARTA, new NamedReferencesProvider(index, symbolIndex));
-		providers.put(Annotations.NAMED_JAVAX, new NamedReferencesProvider(index, symbolIndex));
-		providers.put(Annotations.PROFILE, new ProfileReferencesProvider(index));
+		specificProviders.put(Annotations.VALUE, new ValuePropertyReferencesProvider(projectFinder, index));
+		specificProviders.put(Annotations.CONDITIONAL_ON_PROPERTY, new ValuePropertyReferencesProvider(projectFinder, index));
+		specificProviders.put(Annotations.QUALIFIER, new QualifierReferencesProvider(index));
+		specificProviders.put(Annotations.NAMED_JAKARTA, new NamedReferencesProvider(index, symbolIndex));
+		specificProviders.put(Annotations.NAMED_JAVAX, new NamedReferencesProvider(index, symbolIndex));
+		specificProviders.put(Annotations.PROFILE, new ProfileReferencesProvider(index));
+		
+		List<ReferenceProvider> unspecificProviders = new ArrayList<>();
+		unspecificProviders.add(new EventReferenceProvider(index));
 
-		return new BootJavaReferencesHandler(this, cuCache, projectFinder, providers);
+		return new BootJavaReferencesHandler(this, cuCache, projectFinder, specificProviders, unspecificProviders);
 	}
 
 	protected BootJavaCodeLensEngine createCodeLensEngine(SpringMetamodelIndex springIndex, JavaProjectFinder projectFinder, SimpleLanguageServer server, SpelSemanticTokens spelSemanticTokens) {
