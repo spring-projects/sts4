@@ -172,7 +172,10 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 									Location location;
 									location = new Location(doc.getUri(), nodeRegion.asRange());
 
-									EventPublisherIndexElement eventPublisherIndexElement = new EventPublisherIndexElement(eventTypeBinding.getQualifiedName(), location);
+									Set<String> typesFromhierarchy = new HashSet<>();
+									ASTUtils.findSupertypes(eventTypeBinding, typesFromhierarchy);
+
+									EventPublisherIndexElement eventPublisherIndexElement = new EventPublisherIndexElement(eventTypeBinding.getQualifiedName(), location, typesFromhierarchy);
 									Bean publisherBeanElement = findBean(node, methodInvocation, context, doc);
 									if (publisherBeanElement != null) {
 										publisherBeanElement.addChild(eventPublisherIndexElement);

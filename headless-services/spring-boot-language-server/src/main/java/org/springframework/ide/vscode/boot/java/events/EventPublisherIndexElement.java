@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.events;
 
+import java.util.Set;
+
 import org.eclipse.lsp4j.Location;
 import org.springframework.ide.vscode.commons.protocol.spring.AbstractSpringIndexElement;
 
@@ -20,10 +22,12 @@ public class EventPublisherIndexElement extends AbstractSpringIndexElement {
 	
 	private final String eventType;
 	private final Location location;
+	private final Set<String> eventTypesFromHierarchy;
 
-	public EventPublisherIndexElement(String eventType, Location location) {
+	public EventPublisherIndexElement(String eventType, Location location, Set<String> eventTypesFromHierarchy) {
 		this.eventType = eventType;
 		this.location = location;
+		this.eventTypesFromHierarchy = eventTypesFromHierarchy;
 	}
 
 	public String getEventType() {
@@ -32,6 +36,10 @@ public class EventPublisherIndexElement extends AbstractSpringIndexElement {
 	
 	public Location getLocation() {
 		return location;
+	}
+
+	public Set<String> getEventTypesFromHierarchy() {
+		return eventTypesFromHierarchy;
 	}
 
 }
