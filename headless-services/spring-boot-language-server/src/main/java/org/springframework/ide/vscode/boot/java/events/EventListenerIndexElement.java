@@ -21,11 +21,13 @@ public class EventListenerIndexElement extends AbstractSpringIndexElement {
 	
 	private final String eventType;
 	private final Location location;
+	private final String containerBeanType;
 	private final AnnotationMetadata[] annotations;
 
-	public EventListenerIndexElement(String eventType, Location location, AnnotationMetadata[] annotations) {
+	public EventListenerIndexElement(String eventType, Location location, String containerBeanType, AnnotationMetadata[] annotations) {
 		this.eventType = eventType;
 		this.location = location;
+		this.containerBeanType = containerBeanType;
 		this.annotations = annotations;
 	}
 
@@ -39,6 +41,10 @@ public class EventListenerIndexElement extends AbstractSpringIndexElement {
 
 	public Location getLocation() {
 		return location;
+	}
+
+	public String getContainerBeanType() {
+		return containerBeanType;
 	}
 
 }

@@ -40,6 +40,7 @@ import org.springframework.ide.vscode.boot.java.events.EventListenerIndexElement
 import org.springframework.ide.vscode.boot.java.events.EventPublisherIndexElement;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.DocumentElement;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -117,6 +118,7 @@ public class SpringIndexerEventsTest {
         
         EventListenerIndexElement listenerElement = (EventListenerIndexElement) children.get(0);
         assertEquals("org.springframework.context.ApplicationEvent", listenerElement.getEventType());
+        assertEquals("com.example.events.demo.EventListenerPerAnnotation", listenerElement.getContainerBeanType());
         
         Location location = listenerElement.getLocation();
         assertNotNull(location);
@@ -140,11 +142,32 @@ public class SpringIndexerEventsTest {
         
         EventListenerIndexElement listenerElement = (EventListenerIndexElement) children.get(0);
         assertEquals("org.springframework.context.ApplicationEvent", listenerElement.getEventType());
+        assertEquals("com.example.events.demo.EventListenerPerInterface", listenerElement.getContainerBeanType());
 
         Location location = listenerElement.getLocation();
         assertNotNull(location);
         assertEquals(docUri, location.getUri());
         assertEquals(new Range(new Position(10, 13), new Position(10, 31)), location.getRange());
+    }
+    
+    @Test
+    void testEventListenerIndexElementForListenerInterfaceImplementationWithoutComponentAnnotation() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/com/example/events/demo/EventListenerPerInterfaceAndBeanMethod.java").toUri().toString();
+
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(0, beans.length);
+        
+        DocumentElement document = springIndex.getDocument(docUri);
+        List<SpringIndexElement> children = document.getChildren();
+        
+        EventListenerIndexElement listenerElement = children.stream().filter(element -> element instanceof EventListenerIndexElement).map(element -> (EventListenerIndexElement) element).findFirst().get();
+        assertEquals("org.springframework.context.ApplicationEvent", listenerElement.getEventType());
+        assertEquals("com.example.events.demo.EventListenerPerInterfaceAndBeanMethod", listenerElement.getContainerBeanType());
+
+        Location location = listenerElement.getLocation();
+        assertNotNull(location);
+        assertEquals(docUri, location.getUri());
+        assertEquals(new Range(new Position(8, 13), new Position(8, 31)), location.getRange());
     }
     
     @Test

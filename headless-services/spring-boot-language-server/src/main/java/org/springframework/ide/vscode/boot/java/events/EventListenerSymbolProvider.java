@@ -18,6 +18,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
@@ -75,13 +76,27 @@ public class EventListenerSymbolProvider extends AbstractSymbolProvider {
 					ITypeBinding eventType = getEventType(node, method);
 					DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, method.getName());
 					Location location = new Location(doc.getUri(), nodeRegion.asRange());
+					
+					String containerBeanType = null;
+					TypeDeclaration type = ASTUtils.findDeclaringType(method);
+					if (type != null) {
+						ITypeBinding binding = type.resolveBinding();
+						if (binding != null) {
+							containerBeanType = binding.getQualifiedName();
+						}
+					}
 
-					cachedBean.getBean().addChild(new EventListenerIndexElement(eventType != null ? eventType.getQualifiedName() : "", location, annotations));
+					cachedBean.getBean().addChild(new EventListenerIndexElement(eventType != null ? eventType.getQualifiedName() : "", location, containerBeanType, annotations));
 				}
 			}
 		} catch (BadLocationException e) {
 			log.error("", e);
 		}
+	}
+	
+	@Override
+	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+		super.addSymbolsPass1(typeDeclaration, context, doc);
 	}
 	
 	private String createEventListenerSymbolLabel(Annotation node, MethodDeclaration method) {

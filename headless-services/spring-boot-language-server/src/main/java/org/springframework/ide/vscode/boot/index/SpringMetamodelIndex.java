@@ -78,6 +78,23 @@ public class SpringMetamodelIndex {
 			project.removeDocument(docURI);
 		}
 	}
+	
+	public DocumentElement getDocument(String docURI) {
+		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
+		elementsToVisit.addAll(this.projectRootElements.values());
+		
+		while (!elementsToVisit.isEmpty()) {
+			SpringIndexElement element = elementsToVisit.pop();
+
+			if (element instanceof DocumentElement doc && doc.getDocURI().equals(docURI)) {
+				return doc;
+			}
+
+			elementsToVisit.addAll(element.getChildren());
+		}
+		
+		return null;
+	}
 
 	public Bean[] getBeans() {
 		List<Bean> result = new ArrayList<>();
