@@ -1,3 +1,35 @@
+## 2025-02-05 (4.28.0 RELEASE, incl. language servers version 1.60.0)
+
+#### important highlights
+
+* _(Spring Boot)_ Spring Index cache management optimization leading to performance improvements
+* _(Spring Boot)_ Boot LS JAR size decreased to 207Mb from 271Mb
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_  [spring-index] optimize cache operations [#1071](https://github.com/spring-projects/sts4/issues/1071)
+* _(Spring Boot)_  [spring index] take function beans into account for new spring index [#1043](https://github.com/spring-projects/sts4/issues/1043)
+* _(Spring Boot)_  [spring index] replace EnhancedSymbolInformation for beans with new spring index information [#1041](https://github.com/spring-projects/sts4/issues/1041)
+* _(Spring Boot)_  Boot LS JAR size [#1436](https://github.com/spring-projects/sts4/issues/1436)
+* _(Spring Boot)_  avoid creating symbols for annotations from `org.springframework.lang` package [#1458](https://github.com/spring-projects/sts4/issues/1458)
+* _(Spring Boot)_  `ComponentSymbolProvider` should take value attribute into account when identifying the bean name [#1451](https://github.com/spring-projects/sts4/issues/1451)
+* _(Spring Boot)_  Eclipse Spring Tools Sometimes Doesn't Honor Profile or any Override Properties [#1432](https://github.com/spring-projects/sts4/issues/1432)
+* _(Spring Boot)_  completion for `@DependsOn` should not suggest its own bean [#1429](https://github.com/spring-projects/sts4/issues/1429)
+* _(Spring Boot)_  update jdt.core to `3.40` [#1428](https://github.com/spring-projects/sts4/issues/1428)
+* _(Spring Boot)_  Avoid simple `@NonNullApi` Nodes [#1426](https://github.com/spring-projects/sts4/issues/1426)
+* _(Spring Boot)_  Validate non-saved docs on close [#1420](https://github.com/spring-projects/sts4/pull/1420)
+* _(Spring Boot)_  [property editing] problem marker remains present after closing editor without saving content [#1387](https://github.com/spring-projects/sts4/issues/1387)
+* _(Spring Boot)_  [performance] annotation processing needs overhaul [#1288](https://github.com/spring-projects/sts4/issues/1288)
+* _(Spring Boot)_  webflux code lenses for handler methods disappear when route changes [#1449](https://github.com/spring-projects/sts4/issues/1449)
+* _(Spring Boot)_  Spring Data JPA entityName variable triggers HQL Query Syntax validation error [#1448](https://github.com/spring-projects/sts4/issues/1448)
+* _(Spring Boot)_  extracting media type for webflux route does not work for `MediaType.APPLICATION\_JSON` [#1447](https://github.com/spring-projects/sts4/issues/1447)
+* _(Spring Boot)_   Missing system library [#1442](https://github.com/spring-projects/sts4/issues/1442)
+* _(Spring Boot)_  SQL Parsing Error [#1439](https://github.com/spring-projects/sts4/issues/1439)
+* _(Spring Boot)_  `FileSystemNotFoundException`: Provider "jdt" not installed [#1435](https://github.com/spring-projects/sts4/issues/1435)
+* _(Spring Boot)_  wrap all calls to `StringLiteral.getLiteralValue` via `ASTUtils` to avoid `IllegalStateException` [#1434](https://github.com/spring-projects/sts4/issues/1434)
+* _(Spring Boot)_  Spring Boot Tools Plugin Causes Java Searching to Hang in Large Projects (3300 Java Files) [#1419](https://github.com/spring-projects/sts4/issues/1419)
+* _(Spring Boot)_  VSCode: Error reported when "CALL {h-schema}" is used in `@Query`  [#1395](https://github.com/spring-projects/sts4/issues/1395)
+
 ## 2024-12-04 (4.27.0 RELEASE, incl. language servers version 1.59.0)
 
 #### important highlights
