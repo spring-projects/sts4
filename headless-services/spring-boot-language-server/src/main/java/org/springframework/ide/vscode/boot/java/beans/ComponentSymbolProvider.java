@@ -34,6 +34,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.events.EventListenerIndexElement;
 import org.springframework.ide.vscode.boot.java.events.EventPublisherIndexElement;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
@@ -131,7 +132,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 					Collection<Annotation> annotationsOnHandleEventMethod = ASTUtils.getAnnotations(handleEventMethod);
 					AnnotationMetadata[] handleEventMethodAnnotations = ASTUtils.getAnnotationsMetadata(annotationsOnHandleEventMethod, doc);
 					
-					EventListenerIndexElement eventElement = new EventListenerIndexElement(eventTypeFq, handleMethodLocation, handleEventMethodAnnotations);
+					EventListenerIndexElement eventElement = new EventListenerIndexElement(eventTypeFq, handleMethodLocation, beanType.getQualifiedName(), handleEventMethodAnnotations);
 					beanDefinition.addChild(eventElement);
 				}
 			}
@@ -197,6 +198,40 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				return super.visit(methodInvocation);
 			}
 		});
+	}
+	
+	@Override
+	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+		// event listener - create child element, if necessary
+		try {
+			ITypeBinding typeBinding = typeDeclaration.resolveBinding();
+			if (typeBinding == null) return;
+			
+			ITypeBinding inTypeHierarchy = ASTUtils.findInTypeHierarchy(typeDeclaration, doc, typeBinding, Set.of(Annotations.APPLICATION_LISTENER));
+			if (inTypeHierarchy == null) return;
+	
+			MethodDeclaration handleEventMethod = findHandleEventMethod(typeDeclaration);
+			if (handleEventMethod == null) return;
+	
+			IMethodBinding methodBinding = handleEventMethod.resolveBinding();
+			ITypeBinding[] parameterTypes = methodBinding.getParameterTypes();
+			if (parameterTypes != null && parameterTypes.length == 1) {
+	
+				ITypeBinding eventType = parameterTypes[0];
+				String eventTypeFq = eventType.getQualifiedName();
+	
+				DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, handleEventMethod.getName());
+				Location handleMethodLocation = new Location(doc.getUri(), nodeRegion.asRange());
+	
+				Collection<Annotation> annotationsOnHandleEventMethod = ASTUtils.getAnnotations(handleEventMethod);
+				AnnotationMetadata[] handleEventMethodAnnotations = ASTUtils.getAnnotationsMetadata(annotationsOnHandleEventMethod, doc);
+	
+				EventListenerIndexElement eventElement = new EventListenerIndexElement(eventTypeFq, handleMethodLocation, typeBinding.getQualifiedName(), handleEventMethodAnnotations);
+				context.getBeans().add(new CachedBean(doc.getUri(), eventElement));
+			}
+		} catch (BadLocationException e) {
+			log.error("", e);
+		}
 	}
 
 	private MethodDeclaration findHandleEventMethod(TypeDeclaration type) {
