@@ -73,7 +73,7 @@ public class EventReferenceProvider implements ReferenceProvider {
 					.flatMap(bean -> bean.getChildren().stream())
 					.filter(element -> element instanceof EventPublisherIndexElement)
 					.map(element -> (EventPublisherIndexElement) element)
-					.filter(publisher -> publisher.getEventType().equals(eventType))
+					.filter(publisher -> publisher.getEventType().equals(eventType) || publisher.getEventTypesFromHierarchy().contains(eventType))
 					.map(publisher -> publisher.getLocation())
 					.toList();
 				

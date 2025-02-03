@@ -84,12 +84,18 @@ public class EventsReferencesProviderTest {
         		}""", tempJavaDocUri);
 		
 		List<? extends Location> references = editor.getReferences();
-		assertEquals(1, references.size());
+		assertEquals(2, references.size());
 		
 		String expectedDefinitionUri1 = directory.toPath().resolve("src/main/java/com/example/events/demo/CustomEventPublisher.java").toUri().toString();
 		Location expectedLocation1 = new Location(expectedDefinitionUri1, new Range(new Position(15, 2), new Position(15, 48)));
 		
 		assertTrue(references.contains(expectedLocation1));
+
+		// from type hierarchy of specialzed custom event
+		String expectedDefinitionUri2 = directory.toPath().resolve("src/main/java/com/example/events/demo/SpecializedCustomEventPublisher.java").toUri().toString();
+		Location expectedLocation2 = new Location(expectedDefinitionUri2, new Range(new Position(15, 2), new Position(15, 59)));
+		
+		assertTrue(references.contains(expectedLocation2));
 	}
 
 	@Test
