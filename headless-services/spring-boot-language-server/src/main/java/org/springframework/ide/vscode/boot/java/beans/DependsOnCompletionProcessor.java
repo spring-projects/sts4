@@ -51,6 +51,10 @@ public class DependsOnCompletionProcessor implements AnnotationAttributeCompleti
 
 	private Collection<String> getBeanNameFromSourceCodePosition(ASTNode node) {
 		ASTNode parent = node.getParent();
+		while (parent != null && !(parent instanceof MethodDeclaration) && !(parent instanceof TypeDeclaration)) {
+			parent = parent.getParent();
+		}
+		
 		if (parent instanceof MethodDeclaration method) {
 			Annotation beanAnnotation = ASTUtils.getBeanAnnotation(method);
 			return BeanUtils.getBeanNamesFromBeanAnnotation(beanAnnotation);

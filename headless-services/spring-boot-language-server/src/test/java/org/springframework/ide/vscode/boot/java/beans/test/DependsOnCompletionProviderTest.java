@@ -208,6 +208,14 @@ public class DependsOnCompletionProviderTest {
 	}
 
 	@Test
+	public void testDependsOnCompletionWithinQuotesExcludeDefaultBeanNameFromComponent() throws Exception {
+		Bean componentBean = new Bean("testDependsOnClass", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, componentBean});
+		
+		assertCompletions("@DependsOn(\"<*>\")", 2, "@DependsOn(\"bean1<*>\")");
+	}
+
+	@Test
 	public void testDependsOnCompletionExcludeDefaultBeanNameFromComponent() throws Exception {
 		Bean componentBean = new Bean("testDependsOnClass", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, componentBean});
