@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.events.test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -166,6 +168,26 @@ public class SpringIndexerEventsTest {
         assertNotNull(location);
         assertEquals(docUri, location.getUri());
         assertEquals(new Range(new Position(15, 2), new Position(15, 48)), location.getRange());
+    }
+    
+    @Test
+    void testEventPublisherWithEventTypeHierarchyIndexElements() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/com/example/events/demo/SpecializedCustomEventPublisher.java").toUri().toString();
+
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        Bean listenerComponentBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("specializedCustomEventPublisher")).findFirst().get();
+        assertEquals("com.example.events.demo.SpecializedCustomEventPublisher", listenerComponentBean.getType());
+        
+        List<SpringIndexElement> children = listenerComponentBean.getChildren();
+        assertEquals(1, children.size());
+        assertTrue(children.get(0) instanceof EventPublisherIndexElement);
+        
+        EventPublisherIndexElement publisherElement = (EventPublisherIndexElement) children.get(0);
+        assertEquals("com.example.events.demo.SpecializedCustomEvent", publisherElement.getEventType());
+        Set<String> eventTypesFromHierarchy = publisherElement.getEventTypesFromHierarchy();
+        assertTrue(eventTypesFromHierarchy.contains("com.example.events.demo.CustomEvent"));
+        assertTrue(eventTypesFromHierarchy.contains("java.io.Serializable"));
+        assertFalse(eventTypesFromHierarchy.contains("java.lang.String"));
     }
     
 }
