@@ -169,11 +169,9 @@ public class EventsReferencesProviderTest {
 		assertTrue(references.contains(expectedLocation2));
 
 		String expectedDefinitionUri3 = directory.toPath().resolve("src/main/java/com/example/events/demo/EventListenerPerInterfaceAndBeanMethod.java").toUri().toString();
-		Location expectedLocation3 = new Location(expectedDefinitionUri3, new Range(new Position(9, 13), new Position(9, 24)));
+		Location expectedLocation3 = new Location(expectedDefinitionUri3, new Range(new Position(7, 13), new Position(7, 31)));
 		
 		assertTrue(references.contains(expectedLocation3));
-
-		
 	}
 
 }

@@ -10,9 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.events;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -25,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -55,19 +60,26 @@ public class EventReferenceProvider implements ReferenceProvider {
 			List<EventListenerIndexElement> listeners = index.getNodesOfType(EventListenerIndexElement.class);
 			List<EventPublisherIndexElement> publishers = index.getNodesOfType(EventPublisherIndexElement.class);
 
-			// when offset is inside an event listener, find the respective event type
-			Optional<String> listenerEventType = listeners.stream()
+			// when offset is inside an event listener, look for references from publishers
+			Optional<EventListenerIndexElement> listenerElement = listeners.stream()
 					.filter(listener -> listener.getLocation().getUri().equals(doc.getUri()))
 					.filter(eventListener -> isPositionInside(position, eventListener.getLocation()))
-					.map(eventListener -> eventListener.getEventType())
 					.findAny();
 
-			if (listenerEventType.isPresent()) {
-				// use the listener event type to look for publishers for that type
-				String eventType = listenerEventType.get();
+			if (listenerElement.isPresent()) {
+				Set<String> eventTypes = getListenerEventTypes(listenerElement.get());
 				
 				List<Location> foundLocations = publishers.stream()
-					.filter(publisher -> publisher.getEventType().equals(eventType) || publisher.getEventTypesFromHierarchy().contains(eventType))
+					.filter(publisher -> {
+						if (eventTypes.contains(publisher.getEventType())) return true;
+						
+						for (String listenerEventType : eventTypes) {
+							if (publisher.getEventTypesFromHierarchy().contains(listenerEventType)) {
+								return true;
+							}
+						}
+						return false;
+					})
 					.map(publisher -> publisher.getLocation())
 					.toList();
 				
@@ -76,7 +88,7 @@ public class EventReferenceProvider implements ReferenceProvider {
 				}
 			}
 			
-			// when offset is inside an event publisher, find the respective event type
+			// when offset is inside an event publisher, look for references from listeners
 			else {
 				Optional<EventPublisherIndexElement> publisherElement = publishers.stream()
 						.filter(publisher -> publisher.getLocation().getUri().equals(doc.getUri()))
@@ -84,12 +96,22 @@ public class EventReferenceProvider implements ReferenceProvider {
 						.findAny();
 
 				if (publisherElement.isPresent()) {
-					// use the publisher event type to look for listeners for that type
 					String eventType = publisherElement.get().getEventType();
 					Set<String> eventTypesFromHierarchy = publisherElement.get().getEventTypesFromHierarchy();
 					
 					List<Location> foundLocations = listeners.stream()
-						.filter(listener -> listener.getEventType().equals(eventType) || eventTypesFromHierarchy.contains(listener.getEventType()))
+						.filter(listener -> {
+							Set<String> listenerEventTypes = getListenerEventTypes(listener);
+							for (String listenerEventType : listenerEventTypes) {
+								if (listenerEventType.equals(eventType)) {
+									return true;
+								}
+								if (eventTypesFromHierarchy.contains(listenerEventType)) {
+									return true;
+								}
+							}
+							return false;
+						})
 						.map(listener -> listener.getLocation())
 						.toList();
 					
@@ -106,6 +128,29 @@ public class EventReferenceProvider implements ReferenceProvider {
 		return null;
 	}
 	
+	private Set<String> getListenerEventTypes(EventListenerIndexElement eventListenerIndexElement) {
+		AnnotationMetadata[] annotations = eventListenerIndexElement.getAnnotations();
+		if (annotations != null && annotations.length > 0) {
+			for (AnnotationMetadata annotationMetadata : annotations) {
+				Map<String, AnnotationAttributeValue[]> attributes = annotationMetadata.getAttributes();
+				if (attributes.containsKey("classes")) {
+					AnnotationAttributeValue[] annotationAttributeValues = attributes.get("classes");
+					return Arrays.stream(annotationAttributeValues)
+							.map(attributeValue -> attributeValue.getName())
+							.collect(Collectors.toSet());
+				}
+				else if (attributes.containsKey("value")) {
+					AnnotationAttributeValue[] annotationAttributeValues = attributes.get("value");
+					return Arrays.stream(annotationAttributeValues)
+							.map(attributeValue -> attributeValue.getName())
+							.collect(Collectors.toSet());
+				}
+			}
+		}
+		
+		return Set.of(eventListenerIndexElement.getEventType());
+	}
+
 	private boolean isPositionInside(Position position, Location location) {
 		boolean afterStart = position.getLine() > location.getRange().getStart().getLine()
 				|| (position.getLine() == location.getRange().getStart().getLine() && position.getCharacter() >= location.getRange().getStart().getCharacter());
