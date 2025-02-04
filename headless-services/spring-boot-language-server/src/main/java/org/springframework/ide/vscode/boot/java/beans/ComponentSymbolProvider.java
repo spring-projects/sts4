@@ -113,30 +113,40 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration);
 		
 		// event listener - create child element, if necessary
-		ITypeBinding inTypeHierarchy = ASTUtils.findInTypeHierarchy(type, doc, beanType, Set.of(Annotations.APPLICATION_LISTENER));
-		if (inTypeHierarchy != null) {
-
-			MethodDeclaration handleEventMethod = findHandleEventMethod(type);
-			if (handleEventMethod != null) {
-
-				IMethodBinding methodBinding = handleEventMethod.resolveBinding();
-				ITypeBinding[] parameterTypes = methodBinding.getParameterTypes();
-				if (parameterTypes != null && parameterTypes.length == 1) {
-
-					ITypeBinding eventType = parameterTypes[0];
-					String eventTypeFq = eventType.getQualifiedName();
-					
-					DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, handleEventMethod.getName());
-					Location handleMethodLocation = new Location(doc.getUri(), nodeRegion.asRange());
-					
-					Collection<Annotation> annotationsOnHandleEventMethod = ASTUtils.getAnnotations(handleEventMethod);
-					AnnotationMetadata[] handleEventMethodAnnotations = ASTUtils.getAnnotationsMetadata(annotationsOnHandleEventMethod, doc);
-					
-					EventListenerIndexElement eventElement = new EventListenerIndexElement(eventTypeFq, handleMethodLocation, beanType.getQualifiedName(), handleEventMethodAnnotations);
-					beanDefinition.addChild(eventElement);
-				}
-			}
+		List<CachedBean> alreadyCreatedEventListenerChilds = context.getBeans().stream()
+			.filter(cachedBean -> cachedBean.getDocURI().equals(doc.getUri()))
+			.filter(cachedBean -> cachedBean.getBean() instanceof EventListenerIndexElement)
+			.toList();
+		
+		for (CachedBean eventListener : alreadyCreatedEventListenerChilds) {
+			context.getBeans().remove(eventListener);
+			beanDefinition.addChild(eventListener.getBean());
 		}
+		
+//		ITypeBinding inTypeHierarchy = ASTUtils.findInTypeHierarchy(type, doc, beanType, Set.of(Annotations.APPLICATION_LISTENER));
+//		if (inTypeHierarchy != null) {
+//
+//			MethodDeclaration handleEventMethod = findHandleEventMethod(type);
+//			if (handleEventMethod != null) {
+//
+//				IMethodBinding methodBinding = handleEventMethod.resolveBinding();
+//				ITypeBinding[] parameterTypes = methodBinding.getParameterTypes();
+//				if (parameterTypes != null && parameterTypes.length == 1) {
+//
+//					ITypeBinding eventType = parameterTypes[0];
+//					String eventTypeFq = eventType.getQualifiedName();
+//					
+//					DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, handleEventMethod.getName());
+//					Location handleMethodLocation = new Location(doc.getUri(), nodeRegion.asRange());
+//					
+//					Collection<Annotation> annotationsOnHandleEventMethod = ASTUtils.getAnnotations(handleEventMethod);
+//					AnnotationMetadata[] handleEventMethodAnnotations = ASTUtils.getAnnotationsMetadata(annotationsOnHandleEventMethod, doc);
+//					
+//					EventListenerIndexElement eventElement = new EventListenerIndexElement(eventTypeFq, handleMethodLocation, beanType.getQualifiedName(), handleEventMethodAnnotations);
+//					beanDefinition.addChild(eventElement);
+//				}
+//			}
+//		}
 		
 		// event publisher checks
 		for (InjectionPoint injectionPoint : injectionPoints) {

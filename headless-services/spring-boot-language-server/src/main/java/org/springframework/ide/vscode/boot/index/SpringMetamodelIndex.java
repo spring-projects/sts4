@@ -96,6 +96,25 @@ public class SpringMetamodelIndex {
 		return null;
 	}
 
+	public <T extends SpringIndexElement> List<T> getNodesOfType(Class<T> type) {
+		List<T> result = new ArrayList<>();
+		
+		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
+		elementsToVisit.addAll(this.projectRootElements.values());
+		
+		while (!elementsToVisit.isEmpty()) {
+			SpringIndexElement element = elementsToVisit.pop();
+
+			if (type.isInstance(element)) {
+				result.add(type.cast(element));
+			}
+			
+			elementsToVisit.addAll(element.getChildren());
+		}
+		
+		return result;
+	}
+
 	public Bean[] getBeans() {
 		List<Bean> result = new ArrayList<>();
 		

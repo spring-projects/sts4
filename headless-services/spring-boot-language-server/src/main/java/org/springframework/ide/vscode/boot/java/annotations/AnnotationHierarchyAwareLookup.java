@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,7 @@ import org.springframework.ide.vscode.commons.java.JavaUtils;
 import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A Map-like utilty that allows putting and getting values associated with
@@ -94,7 +95,7 @@ public class AnnotationHierarchyAwareLookup<T> {
 	}
 
 	public Collection<T> getAll() {
-		ImmutableList.Builder<T> found = ImmutableList.builder();
+		ImmutableSet.Builder<T> found = ImmutableSet.builder();
 		Collection<Binding<T>> values = bindings.values();
 		values.forEach(binding -> found.add(binding.value));
 		return found.build();
