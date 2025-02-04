@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.events;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -53,14 +52,12 @@ public class EventReferenceProvider implements ReferenceProvider {
 		try {
 			Position position = doc.toPosition(offset);
 
-			Bean[] beans = index.getBeans();
+			List<EventListenerIndexElement> listeners = index.getNodesOfType(EventListenerIndexElement.class);
+			List<EventPublisherIndexElement> publishers = index.getNodesOfType(EventPublisherIndexElement.class);
 
 			// when offset is inside an event listener, find the respective event type
-			Optional<String> listenerEventType = Arrays.stream(beans)
-					.filter(bean -> bean.getLocation().getUri().equals(doc.getUri()))
-					.flatMap(bean -> bean.getChildren().stream())
-					.filter(element -> element instanceof EventListenerIndexElement)
-					.map(element -> (EventListenerIndexElement) element)
+			Optional<String> listenerEventType = listeners.stream()
+					.filter(listener -> listener.getLocation().getUri().equals(doc.getUri()))
 					.filter(eventListener -> isPositionInside(position, eventListener.getLocation()))
 					.map(eventListener -> eventListener.getEventType())
 					.findAny();
@@ -69,10 +66,7 @@ public class EventReferenceProvider implements ReferenceProvider {
 				// use the listener event type to look for publishers for that type
 				String eventType = listenerEventType.get();
 				
-				List<Location> foundLocations = Arrays.stream(beans)
-					.flatMap(bean -> bean.getChildren().stream())
-					.filter(element -> element instanceof EventPublisherIndexElement)
-					.map(element -> (EventPublisherIndexElement) element)
+				List<Location> foundLocations = publishers.stream()
 					.filter(publisher -> publisher.getEventType().equals(eventType) || publisher.getEventTypesFromHierarchy().contains(eventType))
 					.map(publisher -> publisher.getLocation())
 					.toList();
@@ -84,25 +78,19 @@ public class EventReferenceProvider implements ReferenceProvider {
 			
 			// when offset is inside an event publisher, find the respective event type
 			else {
-				Optional<String> publisherEventType = Arrays.stream(beans)
-						.filter(bean -> bean.getLocation().getUri().equals(doc.getUri()))
-						.flatMap(bean -> bean.getChildren().stream())
-						.filter(element -> element instanceof EventPublisherIndexElement)
-						.map(element -> (EventPublisherIndexElement) element)
-						.filter(eventListener -> isPositionInside(position, eventListener.getLocation()))
-						.map(eventListener -> eventListener.getEventType())
+				Optional<EventPublisherIndexElement> publisherElement = publishers.stream()
+						.filter(publisher -> publisher.getLocation().getUri().equals(doc.getUri()))
+						.filter(eventPublisher -> isPositionInside(position, eventPublisher.getLocation()))
 						.findAny();
 
-				if (publisherEventType.isPresent()) {
-					// use the listener event type to look for publishers for that type
-					String eventType = publisherEventType.get();
+				if (publisherElement.isPresent()) {
+					// use the publisher event type to look for listeners for that type
+					String eventType = publisherElement.get().getEventType();
+					Set<String> eventTypesFromHierarchy = publisherElement.get().getEventTypesFromHierarchy();
 					
-					List<Location> foundLocations = Arrays.stream(beans)
-						.flatMap(bean -> bean.getChildren().stream())
-						.filter(element -> element instanceof EventListenerIndexElement)
-						.map(element -> (EventListenerIndexElement) element)
-						.filter(listener -> listener.getEventType().equals(eventType))
-						.map(listener-> listener.getLocation())
+					List<Location> foundLocations = listeners.stream()
+						.filter(listener -> listener.getEventType().equals(eventType) || eventTypesFromHierarchy.contains(listener.getEventType()))
+						.map(listener -> listener.getLocation())
 						.toList();
 					
 					if (foundLocations.size() > 0) {

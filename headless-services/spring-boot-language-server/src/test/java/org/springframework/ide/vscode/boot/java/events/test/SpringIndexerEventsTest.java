@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.events.test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -133,6 +134,11 @@ public class SpringIndexerEventsTest {
         Bean[] beans = springIndex.getBeansOfDocument(docUri);
         assertEquals(1, beans.length);
         
+        DocumentElement document = springIndex.getDocument(docUri);
+        List<SpringIndexElement> docChildren = document.getChildren();
+        assertEquals(1, docChildren.size());
+        assertTrue(docChildren.get(0) instanceof Bean);
+        
         Bean listenerComponentBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("eventListenerPerInterface")).findFirst().get();
         assertEquals("com.example.events.demo.EventListenerPerInterface", listenerComponentBean.getType());
         
@@ -148,6 +154,13 @@ public class SpringIndexerEventsTest {
         assertNotNull(location);
         assertEquals(docUri, location.getUri());
         assertEquals(new Range(new Position(10, 13), new Position(10, 31)), location.getRange());
+        
+        List<EventListenerIndexElement> doubleCheckEventListenerNodes = springIndex.getNodesOfType(EventListenerIndexElement.class).stream()
+        	.filter(eventListener -> eventListener.getLocation().getUri().equals(docUri))
+        	.toList();
+        
+        assertEquals(1, doubleCheckEventListenerNodes.size());
+        assertSame(listenerElement, doubleCheckEventListenerNodes.get(0));
     }
     
     @Test
@@ -161,13 +174,13 @@ public class SpringIndexerEventsTest {
         List<SpringIndexElement> children = document.getChildren();
         
         EventListenerIndexElement listenerElement = children.stream().filter(element -> element instanceof EventListenerIndexElement).map(element -> (EventListenerIndexElement) element).findFirst().get();
-        assertEquals("org.springframework.context.ApplicationEvent", listenerElement.getEventType());
+        assertEquals("com.example.events.demo.CustomApplicationEvent", listenerElement.getEventType());
         assertEquals("com.example.events.demo.EventListenerPerInterfaceAndBeanMethod", listenerElement.getContainerBeanType());
 
         Location location = listenerElement.getLocation();
         assertNotNull(location);
         assertEquals(docUri, location.getUri());
-        assertEquals(new Range(new Position(8, 13), new Position(8, 31)), location.getRange());
+        assertEquals(new Range(new Position(7, 13), new Position(7, 31)), location.getRange());
     }
     
     @Test

@@ -131,4 +131,49 @@ public class EventsReferencesProviderTest {
 		assertTrue(references.contains(expectedLocation1));
 	}
 
+	@Test
+	public void testEventPublisherFindsAllListenersIncludingThoseFromListenersWithoutAnnotation() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/com/example/events/demo/CustomApplicationEventPublisher.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+        		package com.example.events.demo;
+
+        		import org.springframework.context.ApplicationEventPublisher;
+        		import org.springframework.stereotype.Component;
+
+        		@Component
+        		public class CustomApplcationEventPublisher {
+	
+        			private ApplicationEventPublisher publisher;
+
+        			public CustomApplcationEventPublisher(ApplicationEventPublisher publisher) {
+						this.publisher = publisher;
+					}
+	
+					public void foo() {
+						this.publisher.pub<*>lishEvent(new CustomApplicationEvent(null));
+					}
+        		}""", tempJavaDocUri);
+		
+		List<? extends Location> references = editor.getReferences();
+		assertEquals(3, references.size());
+		
+		String expectedDefinitionUri1 = directory.toPath().resolve("src/main/java/com/example/events/demo/EventListenerPerInterface.java").toUri().toString();
+		Location expectedLocation1 = new Location(expectedDefinitionUri1, new Range(new Position(10, 13), new Position(10, 31)));
+		
+		assertTrue(references.contains(expectedLocation1));
+
+		String expectedDefinitionUri2 = directory.toPath().resolve("src/main/java/com/example/events/demo/EventListenerPerAnnotation.java").toUri().toString();
+		Location expectedLocation2 = new Location(expectedDefinitionUri2, new Range(new Position(10, 13), new Position(10, 24)));
+		
+		assertTrue(references.contains(expectedLocation2));
+
+		String expectedDefinitionUri3 = directory.toPath().resolve("src/main/java/com/example/events/demo/EventListenerPerInterfaceAndBeanMethod.java").toUri().toString();
+		Location expectedLocation3 = new Location(expectedDefinitionUri3, new Range(new Position(9, 13), new Position(9, 24)));
+		
+		assertTrue(references.contains(expectedLocation3));
+
+		
+	}
+
 }
