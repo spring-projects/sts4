@@ -34,7 +34,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.events.EventListenerIndexElement;
 import org.springframework.ide.vscode.boot.java.events.EventPublisherIndexElement;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
@@ -112,7 +111,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		
 		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration);
 		
-		// event listener - create child element, if necessary
+		// type implements event listener - move those already created event index elements under the bean node
 		List<CachedBean> alreadyCreatedEventListenerChilds = context.getBeans().stream()
 			.filter(cachedBean -> cachedBean.getDocURI().equals(doc.getUri()))
 			.filter(cachedBean -> cachedBean.getBean() instanceof EventListenerIndexElement)
@@ -122,31 +121,6 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 			context.getBeans().remove(eventListener);
 			beanDefinition.addChild(eventListener.getBean());
 		}
-		
-//		ITypeBinding inTypeHierarchy = ASTUtils.findInTypeHierarchy(type, doc, beanType, Set.of(Annotations.APPLICATION_LISTENER));
-//		if (inTypeHierarchy != null) {
-//
-//			MethodDeclaration handleEventMethod = findHandleEventMethod(type);
-//			if (handleEventMethod != null) {
-//
-//				IMethodBinding methodBinding = handleEventMethod.resolveBinding();
-//				ITypeBinding[] parameterTypes = methodBinding.getParameterTypes();
-//				if (parameterTypes != null && parameterTypes.length == 1) {
-//
-//					ITypeBinding eventType = parameterTypes[0];
-//					String eventTypeFq = eventType.getQualifiedName();
-//					
-//					DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, handleEventMethod.getName());
-//					Location handleMethodLocation = new Location(doc.getUri(), nodeRegion.asRange());
-//					
-//					Collection<Annotation> annotationsOnHandleEventMethod = ASTUtils.getAnnotations(handleEventMethod);
-//					AnnotationMetadata[] handleEventMethodAnnotations = ASTUtils.getAnnotationsMetadata(annotationsOnHandleEventMethod, doc);
-//					
-//					EventListenerIndexElement eventElement = new EventListenerIndexElement(eventTypeFq, handleMethodLocation, beanType.getQualifiedName(), handleEventMethodAnnotations);
-//					beanDefinition.addChild(eventElement);
-//				}
-//			}
-//		}
 		
 		// event publisher checks
 		for (InjectionPoint injectionPoint : injectionPoints) {
@@ -212,7 +186,6 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 	
 	@Override
 	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
-		// event listener - create child element, if necessary
 		try {
 			ITypeBinding typeBinding = typeDeclaration.resolveBinding();
 			if (typeBinding == null) return;
