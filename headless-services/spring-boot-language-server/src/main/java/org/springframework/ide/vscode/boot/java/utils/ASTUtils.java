@@ -224,12 +224,14 @@ public class ASTUtils {
 			else if (exp instanceof SimpleName) {
 				return ((SimpleName) exp).getIdentifier();
 			}
-			else {
-				return null;
-			}
 		} else {
-			return null;
+			Object constValue = exp.resolveConstantExpressionValue();
+			if (constValue != null) {
+				return constValue.toString();
+			}
 		}
+		
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")

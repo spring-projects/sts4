@@ -383,6 +383,20 @@ public class RequestMappingSymbolProviderTest {
         assertTrue(containsSymbol(symbols, "@/produce3 - Content-Type: text/plain,testproducetype", docUri, 33, 1, 33, 94));
         assertTrue(containsSymbol(symbols, "@/everything - Accept: application/json,text/plain,testconsume - Content-Type: application/json", docUri, 38, 1, 38, 170));
     }
+    
+    @Test
+    void testPathWithConcatenatedString() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/MappingsWithConcatenatedStrings.java").toUri().toString();
+        List<? extends WorkspaceSymbol> symbols =  indexer.getSymbols(docUri);
+        assertTrue(containsSymbol(symbols, "@/path1/path2 -- GET", docUri, 13, 1, 13, 33));
+    }
+
+    @Test
+    void testPathWithConcatenatedStringAndConstantInvolved() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/MappingsWithConcatenatedStrings.java").toUri().toString();
+        List<? extends WorkspaceSymbol> symbols =  indexer.getSymbols(docUri);
+        assertTrue(containsSymbol(symbols, "@/path1/path/from/constant -- GET", docUri, 17, 1, 17, 56));
+    }
 
 	private boolean containsSymbol(List<? extends WorkspaceSymbol> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
 		for (Iterator<? extends WorkspaceSymbol> iterator = symbols.iterator(); iterator.hasNext();) {
