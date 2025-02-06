@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Broadcom, Inc.
+ * Copyright (c) 2017, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -96,8 +96,8 @@ public class BeanCompletionProviderTest {
 	}
 	
 	@Test
-	public void testBeanCompletion_withMatches() throws Exception {
-		assertCompletions(getCompletion("owner<*>"), new String[] {"ownerRepository", "ownerService"}, 0, 
+	public void testBeanCompletion_firstCompletion() throws Exception {
+		assertCompletions(getCompletion("owner<*>"), new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
 				"""
 package org.sample.test;
 
@@ -121,13 +121,8 @@ ownerRepository<*>
 	}
 	
 	@Test
-	public void testBeanCompletion_withoutMatches() throws Exception {
-		assertCompletions(getCompletion("rand<*>"), new String[] {}, 0, "");
-	}
-	
-	@Test
-	public void testBeanCompletion_chooseSecondCompletion() throws Exception {
-		assertCompletions(getCompletion("owner<*>"), new String[] {"ownerRepository", "ownerService"}, 1, 
+	public void testBeanCompletion_secondCompletion() throws Exception {
+		assertCompletions(getCompletion("owner<*>"), new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 1, 
 				"""
 package org.sample.test;
 
@@ -152,7 +147,7 @@ ownerService<*>
 	
 	@Test
 	public void testBeanCompletion_injectInnerClass() throws Exception {
-		assertCompletions(getCompletion("pet<*>"), new String[] {"petService"}, 0, 
+		assertCompletions(getCompletion("owner<*>"), new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 2, 
 				"""
 package org.sample.test;
 
@@ -204,7 +199,7 @@ petService<*>
 				}
 				""";
 		
-		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 1, 
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 1, 
 				"""
 package org.sample.test;
 
@@ -290,7 +285,7 @@ public class TestBeanCompletionClass {
 }	
 				""";
 		
-		assertCompletions(content, new String[] {"ownerRepository"}, 0, 
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
 				"""
 package org.sample.test;
 

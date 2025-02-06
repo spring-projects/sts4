@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Broadcom, Inc.
+ * Copyright (c) 2017, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,7 +30,6 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
-import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -79,15 +78,13 @@ public class BeanCompletionProvider implements CompletionProvider {
 		            String className = getFullyQualifiedName(topLevelClass);
 					Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
 					for (Bean bean : beans) {
-						if (FuzzyMatcher.matchScore(node.toString(), bean.getName()) != 0.0) {
-							DocumentEdits edits = new DocumentEdits(doc, false);
-							edits.replace(offset - node.toString().length(), offset, bean.getName());
-							
-							BeanCompletionProposal proposal = new BeanCompletionProposal(edits, doc, bean.getName(),
-									bean.getType(), className, rewriteRefactorings);
-							
-							completions.add(proposal);
-						}
+						DocumentEdits edits = new DocumentEdits(doc, false);
+						edits.replace(offset - node.toString().length(), offset, bean.getName());
+
+						BeanCompletionProposal proposal = new BeanCompletionProposal(edits, doc, bean.getName(),
+								bean.getType(), className, rewriteRefactorings);
+
+						completions.add(proposal);
 					}
 				}
 			} catch (Exception e) {
