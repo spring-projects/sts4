@@ -154,10 +154,34 @@ public class SpringIndexerBeansTest {
     }
 
     @Test
+    void testScanComponentClassWithNameAndStringConcatenation() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/SpecialNameComponentWithStringConcatenation.java").toUri().toString();
+        SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+                SpringIndexerHarness.symbol("@Component(\"special\" + \"Name\")", "@+ 'specialName' (@Component) SpecialNameComponentWithStringConcatenation")
+        );
+    }
+
+    @Test
     void testScanComponentClassWithNameAndAttributeName() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/SpecialNameComponentWithAttributeName.java").toUri().toString();
         SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
                 SpringIndexerHarness.symbol("@Component(value = \"specialNameWithAttributeName\")", "@+ 'specialNameWithAttributeName' (@Component) SpecialNameComponentWithAttributeName")
+        );
+    }
+
+    @Test
+    void testScanComponentClassWithNameAndAttributeNameWithStringConcatenation() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/SpecialNameComponentWithAttributeNameWithStringConcatenation.java").toUri().toString();
+        SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+                SpringIndexerHarness.symbol("@Component(value = \"specialName\" + \"WithAttributeName\")", "@+ 'specialNameWithAttributeName' (@Component) SpecialNameComponentWithAttributeNameWithStringConcatenation")
+        );
+    }
+
+    @Test
+    void testScanComponentClassWithNameWithStringConcatenationAndConstant() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/SpecialNameComponentWithStringConcatenationAndConstant.java").toUri().toString();
+        SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+                SpringIndexerHarness.symbol("@Component(\"special\" + \"Name\" + Constants.SAMPLE_CONSTANT)", "@+ 'specialNameSampleConstant' (@Component) SpecialNameComponentWithStringConcatenationAndConstant")
         );
     }
 
