@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.boot.index.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -250,9 +249,9 @@ public class SpringMetamodelIndexTest {
 		InjectionPoint point2 = new InjectionPoint("point2", "point2-type", locationForDoc1, null);
 
 		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, new InjectionPoint[] {point1, point2}, Set.of("supertype1", "supertype2"), emptyAnnotations, true);
-		String serialized = bean1.toString();
 		
 		Gson gson = IndexCacheOnDiscDeltaBased.createGson();
+		String serialized = gson.toJson(bean1);
 		Bean deserializedBean = gson.fromJson(serialized, Bean.class);
 		
 		assertEquals("beanName1", deserializedBean.getName());
@@ -301,9 +300,9 @@ public class SpringMetamodelIndexTest {
 	@Test
 	void testEmptyInjectionPointsOptimizationWithSerializeDeserializeBeans() {
 		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes, emptyAnnotations, false);
-		String serialized = bean1.toString();
 		
 		Gson gson = IndexCacheOnDiscDeltaBased.createGson();
+		String serialized = gson.toJson(bean1);
 		Bean deserializedBean = gson.fromJson(serialized, Bean.class);
 		
 		assertEquals("beanName1", deserializedBean.getName());
@@ -444,6 +443,30 @@ public class SpringMetamodelIndexTest {
 	
 	@Test
 	void testSerializeDeserializeBeansWithChildElements() {
+
+		Gson gson = IndexCacheOnDiscDeltaBased.createGson();
+		
+		Bean bean1 = new Bean("beanName1", "beanType1", locationForDoc1, emptyInjectionPoints, Set.of("supertype1", "supertype2"), emptyAnnotations, false);
+		Bean bean2 = new Bean("beanName2", "beanType2", locationForDoc1, emptyInjectionPoints, Set.of("supertype3", "supertype4, supertype5"), emptyAnnotations, false);
+		
+		Bean bean3 = new Bean("beanName3", "beanType1", locationForDoc1, emptyInjectionPoints, Set.of("supertype1", "supertype2"), emptyAnnotations, false);
+		Bean bean4 = new Bean("beanName4", "beanType2", locationForDoc1, emptyInjectionPoints, Set.of("supertype3", "supertype4, supertype5"), emptyAnnotations, false);
+
+		bean1.addChild(bean2);
+		bean2.addChild(bean3);
+		bean3.addChild(bean4);
+
+		String serialized = gson.toJson(bean1);
+		Bean newBean = gson.fromJson(serialized, Bean.class);
+		
+		assertEquals("beanName1", newBean.getName());
+		assertEquals("beanName2", ((Bean) newBean.getChildren().get(0)).getName());
+		assertEquals("beanName3", ((Bean) newBean.getChildren().get(0).getChildren().get(0)).getName());
+		assertEquals("beanName4", ((Bean) newBean.getChildren().get(0).getChildren().get(0).getChildren().get(0)).getName());
+	}
+
+	@Test
+	void testSerializeDeserializeIndexElementsWithChildElements() {
 
 		Gson gson = IndexCacheOnDiscDeltaBased.createGson();
 

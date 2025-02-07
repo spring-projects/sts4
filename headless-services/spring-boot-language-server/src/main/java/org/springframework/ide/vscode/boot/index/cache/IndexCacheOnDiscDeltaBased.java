@@ -367,17 +367,6 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 
 
 
-	public static Gson createGson() {
-		return new GsonBuilder()
-				.registerTypeAdapter(DeltaStorage.class, new DeltaStorageAdapter())
-				.registerTypeAdapter(Bean.class, new BeanJsonAdapter())
-				.registerTypeAdapter(InjectionPoint.class, new InjectionPointJsonAdapter())
-				.registerTypeAdapter(IndexCacheStore.class, new IndexCacheStoreAdapter())
-				.registerTypeAdapter(SpringIndexElement.class, new SpringIndexElementAdapter())
-				.create();
-	}
-	
-	
 	/**
 	 * just keep a md5 hash internally for identifying files to save memory 
 	 */
@@ -577,6 +566,17 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	//
 
 	
+	public static Gson createGson() {
+		return new GsonBuilder()
+				.registerTypeAdapter(DeltaStorage.class, new DeltaStorageAdapter())
+				.registerTypeAdapter(Bean.class, new BeanJsonAdapter())
+				.registerTypeAdapter(InjectionPoint.class, new InjectionPointJsonAdapter())
+				.registerTypeAdapter(IndexCacheStore.class, new IndexCacheStoreAdapter())
+				.registerTypeAdapter(SpringIndexElement.class, new SpringIndexElementAdapter())
+				.create();
+	}
+	
+	
 	private static class IndexCacheStoreAdapter implements JsonDeserializer<IndexCacheStore<?>> {
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -635,7 +635,7 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	    }
 	}
 
-	private static class BeanJsonAdapter implements JsonDeserializer<Bean> {
+	private static class BeanJsonAdapter implements JsonSerializer<Bean>, JsonDeserializer<Bean> {
 
 	    @Override
 	    public Bean deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
@@ -670,6 +670,30 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	        
 	        return bean;
 	    }
+
+		@Override
+		public JsonElement serialize(Bean src, Type typeOfSrc, JsonSerializationContext context) {
+			JsonObject bean = new JsonObject();
+
+			bean.addProperty("name", src.getName());
+			bean.addProperty("type", src.getType());
+			
+			bean.add("location", context.serialize(src.getLocation()));
+			bean.add("injectionPoints", context.serialize(src.getInjectionPoints()));
+			
+			bean.add("supertypes", context.serialize(src.getSupertypes()));
+			bean.add("annotations", context.serialize(src.getAnnotations()));
+			
+			bean.addProperty("isConfiguration", src.isConfiguration());
+			
+			Type childrenListType = TypeToken.getParameterized(List.class, SpringIndexElement.class).getType();
+			bean.add("children", context.serialize(src.getChildren(), childrenListType));
+			
+			bean.addProperty("_internal_node_type", src.getClass().getName());
+			
+			return bean;
+		}
+
 	}
 	
 	private static class InjectionPointJsonAdapter implements JsonDeserializer<InjectionPoint> {
@@ -696,14 +720,14 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	    @Override
 	    public JsonElement serialize(SpringIndexElement element, Type typeOfSrc, JsonSerializationContext context) {
 	        JsonElement elem = context.serialize(element);
-	        elem.getAsJsonObject().addProperty("type", element.getClass().getName());
+	        elem.getAsJsonObject().addProperty("_internal_node_type", element.getClass().getName());
 	        return elem;
 	    }
 
 	    @Override
 	    public SpringIndexElement deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
 	        JsonObject jsonObject = json.getAsJsonObject();
-	        String typeName = jsonObject.get("type").getAsString();
+	        String typeName = jsonObject.get("_internal_node_type").getAsString();
 
 	        try {
 	            return context.deserialize(jsonObject, (Class<?>) Class.forName(typeName));

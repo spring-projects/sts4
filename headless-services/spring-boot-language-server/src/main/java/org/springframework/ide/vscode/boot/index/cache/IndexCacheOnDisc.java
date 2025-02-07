@@ -56,6 +56,8 @@ import com.google.gson.stream.JsonReader;
 
 /**
  * @author Martin Lippert
+ * 
+ * @deprecated Use IndexCacheOnDiscDeltaBased - this class is no longer maintained and up-to-date with the latest index changes
  */
 public class IndexCacheOnDisc implements IndexCache {
 

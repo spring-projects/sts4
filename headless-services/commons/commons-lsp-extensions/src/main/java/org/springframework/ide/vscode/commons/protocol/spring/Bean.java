@@ -98,5 +98,9 @@ public class Bean extends AbstractSpringIndexElement {
 		Gson gson = new Gson();
 		return gson.toJson(this);
 	}
+
+	public Set<String> getSupertypes() {
+		return supertypes;
+	}
 	
 }
