@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2024 Broadcom
+ * Copyright (c) 2024, 2025 Broadcom
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -100,6 +100,36 @@ public class QualifierReferencesProviderTest {
 	}
 
 	@Test
+	public void testQualifierRefersToBeanFromNameAttribute() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.stereotype.Component;
+				import org.springframework.beans.factory.annotation.Qualifier;
+
+				@Component
+				@Qualifier(value = "be<*>an1")
+				public class TestDependsOnClass {
+				}""", tempJavaDocUri);
+		
+        String expectedDefinitionUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+        
+        Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean1");
+        assertEquals(1, beans.length);
+
+		Location expectedLocation = new Location(expectedDefinitionUri,
+				beans[0].getLocation().getRange());
+		
+		List<? extends Location> references = editor.getReferences();
+		assertEquals(1, references.size());
+		
+		Location foundLocation = references.get(0);
+		assertEquals(expectedLocation, foundLocation);
+	}
+
+	@Test
 	public void testQualifierRefersToOtherQualifier() throws Exception {
         String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
 
@@ -122,6 +152,63 @@ public class QualifierReferencesProviderTest {
 		List<? extends Location> references = editor.getReferences();
 		assertEquals(1, references.size());
 
+		Location foundLocation = references.get(0);
+		assertEquals(expectedLocation, foundLocation);
+	}
+
+	@Test
+	public void testQualifierWithConcatenatedStrings() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.stereotype.Component;
+				import org.springframework.beans.factory.annotation.Qualifier;
+
+				@Component
+				@Qualifier("qual" + "if<*>ier")
+				public class TestDependsOnClass {
+				}""", tempJavaDocUri);
+		
+        String expectedDefinitionUri = directory.toPath().resolve("src/main/java/org/test/injections/ConfigurationWithInjectionsAndAnnotations.java").toUri().toString();
+        
+		Location expectedLocation = new Location(expectedDefinitionUri,
+				new Range(new Position(12, 11), new Position(12, 22)));
+
+		List<? extends Location> references = editor.getReferences();
+		assertEquals(1, references.size());
+
+		Location foundLocation = references.get(0);
+		assertEquals(expectedLocation, foundLocation);
+	}
+
+	@Test
+	public void testQualifierRefersToBeanFromNameAttributeWithConcatenatedStrings() throws Exception {
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.stereotype.Component;
+				import org.springframework.beans.factory.annotation.Qualifier;
+
+				@Component
+				@Qualifier(value = "be" + "<*>an1")
+				public class TestDependsOnClass {
+				}""", tempJavaDocUri);
+		
+        String expectedDefinitionUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+        
+        Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean1");
+        assertEquals(1, beans.length);
+
+		Location expectedLocation = new Location(expectedDefinitionUri,
+				beans[0].getLocation().getRange());
+		
+		List<? extends Location> references = editor.getReferences();
+		assertEquals(1, references.size());
+		
 		Location foundLocation = references.get(0);
 		assertEquals(expectedLocation, foundLocation);
 	}
