@@ -32,7 +32,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.Tuple.Two;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
-import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
@@ -51,11 +50,11 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 			SpringIndexerJavaContext context, TextDocument doc) {
 		try {
 			if (node != null && node.getParent() != null && node.getParent() instanceof TypeDeclaration) {
-				Two<EnhancedSymbolInformation, Bean> result = createSymbol(node, annotationType, metaAnnotations, doc);
+				Two<WorkspaceSymbol, Bean> result = createSymbol(node, annotationType, metaAnnotations, doc);
 
-				EnhancedSymbolInformation enhancedSymbol = result.getFirst();
+				WorkspaceSymbol symbol = result.getFirst();
 				Bean beanDefinition = result.getSecond();
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 			}
 		}
@@ -64,7 +63,7 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	private Two<EnhancedSymbolInformation, Bean> createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
+	private Two<WorkspaceSymbol, Bean> createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
 		String annotationTypeName = annotationType.getName();
 		Collection<String> metaAnnotationNames = metaAnnotations.stream()
 				.map(ITypeBinding::getName)
@@ -97,7 +96,7 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 		
 		Bean beanDefinition = new Bean(beanName, beanType == null ? "" : beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false);
 
-		return Tuple.two(new EnhancedSymbolInformation(symbol), beanDefinition);
+		return Tuple.two(symbol, beanDefinition);
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {

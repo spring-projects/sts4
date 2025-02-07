@@ -22,7 +22,6 @@ import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.beans.CachedBean;
-import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -92,9 +91,7 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			}
 
 			WorkspaceSymbol symbol = new WorkspaceSymbol("@+ '" + beanID + "' " + beanClass, SymbolKind.Interface, Either.forLeft(new Location(docURI, range)));
-			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol);
-
-			CachedSymbol cachedSymbol = new CachedSymbol(docURI, lastModified, fullSymbol);
+			CachedSymbol cachedSymbol = new CachedSymbol(docURI, lastModified, symbol);
 			generatedSymbols.add(cachedSymbol);
 			
 			// TODO: bean index

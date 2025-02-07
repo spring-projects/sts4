@@ -39,7 +39,6 @@ import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
-import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
@@ -58,7 +57,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 	
 	// whenever the implementation of the indexer changes in a way that the stored data in the cache is no longer valid,
 	// we need to change the generation - this will result in a re-indexing due to no up-to-date cache data being found
-	private static final String GENERATION = "GEN-9";
+	private static final String GENERATION = "GEN-10";
 	
 	private static final String FILE_PATTERN = "**/META-INF/spring/*.factories";
 	
@@ -96,13 +95,13 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 	}
 
 	@Override
-	public List<EnhancedSymbolInformation> computeSymbols(IJavaProject project, String docURI, String content)
+	public List<WorkspaceSymbol> computeSymbols(IJavaProject project, String docURI, String content)
 			throws Exception {
 		return computeSymbols(docURI, content);
 	}
 	
-	private List<EnhancedSymbolInformation> computeSymbols(String docURI, String content) {
-		ImmutableList.Builder<EnhancedSymbolInformation> symbols = ImmutableList.builder();
+	private List<WorkspaceSymbol> computeSymbols(String docURI, String content) {
+		ImmutableList.Builder<WorkspaceSymbol> symbols = ImmutableList.builder();
 		PropertiesAst ast = new AntlrParser().parse(content).ast;
 		if (ast != null) {
 			for (KeyValuePair pair : ast.getPropertyValuePairs()) {
@@ -118,10 +117,10 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 							String simpleName = getSimpleName(fqName);
 							String beanId = BeanUtils.getBeanNameFromType(simpleName);
 							Range range = doc.toRange(new Region(pair.getOffset(), pair.getLength()));
-							symbols.add(new EnhancedSymbolInformation(new WorkspaceSymbol(
+							symbols.add(new WorkspaceSymbol(
 									BeansSymbolProvider.beanLabel(false, beanId, fqName, Paths.get(URI.create(docURI)).getFileName().toString()),
 									SymbolKind.Interface,
-									Either.forLeft(new Location(docURI, range)))));
+									Either.forLeft(new Location(docURI, range))));
 						} catch (Exception e) {
 							log.error("", e);
 						}
@@ -183,7 +182,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 		}
 
 		if (symbols != null) {
-			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
+			WorkspaceSymbol[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(WorkspaceSymbol[]::new);
 			symbolHandler.addSymbols(project, enhancedSymbols, null, null);
 		}
 
@@ -199,7 +198,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 			ImmutableList.Builder<CachedSymbol> builder = ImmutableList.builder();
 			long lastModified = Files.getLastModifiedTime(file).toMillis();
 			String docUri = file.toUri().toASCIIString();
-			for (EnhancedSymbolInformation s : computeSymbols(docUri, content)) {
+			for (WorkspaceSymbol s : computeSymbols(docUri, content)) {
 				builder.add(new CachedSymbol(docUri, lastModified, s));
 			}
 			return builder.build();
@@ -253,7 +252,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 			String file = new File(new URI(docURI)).getAbsolutePath();
 			this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null, CachedSymbol.class);
 
-			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
+			WorkspaceSymbol[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(WorkspaceSymbol[]::new);
 			symbolHandler.addSymbols(project, docURI, symbols, null, null);
 		}
 	}

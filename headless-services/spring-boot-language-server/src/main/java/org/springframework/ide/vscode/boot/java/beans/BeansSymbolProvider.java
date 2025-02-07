@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
-import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouterSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
@@ -95,11 +94,10 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 			try {
 				Location location = new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()));
 
-				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(
-						new WorkspaceSymbol(
+				WorkspaceSymbol symbol = new WorkspaceSymbol(
 								beanLabel(isFunction, nameAndRegion.getT1(), beanType.getName(), "@Bean" + markerString),
 								SymbolKind.Interface,
-								Either.forLeft(location))
+								Either.forLeft(location)
 				);
 
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(method, doc);
@@ -117,7 +115,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 					}
 				}
 
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 
 			} catch (BadLocationException e) {
@@ -141,9 +139,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 						SymbolKind.Interface,
 						Either.forLeft(beanLocation));
 
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(),
-						new EnhancedSymbolInformation(symbol)));
-
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 				
 				ITypeBinding concreteBeanType = typeDeclaration.resolveBinding();
 				Set<String> supertypes = new HashSet<>();

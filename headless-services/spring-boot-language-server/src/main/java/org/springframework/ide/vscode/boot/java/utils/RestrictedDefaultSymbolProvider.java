@@ -18,11 +18,11 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
-import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -39,8 +39,8 @@ public class RestrictedDefaultSymbolProvider extends AbstractSymbolProvider {
 		// provide default symbol only in case this annotation is not combined with @Bean annotation
 		if (!isCombinedWithAnnotation(node, Annotations.BEAN)) {
 			try {
-				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(DefaultSymbolProvider.provideDefaultSymbol(node, doc));
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+				WorkspaceSymbol symbol = DefaultSymbolProvider.provideDefaultSymbol(node, doc);
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 			} catch (Exception e) {
 				log.warn(e.getMessage());
 			}

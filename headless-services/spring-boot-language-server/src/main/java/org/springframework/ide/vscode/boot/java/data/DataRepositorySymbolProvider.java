@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.beans.CachedBean;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
-import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
@@ -63,8 +62,6 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 						SymbolKind.Interface,
 						Either.forLeft(location));
 
-				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol);
-
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
 				
 				ITypeBinding concreteBeanTypeBindung = typeDeclaration.resolveBinding();
@@ -79,7 +76,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 				
 				Bean beanDefinition = new Bean(beanName, concreteRepoType, location, injectionPoints, supertypes, annotations, false);
 				
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 
 			} catch (BadLocationException e) {

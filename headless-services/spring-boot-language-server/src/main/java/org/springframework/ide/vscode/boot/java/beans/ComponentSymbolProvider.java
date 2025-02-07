@@ -37,7 +37,6 @@ import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.events.EventListenerIndexElement;
 import org.springframework.ide.vscode.boot.java.events.EventPublisherIndexElement;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
-import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.DefaultSymbolProvider;
@@ -65,8 +64,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 			}
 			else if (Annotations.NAMED_ANNOTATIONS.contains(annotationType.getQualifiedName())) {
 				WorkspaceSymbol symbol = DefaultSymbolProvider.provideDefaultSymbol(node, doc);
-				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol);
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 			}
 		}
 		catch (Exception e) {
@@ -129,7 +127,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 			}
 		}
 
-		context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), new EnhancedSymbolInformation(symbol)));
+		context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 		context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 	}
 	
@@ -169,8 +167,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 									// symbol
 									String symbolLabel = "@EventPublisher (" + eventTypeBinding.getName() + ")";
 									WorkspaceSymbol symbol = new WorkspaceSymbol(symbolLabel, SymbolKind.Interface, Either.forLeft(location));
-									EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol);
-									context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+									context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 								}
 							}
 						}

@@ -14,14 +14,13 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 
 /**
  * @author Martin Lippert
  */
 public class RouteUtils {
 	
-	public static EnhancedSymbolInformation createRouteSymbol(Location location, String path,
+	public static WorkspaceSymbol createRouteSymbol(Location location, String path,
 			String[] httpMethods, String[] contentTypes, String[] acceptTypes) {
 		
 		if (path != null && path.length() > 0) {
@@ -34,7 +33,7 @@ public class RouteUtils {
 			String contentType = WebfluxUtils.getStringRep(contentTypes, WebfluxUtils::getMediaType);
 			label += contentType != null ? " - Content-Type: " + contentType : "";
 
-			return new EnhancedSymbolInformation(new WorkspaceSymbol(label, SymbolKind.Interface, Either.forLeft(location)));
+			return new WorkspaceSymbol(label, SymbolKind.Interface, Either.forLeft(location));
 		}
 		else {
 			return null;
