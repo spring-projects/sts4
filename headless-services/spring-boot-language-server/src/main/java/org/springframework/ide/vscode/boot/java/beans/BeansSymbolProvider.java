@@ -24,7 +24,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.ParameterizedType;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
@@ -50,10 +49,7 @@ import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import com.google.common.collect.ImmutableList;
-
 import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 /**
  * @author Martin Lippert
@@ -95,7 +91,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		ITypeBinding beanType = getBeanType(method);
 		String markerString = getAnnotations(method);
 
-		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
+		for (Tuple2<String, DocumentRegion> nameAndRegion : BeanUtils.getBeanNamesFromBeanAnnotationWithRegions(node, doc)) {
 			try {
 				Location location = new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()));
 
@@ -164,30 +160,6 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 			} catch (BadLocationException e) {
 				log.error("", e);
 			}
-		}
-	}
-
-	protected Collection<Tuple2<String, DocumentRegion>> getBeanNames(Annotation node, TextDocument doc) {
-		Collection<StringLiteral> beanNameNodes = BeanUtils.getBeanNameLiterals(node);
-
-		if (beanNameNodes != null && !beanNameNodes.isEmpty()) {
-			ImmutableList.Builder<Tuple2<String,DocumentRegion>> namesAndRegions = ImmutableList.builder();
-			for (StringLiteral nameNode : beanNameNodes) {
-				String name = ASTUtils.getLiteralValue(nameNode);
-				namesAndRegions.add(Tuples.of(name, ASTUtils.stringRegion(doc, nameNode)));
-			}
-			return namesAndRegions.build();
-		}
-		else {
-			ASTNode parent = node.getParent();
-			if (parent instanceof MethodDeclaration) {
-				MethodDeclaration method = (MethodDeclaration) parent;
-				return ImmutableList.of(Tuples.of(
-						method.getName().toString(),
-						ASTUtils.nameRegion(doc, node)
-				));
-			}
-			return ImmutableList.of();
 		}
 	}
 

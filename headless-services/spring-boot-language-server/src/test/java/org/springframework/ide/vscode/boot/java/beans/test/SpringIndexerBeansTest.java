@@ -90,20 +90,35 @@ public class SpringIndexerBeansTest {
                 // @Bean("implicitNamedBean")
                 SpringIndexerHarness.symbol("implicitNamedBean", "@+ 'implicitNamedBean' (@Bean) BeanClass"),
 
+                // @Bean("implicit" + "NamedBean")
+                SpringIndexerHarness.symbol("\"implicit\" + \"NamedBean\" + \"Concatenated\"", "@+ 'implicitNamedBeanConcatenated' (@Bean) BeanClass"),
+
                 // @Bean(value="valueBean")
                 SpringIndexerHarness.symbol("valueBean", "@+ 'valueBean' (@Bean) BeanClass"),
+
+                // @Bean(value="value" + "Bean")
+                SpringIndexerHarness.symbol("\"valueBean\" + \"Concatenated\"", "@+ 'valueBeanConcatenated' (@Bean) BeanClass"),
 
                 // @Bean(value= {"valueBean1", "valueBean2"})
                 SpringIndexerHarness.symbol("valueBean1", "@+ 'valueBean1' (@Bean) BeanClass"),
                 SpringIndexerHarness.symbol("valueBean2", "@+ 'valueBean2' (@Bean) BeanClass"),
+
+            	// @Bean(value= {"value" + "Bean1" + "Concatenated", "valueBean2" + "Concatenated"})
+                SpringIndexerHarness.symbol("\"value\" + \"Bean1\" + \"Concatenated\"", "@+ 'valueBean1Concatenated' (@Bean) BeanClass"),
+                SpringIndexerHarness.symbol("\"valueBean2\" + \"Concatenated\"", "@+ 'valueBean2Concatenated' (@Bean) BeanClass"),
 
                 // @Bean(name="namedBean")
                 SpringIndexerHarness.symbol("namedBean", "@+ 'namedBean' (@Bean) BeanClass"),
 
                 // @Bean(name= {"namedBean1", "namedBean2"})
                 SpringIndexerHarness.symbol("namedBean1", "@+ 'namedBean1' (@Bean) BeanClass"),
-                SpringIndexerHarness.symbol("namedBean2", "@+ 'namedBean2' (@Bean) BeanClass")
-        );
+                SpringIndexerHarness.symbol("namedBean2", "@+ 'namedBean2' (@Bean) BeanClass"),
+
+            	// @Bean(name= {"named" + "Bean1" + "Concatenated", "named" + "Bean2" + Constants.SAMPLE_CONSTANT})
+                SpringIndexerHarness.symbol("\"named\" + \"Bean1\" + \"Concatenated\"", "@+ 'namedBean1Concatenated' (@Bean) BeanClass"),
+                SpringIndexerHarness.symbol("\"named\" + \"Bean2\" + Constants.SAMPLE_CONSTANT", "@+ 'namedBean2SampleConstant' (@Bean) BeanClass")
+
+        	);
     }
 
     @Test

@@ -106,29 +106,34 @@ public class ASTUtils {
 	}
 
 	public static Optional<Expression> getAttribute(Annotation annotation, String name) {
-		if (annotation != null) {
-			try {
-				if (annotation.isSingleMemberAnnotation() && name.equals("value")) {
-					SingleMemberAnnotation sma = (SingleMemberAnnotation) annotation;
-					return Optional.ofNullable(sma.getValue());
-				} else if (annotation.isNormalAnnotation()) {
-					NormalAnnotation na = (NormalAnnotation) annotation;
-					Object attributeObjs = na.getStructuralProperty(NormalAnnotation.VALUES_PROPERTY);
-					if (attributeObjs instanceof List) {
-						for (Object atrObj : (List<?>)attributeObjs) {
-							if (atrObj instanceof MemberValuePair) {
-								MemberValuePair mvPair = (MemberValuePair) atrObj;
-								if (name.equals(mvPair.getName().getIdentifier())) {
-									return Optional.ofNullable(mvPair.getValue());
-								}
+		if (annotation == null) {
+			return Optional.empty();
+		}
+		
+		try {
+
+			if (annotation.isSingleMemberAnnotation() && name.equals("value")) {
+				SingleMemberAnnotation sma = (SingleMemberAnnotation) annotation;
+				return Optional.ofNullable(sma.getValue());
+				
+			} else if (annotation.isNormalAnnotation()) {
+				NormalAnnotation na = (NormalAnnotation) annotation;
+				Object attributeObjs = na.getStructuralProperty(NormalAnnotation.VALUES_PROPERTY);
+				if (attributeObjs instanceof List) {
+					for (Object atrObj : (List<?>)attributeObjs) {
+						if (atrObj instanceof MemberValuePair) {
+							MemberValuePair mvPair = (MemberValuePair) atrObj;
+							if (name.equals(mvPair.getName().getIdentifier())) {
+								return Optional.ofNullable(mvPair.getValue());
 							}
 						}
 					}
 				}
-			} catch (Exception e) {
-				log.error("", e);
 			}
+		} catch (Exception e) {
+			log.error("", e);
 		}
+
 		return Optional.empty();
 	}
 
@@ -206,13 +211,17 @@ public class ASTUtils {
 		if (exp instanceof StringLiteral) {
 			return getLiteralValue((StringLiteral) exp);
 		} else if (exp instanceof Name) {
+			
 			IBinding binding = ((Name) exp).resolveBinding();
 			if (binding != null && binding.getKind() == IBinding.VARIABLE) {
+
 				IVariableBinding varBinding = (IVariableBinding) binding;
+				
 				ITypeBinding klass = varBinding.getDeclaringClass();
-				if (klass!=null) {
+				if (klass != null) {
 					dependencies.accept(klass);
 				}
+
 				Object constValue = varBinding.getConstantValue();
 				if (constValue != null) {
 					return constValue.toString();
@@ -265,6 +274,15 @@ public class ASTUtils {
 		return ImmutableList.of();
 	}
 
+	@SuppressWarnings("unchecked")
+	public static List<Expression> expandExpressionsFromPotentialArray(Expression exp) {
+		if (exp instanceof ArrayInitializer array) {
+			return ((List<Expression>)array.expressions());
+		}
+		else {
+			return List.of(exp);
+		}
+	}
 
 	public static Collection<Annotation> getAnnotations(TypeDeclaration typeDeclaration) {
 		return getAnnotationsFromModifiers(typeDeclaration.getStructuralProperty(TypeDeclaration.MODIFIERS2_PROPERTY));
