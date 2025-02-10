@@ -125,7 +125,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 			}
 
 			if (Constants.REPOSITORY_TYPE.equals(simplifiedType)) {
-				String beanName = getBeanName(typeDeclaration);
+				String beanName = BeanUtils.getBeanName(typeDeclaration);
 
 				String domainType = null;
 				if (resolvedInterface.isParameterizedType()) {
@@ -153,11 +153,6 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 		else {
 			return null;
 		}
-	}
-
-	private static String getBeanName(TypeDeclaration typeDeclaration) {
-		String beanName = typeDeclaration.getName().toString();
-		return BeanUtils.getBeanNameFromType(beanName);
 	}
 
 }
