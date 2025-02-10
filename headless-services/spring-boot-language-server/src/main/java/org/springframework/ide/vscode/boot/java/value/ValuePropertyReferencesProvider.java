@@ -95,7 +95,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			log.error("error finding references for value properties", e);
 		}
 
 		return null;

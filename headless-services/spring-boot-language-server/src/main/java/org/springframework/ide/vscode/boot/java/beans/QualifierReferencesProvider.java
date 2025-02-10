@@ -21,6 +21,8 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
@@ -33,6 +35,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Martin Lippert
  */
 public class QualifierReferencesProvider implements ReferenceProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(QualifierReferencesProvider.class);
 
 	private final SpringMetamodelIndex springIndex;
 
@@ -61,7 +65,7 @@ public class QualifierReferencesProvider implements ReferenceProvider {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			log.error("error finding references for qualifier value", e);
 		}
 
 		return null;
