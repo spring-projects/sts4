@@ -89,6 +89,9 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 
 		ITypeBinding beanType = getBeanType(method);
 		String markerString = getAnnotations(method);
+		
+		// lookup parent config
+		SpringIndexElement configParent = findNearestConfigBean(context.getBeans(), doc.getUri());
 
 		for (Tuple2<String, DocumentRegion> nameAndRegion : BeanUtils.getBeanNamesFromBeanAnnotationWithRegions(node, doc)) {
 			try {
@@ -116,12 +119,31 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 				}
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
-				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
+				
+				if (configParent != null) {
+					configParent.addChild(beanDefinition);
+				}
+				else {
+					context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
+				}
 
 			} catch (BadLocationException e) {
 				log.error("", e);
 			}
 		}
+	}
+
+	private SpringIndexElement findNearestConfigBean(List<CachedBean> beans, String docURI) {
+		int i = beans.size() - 1;
+
+		while (i >= 0 && beans.get(i).getDocURI().equals(docURI)) {
+			if (beans.get(i).getBean() instanceof Bean bean && bean.isConfiguration() && docURI.equals(docURI)) {
+				return beans.get(i).getBean();
+			}
+			i--;
+		}
+
+		return null;
 	}
 
 	@Override

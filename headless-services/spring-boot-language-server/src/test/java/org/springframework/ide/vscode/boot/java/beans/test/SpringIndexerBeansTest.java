@@ -10,10 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans.test;
 
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -29,6 +32,7 @@ import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -78,7 +82,13 @@ public class SpringIndexerBeansTest {
         Bean simpleBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("simpleBean")).findFirst().get();
         
         assertEquals("org.test.SimpleConfiguration", simpleConfigBean.getType());
+        assertTrue(simpleConfigBean.isConfiguration());
+        
         assertEquals("org.test.BeanClass", simpleBean.getType());
+        
+        List<SpringIndexElement> children = simpleConfigBean.getChildren();
+        assertEquals(1, children.size());
+        assertSame(simpleBean, children.get(0));
     }
 
     @Test

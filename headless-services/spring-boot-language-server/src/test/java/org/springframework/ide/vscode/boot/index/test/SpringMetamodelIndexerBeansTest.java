@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +42,7 @@ import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -135,6 +137,10 @@ public class SpringMetamodelIndexerBeansTest {
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/injections/ConfigurationWithoutInjection.java").toUri().toString();
 		assertEquals(docUri, beans[0].getLocation().getUri());
+		
+		List<SpringIndexElement> children = beans[0].getChildren();
+		assertEquals(1, children.size());
+		assertEquals("beanWithoutInjections", ((Bean) children.get(0)).getName());
 	}
 	
 	@Test
@@ -461,6 +467,11 @@ public class SpringMetamodelIndexerBeansTest {
 		Location runtimeHintsValueLocation = new Location(bean.getLocation().getUri(), new Range(new Position(13, 20), new Position(13, 52)));
 		assertEquals("org.test.injections.DummyRuntimeHintsRegistrar", runtimeHintsValueAttribute[0].getName());
 		assertEquals(runtimeHintsValueLocation, runtimeHintsValueAttribute[0].getLocation());
+		
+		// child bean
+		List<SpringIndexElement> children = bean.getChildren();
+		assertEquals(1, children.size());
+		assertEquals("beanWithAnnotationsOnInjectionPoints", ((Bean) children.get(0)).getName());
 	}
 	
 	@Test
