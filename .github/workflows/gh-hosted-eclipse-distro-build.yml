@@ -41,12 +41,6 @@ jobs:
   eclipse-distro-build:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup AWS CLI 2.22
-        run: |
-          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
@@ -113,7 +107,7 @@ jobs:
           p2_path=${{ steps.s3-paths.outputs.p2_path }}
           echo "P2 path: ${p2_path}"
           aws s3 rm s3://$AWS_S3_BUCKET/$p2_path/ --recursive
-          aws s3 cp ./repository/ s3://$AWS_S3_BUCKET/$p2_path/ --recursive --no-progress
+          aws s3 cp ./repository/ s3://$AWS_S3_BUCKET/$p2_path/ --recursive --no-progress --checksum-algorithm CRC32
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
@@ -138,7 +132,7 @@ jobs:
           echo "Removing old Linux .tar.gz files from s3..."
           aws s3 rm s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .tar.gz files to s3..."
-          aws s3 cp . s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
+          aws s3 cp . s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress --checksum-algorithm CRC32
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
@@ -149,7 +143,7 @@ jobs:
         run: |
           echo "Uploading Win Zips and OSX tar.gz to S3 for signing..."
           id=${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
-          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress --checksum-algorithm CRC32
     outputs:
       id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
       dist_path: ${{ steps.s3-paths.outputs.dist_path }}
@@ -160,12 +154,6 @@ jobs:
     needs: [ eclipse-distro-build ]
     runs-on: ubuntu-latest
     steps:
-      - name: Setup AWS CLI 2.22
-        run: |
-          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
@@ -175,7 +163,7 @@ jobs:
           rm -f spring-tool-suite-4*win*.zip*
           rm -f spring-tool-suite-4*win*.self-extracting.jar*
           ls
-          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
+          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress --checksum-algorithm CRC32
       - name: Sign EXE within zip files
         id: sign
         run: |
@@ -205,7 +193,7 @@ jobs:
           echo "Removing old win zip and self extracting jar files from S3..."
           aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to S3..."
-          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
+          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress --checksum-algorithm CRC32
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
@@ -218,11 +206,6 @@ jobs:
     needs: [ eclipse-distro-build ]
     runs-on: macos-15
     steps:
-      - name: Setup AWS CLI 2.22
-        run: |
-          curl -s "https://awscli.amazonaws.com/AWSCLIV2-2.22.35.pkg" -o "awscliv2.pkg"
-          sudo installer -pkg ./awscliv2.pkg -target /
-          aws --version
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
@@ -254,7 +237,7 @@ jobs:
         run: |
           rm -rf *macosx*
           ls
-          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress --checksum-algorithm CRC32
       - name: Sign .app, Create and Sign DMG
         env:
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
@@ -298,7 +281,7 @@ jobs:
           echo "Removing old dmg files from S3..."
           aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
           echo "Uploading new dmg files to S3..."
-          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress
+          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress --checksum-algorithm CRC32
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |
@@ -316,12 +299,6 @@ jobs:
     if: ${{ always() && inputs.build_type != 'snapshot' && contains(join(needs.*.result, ','), 'success')}}
     runs-on: ubuntu-latest
     steps:
-      - name: Setup AWS CLI 2.22
-        run: |
-          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
@@ -355,7 +332,7 @@ jobs:
           downloads_html="sts4-distro-downloads-${{ inputs.eclipse_profile }}.txt"
           rm -f ./downloads_html
           s3_url=s3://${AWS_S3_BUCKET}/${{ needs.eclipse-distro-build.outputs.dist_path }}
-          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
+          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun --checksum-algorithm CRC32`
           s3_url_prefix="s3://${AWS_S3_BUCKET}"
           s3_url_prefix_length=${#s3_url_prefix}
           for file in $files
@@ -415,20 +392,13 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Setup AWS CLI 2.22
-        run: |
-          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
       - name: Remove Temp Build Artifacts from S3
         id: cleanup-s3-temp-storage
         run: |
           aws s3 rm s3://$AWS_S3_BUCKET/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
 
   notify-failure:
-#    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros, cleanup, purge_cache ]
-    needs: [ eclipse-distro-build, sign-osx-distros, cleanup, purge_cache ]
+    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros, cleanup, purge_cache ]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
     uses: ./.github/workflows/notify-failed.yml
     with:

@@ -23,12 +23,6 @@ jobs:
     outputs:
       invalid_urls: ${{ steps.gen-aggregate-sites.outputs.invalid_urls }}
     steps:
-      - name: Setup AWS CLI 2.22
-        run: |
-          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
@@ -45,11 +39,11 @@ jobs:
           ${{ github.workspace }}/.github/scripts/generate-composite-site-files.sh ${{ steps.timestamp.outputs.date }} $site_url
           cat ./compositeArtifacts.xml
           cat ./compositeContent.xml
-          aws s3 cp ./compositeArtifacts.xml s3://$AWS_S3_BUCKET/release/TOOLS/sts4-language-server-integrations/
+          aws s3 cp ./compositeArtifacts.xml s3://$AWS_S3_BUCKET/release/TOOLS/sts4-language-server-integrations/ --checksum-algorithm CRC32
           invalid_urls+="${DOWNLOAD_URL_ROOT}/release/TOOLS/sts4-language-server-integrations/compositeArtifacts.xml "
-          aws s3 cp ./compositeContent.xml s3://$AWS_S3_BUCKET/release/TOOLS/sts4-language-server-integrations/
+          aws s3 cp ./compositeContent.xml s3://$AWS_S3_BUCKET/release/TOOLS/sts4-language-server-integrations/ --checksum-algorithm CRC32
           invalid_urls+="${DOWNLOAD_URL_ROOT}/release/TOOLS/sts4-language-server-integrations/compositeContent.xml "
-          aws s3 cp ./p2.index s3://$AWS_S3_BUCKET/release/TOOLS/sts4-language-server-integrations/
+          aws s3 cp ./p2.index s3://$AWS_S3_BUCKET/release/TOOLS/sts4-language-server-integrations/ --checksum-algorithm CRC32
           invalid_urls+="${DOWNLOAD_URL_ROOT}/release/TOOLS/sts4-language-server-integrations/p2.index"
           echo "invalid_urls=$invalid_urls" >> $GITHUB_OUTPUT
       - uses: ./.github/actions/cloudflare-purge

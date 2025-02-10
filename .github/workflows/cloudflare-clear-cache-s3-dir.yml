@@ -28,12 +28,6 @@ jobs:
   clear-cache-s3-dir:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup AWS CLI 2.22
-        run: |
-          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
       - name: Prepare URLs
         id: prepare-urls
         run: |

@@ -32,12 +32,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Release Build and Upload VSCode Extension '${{ inputs.extension-name }}'
     steps:
-      - name: Setup AWS CLI 2.22
-        run: |
-          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
       - name: Checkout vscode-extension '${{ inputs.extension-name }}'
         uses: actions/checkout@v4
       - name: Record Extension Version
@@ -81,7 +75,7 @@ jobs:
           s3_path=release/vscode-extensions/${{ inputs.extension-name }}/${{ steps.version.outputs.version }}
           echo "S3 path: ${s3_path}"
           aws s3 rm s3://$AWS_S3_BUCKET/$s3_path/ --recursive
-          aws s3 cp ./vsix/$vsix_file s3://$AWS_S3_BUCKET/$s3_path/${{ steps.version.outputs.release_name }}.vsix --no-progress
+          aws s3 cp ./vsix/$vsix_file s3://$AWS_S3_BUCKET/$s3_path/${{ steps.version.outputs.release_name }}.vsix --no-progress --checksum-algorithm CRC32
           echo "s3_url=${DOWNLOAD_URL_ROOT}/$s3_path/${{ steps.version.outputs.release_name }}.vsix" >> $GITHUB_OUTPUT
 #      - id: tools-team-slack
 #        uses: slackapi/slack-github-action@v1.26

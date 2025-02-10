@@ -27,12 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Build VSCode Extension '${{ inputs.extension-name }}' Snapshot
     steps:
-      - name: Setup AWS CLI 2.22
-        run: |
-          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
       - name: Checkout vscode-extensions code and workflow scripts
         uses: actions/checkout@v4
       - name: Set up JDK 21
@@ -58,7 +52,7 @@ jobs:
           s3_path=snapshot/vscode-extensions/${{ inputs.extension-name }}
           echo "S3 path: ${s3_path}"
           aws s3 rm s3://$AWS_S3_BUCKET/$s3_path/ --recursive
-          aws s3 cp ./vsix/$vsix_file s3://$AWS_S3_BUCKET/$s3_path/$vsix_file --no-progress
+          aws s3 cp ./vsix/$vsix_file s3://$AWS_S3_BUCKET/$s3_path/$vsix_file --no-progress --checksum-algorithm CRC32
       - name: Update Nightly Builds download page
         run: |
           downloads_html="vscode-extensions-snippet.html"
@@ -70,5 +64,5 @@ jobs:
           echo `${{ github.workspace }}/.github/scripts/gen-vscode-link-bullet.sh vscode-spring-cli "Spring CLI" $DOWNLOAD_URL_ROOT` >> $downloads_html
           echo '</ul>' >> $downloads_html
           cat ./$downloads_html
-          aws s3 mv ./$downloads_html s3://$AWS_S3_BUCKET/snapshot/STS4/vscode-extensions/ --no-progress
+          aws s3 mv ./$downloads_html s3://$AWS_S3_BUCKET/snapshot/STS4/vscode-extensions/ --no-progress --checksum-algorithm CRC32
 

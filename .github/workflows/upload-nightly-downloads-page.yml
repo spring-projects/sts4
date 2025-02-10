@@ -27,15 +27,9 @@ jobs:
           sparse-checkout: |
             .github
             eclipse-distribution/common/html
-      - name: Setup AWS CLI 2.22
-        run: |
-          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
-          unzip -q awscliv2.zip
-          sudo ./aws/install --update
-          aws --version
       - name: Upload nightly-distributions.html
         run: |
           echo "Removing old nightly-distributions.html from s3..."
           aws s3 rm s3://$AWS_S3_BUCKET/snapshot/STS4/nightly-distributions.html --debug --cli-connect-timeout 60
           echo "Uploading new nightly-distributions.html to s3..."
-          aws s3 cp ./eclipse-distribution/common/html/nightly-distributions.html s3://$AWS_S3_BUCKET/snapshot/STS4/nightly-distributions.html --no-progress --debug --cli-connect-timeout 60
+          aws s3 cp ./eclipse-distribution/common/html/nightly-distributions.html s3://$AWS_S3_BUCKET/snapshot/STS4/nightly-distributions.html --no-progress --checksum-algorithm CRC32
