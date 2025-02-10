@@ -16,12 +16,13 @@ import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
@@ -35,12 +36,12 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class NamedReferencesProvider implements ReferenceProvider {
 
-	private final SpringMetamodelIndex springIndex;
-	private final SpringSymbolIndex symbolIndex;
+	private static final Logger log = LoggerFactory.getLogger(NamedReferencesProvider.class);
 
-	public NamedReferencesProvider(SpringMetamodelIndex springIndex, SpringSymbolIndex symbolIndex) {
+	private final SpringMetamodelIndex springIndex;
+
+	public NamedReferencesProvider(SpringMetamodelIndex springIndex) {
 		this.springIndex = springIndex;
-		this.symbolIndex = symbolIndex;
 	}
 
 	@Override
@@ -49,22 +50,22 @@ public class NamedReferencesProvider implements ReferenceProvider {
 		cancelToken.checkCanceled();
 
 		try {
+			while (node != null && !(node.getParent() instanceof Annotation) && !(node.getParent() instanceof MemberValuePair)) {
+				node = node.getParent();
+			}
+
 			// case: @Value("prefix<*>")
-			if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(project, ASTUtils.getLiteralValue((StringLiteral) node));
-				}
+			if (node instanceof Expression expression && node.getParent() instanceof Annotation) {
+				return provideReferences(project, ASTUtils.getExpressionValueAsString(expression, v -> {}));
 			}
 			// case: @Value(value="prefix<*>")
-			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
+			else if (node instanceof Expression expression && node.getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(project, ASTUtils.getLiteralValue((StringLiteral) node));
-				}
+				return provideReferences(project, ASTUtils.getExpressionValueAsString(expression, v -> {}));
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			log.error("error finding references for named annotatio value", e);
 		}
 
 		return null;

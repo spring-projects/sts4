@@ -17,11 +17,13 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
@@ -35,6 +37,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class ProfileReferencesProvider implements ReferenceProvider {
 
+	private static final Logger log = LoggerFactory.getLogger(ProfileReferencesProvider.class);
+
 	private final SpringMetamodelIndex springIndex;
 
 	public ProfileReferencesProvider(SpringMetamodelIndex springIndex) {
@@ -47,28 +51,29 @@ public class ProfileReferencesProvider implements ReferenceProvider {
 		cancelToken.checkCanceled();
 
 		try {
+			while (node != null
+					&& !(node.getParent() instanceof Annotation)
+					&& !(node.getParent() instanceof MemberValuePair)
+					&& !(node.getParent() instanceof ArrayInitializer)) {
+				node = node.getParent();
+			}
+
 			// case: @Value("prefix<*>")
-			if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(project, ASTUtils.getLiteralValue((StringLiteral) node));
-				}
+			if (node instanceof Expression expression && node.getParent() instanceof Annotation) {
+				return provideReferences(project, ASTUtils.getExpressionValueAsString(expression, v -> {}));
 			}
 			// case: @Value(value="prefix<*>")
-			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
+			else if (node instanceof Expression expression && node.getParent() instanceof MemberValuePair
 					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(project, ASTUtils.getLiteralValue((StringLiteral) node));
-				}
+				return provideReferences(project, ASTUtils.getExpressionValueAsString(expression, v -> {}));
 			}
 			// case: @Qualifier({"prefix<*>"})
-			else if (node instanceof StringLiteral && node.getParent() instanceof ArrayInitializer) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(project, ASTUtils.getLiteralValue((StringLiteral) node));
-				}
+			else if (node instanceof Expression expression && node.getParent() instanceof ArrayInitializer) {
+				return provideReferences(project, ASTUtils.getExpressionValueAsString(expression, v -> {}));
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			log.error("error finding references for profile", e);
 		}
 
 		return null;

@@ -121,6 +121,24 @@ public class NamedReferencesProviderTest {
 	}
 
 	@Test
+	public void testNamedRefersToNamedBeanWithConcatenatedString() throws Exception {
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+				import jakarta.inject.Named;
+
+				@Named("na" + "m<*>ed1")
+				public class TestDependsOnClass {
+				}""", tempJavaDocUri);
+		
+		List<? extends Location> references = editor.getReferences();
+		assertEquals(1, references.size());
+		
+		Location foundLocation = references.get(0);
+		assertEquals(locationNamedAnnotation1, foundLocation);
+	}
+
+	@Test
 	public void testNamedNotRefersToPureSpringBean() throws Exception {
         Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;

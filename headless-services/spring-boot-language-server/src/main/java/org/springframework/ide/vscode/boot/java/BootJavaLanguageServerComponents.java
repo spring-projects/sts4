@@ -323,8 +323,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		specificProviders.put(Annotations.VALUE, new ValuePropertyReferencesProvider(projectFinder, index));
 		specificProviders.put(Annotations.CONDITIONAL_ON_PROPERTY, new ValuePropertyReferencesProvider(projectFinder, index));
 		specificProviders.put(Annotations.QUALIFIER, new QualifierReferencesProvider(index));
-		specificProviders.put(Annotations.NAMED_JAKARTA, new NamedReferencesProvider(index, symbolIndex));
-		specificProviders.put(Annotations.NAMED_JAVAX, new NamedReferencesProvider(index, symbolIndex));
+		specificProviders.put(Annotations.NAMED_JAKARTA, new NamedReferencesProvider(index));
+		specificProviders.put(Annotations.NAMED_JAVAX, new NamedReferencesProvider(index));
 		specificProviders.put(Annotations.PROFILE, new ProfileReferencesProvider(index));
 		
 		List<ReferenceProvider> unspecificProviders = new ArrayList<>();
