@@ -14,11 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
@@ -165,7 +167,7 @@ public class XMLBeansHyperlinkTest {
 		assertEquals(springIndex.getBeans().length, 4);
 		
 		Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "simpleObj");
-		assertEquals(1, beans.length);
+		assertEquals(1, beans.length, "Found beans are: %s".formatted(Arrays.stream(beans).map(b -> "(name=%s, type=%s)".formatted(b.getName(), b.getType())).collect(Collectors.joining(", "))));
 		assertEquals("simpleObj", beans[0].getName());
 		assertEquals("u.t.r.SimpleObj", beans[0].getType());
 		
