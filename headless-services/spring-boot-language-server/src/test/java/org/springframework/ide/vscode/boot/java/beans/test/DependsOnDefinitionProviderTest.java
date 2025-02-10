@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.DocumentElement;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
@@ -141,9 +142,8 @@ public class DependsOnDefinitionProviderTest {
 		
         String expectedDefinitionUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
         
-        List<Bean> beansOfDoc = new ArrayList<>(List.of(springIndex.getBeansOfDocument(expectedDefinitionUri)));
-        beansOfDoc.add(new Bean("bean1", "type", new Location(expectedDefinitionUri, new Range(new Position(20, 1), new Position(20, 10))), null, null, null, false));
-        springIndex.updateElements(project.getElementName(), expectedDefinitionUri, beansOfDoc.toArray(new Bean[0]));
+        DocumentElement document = springIndex.getDocument(expectedDefinitionUri);
+        document.addChild(new Bean("bean1", "type", new Location(expectedDefinitionUri, new Range(new Position(20, 1), new Position(20, 10))), null, null, null, false));
         
         Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean1");
         assertEquals(2, beans.length);
