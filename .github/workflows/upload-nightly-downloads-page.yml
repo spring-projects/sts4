@@ -32,4 +32,4 @@ jobs:
           echo "Removing old nightly-distributions.html from s3..."
           aws s3 rm s3://$AWS_S3_BUCKET/snapshot/STS4/nightly-distributions.html --debug --cli-connect-timeout 60
           echo "Uploading new nightly-distributions.html to s3..."
-          aws s3 cp ./eclipse-distribution/common/html/nightly-distributions.html s3://$AWS_S3_BUCKET/snapshot/STS4/nightly-distributions.html --no-progress --debug --cli-connect-timeout 60
+          aws s3 cp ./eclipse-distribution/common/html/nightly-distributions.html s3://$AWS_S3_BUCKET/snapshot/STS4/nightly-distributions.html --no-progress --debug --cli-connect-timeout 60 --checksum-algorithm CRC32
