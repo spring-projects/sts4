@@ -258,6 +258,14 @@ public class RequestMappingSymbolProviderTest {
     }
 
     @Test
+    void testMappingPathFromSuperclassWithStringConcatenationPerAttribute() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/inheritance/SubclassWithMappingFromParentWithStringConcatenationPerAttribute.java").toUri().toString();
+        List<? extends WorkspaceSymbol> symbols =  indexer.getSymbols(docUri);
+        assertEquals(1, symbols.size());
+        assertTrue(containsSymbol(symbols, "@/superpath/subclass", docUri, 6, 1, 6, 42));
+    }
+
+    @Test
     void testMappingPathFromSuperclassWithMethodsAndPathAttribute() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/inheritance/SubclassWithMappingFromParentWithMethods.java").toUri().toString();
         List<? extends WorkspaceSymbol> symbols =  indexer.getSymbols(docUri);
