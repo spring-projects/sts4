@@ -83,6 +83,8 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 			else {
 				WebfluxRouterSymbolProvider.createWebfluxElements(method, context, doc, childElements);
 			}
+		} else if (!isWebfluxRouter && SCAN_PASS.TWO.equals(context.getPass())) {
+			return;
 		}
 		
 		boolean isFunction = isFunctionBean(method);
