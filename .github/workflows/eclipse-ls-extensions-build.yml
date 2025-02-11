@@ -88,7 +88,7 @@ jobs:
           echo "p2_path=$p2_path" >> $GITHUB_OUTPUT
           echo "P2 path: ${p2_path}"
           aws s3 rm s3://$AWS_S3_BUCKET/${p2_path}/ --recursive
-          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://$AWS_S3_BUCKET/${p2_path}/ --recursive --no-progress --checksum-algorithm CRC32
+          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://$AWS_S3_BUCKET/${p2_path}/ --recursive --no-progress --checksum-algorithm CRC32 --content-type "text/html"
       - name: Compute invalid URLs
         if: ${{ inputs.build_type != 'snapshot' }}
         id: compute-invalid-urls
