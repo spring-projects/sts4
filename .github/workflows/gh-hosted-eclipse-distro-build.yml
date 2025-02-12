@@ -154,6 +154,12 @@ jobs:
     needs: [ eclipse-distro-build ]
     runs-on: ubuntu-latest
     steps:
+      - name: Setup AWS CLI 2.22
+        run: |
+          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
+          unzip -q awscliv2.zip
+          sudo ./aws/install --update
+          aws --version
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
@@ -193,7 +199,7 @@ jobs:
           echo "Removing old win zip and self extracting jar files from S3..."
           aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to S3..."
-          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress --checksum-algorithm CRC32
+          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
@@ -206,6 +212,12 @@ jobs:
     needs: [ eclipse-distro-build ]
     runs-on: macos-15
     steps:
+      - name: Setup AWS CLI 2.22
+        run: |
+          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.22.35.zip" -o "awscliv2.zip"
+          unzip -q awscliv2.zip
+          sudo ./aws/install --update
+          aws --version
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
@@ -281,7 +293,7 @@ jobs:
           echo "Removing old dmg files from S3..."
           aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
           echo "Uploading new dmg files to S3..."
-          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress --checksum-algorithm CRC32
+          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |
