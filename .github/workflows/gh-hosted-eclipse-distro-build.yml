@@ -113,7 +113,7 @@ jobs:
           p2_path=${{ steps.s3-paths.outputs.p2_path }}
           echo "P2 path: ${p2_path}"
           aws s3 rm s3://$AWS_S3_BUCKET/$p2_path/ --recursive
-          aws s3 cp ./repository/ s3://$AWS_S3_BUCKET/$p2_path/ --recursive --no-progress --checksum-algorithm CRC32
+          aws s3 cp ./repository/ s3://$AWS_S3_BUCKET/$p2_path/ --recursive --no-progress
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
