@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,10 +19,9 @@ import java.util.Stack;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.SymbolKind;
-import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.languageserver.util.HierarchicalDocumentSymbolHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -40,7 +39,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
-public class TypeBasedYamlHierarchicalSymbolHandler implements HierarchicalDocumentSymbolHandler, ITypeCollector {
+public class TypeBasedYamlHierarchicalSymbolHandler implements DocumentSymbolHandler, ITypeCollector {
 
 	private static final Logger log = LoggerFactory.getLogger(TypeBasedYamlHierarchicalSymbolHandler.class);
 
@@ -153,12 +152,7 @@ public class TypeBasedYamlHierarchicalSymbolHandler implements HierarchicalDocum
 	}
 
 	@Override
-	public List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params) {
-		return baseHandler.handle(params);
-	}
-
-	@Override
-	public List<? extends DocumentSymbol> handleHierarchic(DocumentSymbolParams params) {
+	public List<? extends DocumentSymbol> handle(DocumentSymbolParams params) {
 		return outlineByUri.get(params.getTextDocument().getUri());
 	}
 

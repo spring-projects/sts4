@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2022 Pivotal, Inc.
+ * Copyright (c) 2019, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -46,7 +46,7 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 			SpelReconciler spelReconciler) {
 
 		this.projectFinder = serverParams.projectFinder;
-		this.docSymbolProvider = params -> springIndexer.getSymbols(params.getTextDocument().getUri());
+		this.docSymbolProvider = params -> springIndexer.getDocumentSymbols(params.getTextDocument().getUri());
 
 		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);

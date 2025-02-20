@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,8 +12,8 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 
 import java.util.List;
 
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
-import org.eclipse.lsp4j.WorkspaceSymbol;
 
 import com.google.common.collect.ImmutableList;
 
@@ -22,6 +22,6 @@ public interface DocumentSymbolHandler {
 
 	DocumentSymbolHandler NO_SYMBOLS = (params) -> ImmutableList.of();
 
-	List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params);
+	List<? extends DocumentSymbol> handle(DocumentSymbolParams params);
 
 }

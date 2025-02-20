@@ -16,10 +16,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,6 +44,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
@@ -51,6 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ide.vscode.boot.index.SpringIndexToSymbolsConverter;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
@@ -80,6 +84,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocu
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
+import org.springframework.ide.vscode.commons.protocol.spring.DocumentElement;
 import org.springframework.ide.vscode.commons.protocol.spring.MatchingBeansParams;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndex;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
@@ -732,7 +737,99 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			return Collections.emptyList();
 		}
 	}
+	
+	public List<? extends DocumentSymbol> getDocumentSymbols(String docURI) {
+		List<DocumentSymbol> result = new ArrayList<>();
+		
+		List<? extends WorkspaceSymbol> symbols = getSymbols(docURI);
+		for (WorkspaceSymbol symbol : symbols) {
+			DocumentSymbol docSymbol = new DocumentSymbol();
+			docSymbol.setName(symbol.getName());
+			docSymbol.setKind(symbol.getKind());
+			docSymbol.setRange(symbol.getLocation().getLeft().getRange());
+			docSymbol.setSelectionRange(symbol.getLocation().getLeft().getRange());
+			docSymbol.setTags(symbol.getTags());
+			
+			result.add(docSymbol);
+		}
+		
+		return result;
+	}
 
+/*	
+	public List<? extends WorkspaceSymbol> getSymbols(String docURI) {
+		List<WorkspaceSymbol> result = new ArrayList<>();
+		
+		Deque<DocumentSymbol> remainingSymbols = new ArrayDeque<>();
+		List<? extends DocumentSymbol> documentSymbols = getDocumentSymbols(docURI);
+		
+		remainingSymbols.addAll(documentSymbols);
+		
+		while (!remainingSymbols.isEmpty()) {
+			DocumentSymbol documentSymbol = remainingSymbols.poll();
+			
+			WorkspaceSymbol workspaceSymbol = new WorkspaceSymbol();
+			workspaceSymbol.setName(documentSymbol.getName());
+			workspaceSymbol.setKind(documentSymbol.getKind());
+			workspaceSymbol.setTags(documentSymbol.getTags());
+			
+			Location location = new Location(docURI, documentSymbol.getRange());
+			workspaceSymbol.setLocation(Either.forLeft(location));
+			
+			result.add(workspaceSymbol);
+
+			if (documentSymbol.getChildren() != null) {
+				remainingSymbols.addAll(documentSymbol.getChildren());
+			}
+		}
+		
+		return result;
+	}
+	
+	public List<? extends DocumentSymbol> getDocumentSymbols(String docURI) {
+		try {
+			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docURI);
+			URI uri = URI.create(docURI);
+
+			CompletableFuture<IJavaProject> projectInitialized = futureProjectFinder.findFuture(uri).thenCompose(project -> projectInitializedFuture(project));
+			IJavaProject project = projectInitialized.get(15, TimeUnit.SECONDS);
+
+			ImmutableList.Builder<DocumentSymbol> builder = ImmutableList.builder();
+
+			if (project != null && doc != null) {
+
+				// Collect symbols from the opened document
+				synchronized(this) {
+					for (SpringIndexer indexer : this.indexers) {
+						if (indexer.isInterestedIn(docURI)) {
+							try {
+								List<DocumentSymbol> adhocDocumentSymbols = indexer.computeDocumentSymbols(project, docURI, doc.get());
+								builder.addAll(adhocDocumentSymbols);
+							} catch (Exception e) {
+								log.error("{}", e);
+							}
+						}
+					}
+				}
+
+			} else {
+				
+				// Take symbols from the index if there is no opened document.
+				DocumentElement document = springIndex.getDocument(docURI);
+				if (document != null) {
+					List<SpringIndexElement> children = document.getChildren();
+					builder.addAll(SpringIndexToSymbolsConverter.createDocumentSymbols(children));
+				}
+
+			}
+			return builder.build();
+		} catch (Exception e) {
+			log.warn("", e);
+			return Collections.emptyList();
+		}
+	}
+*/
+	
 	@Override
 	public CompletableFuture<List<Bean>> beans(BeansParams params) {
 		String projectName = params.getProjectName();

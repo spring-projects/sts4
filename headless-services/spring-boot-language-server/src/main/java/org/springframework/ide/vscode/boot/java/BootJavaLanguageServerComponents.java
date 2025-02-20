@@ -173,8 +173,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		new SpringProcessCommandHandler(server, liveDataService, liveDataLocalProcessConnector, appContext.getBeansOfType(SpringProcessConnectorRemote.class).values());
 		
 		new CopilotAgentCommandHandler(server, projectFinder,responseModifier);
-		
-		docSymbolProvider = params -> springSymbolIndex.getSymbols(params.getTextDocument().getUri());
+
+		docSymbolProvider = params -> springSymbolIndex.getDocumentSymbols(params.getTextDocument().getUri());
 		
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(springSymbolIndex,
 				new LiveAppURLSymbolProvider(liveDataProvider)));

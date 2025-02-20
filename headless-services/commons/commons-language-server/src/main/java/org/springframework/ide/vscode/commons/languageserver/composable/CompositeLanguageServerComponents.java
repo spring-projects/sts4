@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2024 Pivotal, Inc.
+ * Copyright (c) 2018, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,7 @@ import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.Command;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
@@ -34,7 +35,6 @@ import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SemanticTokensLegend;
 import org.eclipse.lsp4j.SemanticTokensWithRegistrationOptions;
-import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.context.ApplicationContext;
@@ -192,7 +192,7 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		this.docSymbolHandler = new DocumentSymbolHandler() {
 			
 			@Override
-			public List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params) {
+			public List<? extends DocumentSymbol> handle(DocumentSymbolParams params) {
 				TextDocument doc = getDoc(appContext, params.getTextDocument().getUri());
 				LanguageId language = doc.getLanguageId();
 				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);

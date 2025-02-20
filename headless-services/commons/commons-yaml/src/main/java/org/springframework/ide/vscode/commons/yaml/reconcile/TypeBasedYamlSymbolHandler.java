@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,11 +15,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
-import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
-import org.eclipse.lsp4j.WorkspaceSymbol;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
@@ -63,8 +62,8 @@ public class TypeBasedYamlSymbolHandler implements DocumentSymbolHandler {
 	}
 
 	@Override
-	public List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params) {
-		Builder<WorkspaceSymbol> builder = ImmutableList.builder();
+	public List<? extends DocumentSymbol> handle(DocumentSymbolParams params) {
+		Builder<DocumentSymbol> builder = ImmutableList.builder();
 
 		TextDocument doc = documents.getLatestSnapshot(params.getTextDocument().getUri());
 		if (doc != null) {
@@ -81,14 +80,17 @@ public class TypeBasedYamlSymbolHandler implements DocumentSymbolHandler {
 		return builder.build();
 	}
 
-	protected WorkspaceSymbol createSymbol(TextDocument doc, Node node, YType type) throws BadLocationException {
+	protected DocumentSymbol createSymbol(TextDocument doc, Node node, YType type) throws BadLocationException {
 		DocumentRegion region = NodeUtil.region(doc, node);
-		Location location = new Location(doc.getUri(), doc.toRange(region.getStart(), region.getLength()));
-		WorkspaceSymbol symbol = new WorkspaceSymbol();
+
+		Range range = doc.toRange(region.getStart(), region.getLength());
+
+		DocumentSymbol symbol = new DocumentSymbol();
 		symbol.setName(region.toString());
 		symbol.setKind(symbolKind(type));
-		symbol.setLocation(Either.forLeft(location));
-		symbol.setContainerName(containerName(type));
+		symbol.setRange(range);
+		symbol.setSelectionRange(range);
+
 		return symbol;
 	}
 

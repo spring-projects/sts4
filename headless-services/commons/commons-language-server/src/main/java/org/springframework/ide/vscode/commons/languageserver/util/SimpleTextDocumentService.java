@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2024 VMware Inc.
+ * Copyright (c) 2016, 2025 VMware Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -74,7 +74,6 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
-import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -433,21 +432,12 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 //
 //				cancelToken.checkCanceled();
 //
-				if (server.hasHierarchicalDocumentSymbolSupport() && h instanceof HierarchicalDocumentSymbolHandler) {
-					List<? extends DocumentSymbol> r = ((HierarchicalDocumentSymbolHandler)h).handleHierarchic(params);
+				List<? extends DocumentSymbol> r = h.handle(params);
 					//handle it when symbolHandler is sloppy and returns null instead of empty list.
 					return r == null
 							? ImmutableList.of()
-							: r.stream().map(symbolInfo -> Either.<SymbolInformation, DocumentSymbol>forRight(symbolInfo))
-										.collect(Collectors.toList());
-				} else {
-					List<? extends WorkspaceSymbol> r = h.handle(params);
-					//handle it when symbolHandler is sloppy and returns null instead of empty list.
-					return r == null
-							? ImmutableList.of()
-							: r.stream().map(symbolInfo -> Either.<SymbolInformation, DocumentSymbol>forLeft(new SymbolInformation(symbolInfo.getName(), symbolInfo.getKind(), symbolInfo.getLocation().getLeft(), symbolInfo.getContainerName())))
-										.collect(Collectors.toList());
-				}
+							: r.stream().map(symbol -> Either.<SymbolInformation, DocumentSymbol>forRight(symbol))
+									.collect(Collectors.toList());
 			});
 		}
 		else {

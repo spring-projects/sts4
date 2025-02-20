@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
-import org.springframework.ide.vscode.commons.languageserver.util.HierarchicalDocumentSymbolHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
@@ -48,7 +48,7 @@ public class ConcourseLanguageServerBootApp {
 		return new ASTTypeCache();
 	}
 
-	@Bean HierarchicalDocumentSymbolHandler documentSymbolHandler(SimpleTextDocumentService documents, ASTTypeCache astTypeCache, PipelineYmlSchema schema) {
+	@Bean DocumentSymbolHandler documentSymbolHandler(SimpleTextDocumentService documents, ASTTypeCache astTypeCache, PipelineYmlSchema schema) {
 		TypeBasedYamlSymbolHandler baseHandler = new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes());
 		return new TypeBasedYamlHierarchicalSymbolHandler(baseHandler, schema.getHierarchicalDefinitionTypes());
 	}
