@@ -10,13 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import org.eclipse.lsp4j.Range;
+
 public class WebfluxHandlerMethodIndexElement extends RequestMappingIndexElement {
 
 	private final String handlerClass;
 	private final String handlerMethod;
 	
-	public WebfluxHandlerMethodIndexElement(String handlerClass, String handlerMethod, String path, String[] httpMethods, String[] contentTypes, String[] acceptTypes) {
-		super(path, httpMethods, contentTypes, acceptTypes);
+	public WebfluxHandlerMethodIndexElement(String handlerClass, String handlerMethod, String path, String[] httpMethods, String[] contentTypes, String[] acceptTypes,
+			Range range, String symbolLabel) {
+		super(path, httpMethods, contentTypes, acceptTypes, range, symbolLabel);
 
 		this.handlerClass = handlerClass;
 		this.handlerMethod = handlerMethod;

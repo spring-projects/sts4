@@ -125,16 +125,17 @@ public class WebfluxRouterSymbolProvider {
 			try {
 
 				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, node.getLength() - (methodNameStart - invocationStart)));
-				WebfluxHandlerMethodIndexElement handler = extractHandlerInformation(node, path, httpMethods, contentTypes, acceptTypes);
-				WebfluxRouteElementRangesIndexElement elements = extractElementsInformation(pathElements, httpMethods, contentTypes, acceptTypes);
-				
-				if (handler != null) indexElementsCollector.add(handler);
-				if (elements != null) indexElementsCollector.add(elements);
 				
 				WorkspaceSymbol symbol = RouteUtils.createRouteSymbol(location, path, getElementStrings(httpMethods),
 						getElementStrings(contentTypes), getElementStrings(acceptTypes));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
+
+				WebfluxHandlerMethodIndexElement handler = extractHandlerInformation(node, path, httpMethods, contentTypes, acceptTypes, location.getRange(), symbol.getName());
+				WebfluxRouteElementRangesIndexElement elements = extractElementsInformation(pathElements, httpMethods, contentTypes, acceptTypes);
+				
+				if (handler != null) indexElementsCollector.add(handler);
+				if (elements != null) indexElementsCollector.add(elements);
 
 			} catch (BadLocationException e) {
 				log.error("bad location while extracting mapping symbol for " + doc.getUri(), e);
@@ -319,7 +320,7 @@ public class WebfluxRouterSymbolProvider {
 	}
 
 	private static WebfluxHandlerMethodIndexElement extractHandlerInformation(MethodInvocation node, String path, WebfluxRouteElement[] httpMethods,
-			WebfluxRouteElement[] contentTypes, WebfluxRouteElement[] acceptTypes) {
+			WebfluxRouteElement[] contentTypes, WebfluxRouteElement[] acceptTypes, Range range, String symbolLabel) {
 
 		List<?> arguments = node.arguments();
 
@@ -336,7 +337,8 @@ public class WebfluxRouterSymbolProvider {
 						String handlerMethod = methodBinding.getMethodDeclaration().toString();
 						if (handlerMethod != null) handlerMethod = handlerMethod.trim();
 
-						return new WebfluxHandlerMethodIndexElement(handlerClass, handlerMethod, path, getElementStrings(httpMethods), getElementStrings(contentTypes), getElementStrings(acceptTypes));
+						return new WebfluxHandlerMethodIndexElement(handlerClass, handlerMethod, path, getElementStrings(httpMethods), getElementStrings(contentTypes),
+								getElementStrings(acceptTypes), range, symbolLabel);
 					}
 				}
 			}
