@@ -1801,8 +1801,8 @@ public class ManifestYamlEditorTest {
 		);
 
 		editor.assertDocumentSymbols(
-				"my-app|Application",
-				"app2|Application"
+				"my-app",
+				"app2"
 		);
 	}
 

@@ -52,7 +52,6 @@ import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -1039,32 +1038,35 @@ public class Editor {
 		assertEquals(expectedText, getRawText());
 	}
 
-	public void assertDocumentSymbols(String... symbolsAndContainers) throws Exception {
-		Arrays.sort(symbolsAndContainers);
+	public void assertDocumentSymbols(String... symbols) throws Exception {
+		Arrays.sort(symbols);
+
 		StringBuilder expected = new StringBuilder();
-		for (String string : symbolsAndContainers) {
+		for (String string : symbols) {
 			expected.append(string + "\n");
 		}
 
-		List<? extends SymbolInformation> actualSymbols = getDocumentSymbols();
+		List<? extends DocumentSymbol> actualSymbols = getDocumentSymbols();
+
 		List<String> actuals = new ArrayList<>();
-		for (SymbolInformation actualSymbol : actualSymbols) {
-			assertEquals(doc.getUri(), actualSymbol.getLocation().getUri());
-			String coveredText = getText(actualSymbol.getLocation().getRange());
+		for (DocumentSymbol actualSymbol : actualSymbols) {
+			String coveredText = getText(actualSymbol.getRange());
 			assertEquals(actualSymbol.getName(), coveredText);
-			actuals.add(coveredText + "|" + actualSymbol.getContainerName());
+			actuals.add(coveredText);
 		}
+
 		Collections.sort(actuals);
 		StringBuilder actual = new StringBuilder();
 		for (String string : actuals) {
 			actual.append(string + "\n");
 		}
+
 		assertEquals(expected.toString(), actual.toString());
 	}
 
 	public void assertHierarchicalDocumentSymbols(String expectedSymbolDump) throws Exception {
 		StringBuilder symbolDump = new StringBuilder();
-		List<? extends DocumentSymbol> rootSymbols = getHierarchicalDocumentSymbols();
+		List<? extends DocumentSymbol> rootSymbols = getDocumentSymbols();
 		dumpSymbols(rootSymbols, 0, symbolDump);
 		assertEquals(expectedSymbolDump, symbolDump.toString());
 	}
@@ -1114,11 +1116,7 @@ public class Editor {
 		}
 	}
 
-	private List<? extends DocumentSymbol> getHierarchicalDocumentSymbols() throws Exception {
-		return harness.getHierarchicalDocumentSymbols(this.doc);
-	}
-
-	private List<? extends SymbolInformation> getDocumentSymbols() throws Exception {
+	private List<? extends DocumentSymbol> getDocumentSymbols() throws Exception {
 		return harness.getDocumentSymbols(this.doc);
 	}
 

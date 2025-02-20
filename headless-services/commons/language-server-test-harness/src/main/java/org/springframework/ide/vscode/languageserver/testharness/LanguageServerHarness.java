@@ -97,7 +97,6 @@ import org.eclipse.lsp4j.ResourceOperationKind;
 import org.eclipse.lsp4j.ShowDocumentParams;
 import org.eclipse.lsp4j.ShowDocumentResult;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentClientCapabilities;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentEdit;
@@ -978,16 +977,10 @@ public class LanguageServerHarness {
 				.collect(Collectors.toList());
 	}
 
-	public List<? extends DocumentSymbol> getHierarchicalDocumentSymbols(TextDocumentInfo document) throws Exception {
+	public List<? extends DocumentSymbol> getDocumentSymbols(TextDocumentInfo document) throws Exception {
 		waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
 		DocumentSymbolParams params = new DocumentSymbolParams(document.getId());
 		return getServer().getTextDocumentService().documentSymbol(params).get().stream().map(e -> e.getRight()).collect(Collectors.toList());
-	}
-
-	public List<? extends SymbolInformation> getDocumentSymbols(TextDocumentInfo document) throws Exception {
-		waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
-		DocumentSymbolParams params = new DocumentSymbolParams(document.getId());
-		return getServer().getTextDocumentService().documentSymbol(params).get().stream().map(e -> e.getLeft()).collect(Collectors.toList());
 	}
 
 	/**
