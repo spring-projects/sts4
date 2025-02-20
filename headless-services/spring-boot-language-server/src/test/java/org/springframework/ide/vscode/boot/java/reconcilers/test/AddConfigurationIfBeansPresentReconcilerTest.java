@@ -111,7 +111,7 @@ public class AddConfigurationIfBeansPresentReconcilerTest extends BaseReconciler
 
 			AnnotationMetadata annotationMetadata = new AnnotationMetadata(Annotations.CONFIGURATION, false, null, Map.of());
 			AnnotationMetadata[] annotations = new AnnotationMetadata[] {annotationMetadata};
-			Bean configBean = new Bean("a", "example.demo.A", null, null, null, annotations, false);
+			Bean configBean = new Bean("a", "example.demo.A", null, null, null, annotations, false, "symbolLabel");
 			Bean[] beans = new Bean[] {configBean};
 			springIndex.updateBeans(getProjectName(), beans);
 		
@@ -144,7 +144,7 @@ public class AddConfigurationIfBeansPresentReconcilerTest extends BaseReconciler
 			
 			AnnotationMetadata annotationMetadata = new AnnotationMetadata(Annotations.FEIGN_CLIENT, false, null, Map.of("configuration", new AnnotationAttributeValue[] {new AnnotationAttributeValue("example.demo.A", null)}));
 			AnnotationMetadata[] annotations = new AnnotationMetadata[] {annotationMetadata};
-			Bean configBean = new Bean("feignClient", "example.demo.FeignClientExample", null, null, null, annotations, false);
+			Bean configBean = new Bean("feignClient", "example.demo.FeignClientExample", null, null, null, annotations, false, "symbolLabel");
 			Bean[] beans = new Bean[] {configBean};
 			springIndex.updateBeans(getProjectName(), beans);
 			

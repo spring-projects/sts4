@@ -143,7 +143,7 @@ public class DependsOnDefinitionProviderTest {
         String expectedDefinitionUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
         
         DocumentElement document = springIndex.getDocument(expectedDefinitionUri);
-        document.addChild(new Bean("bean1", "type", new Location(expectedDefinitionUri, new Range(new Position(20, 1), new Position(20, 10))), null, null, null, false));
+        document.addChild(new Bean("bean1", "type", new Location(expectedDefinitionUri, new Range(new Position(20, 1), new Position(20, 10))), null, null, null, false, "symbolLabel"));
         
         Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "bean1");
         assertEquals(2, beans.length);

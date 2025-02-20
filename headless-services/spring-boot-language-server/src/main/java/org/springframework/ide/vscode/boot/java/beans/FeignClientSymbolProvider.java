@@ -94,7 +94,7 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 				.map(an -> new AnnotationMetadata(an.getQualifiedName(), true, null, null)))
 				.toArray(AnnotationMetadata[]::new);
 		
-		Bean beanDefinition = new Bean(beanName, beanType == null ? "" : beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false);
+		Bean beanDefinition = new Bean(beanName, beanType == null ? "" : beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false, symbol.getName());
 
 		return Tuple.two(symbol, beanDefinition);
 	}

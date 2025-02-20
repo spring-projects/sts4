@@ -81,11 +81,11 @@ public class BeanCompletionProviderTest {
 		indexedBeans = springIndex.getBeansOfProject(project.getElementName());
 		
         tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
-		bean1 = new Bean("ownerRepository", "org.springframework.samples.petclinic.owner.OwnerRepository", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
-		bean2 = new Bean("ownerService", "org.springframework.samples.petclinic.owner.OwnerService", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
-		bean3 = new Bean("visitRepository", "org.springframework.samples.petclinic.owner.VisitRepository", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
-		bean4 = new Bean("visitService", "org.springframework.samples.petclinic.owner.VisitService", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
-		bean5 = new Bean("petService", "org.springframework.samples.petclinic.pet.Inner.PetService", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		bean1 = new Bean("ownerRepository", "org.springframework.samples.petclinic.owner.OwnerRepository", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
+		bean2 = new Bean("ownerService", "org.springframework.samples.petclinic.owner.OwnerService", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
+		bean3 = new Bean("visitRepository", "org.springframework.samples.petclinic.owner.VisitRepository", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
+		bean4 = new Bean("visitService", "org.springframework.samples.petclinic.owner.VisitService", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
+		bean5 = new Bean("petService", "org.springframework.samples.petclinic.pet.Inner.PetService", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, bean3, bean4, bean5});
 	}

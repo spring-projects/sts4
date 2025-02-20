@@ -84,8 +84,8 @@ public class ProfileCompletionProviderTest {
         AnnotationMetadata annotationBean1 = new AnnotationMetadata("org.springframework.context.annotation.Profile", false, null, Map.of("value", new AnnotationAttributeValue[] {new AnnotationAttributeValue("prof1", null), new AnnotationAttributeValue("prof2", null)}));
         AnnotationMetadata annotationBean2 = new AnnotationMetadata("org.springframework.context.annotation.Profile", false, null, Map.of("value", new AnnotationAttributeValue[] {new AnnotationAttributeValue("prof3", null)}));
         
-		bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {annotationBean1}, false);
-		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {annotationBean2}, false);
+		bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {annotationBean1}, false, "symbolLabel");
+		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {annotationBean2}, false, "symbolLabel");
 		
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
 		

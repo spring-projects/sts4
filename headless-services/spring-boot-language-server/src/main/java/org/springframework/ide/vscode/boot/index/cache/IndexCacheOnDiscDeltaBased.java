@@ -659,11 +659,14 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 	        JsonElement isConfigurationObject = parsedObject.get("isConfiguration");
 	        boolean isConfiguration = context.deserialize(isConfigurationObject, boolean.class);
 	        
+	        String symbolLabel = parsedObject.get("symbolLabel").getAsString();
+
 	        JsonElement childrenObject = parsedObject.get("children");
 			Type childrenListType = TypeToken.getParameterized(List.class, SpringIndexElement.class).getType();
 	        List<SpringIndexElement> children = context.deserialize(childrenObject, childrenListType);
 
-	        Bean bean = new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, isConfiguration);
+	        Bean bean = new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, isConfiguration, symbolLabel);
+
 	        for (SpringIndexElement springIndexElement : children) {
 				bean.addChild(springIndexElement);
 			}
@@ -685,6 +688,7 @@ public class IndexCacheOnDiscDeltaBased implements IndexCache {
 			bean.add("annotations", context.serialize(src.getAnnotations()));
 			
 			bean.addProperty("isConfiguration", src.isConfiguration());
+			bean.addProperty("symbolLabel", src.getSymbolLabel());
 			
 			Type childrenListType = TypeToken.getParameterized(List.class, SpringIndexElement.class).getType();
 			bean.add("children", context.serialize(src.getChildren(), childrenListType));

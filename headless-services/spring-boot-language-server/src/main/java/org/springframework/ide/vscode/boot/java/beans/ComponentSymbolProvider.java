@@ -44,6 +44,7 @@ import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
+import org.springframework.ide.vscode.commons.protocol.spring.SimpleSymbolElement;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -65,6 +66,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 			else if (Annotations.NAMED_ANNOTATIONS.contains(annotationType.getQualifiedName())) {
 				WorkspaceSymbol symbol = DefaultSymbolProvider.provideDefaultSymbol(node, doc);
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
+				context.getBeans().add(new CachedBean(context.getDocURI(), new SimpleSymbolElement(symbol)));
 			}
 		}
 		catch (Exception e) {
@@ -107,7 +109,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				.map(an -> new AnnotationMetadata(an.getQualifiedName(), true, null, null)))
 				.toArray(AnnotationMetadata[]::new);
 		
-		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration);
+		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration, symbol.getName());
 		
 		// type implements event listener - move those already created event index elements under the bean node
 		List<CachedBean> alreadyCreatedEventListenerChilds = context.getBeans().stream()

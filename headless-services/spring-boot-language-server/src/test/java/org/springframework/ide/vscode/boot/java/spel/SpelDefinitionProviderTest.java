@@ -75,10 +75,10 @@ public class SpelDefinitionProviderTest {
 		expectedDefinitionUriSpelClass = directory.toPath().resolve("src/main/java/org/test/SpelExpressionsClass.java").toUri().toString();
 		visitService = new Bean("visitService", "org.test.VisitService",
 				new Location(expectedDefinitionUriVisitService, new Range(new Position(4, 0), new Position(4, 8))),
-				null, null, null, false);
+				null, null, null, false, "symbolLabel");
 		spelExpressionsClass = new Bean("spelExpressionsClass", "org.test.SpelExpressionsClass",
 				new Location(expectedDefinitionUriSpelClass, new Range(new Position(7, 0), new Position(7, 11))), null,
-				null, null, false);
+				null, null, false, "symbolLabel");
 
 		springIndex.updateBeans(project.getElementName(), new Bean[] { visitService, spelExpressionsClass });
 

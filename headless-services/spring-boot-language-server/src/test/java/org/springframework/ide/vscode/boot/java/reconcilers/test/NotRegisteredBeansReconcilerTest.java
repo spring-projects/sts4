@@ -72,7 +72,7 @@ public class NotRegisteredBeansReconcilerTest extends BaseReconcilerTest {
 				""";
 		
 		SpringMetamodelIndex springIndex = new SpringMetamodelIndex();
-		Bean aotBean = new Bean("a", "example.demo.A", new Location("docURI", new Range()), null, null, null, true);
+		Bean aotBean = new Bean("a", "example.demo.A", new Location("docURI", new Range()), null, null, null, true, "symbolLabel");
 		springIndex.updateBeans(getProjectName(), new Bean[] {aotBean});
 
 		List<ReconcileProblem> problems = reconcile(() -> createReconciler(springIndex), "A.java", source, true);
@@ -122,7 +122,7 @@ public class NotRegisteredBeansReconcilerTest extends BaseReconcilerTest {
 				""";
 		
 		SpringMetamodelIndex springIndex = new SpringMetamodelIndex();
-		Bean configBean = new Bean("testConfig", "example.demo.TestConfig", new Location("docURI", new Range()), null, null, null, true);
+		Bean configBean = new Bean("testConfig", "example.demo.TestConfig", new Location("docURI", new Range()), null, null, null, true, "symbolLabel");
 		springIndex.updateBeans(getProjectName(), new Bean[] {configBean});
 
 		List<ReconcileProblem> problems = reconcile(() -> createReconciler(springIndex), "A.java", source, true);

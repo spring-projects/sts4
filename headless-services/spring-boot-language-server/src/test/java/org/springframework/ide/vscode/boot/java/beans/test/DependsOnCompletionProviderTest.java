@@ -76,8 +76,8 @@ public class DependsOnCompletionProviderTest {
 		indexedBeans = springIndex.getBeansOfProject(project.getElementName());
 		
         tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
-		bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
-		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
+		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
 	}
@@ -201,7 +201,7 @@ public class DependsOnCompletionProviderTest {
 	
 	@Test
 	public void testDependsOnCompletionInsideOfArrayBetweenExistingElements() throws Exception {
-		Bean bean3 = new Bean("bean3", "type3", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		Bean bean3 = new Bean("bean3", "type3", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, bean3});
 		
 		assertCompletions("@DependsOn({\"bean1\",<*>\"bean2\"})", 1, "@DependsOn({\"bean1\",\"bean3\",<*>\"bean2\"})");
@@ -209,7 +209,7 @@ public class DependsOnCompletionProviderTest {
 
 	@Test
 	public void testDependsOnCompletionWithinQuotesExcludeDefaultBeanNameFromComponent() throws Exception {
-		Bean componentBean = new Bean("testDependsOnClass", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		Bean componentBean = new Bean("testDependsOnClass", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, componentBean});
 		
 		assertCompletions("@DependsOn(\"<*>\")", 2, "@DependsOn(\"bean1<*>\")");
@@ -217,7 +217,7 @@ public class DependsOnCompletionProviderTest {
 
 	@Test
 	public void testDependsOnCompletionExcludeDefaultBeanNameFromComponent() throws Exception {
-		Bean componentBean = new Bean("testDependsOnClass", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		Bean componentBean = new Bean("testDependsOnClass", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, componentBean});
 		
 		assertCompletions("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
@@ -225,7 +225,7 @@ public class DependsOnCompletionProviderTest {
 
 	@Test
 	public void testDependsOnCompletionExcludeExplicitBeanNameFromComponent() throws Exception {
-		Bean componentBeanWithName = new Bean("explicitBeanName", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		Bean componentBeanWithName = new Bean("explicitBeanName", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, componentBeanWithName});
 		
 		assertCompletionsWithComponentBeanName("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
@@ -233,7 +233,7 @@ public class DependsOnCompletionProviderTest {
 
 	@Test
 	public void testDependsOnCompletionExcludeDefaultBeanNameFromBeanMethod() throws Exception {
-		Bean beanFromMethod = new Bean("beanFromMethod", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		Bean beanFromMethod = new Bean("beanFromMethod", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, beanFromMethod});
 		
 		assertCompletionsOnBeanMethod("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");
@@ -241,7 +241,7 @@ public class DependsOnCompletionProviderTest {
 
 	@Test
 	public void testDependsOnCompletionExcludeExplicitBeanNameFromBeanMethod() throws Exception {
-		Bean beanFromMethodWithName = new Bean("beanFromMethodWithName", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false);
+		Bean beanFromMethodWithName = new Bean("beanFromMethodWithName", "org.test.TestDependsOnClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, beanFromMethodWithName});
 		
 		assertCompletionsOnBeanMethodWithName("@DependsOn(<*>)", 2, "@DependsOn(\"bean1\"<*>)");

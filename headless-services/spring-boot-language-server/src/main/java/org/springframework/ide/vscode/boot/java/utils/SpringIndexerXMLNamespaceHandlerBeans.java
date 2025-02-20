@@ -95,7 +95,7 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			generatedSymbols.add(cachedSymbol);
 			
 			// TODO: bean index
-			generatedBeans.add(new CachedBean(docURI, new Bean(beanID, fqBeanClass, location, null, null, null, false)));
+			generatedBeans.add(new CachedBean(docURI, new Bean(beanID, fqBeanClass, location, null, null, null, false, symbol.getName())));
 		}
 	}
 

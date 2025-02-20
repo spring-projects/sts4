@@ -96,8 +96,8 @@ public class NamedReferencesProviderTest {
 
 		InjectionPoint point1 = new InjectionPoint("point1", "type1", null, new AnnotationMetadata[] {point1Metadata});
         
-        bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri1, new Range(new Position(1,1), new Position(1, 20))), new InjectionPoint[] {point1}, null, new AnnotationMetadata[] {annotationBean1}, false);
-		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri2, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {annotationBean2}, false);
+        bean1 = new Bean("bean1", "type1", new Location(tempJavaDocUri1, new Range(new Position(1,1), new Position(1, 20))), new InjectionPoint[] {point1}, null, new AnnotationMetadata[] {annotationBean1}, false, "symbolLabel");
+		bean2 = new Bean("bean2", "type2", new Location(tempJavaDocUri2, new Range(new Position(1,1), new Position(1, 20))), null, null, new AnnotationMetadata[] {annotationBean2}, false, "symbolLabel");
 		
 		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
 	}

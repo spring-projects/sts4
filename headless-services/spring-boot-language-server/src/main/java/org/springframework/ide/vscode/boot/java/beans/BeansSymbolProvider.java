@@ -113,7 +113,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 				Collection<Annotation> annotationsOnMethod = ASTUtils.getAnnotations(method);
 				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(annotationsOnMethod, doc);
 				
-				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false);
+				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false, symbol.getName());
 				if (childElements.size() > 0) {
 					for (SpringIndexElement springIndexElement : childElements) {
 						beanDefinition.addChild(springIndexElement);
@@ -174,7 +174,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
 
-				Bean beanDefinition = new Bean(beanName, concreteBeanType.getQualifiedName(), beanLocation, injectionPoints, supertypes, annotations, false);
+				Bean beanDefinition = new Bean(beanName, concreteBeanType.getQualifiedName(), beanLocation, injectionPoints, supertypes, annotations, false, symbol.getName());
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 
 			} catch (BadLocationException e) {

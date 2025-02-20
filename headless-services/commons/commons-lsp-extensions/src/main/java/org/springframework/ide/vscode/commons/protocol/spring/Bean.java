@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023, 2024 VMware, Inc.
+ * Copyright (c) 2023, 2025 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,11 +12,13 @@ package org.springframework.ide.vscode.commons.protocol.spring;
 
 import java.util.Set;
 
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.SymbolKind;
 
 import com.google.gson.Gson;
 
-public class Bean extends AbstractSpringIndexElement {
+public class Bean extends AbstractSpringIndexElement implements SymbolElement {
 	
 	private final String name;
 	private final String type;
@@ -25,6 +27,7 @@ public class Bean extends AbstractSpringIndexElement {
 	private final Set<String> supertypes;
 	private final AnnotationMetadata[] annotations;
 	private final boolean isConfiguration;
+	private final String symbolLabel;
 
 	public Bean(
 			String name,
@@ -33,12 +36,14 @@ public class Bean extends AbstractSpringIndexElement {
 			InjectionPoint[] injectionPoints,
 			Set<String> supertypes,
 			AnnotationMetadata[] annotations,
-			boolean isConfiguration) {
+			boolean isConfiguration,
+			String symbolLabel) {
 		
 		this.name = name;
 		this.type = type;
 		this.location = location;
 		this.isConfiguration = isConfiguration;
+		this.symbolLabel = symbolLabel;
 		
 		if (injectionPoints != null && injectionPoints.length == 0) {
 			this.injectionPoints = DefaultValues.EMPTY_INJECTION_POINTS;
@@ -93,14 +98,30 @@ public class Bean extends AbstractSpringIndexElement {
 		return isConfiguration;
 	}
 	
+	public Set<String> getSupertypes() {
+		return supertypes;
+	}
+
+	public String getSymbolLabel() {
+		return symbolLabel;
+	}
+	
+	@Override
+	public DocumentSymbol getDocumentSymbol() {
+		DocumentSymbol symbol = new DocumentSymbol();
+		
+		symbol.setName(this.symbolLabel);
+		symbol.setKind(SymbolKind.Interface);
+		symbol.setRange(this.location.getRange());
+		symbol.setSelectionRange(this.location.getRange());
+		
+		return symbol;
+	}
+
 	@Override
 	public String toString() {
 		Gson gson = new Gson();
 		return gson.toJson(this);
 	}
 
-	public Set<String> getSupertypes() {
-		return supertypes;
-	}
-	
 }
