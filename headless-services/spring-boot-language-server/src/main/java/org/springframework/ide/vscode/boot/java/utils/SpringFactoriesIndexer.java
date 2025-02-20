@@ -28,10 +28,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,6 +102,28 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 		return computeSymbols(docURI, content);
 	}
 	
+	@Override
+	public List<DocumentSymbol> computeDocumentSymbols(IJavaProject project, String docURI, String content) throws Exception {
+		return computeSymbols(docURI, content).stream()
+				.map(workspaceSymbol -> convertToDocumentSymbol(workspaceSymbol))
+				.toList();
+	}
+	
+	private DocumentSymbol convertToDocumentSymbol(WorkspaceSymbol workspaceSymbol) {
+		Either<Location, WorkspaceSymbolLocation> location = workspaceSymbol.getLocation();
+		
+		Range range = null;
+		if (location.isLeft()) {
+			Location l = location.getLeft();
+			range = l.getRange();
+		}
+		else if (location.isRight()) {
+			range = new Range();
+		}
+		
+		return new DocumentSymbol(workspaceSymbol.getName(), workspaceSymbol.getKind(), range, range);
+	}
+
 	private List<WorkspaceSymbol> computeSymbols(String docURI, String content) {
 		ImmutableList.Builder<WorkspaceSymbol> symbols = ImmutableList.builder();
 		PropertiesAst ast = new AntlrParser().parse(content).ast;
@@ -287,5 +311,5 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 		IndexCacheKey key = getCacheKey(project);
 		cache.removeFiles(key, files, CachedSymbol.class);
 	}
-	
+
 }

@@ -49,9 +49,11 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.SpringIndexToSymbolsConverter;
 import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.java.Annotations;
@@ -71,6 +73,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.spring.SimpleSymbolElement;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -361,6 +364,47 @@ public class SpringIndexerJava implements SpringIndexer {
 				scanAST(context, false);
 
 				return generatedSymbols.stream().map(s -> s.getEnhancedSymbol()).collect(Collectors.toList());
+			});
+		}
+		
+		return Collections.emptyList();
+	}
+	
+	@Override
+	public List<DocumentSymbol> computeDocumentSymbols(IJavaProject project, String docURI, String content) throws Exception {
+		if (content != null) {
+			URI uri = URI.create(docURI);
+			
+			return cuCache.withCompilationUnit(project, uri, cu -> {
+				List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+				List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
+
+				IProblemCollector voidProblemCollector = new IProblemCollector() {
+					@Override
+					public void endCollecting() {
+					}
+
+					@Override
+					public void beginCollecting() {
+					}
+
+					@Override
+					public void accept(ReconcileProblem problem) {
+					}
+				};
+
+				AtomicReference<TextDocument> docRef = new AtomicReference<>();
+				String file = UriUtil.toFileString(docURI);
+				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
+						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, SCAN_PASS.ONE, new ArrayList<>(), true);
+
+				scanAST(context, false);
+
+				List<SpringIndexElement> indexElements = generatedBeans.stream()
+					.map(cachedBean -> cachedBean.getBean())
+					.toList();
+
+				return SpringIndexToSymbolsConverter.createDocumentSymbols(indexElements);
 			});
 		}
 		
@@ -770,6 +814,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				WorkspaceSymbol symbol = provideDefaultSymbol(node, context);
 				if (symbol != null) {
 					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
+					context.getBeans().add(new CachedBean(context.getDocURI(), new SimpleSymbolElement(symbol)));
 				}
 			}
 			
@@ -965,5 +1010,5 @@ public class SpringIndexerJava implements SpringIndexer {
 			fileScanListener.fileScanned(file);
 		}
 	}
-	
+
 }

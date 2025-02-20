@@ -22,7 +22,9 @@ import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.beans.CachedBean;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
+import org.springframework.ide.vscode.commons.protocol.spring.SimpleSymbolElement;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -41,6 +43,7 @@ public class RestrictedDefaultSymbolProvider extends AbstractSymbolProvider {
 			try {
 				WorkspaceSymbol symbol = DefaultSymbolProvider.provideDefaultSymbol(node, doc);
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
+				context.getBeans().add(new CachedBean(context.getDocURI(), new SimpleSymbolElement(symbol)));
 			} catch (Exception e) {
 				log.warn(e.getMessage());
 			}

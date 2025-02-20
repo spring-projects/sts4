@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.utils;
 
 import java.util.List;
 
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
@@ -24,6 +25,7 @@ public interface SpringIndexer {
 	boolean isInterestedIn(String resource); // note that this might be a document URI or a standard file path on the system
 	
 	List<WorkspaceSymbol> computeSymbols(IJavaProject project, String docURI, String content) throws Exception;
+	List<DocumentSymbol> computeDocumentSymbols(IJavaProject project, String docURI, String string) throws Exception;
 
 	void initializeProject(IJavaProject project, boolean clean) throws Exception;
 	void removeProject(IJavaProject project) throws Exception;

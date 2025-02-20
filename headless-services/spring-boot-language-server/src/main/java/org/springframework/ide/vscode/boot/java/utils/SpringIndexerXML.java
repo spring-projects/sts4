@@ -31,9 +31,11 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.lemminx.dom.DOMDocument;
 import org.eclipse.lemminx.dom.DOMNode;
 import org.eclipse.lemminx.dom.DOMParser;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.SpringIndexToSymbolsConverter;
 import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.java.beans.CachedBean;
@@ -352,8 +354,7 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	@Override
-	public List<WorkspaceSymbol> computeSymbols(IJavaProject project, String docURI, String content)
-			throws Exception {
+	public List<WorkspaceSymbol> computeSymbols(IJavaProject project, String docURI, String content) throws Exception {
 		if (content != null) {
 	        List<CachedSymbol> generatedSymbols = new ArrayList<>();
 	        List<CachedBean> generatedBeans = new ArrayList<>();
@@ -361,7 +362,24 @@ public class SpringIndexerXML implements SpringIndexer {
 	        scanFile(project, content, docURI, 0, generatedSymbols, generatedBeans);
 			return generatedSymbols.stream().map(s -> s.getEnhancedSymbol()).collect(Collectors.toList());			
 		}
+
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<DocumentSymbol> computeDocumentSymbols(IJavaProject project, String docURI, String content) throws Exception {
+		if (content != null) {
+	        List<CachedSymbol> generatedSymbols = new ArrayList<>();
+	        List<CachedBean> generatedBeans = new ArrayList<>();
+
+	        scanFile(project, content, docURI, 0, generatedSymbols, generatedBeans);
+	        
+	        return SpringIndexToSymbolsConverter.createDocumentSymbols(generatedBeans.stream().map(cachedBean -> cachedBean.getBean()).toList());
+		}
+
 		return Collections.emptyList();
 	}
 	
+
+
 }
