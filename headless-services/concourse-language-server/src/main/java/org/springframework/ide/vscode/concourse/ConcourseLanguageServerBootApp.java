@@ -48,9 +48,9 @@ public class ConcourseLanguageServerBootApp {
 		return new ASTTypeCache();
 	}
 
-	@Bean DocumentSymbolHandler documentSymbolHandler(SimpleTextDocumentService documents, ASTTypeCache astTypeCache, PipelineYmlSchema schema) {
+	@Bean DocumentSymbolHandler documentSymbolHandler(SimpleTextDocumentService documents, ASTTypeCache astTypeCache, PipelineYmlSchema schema, SimpleLanguageServer server) {
 		TypeBasedYamlSymbolHandler baseHandler = new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes());
-		return new TypeBasedYamlHierarchicalSymbolHandler(baseHandler, schema.getHierarchicalDefinitionTypes());
+		return new TypeBasedYamlHierarchicalSymbolHandler(baseHandler, schema.getHierarchicalDefinitionTypes(), server);
 	}
 
 	@Bean PipelineYmlSchema pipelineYmlSchema(ConcourseModel models, GithubInfoProvider github) {

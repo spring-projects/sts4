@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2024 Pivotal, Inc.
+ * Copyright (c) 2016, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -5023,13 +5023,13 @@ public class ConcourseEditorTest {
         );
 
         editor.assertDocumentSymbols(
-                "some-resource-type|ResourceType",
-                "foo-resource|Resource",
-                "bar-resource|Resource",
-                "do-some-stuff|Job",
-                "do-more-stuff|Job",
-                "group-one|Group",
-                "group-two|Group"
+                "some-resource-type",
+                "foo-resource",
+                "bar-resource",
+                "do-some-stuff",
+                "do-more-stuff",
+                "group-one",
+                "group-two"
         );
     }
 

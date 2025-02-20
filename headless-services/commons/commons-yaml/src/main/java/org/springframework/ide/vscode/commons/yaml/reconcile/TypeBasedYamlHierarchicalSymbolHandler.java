@@ -22,6 +22,7 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -140,20 +141,27 @@ public class TypeBasedYamlHierarchicalSymbolHandler implements DocumentSymbolHan
 
 	private Stack<Item> stack = new Stack<>();
 	private ImmutableList.Builder<DocumentSymbol> rootSymbols;
+	private SimpleLanguageServer server;
 
-	public TypeBasedYamlHierarchicalSymbolHandler(TypeBasedYamlSymbolHandler baseHandler,
-			List<HierarchicalDefType> hierarchicalDefinitionTypes) {
-				this.baseHandler = baseHandler;
-				Builder<YType, HierarchicalDefType> builder = ImmutableMap.builder();
-				for (HierarchicalDefType hdt : hierarchicalDefinitionTypes) {
-					builder.put(hdt.defType, hdt);
-				}
-				this.hierarchicalDefinitionTypes = builder.build();
+	public TypeBasedYamlHierarchicalSymbolHandler(TypeBasedYamlSymbolHandler baseHandler, List<HierarchicalDefType> hierarchicalDefinitionTypes, SimpleLanguageServer server) {
+		this.baseHandler = baseHandler;
+		Builder<YType, HierarchicalDefType> builder = ImmutableMap.builder();
+		for (HierarchicalDefType hdt : hierarchicalDefinitionTypes) {
+			builder.put(hdt.defType, hdt);
+		}
+		this.hierarchicalDefinitionTypes = builder.build();
+		this.server = server;
 	}
 
 	@Override
 	public List<? extends DocumentSymbol> handle(DocumentSymbolParams params) {
-		return outlineByUri.get(params.getTextDocument().getUri());
+		if (server.hasHierarchicalDocumentSymbolSupport()) {
+			return outlineByUri.get(params.getTextDocument().getUri());
+		}
+		else {
+			return this.baseHandler.handle(params);
+		}
+		
 	}
 
 	@Override
