@@ -10,20 +10,28 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
+import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.commons.protocol.spring.AbstractSpringIndexElement;
+import org.springframework.ide.vscode.commons.protocol.spring.SymbolElement;
 
-public class RequestMappingIndexElement extends AbstractSpringIndexElement {
+public class RequestMappingIndexElement extends AbstractSpringIndexElement implements SymbolElement {
 
 	private final String path;
 	private final String[] httpMethods;
 	private final String[] contentTypes;
 	private final String[] acceptTypes;
+	private final String symbolLabel;
+	private final Range range;
 	
-	public RequestMappingIndexElement(String path, String[] httpMethods, String[] contentTypes, String[] acceptTypes) {
+	public RequestMappingIndexElement(String path, String[] httpMethods, String[] contentTypes, String[] acceptTypes, Range range, String symbolLabel) {
 		this.path = path;
 		this.httpMethods = httpMethods;
 		this.contentTypes = contentTypes;
 		this.acceptTypes = acceptTypes;
+		this.range = range;
+		this.symbolLabel = symbolLabel;
 	}
 	
 	public String getPath() {
@@ -40,6 +48,18 @@ public class RequestMappingIndexElement extends AbstractSpringIndexElement {
 	
 	public String[] getAcceptTypes() {
 		return acceptTypes;
+	}
+
+	@Override
+	public DocumentSymbol getDocumentSymbol() {
+		DocumentSymbol symbol = new DocumentSymbol();
+
+		symbol.setName(symbolLabel);
+		symbol.setKind(SymbolKind.Method);
+		symbol.setRange(range);
+		symbol.setSelectionRange(range);
+		
+		return symbol;
 	}
 
 }

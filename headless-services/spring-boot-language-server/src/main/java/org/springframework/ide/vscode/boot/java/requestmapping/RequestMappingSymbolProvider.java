@@ -39,6 +39,8 @@ import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -77,18 +79,37 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 							context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 	
 							// index element for request mapping
-							List<CachedBean> beans = context.getBeans();
-							if (beans.size() > 0 ) {
-								CachedBean cachedBean = beans.get(beans.size() - 1);
-								if (cachedBean.getDocURI().equals(doc.getUri())) {
-									cachedBean.getBean().addChild(new RequestMappingIndexElement(p, methods, contentTypes, acceptTypes));
-								}
+							SpringIndexElement parent = getPotentialParentIndexNode(context);
+							if (parent != null) {
+								parent.addChild(new RequestMappingIndexElement(p, methods, contentTypes, acceptTypes, location.getRange(), symbol.getName()));
+							}
+							else {
+								context.getBeans().add(new CachedBean(doc.getUri(), new RequestMappingIndexElement(p, methods, contentTypes, acceptTypes, location.getRange(), symbol.getName())));
 							}
 						});
+
 			} catch (Exception e) {
 				log.error("problem occured while scanning for request mapping symbols from " + doc.getUri(), e);
 			}
 		}
+	}
+
+	private SpringIndexElement getPotentialParentIndexNode(SpringIndexerJavaContext context) {
+		List<CachedBean> beans = context.getBeans();
+		
+		for (int i = beans.size() - 1; i >= 0; i--) {
+			CachedBean cachedBean = beans.get(i);
+			
+			if (!cachedBean.getDocURI().equals(context.getDocURI())) {
+				return null;
+			}
+			
+			if (cachedBean.getBean() instanceof Bean bean) {
+				return bean;
+			}
+		}
+		
+		return null;
 	}
 
 	private String combinePath(String parent, String path) {
