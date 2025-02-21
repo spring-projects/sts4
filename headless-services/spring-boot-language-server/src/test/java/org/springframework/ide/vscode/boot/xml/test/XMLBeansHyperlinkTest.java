@@ -164,7 +164,14 @@ public class XMLBeansHyperlinkTest {
     @Test
 //    @Disabled
     void testBeanRefHyperlink() throws Exception {
-		assertEquals(springIndex.getBeans().length, 4);
+    	Bean[] allBeans = springIndex.getBeans();
+    	log.info("------------------ testBeanRefHyperlink - all the beans ----------------------");
+    	for (Bean bean : allBeans) {
+			log.info("bean: " + bean.getName() + " - " + bean.getLocation().getUri());
+		}
+    	log.info("------------------ testBeanRefHyperlink - end of all the beans ----------------------");
+    	
+    	assertEquals(4, springIndex.getBeans().length);
 		
 		Bean[] beans = springIndex.getBeansWithName(project.getElementName(), "simpleObj");
 		assertEquals(1, beans.length, "Found beans are: %s".formatted(Arrays.stream(beans).map(b -> "(name=%s, type=%s)".formatted(b.getName(), b.getType())).collect(Collectors.joining(", "))));
