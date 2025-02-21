@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -794,13 +794,13 @@ public class BoshEditorTest {
                         "- name: other-release\n"
         );
         editor.assertDocumentSymbols(
-                "default|StemcellAlias",
-                "foo-group|InstanceGroup",
-                "bar-group|InstanceGroup",
-                "one-release|Release",
-                "other-release|Release",
-                "blobstore_admin_users_password|Variable",
-                "blobstore_secure_link_secret|Variable"
+                "default",
+                "foo-group",
+                "bar-group",
+                "one-release",
+                "other-release",
+                "blobstore_admin_users_password",
+                "blobstore_secure_link_secret"
         );
     }
 
