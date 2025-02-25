@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2024 Broadcom, Inc.
+ * Copyright (c) 2024, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TextBlock;
 
@@ -50,6 +53,15 @@ public class EmbeddedLangAstUtils {
 				}
 			}
 			return new CompositeEmbeddedLanguageSnippet(snippets);
+		} else if (valueExp instanceof SimpleName se) {
+			Object o = se.resolveConstantExpressionValue();
+			if (o instanceof String v) {
+				return new StringConstantLanguageSnippet(valueExp.getStartPosition(), v);
+			}
+		} else if (valueExp instanceof FieldAccess fa) {
+			return extractEmbeddedExpression(fa.getName());
+		} else if (valueExp instanceof QualifiedName qn) {
+			return extractEmbeddedExpression(qn.getName());
 		}
 		return null;
 	}
