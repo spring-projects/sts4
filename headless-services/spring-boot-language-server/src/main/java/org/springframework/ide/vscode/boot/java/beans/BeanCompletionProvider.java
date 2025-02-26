@@ -19,11 +19,14 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.ThisExpression;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.slf4j.Logger;
@@ -79,6 +82,14 @@ public class BeanCompletionProvider implements CompletionProvider {
 				TypeDeclaration topLevelClass = findParentClass(node);
 		        if (topLevelClass == null) {
 		            return;
+		        }
+		        
+	        	// Empty SimpleName usually comes from unresolved FieldAccess, i.e. `this.owner` where `owner` field is not defined
+		        if (node instanceof SimpleName se && se.getLength() == 0
+		        		&& node.getParent() instanceof Assignment assign 
+		        		&& assign.getLeftHandSide() instanceof FieldAccess fa
+		        		&& fa.getExpression() instanceof ThisExpression) {
+		        	node = fa.getName();
 		        }
 		        
 				if (isSpringComponent(topLevelClass)) {

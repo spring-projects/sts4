@@ -482,6 +482,43 @@ public class TestBeanCompletionClass {
 									""");
 	}
 	
+	@Test
+	public void beanCompletionWithThis() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.stereotype.Controller;
+				
+				@Controller
+				public class TestBeanCompletionClass {
+					public void test() {
+						this.owner<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.stereotype.Controller;
+				
+				@Controller
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+				
+				    TestBeanCompletionClass(OwnerRepository ownerRepository) {
+				        this.ownerRepository = ownerRepository;
+				    }
+					public void test() {
+						this.ownerRepository<*>
+					}
+				}
+				""");
+	}
 
 	
 	private void assertCompletions(String completionLine, String[] expectedCompletions, int chosenCompletion, String expectedResult) throws Exception {
