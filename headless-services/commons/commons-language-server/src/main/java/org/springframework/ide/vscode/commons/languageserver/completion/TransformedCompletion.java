@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.commons.util.Renderable;
  *
  * @author Kris De Volder
  */
-public abstract class TransformedCompletion extends ScoreableProposal {
+public abstract class TransformedCompletion extends AbstractScoreableProposal {
 	
 	protected final ICompletionProposal original;
 
@@ -71,8 +71,8 @@ public abstract class TransformedCompletion extends ScoreableProposal {
 
 	@Override
 	public double getBaseScore() {
-		if (original instanceof ScoreableProposal) {
-			return ((ScoreableProposal) original).getScore();
+		if (original instanceof AbstractScoreableProposal) {
+			return ((AbstractScoreableProposal) original).getScore();
 		}
 		return 0;
 	}

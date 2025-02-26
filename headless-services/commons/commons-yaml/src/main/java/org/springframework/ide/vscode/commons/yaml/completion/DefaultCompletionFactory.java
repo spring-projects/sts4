@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,7 @@ package org.springframework.ide.vscode.commons.yaml.completion;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.AbstractScoreableProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -27,7 +27,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 
 	private static final int ERROR_COMPLETION_SCORE = -10000000;
 
-	public static class BeanPropertyProposal extends ScoreableProposal {
+	public static class BeanPropertyProposal extends AbstractScoreableProposal {
 
 //		private IDocument doc;
 		private String contextProperty;
@@ -81,7 +81,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 		}
 	}
 
-	public class ValueProposal extends ScoreableProposal {
+	public class ValueProposal extends AbstractScoreableProposal {
 
 		private String value;
 		private String label;
@@ -137,7 +137,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 		}
 	}
 
-	public static final class ErrorProposal extends ScoreableProposal {
+	public static final class ErrorProposal extends AbstractScoreableProposal {
 		private final String longMessage;
 		private String shortMessage;
 		private String filterText;

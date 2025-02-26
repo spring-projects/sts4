@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_DASH_PROPOSAL;
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_DEPRECATION;
+import static org.springframework.ide.vscode.commons.languageserver.completion.AbstractScoreableProposal.DEEMP_DASH_PROPOSAL;
+import static org.springframework.ide.vscode.commons.languageserver.completion.AbstractScoreableProposal.DEEMP_DEPRECATION;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.AbstractScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.TransformedCompletion;
 import org.springframework.ide.vscode.commons.languageserver.util.PlaceHolderString;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
@@ -206,7 +206,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 							ICompletionProposal completion = completionFactory().beanProperty(doc.getDocument(),
 									contextPath.toPropString(), getType(),
 									query, p, score, edits, typeUtil);
-							if (p.isDeprecated() && completion instanceof ScoreableProposal) {
+							if (p.isDeprecated() && completion instanceof AbstractScoreableProposal) {
 								completion.deemphasize(DEEMP_DEPRECATION);
 							}
 							proposals.add(completion);

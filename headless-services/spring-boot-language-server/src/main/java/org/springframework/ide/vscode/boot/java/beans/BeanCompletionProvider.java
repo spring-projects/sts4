@@ -10,13 +10,19 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
@@ -30,6 +36,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -53,7 +60,7 @@ public class BeanCompletionProvider implements CompletionProvider {
 	@Override
 	public void provideCompletions(ASTNode node, int offset, TextDocument doc,
 			Collection<ICompletionProposal> completions) {
-		if (node instanceof SimpleName) {
+		if (node instanceof SimpleName || node instanceof Block) {
 			try {
 				// Don't look at anything inside Annotation or VariableDelcaration node
 				for (ASTNode n = node; n != null; n = n.getParent()) {
@@ -77,14 +84,36 @@ public class BeanCompletionProvider implements CompletionProvider {
 				if (isSpringComponent(topLevelClass)) {
 		            String className = getFullyQualifiedName(topLevelClass);
 					Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
+					ITypeBinding topLevelBeanType = topLevelClass.resolveBinding();
+					Set<String> declaredFiledsTypes = Arrays.stream(topLevelBeanType.getDeclaredFields())
+							.map(vd -> vd.getType())
+							.filter(Objects::nonNull)
+							.map(t -> t.getQualifiedName())
+							.collect(Collectors.toSet());
+					final String prefix = node instanceof Block ? "" : node.toString();
 					for (Bean bean : beans) {
-						DocumentEdits edits = new DocumentEdits(doc, false);
-						edits.replace(offset - node.toString().length(), offset, bean.getName());
+						// If current class is a bean - ignore it
+						if (className.equals(bean.getType())) {
+							continue;
+						}
+						// Filter out beans already injected into this class
+						if (declaredFiledsTypes.contains(bean.getType())) {
+							continue;
+						}
+						double score = FuzzyMatcher.matchScore(prefix, bean.getName());
+						if (score > 0) {
+							DocumentEdits edits = new DocumentEdits(doc, false);
+							if (node instanceof Block) {
+								edits.insert(offset, bean.getName());
+							} else {
+								edits.replace(offset - prefix.length(), offset, bean.getName());
+							}
 
-						BeanCompletionProposal proposal = new BeanCompletionProposal(edits, doc, bean.getName(),
-								bean.getType(), className, rewriteRefactorings);
+							BeanCompletionProposal proposal = new BeanCompletionProposal(edits, doc, bean.getName(),
+									bean.getType(), className, score, rewriteRefactorings);
 
-						completions.add(proposal);
+							completions.add(proposal);
+						}
 					}
 				}
 			} catch (Exception e) {
@@ -127,9 +156,10 @@ public class BeanCompletionProvider implements CompletionProvider {
 	}
 	
 	private static String getFullyQualifiedName(TypeDeclaration typeDecl) {
-		if (typeDecl.resolveBinding() != null) {
-			String qualifiedName = typeDecl.resolveBinding().getQualifiedName();
-	        return qualifiedName.replaceAll("\\.(?=[^\\.]+$)", "\\$");
+		ITypeBinding binding = typeDecl.resolveBinding();
+		if (binding != null) {
+			String qualifiedName = binding.getQualifiedName();
+	        return qualifiedName/*.replaceAll("\\.(?=[^\\.]+$)", "\\$")*/;
 	    }
 	    CompilationUnit cu = (CompilationUnit) typeDecl.getRoot();
 	    String packageName = cu.getPackage() != null ? cu.getPackage().getName().getFullyQualifiedName() : "";

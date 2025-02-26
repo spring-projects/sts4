@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2023 Pivotal, Inc.
+ * Copyright (c) 2014, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,7 +18,7 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
 import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.AbstractScoreableProposal;
 import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -28,7 +28,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YType;
 public class PropertyCompletionFactory {
 
 	public ICompletionProposal valueProposal(String value, String query, String niceTypeName, double score, DocumentEdits edits, Renderable info) {
-		return new ScoreableProposal() {
+		return new AbstractScoreableProposal() {
 
 			@Override
 			public DocumentEdits getTextEdit() {

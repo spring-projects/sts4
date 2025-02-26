@@ -65,6 +65,7 @@ public class BeanCompletionProviderTest {
 	private Bean bean3;
 	private Bean bean4;
 	private Bean bean5;
+	private Bean bean6;
 	
 	@BeforeEach
 	public void setup() throws Exception {
@@ -86,8 +87,9 @@ public class BeanCompletionProviderTest {
 		bean3 = new Bean("visitRepository", "org.springframework.samples.petclinic.owner.VisitRepository", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		bean4 = new Bean("visitService", "org.springframework.samples.petclinic.owner.VisitService", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		bean5 = new Bean("petService", "org.springframework.samples.petclinic.pet.Inner.PetService", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
+		bean6 = new Bean("testBeanCompletionClass", "org.sample.test.TestBeanCompletionClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		
-		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, bean3, bean4, bean5});
+		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, bean3, bean4, bean5, bean6});
 	}
 	
 	@AfterEach
@@ -97,7 +99,7 @@ public class BeanCompletionProviderTest {
 	
 	@Test
 	public void testBeanCompletion_firstCompletion() throws Exception {
-		assertCompletions(getCompletion("owner<*>"), new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+		assertCompletions(getCompletion("owner<*>"), new String[] {"ownerRepository", "ownerService"}, 0, 
 				"""
 package org.sample.test;
 
@@ -122,7 +124,32 @@ ownerRepository<*>
 	
 	@Test
 	public void testBeanCompletion_secondCompletion() throws Exception {
-		assertCompletions(getCompletion("owner<*>"), new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 1, 
+		assertCompletions(getCompletion("owner<*>"), new String[] {"ownerRepository", "ownerService"}, 1, 
+				"""
+package org.sample.test;
+
+import org.springframework.samples.petclinic.owner.OwnerService;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class TestBeanCompletionClass {
+
+    private final OwnerService ownerService;
+
+    TestBeanCompletionClass(OwnerService ownerService) {
+        this.ownerService = ownerService;
+    }
+
+		public void test() {
+ownerService<*>
+		}
+}	    
+									""");
+	}
+	
+	@Test
+	public void noPrefix_secondCompletion() throws Exception {
+		assertCompletions(getCompletion("<*>"), new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 1, 
 				"""
 package org.sample.test;
 
@@ -147,7 +174,7 @@ ownerService<*>
 	
 	@Test
 	public void testBeanCompletion_injectInnerClass() throws Exception {
-		assertCompletions(getCompletion("owner<*>"), new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 2, 
+		assertCompletions(getCompletion("<*>"), new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 2, 
 				"""
 package org.sample.test;
 
@@ -199,7 +226,72 @@ petService<*>
 				}
 				""";
 		
-		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 1, 
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 1, 
+				"""
+package org.sample.test;
+
+import org.springframework.samples.petclinic.owner.OwnerRepository;
+import org.springframework.samples.petclinic.owner.OwnerService;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class TestBeanCompletionClass {
+    private final OwnerRepository ownerRepository;
+
+    TestBeanCompletionClass(OwnerRepository ownerRepository) {
+        this.ownerRepository = ownerRepository;
+    }
+
+		public void test() {
+		}
+}	  
+
+@Controller
+public class TestBeanCompletionSecondClass {
+
+    private final OwnerService ownerService;
+
+    TestBeanCompletionSecondClass(OwnerService ownerService) {
+        this.ownerService = ownerService;
+    }
+
+		public void test() {
+		 ownerService<*>
+		}
+}
+									""");
+	}
+	
+	@Test
+	public void noPrefix_multipleClasses() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.stereotype.Controller;
+				
+				@Controller
+				public class TestBeanCompletionClass {
+				    private final OwnerRepository ownerRepository;
+				
+				    TestBeanCompletionClass(OwnerRepository ownerRepository) {
+				        this.ownerRepository = ownerRepository;
+				    }
+						
+						public void test() {
+						}
+				}
+				
+				@Controller
+				public class TestBeanCompletionSecondClass {
+						
+						public void test() {
+						 <*>
+						}
+				}
+				""";
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "testBeanCompletionClass", "visitRepository", "visitService"}, 1, 
 				"""
 package org.sample.test;
 
@@ -279,13 +371,13 @@ public class TestBeanCompletionClass {
 		public class Inner {
 		
 			public void test() {
-				ownerRe<*>
+				owner<*>
 			}
 		}
 }	
 				""";
 		
-		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
 				"""
 package org.sample.test;
 
@@ -329,6 +421,68 @@ public class TestBeanCompletionClass {
 				""";
 		return content;
 	}
+	
+	@Test
+	public void beansPresent() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.stereotype.Controller;
+				
+				@Controller
+				public class TestBeanCompletionSecondClass {
+					private final TestBeanCompletionClass testBeanCompletionClass;
+				
+				    TestBeanCompletionSecondClass(TestBeanCompletionClass testBeanCompletionClass) {
+				        this.testBeanCompletionClass = testBeanCompletionClass;
+				    }
+						
+						public void test() {
+							owner<*>
+						}
+				}				
+				
+				@Controller
+				public class TestBeanCompletionClass {
+						
+						public void test() {
+						}
+				}
+				""";
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+package org.sample.test;
+
+import org.springframework.samples.petclinic.owner.OwnerRepository;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class TestBeanCompletionSecondClass {
+
+    private final OwnerRepository ownerRepository;
+	private final TestBeanCompletionClass testBeanCompletionClass;
+
+    TestBeanCompletionSecondClass(TestBeanCompletionClass testBeanCompletionClass, OwnerRepository ownerRepository) {
+        this.testBeanCompletionClass = testBeanCompletionClass;
+        this.ownerRepository = ownerRepository;
+    }
+
+		public void test() {
+			ownerRepository<*>
+		}
+}	  
+
+@Controller
+public class TestBeanCompletionClass {
+
+		public void test() {
+		}
+}
+									""");
+	}
+	
+
 	
 	private void assertCompletions(String completionLine, String[] expectedCompletions, int chosenCompletion, String expectedResult) throws Exception {
 		assertCompletions(completionLine, expectedCompletions.length, expectedCompletions, chosenCompletion, expectedResult);

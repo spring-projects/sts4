@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Broadcom, Inc.
+ * Copyright (c) 2017, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,7 +18,7 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposalWithScore;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.InjectBeanCompletionRecipe;
@@ -30,7 +30,7 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  * @author Udayani V
  * @author Alex Boyko
  */
-public class BeanCompletionProposal implements ICompletionProposal {
+public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	
 	private DocumentEdits edits;
 	private IDocument doc;
@@ -38,14 +38,17 @@ public class BeanCompletionProposal implements ICompletionProposal {
 	private String beanType;
 	private String className;
 	private RewriteRefactorings rewriteRefactorings;
+	private double score;
 
 	public BeanCompletionProposal(DocumentEdits edits, IDocument doc, String beanId, String beanType, String className,
+			double score,
 			RewriteRefactorings rewriteRefactorings) {
 		this.edits = edits;
 		this.doc = doc;
 		this.beanId = beanId;
 		this.beanType = beanType;
 		this.className = className;
+		this.score = score;
 		this.rewriteRefactorings = rewriteRefactorings;
 	}
 
@@ -82,6 +85,10 @@ public class BeanCompletionProposal implements ICompletionProposal {
 				.withRecipeScope(RecipeScope.NODE);
 		return Optional.of(rewriteRefactorings.createFixCommand("Inject bean '%s'".formatted(beanId), f));
 	}
-	
+
+	@Override
+	public double getScore() {
+		return score;
+	}
 	
 }

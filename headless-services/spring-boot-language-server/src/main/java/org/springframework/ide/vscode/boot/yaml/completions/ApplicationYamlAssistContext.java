@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2023 Pivotal, Inc.
+ * Copyright (c) 2015, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.yaml.completions;
 
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_EXISTS;
+import static org.springframework.ide.vscode.commons.languageserver.completion.AbstractScoreableProposal.DEEMP_EXISTS;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,7 +53,7 @@ import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.LazyProposalApplier;
-import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.AbstractScoreableProposal;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
@@ -466,7 +466,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 				matchingProps.stream().forEach(match -> {
 					try {
 						DocumentEdits edits = createEdits(doc, node, offset, query, match);
-						ScoreableProposal completion = completionFactory.property(
+						AbstractScoreableProposal completion = completionFactory.property(
 								doc.getDocument(), edits, match, typeUtil
 						);
 						String prefix = indexNav.getPrefix();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2024 Pivotal, Inc.
+ * Copyright (c) 2016, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_DEDENTED_PROPOSAL;
-import static org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal.DEEMP_INDENTED_PROPOSAL;
+import static org.springframework.ide.vscode.commons.languageserver.completion.AbstractScoreableProposal.DEEMP_DEDENTED_PROPOSAL;
+import static org.springframework.ide.vscode.commons.languageserver.completion.AbstractScoreableProposal.DEEMP_INDENTED_PROPOSAL;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,7 +26,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.InternalCompletionList;
-import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.AbstractScoreableProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.TransformedCompletion;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Unicodes;
@@ -97,7 +97,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 				double deempasizeBy = 0.0;
 				for (SNode contextNode : contextNodes) {
 					completions.addAll(getRelaxedCompletions(offset, doc, current, contextNode, baseIndent, deempasizeBy));
-					deempasizeBy += ScoreableProposal.DEEMP_NEXT_CONTEXT;
+					deempasizeBy += AbstractScoreableProposal.DEEMP_NEXT_CONTEXT;
 				}
 				return new InternalCompletionList(completions, false);
 			} else {
@@ -129,7 +129,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			List<ICompletionProposal> transformed = new ArrayList<>();
 			for (ICompletionProposal p : completions) {
 				int targetIndent = p.getLabel().startsWith("- ") ? dashyIndent : plainIndent;
-				ScoreableProposal p_fixed = indentFix((ScoreableProposal)p, targetIndent - baseIndent, currentNode, contextNode, doc);
+				AbstractScoreableProposal p_fixed = indentFix((AbstractScoreableProposal)p, targetIndent - baseIndent, currentNode, contextNode, doc);
 				if (p_fixed!=null) {
 					p_fixed.deemphasize(deempasizeBy);
 					transformed.add(p_fixed);
@@ -140,7 +140,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return Collections.emptyList();
 	}
 
-	protected ScoreableProposal indentFix(ScoreableProposal p, int fixIndentBy, SNode currentNode, SNode contextNode, YamlDocument doc) {
+	protected AbstractScoreableProposal indentFix(AbstractScoreableProposal p, int fixIndentBy, SNode currentNode, SNode contextNode, YamlDocument doc) {
 		if (fixIndentBy==0) {
 			return p;
 		} else if (fixIndentBy>0) {
@@ -190,7 +190,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 				: contextNode.getIndent() + YamlIndentUtil.INDENT_BY;
 	}
 
-	public ScoreableProposal dedented(ICompletionProposal proposal, int numSpacesToRemove, IDocument doc) {
+	public AbstractScoreableProposal dedented(ICompletionProposal proposal, int numSpacesToRemove, IDocument doc) {
 		Assert.isLegal(numSpacesToRemove>0);
 		int spacesEnd = proposal.getTextEdit().getFirstEditStart();
 		int spacesStart = spacesEnd-numSpacesToRemove;
@@ -198,7 +198,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		String spaces = new DocumentRegion(doc, spacesStart, spacesEnd).toString();
 		YamlIndentUtil indenter = new YamlIndentUtil(doc);
 		if (spaces.length()==numSpacesToRemove && SPACES.matcher(spaces).matches()) {
-			ScoreableProposal transformed = new TransformedCompletion(proposal) {
+			AbstractScoreableProposal transformed = new TransformedCompletion(proposal) {
 				@Override public String tranformLabel(String originalLabel) {
 					return Strings.repeat(Unicodes.LEFT_ARROW+" ", numArrows)  + originalLabel;
 				}
@@ -228,9 +228,9 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return null;
 	}
 
-	public ScoreableProposal indented(ICompletionProposal proposal, String indentStr, YamlDocument doc) {
+	public AbstractScoreableProposal indented(ICompletionProposal proposal, String indentStr, YamlDocument doc) {
 		int numArrows = (indentStr.length()+1)/2;
-		ScoreableProposal transformed = new TransformedCompletion(proposal) {
+		AbstractScoreableProposal transformed = new TransformedCompletion(proposal) {
 			@Override public String tranformLabel(String originalLabel) {
 				return Strings.repeat(Unicodes.RIGHT_ARROW+" ", numArrows) + originalLabel;
 			}
