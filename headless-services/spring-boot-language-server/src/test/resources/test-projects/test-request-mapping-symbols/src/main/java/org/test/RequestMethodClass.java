@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import static org.springframework.web.bind.annotation.RequestMethod.PUT;
 
+import org.springframework.stereotype.Controller;
+
+@Controller
 public class RequestMethodClass {
 	
 	@GetMapping("/getData")

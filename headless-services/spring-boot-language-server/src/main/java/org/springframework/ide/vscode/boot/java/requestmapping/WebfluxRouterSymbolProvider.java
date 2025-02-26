@@ -35,9 +35,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
-import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -59,36 +58,34 @@ public class WebfluxRouterSymbolProvider {
 		return false;
 	}
 	
-	public static SpringIndexElement[] createWebfluxElements(MethodDeclaration methodDeclaration, SpringIndexerJavaContext context, TextDocument doc, List<SpringIndexElement> childElements) {
+	public static void createWebfluxElements(Bean beanDefinition, MethodDeclaration methodDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		Block methodBody = methodDeclaration.getBody();
 		if (methodBody != null && methodBody.statements() != null && methodBody.statements().size() > 0) {
-			addSymbolsForRouterFunction(methodBody, context, doc, childElements);
-		}
-		
-		return new SpringIndexElement[0];
-	}
-
-	public void addSymbols(MethodDeclaration methodDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
-		Type returnType = methodDeclaration.getReturnType2();
-		if (returnType != null) {
-
-			ITypeBinding resolvedBinding = returnType.resolveBinding();
-
-			if (resolvedBinding != null && WebfluxUtils.ROUTER_FUNCTION_TYPE.equals(resolvedBinding.getBinaryName())) {
-
-				Block methodBody = methodDeclaration.getBody();
-				if (methodBody != null && methodBody.statements() != null && methodBody.statements().size() > 0) {
-					addSymbolsForRouterFunction(methodBody, context, doc, new ArrayList<>());
-				}
-				else if (SCAN_PASS.ONE.equals(context.getPass())) {
-					context.getNextPassFiles().add(context.getFile());
-				}
-
-			}
+			addSymbolsForRouterFunction(beanDefinition, methodBody, context, doc);
 		}
 	}
 
-	private static void addSymbolsForRouterFunction(Block methodBody, SpringIndexerJavaContext context, TextDocument doc, List<SpringIndexElement> indexElementsCollector) {
+//	public void addSymbols(MethodDeclaration methodDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+//		Type returnType = methodDeclaration.getReturnType2();
+//		if (returnType != null) {
+//
+//			ITypeBinding resolvedBinding = returnType.resolveBinding();
+//
+//			if (resolvedBinding != null && WebfluxUtils.ROUTER_FUNCTION_TYPE.equals(resolvedBinding.getBinaryName())) {
+//
+//				Block methodBody = methodDeclaration.getBody();
+//				if (methodBody != null && methodBody.statements() != null && methodBody.statements().size() > 0) {
+//					addSymbolsForRouterFunction(methodBody, context, doc, new ArrayList<>());
+//				}
+//				else if (SCAN_PASS.ONE.equals(context.getPass())) {
+//					context.getNextPassFiles().add(context.getFile());
+//				}
+//
+//			}
+//		}
+//	}
+//
+	private static void addSymbolsForRouterFunction(Bean beanDefinition, Block methodBody, SpringIndexerJavaContext context, TextDocument doc) {
 		methodBody.accept(new ASTVisitor() {
 
 			@Override
@@ -96,7 +93,7 @@ public class WebfluxRouterSymbolProvider {
 				IMethodBinding methodBinding = node.resolveMethodBinding();
 
 				if (methodBinding != null && WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
-					extractMappingSymbol(node, doc, context, indexElementsCollector);
+					extractMappingSymbol(beanDefinition, node, doc, context);
 				}
 
 				return super.visit(node);
@@ -105,7 +102,7 @@ public class WebfluxRouterSymbolProvider {
 		});
 	}
 
-	protected static void extractMappingSymbol(MethodInvocation node, TextDocument doc, SpringIndexerJavaContext context, List<SpringIndexElement> indexElementsCollector) {
+	protected static void extractMappingSymbol(Bean beanDefinition, MethodInvocation node, TextDocument doc, SpringIndexerJavaContext context) {
 		WebfluxRouteElement[] pathElements = extractPath(node, doc);
 		WebfluxRouteElement[] httpMethods = extractMethods(node, doc);
 		WebfluxRouteElement[] contentTypes = extractContentTypes(node, doc);
@@ -134,8 +131,8 @@ public class WebfluxRouterSymbolProvider {
 				WebfluxHandlerMethodIndexElement handler = extractHandlerInformation(node, path, httpMethods, contentTypes, acceptTypes, location.getRange(), symbol.getName());
 				WebfluxRouteElementRangesIndexElement elements = extractElementsInformation(pathElements, httpMethods, contentTypes, acceptTypes);
 				
-				if (handler != null) indexElementsCollector.add(handler);
-				if (elements != null) indexElementsCollector.add(elements);
+				if (handler != null) beanDefinition.addChild(handler);
+				if (elements != null) beanDefinition.addChild(elements);
 
 			} catch (BadLocationException e) {
 				log.error("bad location while extracting mapping symbol for " + doc.getUri(), e);

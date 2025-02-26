@@ -190,10 +190,10 @@ public class SpringIndexerEventsTest {
         Bean[] beans = springIndex.getBeansOfDocument(docUri);
         assertEquals(1, beans.length);
         
-        Bean listenerComponentBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("customEventPublisher")).findFirst().get();
-        assertEquals("com.example.events.demo.CustomEventPublisher", listenerComponentBean.getType());
+        Bean publisherComponentBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("customEventPublisher")).findFirst().get();
+        assertEquals("com.example.events.demo.CustomEventPublisher", publisherComponentBean.getType());
         
-        List<SpringIndexElement> children = listenerComponentBean.getChildren();
+        List<SpringIndexElement> children = publisherComponentBean.getChildren();
         assertEquals(1, children.size());
         assertTrue(children.get(0) instanceof EventPublisherIndexElement);
         
@@ -224,6 +224,17 @@ public class SpringIndexerEventsTest {
         assertTrue(eventTypesFromHierarchy.contains("com.example.events.demo.CustomEvent"));
         assertTrue(eventTypesFromHierarchy.contains("java.io.Serializable"));
         assertFalse(eventTypesFromHierarchy.contains("java.lang.String"));
+    }
+    
+    @Test
+    void testEventPublisherWithMoreSymbols() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/com/example/events/demo/CustomEventPublisherWithAdditionalElements.java").toUri().toString();
+
+        SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+        		SpringIndexerHarness.symbol("@Qualifier(\"qualifier\")", "@Qualifier(\"qualifier\")"),
+        		SpringIndexerHarness.symbol("@Component", "@+ 'customEventPublisherWithAdditionalElements' (@Component) CustomEventPublisherWithAdditionalElements"),
+                SpringIndexerHarness.symbol("this.publisher.publishEvent(new CustomEvent())", "@EventPublisher (CustomEvent)")
+        		);
     }
     
 }

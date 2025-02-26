@@ -31,7 +31,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Tuple;
 import org.eclipse.lsp4j.jsonrpc.messages.Tuple.Two;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
@@ -41,13 +41,12 @@ import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-public class FeignClientSymbolProvider extends AbstractSymbolProvider {
+public class FeignClientSymbolProvider implements SymbolProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(FeignClientSymbolProvider.class);
 
 	@Override
-	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations,
-			SpringIndexerJavaContext context, TextDocument doc) {
+	public void addSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		try {
 			if (node != null && node.getParent() != null && node.getParent() instanceof TypeDeclaration) {
 				Two<WorkspaceSymbol, Bean> result = createSymbol(node, annotationType, metaAnnotations, doc);
@@ -58,7 +57,7 @@ public class FeignClientSymbolProvider extends AbstractSymbolProvider {
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 			}
 		}
-		catch (Exception e) {
+		catch (BadLocationException e) {
 			log.error("", e);
 		}
 	}

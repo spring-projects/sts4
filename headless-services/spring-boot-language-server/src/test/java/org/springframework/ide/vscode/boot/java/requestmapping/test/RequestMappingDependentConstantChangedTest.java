@@ -85,7 +85,7 @@ public class RequestMappingDependentConstantChangedTest {
         String docUri = directory.resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
         String constantsUri = directory.resolve("src/main/java/org/test/Constants.java").toUri().toString();
         List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
-        assertEquals(1, symbols.size());
+        assertEquals(2, symbols.size());
         assertSymbol(docUri, "@/path/from/constant", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
 
         TestFileScanListener fileScanListener = new TestFileScanListener();
@@ -99,7 +99,7 @@ public class RequestMappingDependentConstantChangedTest {
         fileScanListener.assertScannedUri(docUri, 1);
 
         symbols = indexer.getSymbols(docUri);
-        assertSymbolCount(1, symbols);
+        assertSymbolCount(2, symbols);
         assertSymbol(docUri, "@/changed-path", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
     }
 
@@ -108,7 +108,7 @@ public class RequestMappingDependentConstantChangedTest {
         String docUri = directory.resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
         String constantsUri = directory.resolve("src/main/java/org/test/Constants.java").toUri().toString();
         List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
-        assertEquals(1, symbols.size());
+        assertEquals(2, symbols.size());
         assertSymbol(docUri, "@/path/from/constant", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
 
         TestFileScanListener fileScanListener = new TestFileScanListener();
@@ -122,7 +122,7 @@ public class RequestMappingDependentConstantChangedTest {
         fileScanListener.assertScannedUri(docUri, 1);
 
         symbols = indexer.getSymbols(docUri);
-        assertSymbolCount(1, symbols);
+        assertSymbolCount(2, symbols);
         assertSymbol(docUri, "@/changed-path", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
     }
 
@@ -132,14 +132,14 @@ public class RequestMappingDependentConstantChangedTest {
         String chainConstantsUri_2 = directory.resolve("src/main/java/org/test/ChainElement2.java").toUri().toString();
 
         List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
-        assertEquals(1, symbols.size());
+        assertEquals(2, symbols.size());
         assertSymbol(docUri, "@/path/from/chain", "@RequestMapping(ChainElement1.MAPPING_PATH_1)");
 
         replaceInFile(chainConstantsUri_2, "path/from/chain", "/changed-path");
         indexer.updateDocument(chainConstantsUri_2, null, "triggered by test code").get();
 
         symbols = indexer.getSymbols(docUri);
-        assertSymbolCount(1, symbols);
+        assertSymbolCount(2, symbols);
         assertSymbol(docUri, "@/path/from/chain", "@RequestMapping(ChainElement1.MAPPING_PATH_1)");
 
         // You would expect here that the symbol got updated from "path/from/chain" to the changed value "/changed-path",
@@ -159,12 +159,12 @@ public class RequestMappingDependentConstantChangedTest {
 
         {
             List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
-            assertSymbolCount(1, symbols);
+            assertSymbolCount(2, symbols);
             assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
         }
         {
             List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
-            assertSymbolCount(1, symbols);
+            assertSymbolCount(2, symbols);
             assertSymbol(pongUri, "@/ping -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
         }
 
@@ -173,12 +173,12 @@ public class RequestMappingDependentConstantChangedTest {
 
         {
             List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
-            assertSymbolCount(1, symbols);
+            assertSymbolCount(2, symbols);
             assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
         }
         {
             List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
-            assertSymbolCount(1, symbols);
+            assertSymbolCount(2, symbols);
             assertSymbol(pongUri, "@/changed -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
         }
     }
@@ -192,12 +192,12 @@ public class RequestMappingDependentConstantChangedTest {
 
         {
             List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
-            assertSymbolCount(1, symbols);
+            assertSymbolCount(2, symbols);
             assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
         }
         {
             List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
-            assertSymbolCount(1, symbols);
+            assertSymbolCount(2, symbols);
             assertSymbol(pongUri, "@/ping -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
         }
 
@@ -206,12 +206,12 @@ public class RequestMappingDependentConstantChangedTest {
 
         {
             List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
-            assertSymbolCount(1, symbols);
+            assertSymbolCount(2, symbols);
             assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
         }
         {
             List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
-            assertSymbolCount(1, symbols);
+            assertSymbolCount(2, symbols);
             assertSymbol(pongUri, "@/changed -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
         }
     }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2023 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,7 +19,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.springframework.ide.vscode.boot.java.beans.CachedBean;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -38,14 +38,12 @@ public class SpringIndexerJavaContext {
 	private final List<CachedSymbol> generatedSymbols;
 	private final List<CachedBean> beans;
 	private final IProblemCollector getProblemCollector;
-	private final SCAN_PASS pass;
 	private final List<String> nextPassFiles;
 	private final boolean fullAst;
 	
 	private final Set<String> dependencies = new HashSet<>();
 	private final Set<String> scannedTypes = new HashSet<>();
-
-
+	
 	public SpringIndexerJavaContext(
 			IJavaProject project, 
 			CompilationUnit cu, 
@@ -57,7 +55,6 @@ public class SpringIndexerJavaContext {
 			List<CachedSymbol> generatedSymbols,
 			List<CachedBean> beans,
 			IProblemCollector problemCollector,
-			SCAN_PASS pass,
 			List<String> nextPassFiles,
 			boolean fullAst
 	) {
@@ -72,7 +69,6 @@ public class SpringIndexerJavaContext {
 		this.generatedSymbols = generatedSymbols;
 		this.getProblemCollector = problemCollector;
 		this.beans = beans;
-		this.pass = pass;
 		this.nextPassFiles = nextPassFiles;
 		this.fullAst = fullAst;
 	}
@@ -113,10 +109,6 @@ public class SpringIndexerJavaContext {
 		return beans;
 	}
 	
-	public SCAN_PASS getPass() {
-		return pass;
-	}
-
 	public List<String> getNextPassFiles() {
 		return nextPassFiles;
 	}
@@ -154,4 +146,22 @@ public class SpringIndexerJavaContext {
 	public boolean isFullAst() {
 		return fullAst;
 	}
+	
+	public void resetDocumentRelatedElements(String docURI) {
+		Iterator<CachedBean> beansIterator = beans.iterator();
+		while (beansIterator.hasNext()) {
+			if (beansIterator.next().getDocURI().equals(docURI)) {
+				beansIterator.remove();
+			}
+		}
+		
+		Iterator<CachedSymbol> symbolsIterator = generatedSymbols.iterator();
+		while (symbolsIterator.hasNext()) {
+			if (symbolsIterator.next().getDocURI().equals(docURI)) {
+				symbolsIterator.remove();
+			}
+		}
+		
+	}
+	
 }

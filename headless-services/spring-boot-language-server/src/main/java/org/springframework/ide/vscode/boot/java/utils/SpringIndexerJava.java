@@ -73,7 +73,6 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
-import org.springframework.ide.vscode.commons.protocol.spring.SimpleSymbolElement;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -87,10 +86,6 @@ import com.google.gson.JsonObject;
  */
 public class SpringIndexerJava implements SpringIndexer {
 	
-	public static enum SCAN_PASS {
-		ONE, TWO
-	}
-
 	private static final Logger log = LoggerFactory.getLogger(SpringIndexerJava.class);
 
 	// whenever the implementation of the indexer changes in a way that the stored data in the cache is no longer valid,
@@ -308,7 +303,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
 
 			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-					lastModified, docRef, content, generatedSymbols, generatedBeans, problemCollector, SCAN_PASS.ONE, new ArrayList<>(), !ignoreMethodBodies);
+					lastModified, docRef, content, generatedSymbols, generatedBeans, problemCollector, new ArrayList<>(), !ignoreMethodBodies);
 
 			scanAST(context, true);
 
@@ -359,7 +354,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 				String file = UriUtil.toFileString(docURI);
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, SCAN_PASS.ONE, new ArrayList<>(), true);
+						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, new ArrayList<>(), true);
 
 				scanAST(context, false);
 
@@ -396,7 +391,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 				String file = UriUtil.toFileString(docURI);
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, SCAN_PASS.ONE, new ArrayList<>(), true);
+						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, new ArrayList<>(), true);
 
 				scanAST(context, false);
 
@@ -457,7 +452,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, SCAN_PASS.ONE, new ArrayList<>(), !ignoreMethodBodies);
+						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, new ArrayList<>(), !ignoreMethodBodies);
 				
 				scanAST(context, true);
 				
@@ -560,11 +555,11 @@ public class SpringIndexerJava implements SpringIndexer {
 			for (int i = 0; i < chunks.size(); i++) {
 
 				log.info("scan java files, AST parse, chunk {} for files: {}", i, javaFiles.length);
-	            String[] pass2Files = scanFiles(project, annotations, chunks.get(i), generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.ONE);
+	            String[] pass2Files = scanFiles(project, annotations, chunks.get(i), generatedSymbols, generatedBeans, diagnosticsAggregator, true);
 
 	            if (pass2Files.length > 0) {
 					log.info("scan java files, AST parse, pass 2, chunk {} for files: {}", i, javaFiles.length);
-					scanFiles(project, annotations, pass2Files, generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.TWO);
+					scanFiles(project, annotations, pass2Files, generatedSymbols, generatedBeans, diagnosticsAggregator, false);
 				}
 	        }
 			
@@ -602,13 +597,12 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private String[] scanFiles(IJavaProject project, AnnotationHierarchies annotations, String[] javaFiles, List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans,
-			BiConsumer<String, Diagnostic> diagnosticsAggregator, SCAN_PASS pass) throws Exception {
+			BiConsumer<String, Diagnostic> diagnosticsAggregator, boolean ignoreMethodBodies) throws Exception {
 		
 		PercentageProgressTask progressTask = this.progressService.createPercentageProgressTask(INDEX_FILES_TASK_ID + project.getElementName(),
 				javaFiles.length, "Spring Tools: Indexing Java Sources for '" + project.getElementName() + "'");
 
 		List<String> nextPassFiles = new ArrayList<>();
-		final boolean ignoreMethodBodies = SCAN_PASS.ONE.equals(pass);
 
 		FileASTRequestor requestor = new FileASTRequestor() {
 
@@ -622,7 +616,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, pass, nextPassFiles, !ignoreMethodBodies);
+						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, nextPassFiles, !ignoreMethodBodies);
 
 				scanAST(context, true);
 				progressTask.increment();
@@ -655,69 +649,95 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private void scanAST(final SpringIndexerJavaContext context, boolean includeReconcile) {
-		context.getCu().accept(new ASTVisitor() {
-
-			@Override
-			public boolean visit(TypeDeclaration node) {
-				try {
-					context.addScannedType(node.resolveBinding());
-					extractSymbolInformation(node, context);
+		try {
+			context.getCu().accept(new ASTVisitor() {
+	
+				@Override
+				public boolean visit(TypeDeclaration node) {
+					try {
+						context.addScannedType(node.resolveBinding());
+						extractSymbolInformation(node, context);
+					}
+					catch (RequiredCompleteAstException e) {
+						throw e;
+					}
+					catch (Exception e) {
+						log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
+					}
+					
+					return super.visit(node);
 				}
-				catch (Exception e) {
-					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
+	
+				@Override
+				public boolean visit(MethodDeclaration node) {
+					try {
+						extractSymbolInformation(node, context);
+					}
+					catch (RequiredCompleteAstException e) {
+						throw e;
+					}
+					catch (Exception e) {
+						log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
+					}
+					return super.visit(node);
 				}
-				
-				return super.visit(node);
+	
+				@Override
+				public boolean visit(SingleMemberAnnotation node) {
+					try {
+						extractSymbolInformation(node, context);
+					}
+					catch (RequiredCompleteAstException e) {
+						throw e;
+					}
+					catch (Exception e) {
+						log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
+					}
+	
+					return super.visit(node);
+				}
+	
+				@Override
+				public boolean visit(NormalAnnotation node) {
+					try {
+						extractSymbolInformation(node, context);
+					}
+					catch (RequiredCompleteAstException e) {
+						throw e;
+					}
+					catch (Exception e) {
+						log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
+					}
+	
+					return super.visit(node);
+				}
+	
+				@Override
+				public boolean visit(MarkerAnnotation node) {
+					try {
+						extractSymbolInformation(node, context);
+					}
+					catch (RequiredCompleteAstException e) {
+						throw e;
+					}
+					catch (Exception e) {
+						log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
+					}
+	
+					return super.visit(node);
+				}
+			});
+		}
+		catch (RequiredCompleteAstException e) {
+			if (!context.isFullAst()) {
+				context.getNextPassFiles().add(context.getFile());
+				context.resetDocumentRelatedElements(context.getDocURI());
 			}
-
-			@Override
-			public boolean visit(MethodDeclaration node) {
-				try {
-					extractSymbolInformation(node, context);
-				}
-				catch (Exception e) {
-					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
-				}
-				return super.visit(node);
+			else {
+				log.error("Complete AST required but it is complete already. Analyzing ", context.getDocURI());
 			}
-
-			@Override
-			public boolean visit(SingleMemberAnnotation node) {
-				try {
-					extractSymbolInformation(node, context);
-				}
-				catch (Exception e) {
-					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
-				}
-
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(NormalAnnotation node) {
-				try {
-					extractSymbolInformation(node, context);
-				}
-				catch (Exception e) {
-					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
-				}
-
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(MarkerAnnotation node) {
-				try {
-					extractSymbolInformation(node, context);
-				}
-				catch (Exception e) {
-					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
-				}
-
-				return super.visit(node);
-			}
-		});
-		
+		}
+			
 		if (includeReconcile) {
 			reconcile(context);
 		}
@@ -754,12 +774,12 @@ public class SpringIndexerJava implements SpringIndexer {
 			reconciler.reconcile(context.getProject(), URI.create(context.getDocURI()), context.getCu(), problemCollector, context.isFullAst());
 			problemCollector.endCollecting();
 		} catch (RequiredCompleteAstException e) {
-			if (context.getPass() == SCAN_PASS.TWO) {
-				problemCollector.endCollecting();
-				log.error("Complete AST required but it is complete already. Parsing ", context.getDocURI());
-			} else {
+			if (!context.isFullAst()) {
 				// Let problems be found in the next pass, don't add the problems to the aggregate problems collector to not duplicate them with the next pass
 				context.getNextPassFiles().add(context.getFile());
+			} else {
+				problemCollector.endCollecting();
+				log.error("Complete AST required but it is complete already. Parsing ", context.getDocURI());
 			}
 		}
 	}
@@ -814,7 +834,16 @@ public class SpringIndexerJava implements SpringIndexer {
 				WorkspaceSymbol symbol = provideDefaultSymbol(node, context);
 				if (symbol != null) {
 					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
-					context.getBeans().add(new CachedBean(context.getDocURI(), new SimpleSymbolElement(symbol)));
+					
+//					SimpleSymbolElement symbolIndexElement = new SimpleSymbolElement(symbol);
+//					SpringIndexElement parentIndexElement = context.getNearestIndexElementForNode(node.getParent());
+//					if (parentIndexElement != null) {
+//						parentIndexElement.addChild(symbolIndexElement);
+//					}
+//					else {
+//						context.getBeans().add(new CachedBean(context.getDocURI(), symbolIndexElement));
+//					}
+//					context.setIndexElementForASTNode(node.getParent(), symbolIndexElement);
 				}
 			}
 			
@@ -836,6 +865,9 @@ public class SpringIndexerJava implements SpringIndexer {
 					return DefaultSymbolProvider.provideDefaultSymbol(node, doc);
 				}
 			}
+		}
+		catch (RequiredCompleteAstException e) {
+			throw e;
 		}
 		catch (Exception e) {
 			log.error("error creating default symbol in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);

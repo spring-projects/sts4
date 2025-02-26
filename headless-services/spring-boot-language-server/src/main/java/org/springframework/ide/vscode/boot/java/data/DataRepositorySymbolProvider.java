@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.beans.CachedBean;
-import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
@@ -42,12 +42,12 @@ import reactor.util.function.Tuples;
 /**
  * @author Martin Lippert
  */
-public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
+public class DataRepositorySymbolProvider implements SymbolProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(DataRepositorySymbolProvider.class);
 	
 	@Override
-	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+	public void addSymbols(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		// this checks spring data repository beans that are defined as extensions of the repository interface
 		Tuple4<String, ITypeBinding, String, DocumentRegion> repositoryBean = getRepositoryBean(typeDeclaration, doc);
 

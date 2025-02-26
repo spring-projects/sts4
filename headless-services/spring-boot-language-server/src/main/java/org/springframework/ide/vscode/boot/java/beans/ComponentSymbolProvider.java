@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -34,9 +33,13 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.events.EventListenerIndexElement;
+import org.springframework.ide.vscode.boot.java.events.EventListenerIndexer;
 import org.springframework.ide.vscode.boot.java.events.EventPublisherIndexElement;
-import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
+import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingIndexer;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.DefaultSymbolProvider;
@@ -53,12 +56,12 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Martin Lippert
  * @author Kris De Volder
  */
-public class ComponentSymbolProvider extends AbstractSymbolProvider {
+public class ComponentSymbolProvider implements SymbolProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(ComponentSymbolProvider.class);
 
 	@Override
-	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+	public void addSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		try {
 			if (node != null && node.getParent() != null && node.getParent() instanceof TypeDeclaration) {
 				createSymbol(node, annotationType, metaAnnotations, context, doc);
@@ -69,7 +72,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				context.getBeans().add(new CachedBean(context.getDocURI(), new SimpleSymbolElement(symbol)));
 			}
 		}
-		catch (Exception e) {
+		catch (BadLocationException e) {
 			log.error("", e);
 		}
 	}
@@ -111,30 +114,106 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		
 		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration, symbol.getName());
 		
-		// type implements event listener - move those already created event index elements under the bean node
-		List<CachedBean> alreadyCreatedEventListenerChilds = context.getBeans().stream()
-			.filter(cachedBean -> cachedBean.getDocURI().equals(doc.getUri()))
-			.filter(cachedBean -> cachedBean.getBean() instanceof EventListenerIndexElement)
-			.toList();
-		
-		for (CachedBean eventListener : alreadyCreatedEventListenerChilds) {
-			context.getBeans().remove(eventListener);
-			beanDefinition.addChild(eventListener.getBean());
-		}
-		
 		// event publisher checks
+		boolean usesEventPublisher = false;
 		for (InjectionPoint injectionPoint : injectionPoints) {
 			if (Annotations.EVENT_PUBLISHER.equals(injectionPoint.getType())) {
-				context.getNextPassFiles().add(context.getFile());
+				usesEventPublisher = true;
 			}
 		}
+		
+		if (usesEventPublisher) {
+			if (context.isFullAst()) {
+				scanEventPublisherInvocations(beanDefinition, node, annotationType, metaAnnotations, context, doc);
+			}
+			else {
+				throw new RequiredCompleteAstException();
+			}
+		}
+		
+		indexBeanMethods(beanDefinition, type, annotationType, metaAnnotations, context, doc);
+		indexEventListeners(beanDefinition, type, annotationType, metaAnnotations, context, doc);
+		indexEventListenerInterfaceImplementation(beanDefinition, type, context, doc);
+		indexRequestMappings(beanDefinition, type, annotationType, metaAnnotations, context, doc);
 
 		context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 		context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 	}
 	
-	@Override
-	protected void addSymbolsPass2(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+	private void indexBeanMethods(Bean bean, TypeDeclaration type, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(type);
+		if (bean.isConfiguration()) {
+			MethodDeclaration[] methods = type.getMethods();
+			if (methods == null) {
+				return;
+			}
+			
+			for (int i = 0; i < methods.length; i++) {
+				MethodDeclaration methodDecl = methods[i];
+				Collection<Annotation> annotations = ASTUtils.getAnnotations(methodDecl);
+				
+				for (Annotation annotation : annotations) {
+					ITypeBinding typeBinding = annotation.resolveTypeBinding();
+					
+					boolean isBeanMethod = annotationHierarchies.isAnnotatedWith(typeBinding, Annotations.BEAN);
+					if (isBeanMethod) {
+						BeansIndexer.indexBeanMethod(bean, annotation, context, doc);
+					}
+				}
+			}
+		}
+	}
+
+	private void indexEventListeners(Bean bean, TypeDeclaration type, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(type);		
+		
+		MethodDeclaration[] methods = type.getMethods();
+		if (methods == null) {
+			return;
+		}
+
+		for (int i = 0; i < methods.length; i++) {
+			MethodDeclaration methodDecl = methods[i];
+			Collection<Annotation> annotations = ASTUtils.getAnnotations(methodDecl);
+
+			for (Annotation annotation : annotations) {
+				ITypeBinding typeBinding = annotation.resolveTypeBinding();
+
+				boolean isEventListenerAnnotation = annotationHierarchies.isAnnotatedWith(typeBinding, Annotations.EVENT_LISTENER);
+				if (isEventListenerAnnotation) {
+					EventListenerIndexer.indexEventListener(bean, annotation, context, doc);
+				}
+			}
+		}
+	}
+
+	private void indexRequestMappings(Bean controller, TypeDeclaration type, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(type);		
+		boolean isController = annotationHierarchies.isAnnotatedWith(annotationType, Annotations.CONTROLLER);
+		
+		if (isController) {
+			MethodDeclaration[] methods = type.getMethods();
+			if (methods == null) {
+				return;
+			}
+			
+			for (int i = 0; i < methods.length; i++) {
+				MethodDeclaration methodDecl = methods[i];
+				Collection<Annotation> annotations = ASTUtils.getAnnotations(methodDecl);
+				
+				for (Annotation annotation : annotations) {
+					ITypeBinding typeBinding = annotation.resolveTypeBinding();
+					
+					boolean isRequestMappingAnnotation = annotationHierarchies.isAnnotatedWith(typeBinding, Annotations.SPRING_REQUEST_MAPPING);
+					if (isRequestMappingAnnotation) {
+						RequestMappingIndexer.indexRequestMapping(controller, annotation, context, doc);
+					}
+				}
+			}
+		}
+	}
+
+	private void scanEventPublisherInvocations(Bean component, Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		TypeDeclaration type = (TypeDeclaration) node.getParent();
 		type.accept(new ASTVisitor() {
 			
@@ -161,11 +240,8 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 									ASTUtils.findSupertypes(eventTypeBinding, typesFromhierarchy);
 
 									EventPublisherIndexElement eventPublisherIndexElement = new EventPublisherIndexElement(eventTypeBinding.getQualifiedName(), location, typesFromhierarchy);
-									Bean publisherBeanElement = findBean(node, methodInvocation, context, doc);
-									if (publisherBeanElement != null) {
-										publisherBeanElement.addChild(eventPublisherIndexElement);
-									}
-									
+									component.addChild(eventPublisherIndexElement);
+
 									// symbol
 									String symbolLabel = "@EventPublisher (" + eventTypeBinding.getName() + ")";
 									WorkspaceSymbol symbol = new WorkspaceSymbol(symbolLabel, SymbolKind.Interface, Either.forLeft(location));
@@ -184,7 +260,18 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 	}
 	
 	@Override
-	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+	public void addSymbols(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(typeDeclaration);
+		boolean isComponment = annotationHierarchies.isAnnotatedWith(typeDeclaration.resolveBinding(), Annotations.COMPONENT);
+		
+		// check for event listener implementations on classes that are not annotated with component, but created via bean methods (for example)
+		if (!isComponment) {
+			indexEventListenerInterfaceImplementation(null, typeDeclaration, context, doc);
+		}
+		
+	}
+	
+	private void indexEventListenerInterfaceImplementation(Bean bean, TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		try {
 			ITypeBinding typeBinding = typeDeclaration.resolveBinding();
 			if (typeBinding == null) return;
@@ -209,7 +296,13 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				AnnotationMetadata[] handleEventMethodAnnotations = ASTUtils.getAnnotationsMetadata(annotationsOnHandleEventMethod, doc);
 	
 				EventListenerIndexElement eventElement = new EventListenerIndexElement(eventTypeFq, handleMethodLocation, typeBinding.getQualifiedName(), handleEventMethodAnnotations);
-				context.getBeans().add(new CachedBean(doc.getUri(), eventElement));
+				
+				if (bean != null) {
+					bean.addChild(eventElement);
+				}
+				else {
+					context.getBeans().add(new CachedBean(context.getDocURI(), eventElement));
+				}
 			}
 		} catch (BadLocationException e) {
 			log.error("", e);
@@ -230,24 +323,6 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		return null;
 	}
 	
-	private Bean findBean(Annotation annotation, MethodInvocation methodInvocation, SpringIndexerJavaContext context, TextDocument doc) {
-		TypeDeclaration declaringType = ASTUtils.findDeclaringType(methodInvocation);
-		if (declaringType != null) {
-			String beanName = BeanUtils.getBeanNameFromComponentAnnotation(annotation, declaringType);
-			if (beanName != null) {
-				Optional<Bean> first = context.getBeans().stream().filter(cachedBean -> cachedBean.getDocURI().equals(doc.getUri()))
-						.map(cachedBean -> cachedBean.getBean())
-						.filter(bean -> bean instanceof Bean)
-						.map(bean -> (Bean) bean)
-						.filter(bean -> bean.getName().equals(beanName))
-						.findFirst();
-				return first.get();
-			}
-		}
-		
-		return null;
-	}
-
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {
 		StringBuilder symbolLabel = new StringBuilder();
 		symbolLabel.append("@");
