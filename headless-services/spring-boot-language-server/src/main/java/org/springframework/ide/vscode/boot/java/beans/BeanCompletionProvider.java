@@ -23,7 +23,6 @@ import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldAccess;
-import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.ThisExpression;
@@ -32,6 +31,8 @@ import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -92,7 +93,8 @@ public class BeanCompletionProvider implements CompletionProvider {
 		        	node = fa.getName();
 		        }
 		        
-				if (isSpringComponent(topLevelClass)) {
+		        
+				if (AnnotationHierarchies.get(node).isAnnotatedWith(topLevelClass.resolveBinding(), Annotations.COMPONENT)) {
 		            String className = getFullyQualifiedName(topLevelClass);
 					Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
 					ITypeBinding topLevelBeanType = topLevelClass.resolveBinding();
@@ -131,28 +133,6 @@ public class BeanCompletionProvider implements CompletionProvider {
 				log.error("problem while looking for bean completions", e);
 			}
 		}
-	}
-	
-	private static boolean isSpringComponent(TypeDeclaration node) {	
-	    for (IAnnotationBinding annotation : node.resolveBinding().getAnnotations()) {
-	        if (isSpringComponentAnnotation(annotation)) {
-	            return true;
-	        }
-	    }
-	    return false;
-	}
-
-	private static boolean isSpringComponentAnnotation(IAnnotationBinding annotation) {
-	    String annotationName = annotation.getAnnotationType().getQualifiedName();
-	    if (annotationName.equals("org.springframework.stereotype.Component")) {
-	        return true;
-	    }
-	    for (IAnnotationBinding metaAnnotation : annotation.getAnnotationType().getAnnotations()) {
-	        if (metaAnnotation.getAnnotationType().getQualifiedName().equals("org.springframework.stereotype.Component")) {
-	            return true;
-	        }
-	    }
-	    return false;
 	}
 	
 	private static TypeDeclaration findParentClass(ASTNode node) {

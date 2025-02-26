@@ -520,6 +520,43 @@ public class TestBeanCompletionClass {
 				""");
 	}
 
+	@Test
+	public void completionsForRestController() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public void test() {
+						owner<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+				
+				    TestBeanCompletionClass(OwnerRepository ownerRepository) {
+				        this.ownerRepository = ownerRepository;
+				    }
+					public void test() {
+						ownerRepository<*>
+					}
+				}
+				""");
+	}
 	
 	private void assertCompletions(String completionLine, String[] expectedCompletions, int chosenCompletion, String expectedResult) throws Exception {
 		assertCompletions(completionLine, expectedCompletions.length, expectedCompletions, chosenCompletion, expectedResult);
