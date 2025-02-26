@@ -50,7 +50,7 @@ public abstract class AbstractSecurityLamdaDslReconciler implements JdtAstReconc
 							ReconcileUtils.setRewriteFixes(registry, problem, List.of(
 									new FixDescriptor(getRecipeId(), List.of(uri),
 											ReconcileUtils.buildLabel(getFixLabel(), RecipeScope.NODE))
-											.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, topMethodInvocation))
+											.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, topMethodInvocation, null))
 											.withRecipeScope(RecipeScope.NODE),
 									new FixDescriptor(getRecipeId(), List.of(uri),
 											ReconcileUtils.buildLabel(getFixLabel(), RecipeScope.FILE))

@@ -96,7 +96,7 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 					List<String> requestMethods = getRequestMethods(cu, a);
 					if (!requestMethods.isEmpty() && !requestMethods.contains(UNSUPPORTED_REQUEST_METHOD)) {
 						String uri = docUri.toASCIIString();
-						Range range = ReconcileUtils.createOpenRewriteRange(cu, a);
+						Range range = ReconcileUtils.createOpenRewriteRange(cu, a, null);
 						if (requestMethods.size() == 1 && SUPPORTED_REQUEST_METHODS.contains(requestMethods.get(0))) {
 							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, a.getStartPosition(), a.getLength());
 							ReconcileUtils.setRewriteFixes(registry, problem, List.of(

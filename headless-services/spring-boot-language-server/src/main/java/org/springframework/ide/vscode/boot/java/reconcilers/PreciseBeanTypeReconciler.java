@@ -99,7 +99,7 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
 							new FixDescriptor(recipeId, List.of(uri), ReconcileUtils.buildLabel("Replace return type with '" + replacementType + "'", RecipeScope.NODE))
 								.withRecipeScope(RecipeScope.NODE)
-								.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, method)),
+								.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, method, null)),
 							new FixDescriptor(recipeId, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
 								.withRecipeScope(RecipeScope.FILE),
 							new FixDescriptor(recipeId, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))

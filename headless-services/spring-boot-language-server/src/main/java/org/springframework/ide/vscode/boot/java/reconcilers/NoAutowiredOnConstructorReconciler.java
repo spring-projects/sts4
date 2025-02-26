@@ -90,7 +90,7 @@ public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 							ReconcileUtils.setRewriteFixes(registry, problem,
 									List.of(new FixDescriptor(NoAutowiredOnConstructor.class.getName(), List.of(docUri.toASCIIString()), FIX_LABEL)
 											.withRecipeScope(RecipeScope.NODE)
-											.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl))));
+											.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl, null))));
 							problemCollector.accept(problem);
 						}
 					}

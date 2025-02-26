@@ -96,7 +96,7 @@ public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler
 						ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, typeDecl.getName().getStartPosition(), typeDecl.getName().getLength());
 						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
 								new FixDescriptor(BeanPostProcessingIgnoreInAot.class.getName(), List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.NODE))
-										.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl))
+										.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl, null))
 										.withRecipeScope(RecipeScope.NODE)
 						));
 						problemCollector.accept(problem);

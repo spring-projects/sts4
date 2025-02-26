@@ -151,9 +151,9 @@ public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 		
 			FixDescriptor fix1 = new FixDescriptor(id, List.of(docUri.toASCIIString()), LABEL)
 					.withRecipeScope(RecipeScope.NODE)
-					.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, method));
+					.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, method, null));
 
-			Range methodRange = ReconcileUtils.createOpenRewriteRange(cu, method);
+			Range methodRange = ReconcileUtils.createOpenRewriteRange(cu, method, null);
 			fix1 = fix1.withRangeScope(methodRange);
 
 			FixDescriptor fix2 = new FixDescriptor(id, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))

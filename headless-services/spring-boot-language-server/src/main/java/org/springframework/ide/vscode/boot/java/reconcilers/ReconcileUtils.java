@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.reconcilers;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -23,7 +24,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.SimpleType;
-import org.openrewrite.Tree;
 import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
@@ -36,7 +36,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class ReconcileUtils {
 	
-	public static Range createOpenRewriteRange(CompilationUnit cu, ASTNode node) {
+	public static Range createOpenRewriteRange(CompilationUnit cu, ASTNode node, UUID id) {
 		
 		int startOffset = node.getStartPosition();
 		int startLine = cu.getLineNumber(startOffset);
@@ -49,7 +49,7 @@ public class ReconcileUtils {
 		Range.Position startPosition = new Range.Position(startOffset, startLine, startColumn);
 		Range.Position endPosition = new Range.Position(endOffset, endLine, endColumn);
 		
-		return new Range(Tree.randomId(), startPosition, endPosition);
+		return new Range(id, startPosition, endPosition);
 	}
 	
 	public static QuickfixType getRewriteQuickFixType(QuickfixRegistry registry) {

@@ -97,7 +97,7 @@ public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, nodeForProblemRange.getStartPosition(), nodeForProblemRange.getLength());
 
 					String uri = docUri.toASCIIString();
-					Range range = ReconcileUtils.createOpenRewriteRange(cu, a);
+					Range range = ReconcileUtils.createOpenRewriteRange(cu, a, null);
 					ReconcileUtils.setRewriteFixes(registry, problem, List.of(
 							new FixDescriptor(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), List.of(uri), FIX_LABEL)
 								.withRangeScope(range)

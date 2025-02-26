@@ -137,7 +137,7 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 				: "") + typeDecl.getName().getFullyQualifiedName();
 		ReconcileUtils.setRewriteFixes(registry, problem,
 				List.of(new FixDescriptor(ConvertAutowiredFieldIntoConstructorParameter.class.getName(), List.of(docUri.toASCIIString()), LABEL)
-						.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl))
+						.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl, null))
 						.withParameters(Map.of("classFqName", typeFqName, "fieldName", fieldName))
 						.withRecipeScope(RecipeScope.NODE)));
 		return problem;
