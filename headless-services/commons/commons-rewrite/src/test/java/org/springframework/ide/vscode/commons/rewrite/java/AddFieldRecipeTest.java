@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Broadcom, Inc.
+ * Copyright (c) 2017, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,7 +28,7 @@ public class AddFieldRecipeTest implements RewriteTest {
 	
 	@Override
     public void defaults(RecipeSpec spec) {
-        spec.recipe(new AddFieldRecipe("com.example.test.OwnerRepository", "com.example.demo.FooBar"))
+        spec.recipe(new AddFieldRecipe("com.example.test.OwnerRepository", "com.example.demo.FooBar", null))
         .parser(JavaParser.fromJavaVersion()
         		.logCompilationWarningsAndErrors(true));
     }
@@ -86,7 +86,7 @@ public class AddFieldRecipeTest implements RewriteTest {
                 public interface OwnerRepository{}
             """;
 
-        Recipe recipe = new AddFieldRecipe("com.example.demo.OwnerRepository", "com.example.demo.FooBar");
+        Recipe recipe = new AddFieldRecipe("com.example.demo.OwnerRepository", "com.example.demo.FooBar", null);
         runRecipeAndAssert(recipe, beforeSourceStr, expectedSourceStr, dependsOn);
 	} 
 	
@@ -128,7 +128,7 @@ public class AddFieldRecipeTest implements RewriteTest {
                 public interface OwnerRepository{}
             """;
 
-        Recipe recipe = new AddFieldRecipe("com.example.test.OwnerRepository", "com.example.demo.FooBar");
+        Recipe recipe = new AddFieldRecipe("com.example.test.OwnerRepository", "com.example.demo.FooBar", null);
         runRecipeAndAssert(recipe, beforeSourceStr, expectedSourceStr, dependsOn);
 	} 
 	
@@ -170,7 +170,7 @@ public class AddFieldRecipeTest implements RewriteTest {
                 public interface OwnerRepository{}
             """;
 
-        Recipe recipe = new AddFieldRecipe("com.example.test.Inner.OwnerRepository", "com.example.demo.FooBar");
+        Recipe recipe = new AddFieldRecipe("com.example.test.Inner.OwnerRepository", "com.example.demo.FooBar", null);
         runRecipeAndAssert(recipe, beforeSourceStr, expectedSourceStr, dependsOn);
     }
 	
@@ -214,7 +214,7 @@ class FooBar {
                 public interface OwnerRepository{}
             """;
 
-        Recipe recipe = new AddFieldRecipe("com.example.test.OwnerRepository", "com.example.demo.FooBar$Inner");
+        Recipe recipe = new AddFieldRecipe("com.example.test.OwnerRepository", "com.example.demo.FooBar$Inner", null);
         runRecipeAndAssert(recipe, beforeSourceStr, expectedSourceStr, dependsOn);
     }
 	
@@ -266,7 +266,7 @@ class FooBar {
                 public interface OwnerRepository{}
             """;
 
-        Recipe recipe = new AddFieldRecipe("com.example.test.Inner.OwnerRepository", "com.example.demo.FooBar");
+        Recipe recipe = new AddFieldRecipe("com.example.test.Inner.OwnerRepository", "com.example.demo.FooBar", null);
         runRecipeAndAssert(recipe, beforeSourceStr, expectedSourceStr, dependsOn);
     }
 	
@@ -313,7 +313,7 @@ import org.springframework.stereotype.Component;
     @Component
     class FooBarNew {
 
-        private final Inner.OwnerRepository ownerRepository;
+        private final Inner.OwnerRepository ownerRepo;
 
         public void test1() {}
 
@@ -325,7 +325,7 @@ import org.springframework.stereotype.Component;
                 public interface OwnerRepository{}
             """;
 
-        Recipe recipe = new AddFieldRecipe("com.example.test.Inner.OwnerRepository", "com.example.demo.FooBarNew");
+        Recipe recipe = new AddFieldRecipe("com.example.test.Inner.OwnerRepository", "com.example.demo.FooBarNew", "ownerRepo");
         runRecipeAndAssert(recipe, beforeSourceStr, expectedSourceStr, dependsOn);
     }
 

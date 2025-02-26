@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Broadcom, Inc.
+ * Copyright (c) 2017, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -289,9 +289,17 @@ public class ConstructorInjectionRecipe extends Recipe {
 				ShallowClass type = JavaType.ShallowClass.build(methodType);
 				J.FieldAccess fa = new J.FieldAccess(Tree.randomId(), Space.EMPTY, Markers.EMPTY, new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, Collections.emptyList(), "this", md.getMethodType().getDeclaringType(), null), JLeftPadded.build(createFieldNameIdentifier()), type);
 				Assignment assign = new J.Assignment(Tree.randomId(), Space.build("\n", Collections.emptyList()), Markers.EMPTY, fa, JLeftPadded.build(createFieldNameIdentifier()), type);
+				assign = autoFormat(assign, p, getCursor());
 				List<Statement> newStatements = new ArrayList<>(md.getBody().getStatements());
-				newStatements.add(assign);
-				md = md.withBody(autoFormat(md.getBody().withStatements(newStatements), p, getCursor()));
+				boolean empty = newStatements.isEmpty();
+				if (empty) {
+					newStatements.add(assign);
+					md = md.withBody(autoFormat(md.getBody().withStatements(newStatements), p, getCursor()));
+				} else {
+					// Prefix is off otherwise even after autoFormat
+					newStatements.add(assign.withPrefix(newStatements.get(newStatements.size() - 1).getPrefix()));
+					md = md.withBody(md.getBody().withStatements(newStatements));
+				}
 			}
 			return md;
 		}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Broadcom, Inc.
+ * Copyright (c) 2017, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,7 +47,7 @@ public class InjectBeanCompletionRecipe extends Recipe {
 	@Override
     public List<Recipe> getRecipeList() {
 		List<Recipe> list = new ArrayList<>();
-		list.add(new AddFieldRecipe(fullyQualifiedName, classFqName));
+		list.add(new AddFieldRecipe(fullyQualifiedName, classFqName, fieldName));
 		list.add(new ConstructorInjectionRecipe(fullyQualifiedName, fieldName, classFqName));
 		return list;
     }

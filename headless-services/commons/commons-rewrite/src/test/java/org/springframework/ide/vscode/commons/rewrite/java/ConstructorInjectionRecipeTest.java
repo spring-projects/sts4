@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Broadcom, Inc.
+ * Copyright (c) 2017, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import org.openrewrite.RecipeRun;
 import org.openrewrite.SourceFile;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaParser.Builder;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
 
@@ -32,8 +33,12 @@ public class ConstructorInjectionRecipeTest implements RewriteTest {
 				.parser(JavaParser.fromJavaVersion().classpath("spring-beans"));
 	}
 	
-	public static void runRecipeAndAssert(Recipe recipe, String beforeSourceStr, String expectedSourceStr, String dependsOn) {
-        JavaParser javaParser = JavaParser.fromJavaVersion().dependsOn(dependsOn).build();
+	public static void runRecipeAndAssert(Recipe recipe, String beforeSourceStr, String expectedSourceStr, String... dependsOn) {
+        Builder<? extends JavaParser, ?> builder = JavaParser.fromJavaVersion();
+        if (dependsOn.length > 0) {
+        	builder.dependsOn(dependsOn);
+        }
+		JavaParser javaParser = builder.build();
 
         List<SourceFile> list = javaParser.parse(beforeSourceStr).toList();
         SourceFile beforeSource = list.get(0);
@@ -484,6 +489,44 @@ public class Inner {
 
         Recipe recipe = new ConstructorInjectionRecipe("com.example.test.OwnerRepository", "ownerRepository", "com.example.demo.A$Inner");
         runRecipeAndAssert(recipe, beforeSourceStr, expectedSourceStr, dependsOn);
+	}
+
+	@Test
+	void injectObjectFieldIntoNewConstructor() {
+		
+		String beforeSourceStr = """
+            package com.example.demo;
+              
+            public class A {
+            
+                private final String s;
+                private final Object obj;
+                
+                A(String s) {
+                    this.s = s;
+                }
+            
+            }
+            """;
+		
+        String expectedSourceStr = """
+            package com.example.demo;
+            
+            public class A {
+            
+                private final String s;
+                private final Object obj;
+            
+                A(String s, Object obj) {
+                    this.s = s;
+                    this.obj = obj;
+                }
+            
+            }
+            """;
+
+        Recipe recipe = new ConstructorInjectionRecipe("java.lang.Object", "obj", "com.example.demo.A");
+        runRecipeAndAssert(recipe, beforeSourceStr, expectedSourceStr);
 	}
 
 }

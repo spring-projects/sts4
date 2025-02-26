@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Broadcom, Inc.
+ * Copyright (c) 2017, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.Tree;
@@ -51,11 +52,20 @@ public class AddFieldRecipe extends Recipe {
 	
 	@NonNull
 	String classFqName;
+	
+	String fieldName;
+	
+	transient JavaType.FullyQualified fullyQualifiedType;
 
 	@JsonCreator
-	public AddFieldRecipe(@NonNull @JsonProperty("fullyQualifiedClassName") String fullyQualifiedName, @NonNull @JsonProperty("classFqName") String classFqName) {
+	public AddFieldRecipe(
+			@NonNull @JsonProperty("fullyQualifiedClassName") String fullyQualifiedName,
+			@NonNull @JsonProperty("classFqName") String classFqName,
+			@Nullable @JsonProperty("fieldName") String fieldName) {
 		this.fullyQualifiedName = fullyQualifiedName;
+		fullyQualifiedType = JavaType.ShallowClass.build(fullyQualifiedName);
 		this.classFqName = classFqName;
+		this.fieldName = fieldName == null ? getFieldName(fullyQualifiedType) : fieldName;
 	}
 
 	@Override
@@ -63,9 +73,7 @@ public class AddFieldRecipe extends Recipe {
 
 		return new JavaIsoVisitor<ExecutionContext>() {
 
-			JavaType.FullyQualified fullyQualifiedType = JavaType.ShallowClass.build(fullyQualifiedName);
 			String fieldType = getFieldType(fullyQualifiedType);
-			String fieldName = getFieldName(fullyQualifiedType);
 			
 			@Override
 			public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext ctx) {
