@@ -777,6 +777,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			if (!context.isFullAst()) {
 				// Let problems be found in the next pass, don't add the problems to the aggregate problems collector to not duplicate them with the next pass
 				context.getNextPassFiles().add(context.getFile());
+				context.resetDocumentRelatedElements(context.getDocURI());
 			} else {
 				problemCollector.endCollecting();
 				log.error("Complete AST required but it is complete already. Parsing ", context.getDocURI());
