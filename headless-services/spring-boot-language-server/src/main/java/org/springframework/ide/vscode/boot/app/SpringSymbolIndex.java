@@ -102,6 +102,9 @@ import com.google.common.collect.ImmutableList;
 @Component
 public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 
+	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
+	private static final String OUTLINE_SYMBOLS_FROM_INDEX_PROPERTY = "outlineSymbolsFromIndex";
+	
 	@Autowired SimpleLanguageServer server;
 	@Autowired BootJavaConfig config;
 	@Autowired BootLanguageServerParams params;
@@ -111,8 +114,6 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	@Autowired SpringMetamodelIndex springIndex;
 	@Autowired JdtReconciler jdtReconciler;
 	@Autowired CompilationUnitCache cuCache;
-
-	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
 
 	private final List<WorkspaceSymbol> symbols = new ArrayList<>();
 
@@ -698,70 +699,28 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	}
 	
 	public List<? extends WorkspaceSymbol> getSymbols(String docURI) {
-		try {
-			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docURI);
-			URI uri = URI.create(docURI);
-			CompletableFuture<IJavaProject> projectInitialized = futureProjectFinder.findFuture(uri).thenCompose(project -> projectInitializedFuture(project));
-			IJavaProject project = projectInitialized.get(15, TimeUnit.SECONDS);
-			ImmutableList.Builder<WorkspaceSymbol> builder = ImmutableList.builder();
-			if (project != null && doc != null) {
-				// Collect symbols from the opened document
-				synchronized(this) {
-					for (SpringIndexer indexer : this.indexers) {
-						if (indexer.isInterestedIn(docURI)) {
-							try {
-								for (WorkspaceSymbol enhanced : indexer.computeSymbols(project, docURI,
-										doc.get())) {
-									builder.add(enhanced);
-								}
-							} catch (Exception e) {
-								log.error("{}", e);
-							}
-						}
-					}
-				}
-			} else {
-				// Take symbols from the index if there is no opened document.
-				List<WorkspaceSymbol> docSymbols = this.symbolsByDoc.get(uri.toASCIIString());
-				if (docSymbols != null) {
-					synchronized (docSymbols) {
-						for (WorkspaceSymbol symbol : docSymbols) {
-							builder.add(symbol);
-						}
-					}
-				}
-			}
-			return builder.build();
-		} catch (Exception e) {
-			log.warn("", e);
-			return Collections.emptyList();
+		if (System.getProperty(OUTLINE_SYMBOLS_FROM_INDEX_PROPERTY) != null) {
+			return getWorkspaceSymbolsFromMetamodelIndex(docURI);
+		}
+		else {
+			return getWorkspaceSymbolsFromSymbolIndex(docURI);
 		}
 	}
 	
 	public List<? extends DocumentSymbol> getDocumentSymbols(String docURI) {
-		List<DocumentSymbol> result = new ArrayList<>();
-		
-		List<? extends WorkspaceSymbol> symbols = getSymbols(docURI);
-		for (WorkspaceSymbol symbol : symbols) {
-			DocumentSymbol docSymbol = new DocumentSymbol();
-			docSymbol.setName(symbol.getName());
-			docSymbol.setKind(symbol.getKind());
-			docSymbol.setRange(symbol.getLocation().getLeft().getRange());
-			docSymbol.setSelectionRange(symbol.getLocation().getLeft().getRange());
-			docSymbol.setTags(symbol.getTags());
-			
-			result.add(docSymbol);
+		if (System.getProperty(OUTLINE_SYMBOLS_FROM_INDEX_PROPERTY) != null) {
+			return getDocumentSymbolsFromMetamodelIndex(docURI);
 		}
-		
-		return result;
+		else {
+			return getDocumentSymbolsFromSymbolsIndex(docURI);
+		}
 	}
-
-/*	
-	public List<? extends WorkspaceSymbol> getSymbols(String docURI) {
+	
+	public List<? extends WorkspaceSymbol> getWorkspaceSymbolsFromMetamodelIndex(String docURI) {
 		List<WorkspaceSymbol> result = new ArrayList<>();
 		
 		Deque<DocumentSymbol> remainingSymbols = new ArrayDeque<>();
-		List<? extends DocumentSymbol> documentSymbols = getDocumentSymbols(docURI);
+		List<? extends DocumentSymbol> documentSymbols = getDocumentSymbolsFromMetamodelIndex(docURI);
 		
 		remainingSymbols.addAll(documentSymbols);
 		
@@ -786,7 +745,25 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		return result;
 	}
 	
-	public List<? extends DocumentSymbol> getDocumentSymbols(String docURI) {
+	public List<? extends DocumentSymbol> getDocumentSymbolsFromSymbolsIndex(String docURI) {
+		List<DocumentSymbol> result = new ArrayList<>();
+		
+		List<? extends WorkspaceSymbol> symbols = getWorkspaceSymbolsFromSymbolIndex(docURI);
+		for (WorkspaceSymbol symbol : symbols) {
+			DocumentSymbol docSymbol = new DocumentSymbol();
+			docSymbol.setName(symbol.getName());
+			docSymbol.setKind(symbol.getKind());
+			docSymbol.setRange(symbol.getLocation().getLeft().getRange());
+			docSymbol.setSelectionRange(symbol.getLocation().getLeft().getRange());
+			docSymbol.setTags(symbol.getTags());
+			
+			result.add(docSymbol);
+		}
+		
+		return result;
+	}
+
+	public List<? extends DocumentSymbol> getDocumentSymbolsFromMetamodelIndex(String docURI) {
 		try {
 			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docURI);
 			URI uri = URI.create(docURI);
@@ -828,7 +805,47 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			return Collections.emptyList();
 		}
 	}
-*/
+	
+	public List<? extends WorkspaceSymbol> getWorkspaceSymbolsFromSymbolIndex(String docURI) {
+		try {
+			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docURI);
+			URI uri = URI.create(docURI);
+			CompletableFuture<IJavaProject> projectInitialized = futureProjectFinder.findFuture(uri).thenCompose(project -> projectInitializedFuture(project));
+			IJavaProject project = projectInitialized.get(15, TimeUnit.SECONDS);
+			ImmutableList.Builder<WorkspaceSymbol> builder = ImmutableList.builder();
+			if (project != null && doc != null) {
+				// Collect symbols from the opened document
+				synchronized(this) {
+					for (SpringIndexer indexer : this.indexers) {
+						if (indexer.isInterestedIn(docURI)) {
+							try {
+								for (WorkspaceSymbol enhanced : indexer.computeSymbols(project, docURI,
+										doc.get())) {
+									builder.add(enhanced);
+								}
+							} catch (Exception e) {
+								log.error("{}", e);
+							}
+						}
+					}
+				}
+			} else {
+				// Take symbols from the index if there is no opened document.
+				List<WorkspaceSymbol> docSymbols = this.symbolsByDoc.get(uri.toASCIIString());
+				if (docSymbols != null) {
+					synchronized (docSymbols) {
+						for (WorkspaceSymbol symbol : docSymbols) {
+							builder.add(symbol);
+						}
+					}
+				}
+			}
+			return builder.build();
+		} catch (Exception e) {
+			log.warn("", e);
+			return Collections.emptyList();
+		}
+	}
 	
 	@Override
 	public CompletableFuture<List<Bean>> beans(BeansParams params) {
