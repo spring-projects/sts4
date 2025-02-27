@@ -558,6 +558,126 @@ public class TestBeanCompletionClass {
 				""");
 	}
 	
+	@Test
+	public void beforeStatement() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public void test() {
+						owner<*>
+						System.out.println();
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+				
+				    TestBeanCompletionClass(OwnerRepository ownerRepository) {
+				        this.ownerRepository = ownerRepository;
+				    }
+					public void test() {
+						ownerRepository<*>
+						System.out.println();
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void beforeStatementStartingWithThis() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public void test() {
+						this.<*>
+						System.out.println();
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+				
+				    TestBeanCompletionClass(OwnerRepository ownerRepository) {
+				        this.ownerRepository = ownerRepository;
+				    }
+					public void test() {
+						this.ownerRepository<*>
+						System.out.println();
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void beforeStatementStartingWithThisAndPrefix() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public void test() {
+						this.ow<*>
+						System.out.println();
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+				
+				    TestBeanCompletionClass(OwnerRepository ownerRepository) {
+				        this.ownerRepository = ownerRepository;
+				    }
+					public void test() {
+						this.ownerRepository<*>
+						System.out.println();
+					}
+				}
+				""");
+	}
+
 	private void assertCompletions(String completionLine, String[] expectedCompletions, int chosenCompletion, String expectedResult) throws Exception {
 		assertCompletions(completionLine, expectedCompletions.length, expectedCompletions, chosenCompletion, expectedResult);
 	}

@@ -64,7 +64,7 @@ public class BeanCompletionProvider implements CompletionProvider {
 	@Override
 	public void provideCompletions(ASTNode node, int offset, TextDocument doc,
 			Collection<ICompletionProposal> completions) {
-		if (node instanceof SimpleName || node instanceof Block) {
+		if (node instanceof SimpleName || node instanceof Block || node instanceof FieldAccess) {
 			try {
 				// Don't look at anything inside Annotation or VariableDelcaration node
 				for (ASTNode n = node; n != null; n = n.getParent()) {
@@ -85,14 +85,25 @@ public class BeanCompletionProvider implements CompletionProvider {
 		            return;
 		        }
 		        
-	        	// Empty SimpleName usually comes from unresolved FieldAccess, i.e. `this.owner` where `owner` field is not defined
-		        if (node instanceof SimpleName se && se.getLength() == 0
-		        		&& node.getParent() instanceof Assignment assign 
-		        		&& assign.getLeftHandSide() instanceof FieldAccess fa
-		        		&& fa.getExpression() instanceof ThisExpression) {
-		        	node = fa.getName();
-		        }
+		        String prefix = "";
 		        
+	        	// Empty SimpleName usually comes from unresolved FieldAccess, i.e. `this.owner` where `owner` field is not defined
+		        if (node instanceof SimpleName sn) {
+		        	if (sn.getLength() == 0
+		        			&& sn.getParent() instanceof Assignment assign 
+			        		&& assign.getLeftHandSide() instanceof FieldAccess fa
+			        		&& fa.getExpression() instanceof ThisExpression) {
+		        		prefix = fa.getName().toString();
+		        	} else {
+		        		prefix = sn.toString();
+		        	}
+		        } else if (node instanceof FieldAccess fa && fa.getExpression() instanceof ThisExpression) {
+		        	int start = fa.getExpression().getStartPosition() + fa.getExpression().getLength();
+		        	while (start < doc.getLength() && doc.getChar(start) != '.') {
+		        		start++;
+		        	}
+		        	prefix = doc.get(start + 1, offset - start - 1);
+		        }
 		        
 				if (AnnotationHierarchies.get(node).isAnnotatedWith(topLevelClass.resolveBinding(), Annotations.COMPONENT)) {
 		            String className = getFullyQualifiedName(topLevelClass);
@@ -103,7 +114,6 @@ public class BeanCompletionProvider implements CompletionProvider {
 							.filter(Objects::nonNull)
 							.map(t -> t.getQualifiedName())
 							.collect(Collectors.toSet());
-					final String prefix = node instanceof Block ? "" : node.toString();
 					for (Bean bean : beans) {
 						// If current class is a bean - ignore it
 						if (className.equals(bean.getType())) {
