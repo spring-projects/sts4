@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.eclipse.lsp4j.CompletionItemLabelDetails;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
 /**
@@ -61,6 +62,10 @@ public interface ICompletionProposal {
 	
 	default Optional<Command> getCommand() {
 		return Optional.empty();
+	}
+	
+	default CompletionItemLabelDetails getLabelDetails() {
+		return null;
 	}
 	
 }

@@ -16,6 +16,8 @@ import java.util.Optional;
 
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.eclipse.lsp4j.CompletionItemLabelDetails;
+import org.openrewrite.java.tree.JavaType;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposalWithScore;
@@ -31,6 +33,8 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  * @author Alex Boyko
  */
 public class BeanCompletionProposal implements ICompletionProposalWithScore {
+	
+	private static final String DETAIL = " - autowire bean";
 	
 	private DocumentEdits edits;
 	private IDocument doc;
@@ -54,12 +58,12 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 
 	@Override
 	public String getLabel() {
-		return this.beanId;
+		return beanId;
 	}
 
 	@Override
 	public CompletionItemKind getKind() {
-		return CompletionItemKind.Constructor;
+		return CompletionItemKind.Field;
 	}
 
 	@Override
@@ -70,6 +74,14 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	@Override
 	public String getDetail() {
 		return "Autowire a bean";
+	}
+	
+	@Override
+	public CompletionItemLabelDetails getLabelDetails() {
+		CompletionItemLabelDetails labelDetails = new CompletionItemLabelDetails();
+		labelDetails.setDetail(DETAIL);
+		labelDetails.setDescription(JavaType.ShallowClass.build(beanType).getClassName());
+		return labelDetails;
 	}
 
 	@Override
