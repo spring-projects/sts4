@@ -17,7 +17,6 @@ import java.util.Optional;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionItemLabelDetails;
-import org.openrewrite.java.tree.JavaType;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposalWithScore;
@@ -34,7 +33,7 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	
-	private static final String DETAIL = " - autowire bean";
+	private static final String SHORT_DESCRIPTION = "inject as a bean dependency";
 	
 	private DocumentEdits edits;
 	private IDocument doc;
@@ -79,8 +78,7 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	@Override
 	public CompletionItemLabelDetails getLabelDetails() {
 		CompletionItemLabelDetails labelDetails = new CompletionItemLabelDetails();
-		labelDetails.setDetail(DETAIL);
-		labelDetails.setDescription(JavaType.ShallowClass.build(beanType).getClassName());
+		labelDetails.setDescription(SHORT_DESCRIPTION);
 		return labelDetails;
 	}
 
