@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.dom.ThisExpression;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionItemLabelDetails;
+import org.openrewrite.java.tree.JavaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
@@ -48,7 +49,7 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 
 	private static final Logger log = LoggerFactory.getLogger(BeanCompletionProposal.class);
 
-	private static final String SHORT_DESCRIPTION = "inject as a bean dependency";
+	private static final String SHORT_DESCRIPTION = " - inject bean";
 
 	private IDocument doc;
 	private String beanId;
@@ -160,7 +161,8 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	@Override
 	public CompletionItemLabelDetails getLabelDetails() {
 		CompletionItemLabelDetails labelDetails = new CompletionItemLabelDetails();
-		labelDetails.setDescription(SHORT_DESCRIPTION);
+		labelDetails.setDetail(SHORT_DESCRIPTION);
+		labelDetails.setDescription(JavaType.ShallowClass.build(beanType).getClassName());
 		return labelDetails;
 	}
 
