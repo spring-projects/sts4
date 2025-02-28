@@ -38,6 +38,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpecific {
 
+	public static final String $MISSING$ = "$missing$";
+	
 	private Map<String, CompletionProvider> completionProviders;
 	private JavaSnippetManager snippets;
 	private CompilationUnitCache cuCache;
@@ -81,13 +83,14 @@ public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpec
 		// exact situation and pass on the ASTNode for the SimpleName.
 		try {
 			int numberOfSpaces = 0;
-			while (Character.isSpaceChar(document.getChar(offset - numberOfSpaces - 1))) {
+			while (Character.isSpaceChar(document.getChar(offset - numberOfSpaces - 1))
+					|| document.getChar(offset - numberOfSpaces - 1) == '.') {
 				numberOfSpaces++;
 			}
 
 			if (numberOfSpaces > 0) {
 				ASTNode leftNode = NodeFinder.perform(cu, offset - numberOfSpaces, 0);
-				if (leftNode instanceof SimpleName && "$missing$".equals(((SimpleName)leftNode).getIdentifier())) {
+				if (leftNode instanceof SimpleName && $MISSING$.equals(((SimpleName)leftNode).getIdentifier())) {
 					node = leftNode;
 				}
 			}

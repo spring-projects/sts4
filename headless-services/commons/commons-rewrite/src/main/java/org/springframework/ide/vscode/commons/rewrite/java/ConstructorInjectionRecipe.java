@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.jspecify.annotations.NonNull;
@@ -34,6 +35,7 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Assignment;
 import org.openrewrite.java.tree.J.Block;
 import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.Identifier;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.J.VariableDeclarations;
 import org.openrewrite.java.tree.JLeftPadded;
@@ -113,7 +115,7 @@ public class ConstructorInjectionRecipe extends Recipe {
 				} else if (constructors.size() == 1) {
 					MethodDeclaration c = constructors.get(0);
 					getCursor().putMessage("applicableConstructor", c);
-					applicable = isNotConstructorInitializingField(c, fieldName);
+					applicable = !isConstructorInitializingField(c, fieldName);
 				} else {
 					List<MethodDeclaration> autowiredConstructors = constructors.stream()
 							.filter(constr -> constr.getLeadingAnnotations().stream()
@@ -123,7 +125,7 @@ public class ConstructorInjectionRecipe extends Recipe {
 					if (autowiredConstructors.size() == 1) {
 						MethodDeclaration c = autowiredConstructors.get(0);
 						getCursor().putMessage("applicableConstructor", autowiredConstructors.get(0));
-						applicable = isNotConstructorInitializingField(c, fieldName);
+						applicable = !isConstructorInitializingField(c, fieldName);
 					}
 				}
 				if (applicable) {
@@ -131,31 +133,6 @@ public class ConstructorInjectionRecipe extends Recipe {
 				}
 			}
 			return super.visitClassDeclaration(classDecl, ctx);
-		}
-
-		public static boolean isNotConstructorInitializingField(MethodDeclaration c, String fieldName) {
-			return c.getBody() == null || c.getBody().getStatements().stream().filter(J.Assignment.class::isInstance)
-					.map(J.Assignment.class::cast).noneMatch(a -> {
-						Expression expr = a.getVariable();
-						if (expr instanceof J.FieldAccess) {
-							J.FieldAccess fa = (J.FieldAccess) expr;
-							if (fieldName.equals(fa.getSimpleName()) && fa.getTarget() instanceof J.Identifier) {
-								J.Identifier target = (J.Identifier) fa.getTarget();
-								if ("this".equals(target.getSimpleName())) {
-									return true;
-								}
-							}
-						}
-						if (expr instanceof J.Identifier) {
-							JavaType.Variable fieldType = c.getMethodType().getDeclaringType().getMembers().stream()
-									.filter(v -> fieldName.equals(v.getName())).findFirst().orElse(null);
-							if (fieldType != null) {
-								J.Identifier identifier = (J.Identifier) expr;
-								return fieldType.equals(identifier.getFieldType());
-							}
-						}
-						return false;
-					});
 		}
 
 		@Override
@@ -285,20 +262,22 @@ public class ConstructorInjectionRecipe extends Recipe {
 				md = md.withParameters(newParams);
 				updateCursor(md);
 
-				// noinspection ConstantConditions
-				ShallowClass type = JavaType.ShallowClass.build(methodType);
-				J.FieldAccess fa = new J.FieldAccess(Tree.randomId(), Space.EMPTY, Markers.EMPTY, new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, Collections.emptyList(), "this", md.getMethodType().getDeclaringType(), null), JLeftPadded.build(createFieldNameIdentifier()), type);
-				Assignment assign = new J.Assignment(Tree.randomId(), Space.build("\n", Collections.emptyList()), Markers.EMPTY, fa, JLeftPadded.build(createFieldNameIdentifier()), type);
-				assign = autoFormat(assign, p, getCursor());
-				List<Statement> newStatements = new ArrayList<>(md.getBody().getStatements());
-				boolean empty = newStatements.isEmpty();
-				if (empty) {
-					newStatements.add(assign);
-					md = md.withBody(autoFormat(md.getBody().withStatements(newStatements), p, getCursor()));
-				} else {
-					// Prefix is off otherwise even after autoFormat
-					newStatements.add(assign.withPrefix(newStatements.get(newStatements.size() - 1).getPrefix()));
-					md = md.withBody(md.getBody().withStatements(newStatements));
+				if (!isConstructorInitializingField(md, fieldName)) {
+					// noinspection ConstantConditions
+					ShallowClass type = JavaType.ShallowClass.build(methodType);
+					J.FieldAccess fa = new J.FieldAccess(Tree.randomId(), Space.EMPTY, Markers.EMPTY, new J.Identifier(Tree.randomId(), Space.EMPTY, Markers.EMPTY, Collections.emptyList(), "this", md.getMethodType().getDeclaringType(), null), JLeftPadded.build(createFieldNameIdentifier()), type);
+					Assignment assign = new J.Assignment(Tree.randomId(), Space.build("\n", Collections.emptyList()), Markers.EMPTY, fa, JLeftPadded.build(createFieldNameIdentifier()), type);
+					assign = autoFormat(assign, p, getCursor());
+					List<Statement> newStatements = new ArrayList<>(md.getBody().getStatements());
+					boolean empty = newStatements.isEmpty();
+					if (empty) {
+						newStatements.add(assign);
+						md = md.withBody(autoFormat(md.getBody().withStatements(newStatements), p, getCursor()));
+					} else {
+						// Prefix is off otherwise even after autoFormat
+						newStatements.add(assign.withPrefix(newStatements.get(newStatements.size() - 1).getPrefix()));
+						md = md.withBody(md.getBody().withStatements(newStatements));
+					}
 				}
 			}
 			return md;
@@ -321,4 +300,48 @@ public class ConstructorInjectionRecipe extends Recipe {
 
 		return fullyQualifiedType.getClassName();
 	}
+	
+	private static boolean isConstructorInitializingField(MethodDeclaration c, String fieldName) {
+		AtomicBoolean res = new AtomicBoolean();
+		new JavaIsoVisitor<AtomicBoolean>() {
+
+			@Override
+			public Assignment visitAssignment(Assignment assignment, AtomicBoolean ab) {
+				if (ab.get() || getCursor().firstEnclosing(MethodDeclaration.class) != c) {
+					return assignment;
+				}
+				Assignment a = super.visitAssignment(assignment, ab);
+				Expression expr = a.getVariable();
+				if (expr instanceof J.FieldAccess) {
+					J.FieldAccess fa = (J.FieldAccess) expr;
+					if (fieldName.equals(fa.getSimpleName()) && fa.getTarget() instanceof J.Identifier) {
+						J.Identifier target = (J.Identifier) fa.getTarget();
+						if ("this".equals(target.getSimpleName())) {
+							ab.set(true);
+							return a;
+						}
+					}
+				}
+				return a;
+			}
+
+			@Override
+			public Identifier visitIdentifier(Identifier identifier, AtomicBoolean ab) {
+				if (ab.get() || getCursor().firstEnclosing(MethodDeclaration.class) != c) {
+					return identifier;
+				}
+				Identifier id = super.visitIdentifier(identifier, ab);
+				JavaType.Variable fieldType = c.getMethodType().getDeclaringType().getMembers().stream()
+						.filter(v -> fieldName.equals(v.getName())).findFirst().orElse(null);
+				if (fieldType != null && fieldType.equals(id.getFieldType())) {
+					 ab.set(true);
+				}
+				return id;
+			}	
+		}.visit(c, res);
+		return res.get();
+	}
+
+
+	
 }

@@ -19,11 +19,11 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.ThisExpression;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -36,11 +36,9 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchie
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
-import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -66,10 +64,22 @@ public class BeanCompletionProvider implements CompletionProvider {
 			Collection<ICompletionProposal> completions) {
 		if (node instanceof SimpleName || node instanceof Block || node instanceof FieldAccess) {
 			try {
+				
+				if (node instanceof SimpleName) {
+					if (node.getParent() instanceof FieldAccess fa && !(fa.getExpression() instanceof ThisExpression)) {
+						return;
+					}
+				}
+				
+				if (node instanceof FieldAccess fa && !(fa.getExpression() instanceof ThisExpression)) {
+					return;
+				}
+				
 				// Don't look at anything inside Annotation or VariableDelcaration node
 				for (ASTNode n = node; n != null; n = n.getParent()) {
 					if (n instanceof Annotation
-							|| n instanceof VariableDeclaration) {
+							|| n instanceof VariableDeclaration
+							|| n instanceof QualifiedName /* Ignores statements such as 's.' or 's.foo' */) {
 						return;
 					}
 				}
@@ -83,26 +93,6 @@ public class BeanCompletionProvider implements CompletionProvider {
 				TypeDeclaration topLevelClass = findParentClass(node);
 		        if (topLevelClass == null) {
 		            return;
-		        }
-		        
-		        String prefix = "";
-		        
-	        	// Empty SimpleName usually comes from unresolved FieldAccess, i.e. `this.owner` where `owner` field is not defined
-		        if (node instanceof SimpleName sn) {
-		        	if (sn.getLength() == 0
-		        			&& sn.getParent() instanceof Assignment assign 
-			        		&& assign.getLeftHandSide() instanceof FieldAccess fa
-			        		&& fa.getExpression() instanceof ThisExpression) {
-		        		prefix = fa.getName().toString();
-		        	} else {
-		        		prefix = sn.toString();
-		        	}
-		        } else if (node instanceof FieldAccess fa && fa.getExpression() instanceof ThisExpression) {
-		        	int start = fa.getExpression().getStartPosition() + fa.getExpression().getLength();
-		        	while (start < doc.getLength() && doc.getChar(start) != '.') {
-		        		start++;
-		        	}
-		        	prefix = doc.get(start + 1, offset - start - 1);
 		        }
 		        
 				if (AnnotationHierarchies.get(node).isAnnotatedWith(topLevelClass.resolveBinding(), Annotations.COMPONENT)) {
@@ -123,18 +113,11 @@ public class BeanCompletionProvider implements CompletionProvider {
 						if (declaredFiledsTypes.contains(bean.getType())) {
 							continue;
 						}
-						double score = FuzzyMatcher.matchScore(prefix, bean.getName());
-						if (score > 0) {
-							DocumentEdits edits = new DocumentEdits(doc, false);
-							if (node instanceof Block) {
-								edits.insert(offset, bean.getName());
-							} else {
-								edits.replace(offset - prefix.length(), offset, bean.getName());
-							}
+							
+						BeanCompletionProposal proposal = new BeanCompletionProposal(node, offset, doc, bean.getName(),
+								bean.getType(), className, rewriteRefactorings);
 
-							BeanCompletionProposal proposal = new BeanCompletionProposal(edits, doc, bean.getName(),
-									bean.getType(), className, score, rewriteRefactorings);
-
+						if (proposal.getScore() > 0) {
 							completions.add(proposal);
 						}
 					}

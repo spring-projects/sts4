@@ -14,15 +14,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.Assignment;
+import org.eclipse.jdt.core.dom.Block;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.FieldAccess;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.ThisExpression;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.CompletionItemLabelDetails;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposalWithScore;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.InjectBeanCompletionRecipe;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -32,27 +45,35 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  * @author Alex Boyko
  */
 public class BeanCompletionProposal implements ICompletionProposalWithScore {
-	
+
+	private static final Logger log = LoggerFactory.getLogger(BeanCompletionProposal.class);
+
 	private static final String SHORT_DESCRIPTION = "inject as a bean dependency";
-	
-	private DocumentEdits edits;
+
 	private IDocument doc;
 	private String beanId;
 	private String beanType;
 	private String className;
 	private RewriteRefactorings rewriteRefactorings;
 	private double score;
+	private ASTNode node;
+	private int offset;
 
-	public BeanCompletionProposal(DocumentEdits edits, IDocument doc, String beanId, String beanType, String className,
-			double score,
-			RewriteRefactorings rewriteRefactorings) {
-		this.edits = edits;
+	private String prefix;
+	private DocumentEdits edits;
+
+	public BeanCompletionProposal(ASTNode node, int offset, IDocument doc, String beanId, String beanType,
+			String className, RewriteRefactorings rewriteRefactorings) {
+		this.node = node;
+		this.offset = offset;
 		this.doc = doc;
 		this.beanId = beanId;
 		this.beanType = beanType;
 		this.className = className;
-		this.score = score;
 		this.rewriteRefactorings = rewriteRefactorings;
+		this.prefix = computePrefix();
+		this.edits = computeEdit();
+		this.score = FuzzyMatcher.matchScore(prefix, beanId);
 	}
 
 	@Override
@@ -65,6 +86,67 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 		return CompletionItemKind.Field;
 	}
 
+	private String computePrefix() {
+		String prefix = "";
+		try {
+			// Empty SimpleName usually comes from unresolved FieldAccess, i.e. `this.owner`
+			// where `owner` field is not defined
+			if (node instanceof SimpleName sn) {
+				FieldAccess fa = getFieldAccessFromIncompleteThisAssignment(sn);
+				if (fa != null) {
+					prefix = fa.getName().toString();
+				} else if (!BootJavaCompletionEngine.$MISSING$.equals(sn.toString())) {
+					prefix = sn.toString();
+				}
+			} else if (isIncompleteThisFieldAccess()) {
+				FieldAccess fa = (FieldAccess) node;
+				int start = fa.getExpression().getStartPosition() + fa.getExpression().getLength();
+				while (start < doc.getLength() && doc.getChar(start) != '.') {
+					start++;
+				}
+				prefix = doc.get(start + 1, offset - start - 1);
+			}
+		} catch (BadLocationException e) {
+			log.error("Failed to compute prefix for completion proposal", e);
+		}
+		return prefix;
+	}
+	
+	private boolean isIncompleteThisFieldAccess() {
+		return node instanceof FieldAccess fa && fa.getExpression() instanceof ThisExpression;
+	}
+	
+	private FieldAccess getFieldAccessFromIncompleteThisAssignment(SimpleName sn) {
+		if ((node.getLength() == 0 || BootJavaCompletionEngine.$MISSING$.equals(sn.toString()))
+				&& sn.getParent() instanceof Assignment assign && assign.getLeftHandSide() instanceof FieldAccess fa
+				&& fa.getExpression() instanceof ThisExpression) {
+			return fa;
+		}
+		return null;
+	}
+	
+	private DocumentEdits computeEdit() {
+		DocumentEdits edits = new DocumentEdits(doc, false);
+		if (isInsideConstructor(node)) {
+			if (node instanceof Block) {
+				edits.insert(offset, "this.%s = %s;".formatted(beanId, beanId));
+			} else {
+				if (node.getParent() instanceof Assignment || node.getParent() instanceof FieldAccess) {
+					edits.replace(offset - prefix.length(), offset, "%s = %s;".formatted(beanId, beanId));
+				} else {
+					edits.replace(offset - prefix.length(), offset, "this.%s = %s;".formatted(beanId, beanId));
+				}
+			}
+		} else {
+			if (node instanceof Block) {
+				edits.insert(offset, beanId);
+			} else {
+				edits.replace(offset - prefix.length(), offset, beanId);
+			}
+		}
+		return edits;
+	}
+
 	@Override
 	public DocumentEdits getTextEdit() {
 		return edits;
@@ -74,7 +156,7 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	public String getDetail() {
 		return "Autowire a bean";
 	}
-	
+
 	@Override
 	public CompletionItemLabelDetails getLabelDetails() {
 		CompletionItemLabelDetails labelDetails = new CompletionItemLabelDetails();
@@ -84,13 +166,14 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 
 	@Override
 	public Renderable getDocumentation() {
-		return Renderables.text(
-				"Inject bean `%s` of type `%s` as a constructor parameter and add corresponding field".formatted(beanId, beanType));
+		return Renderables.text("Inject bean `%s` of type `%s` as a constructor parameter and add corresponding field"
+				.formatted(beanId, beanType));
 	}
 
 	@Override
 	public Optional<Command> getCommand() {
-		FixDescriptor f = new FixDescriptor(InjectBeanCompletionRecipe.class.getName(), List.of(this.doc.getUri()),"Inject bean completions")
+		FixDescriptor f = new FixDescriptor(InjectBeanCompletionRecipe.class.getName(), List.of(this.doc.getUri()),
+				"Inject bean completions")
 				.withParameters(Map.of("fullyQualifiedName", beanType, "fieldName", beanId, "classFqName", className))
 				.withRecipeScope(RecipeScope.NODE);
 		return Optional.of(rewriteRefactorings.createFixCommand("Inject bean '%s'".formatted(beanId), f));
@@ -100,5 +183,14 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	public double getScore() {
 		return score;
 	}
-	
+
+	private boolean isInsideConstructor(ASTNode node) {
+		for (ASTNode n = node; n != null && !(n instanceof CompilationUnit); n = n.getParent()) {
+			if (n instanceof MethodDeclaration md) {
+				return md.isConstructor() || md.isCompactConstructor();
+			}
+		}
+		return false;
+	}
+
 }

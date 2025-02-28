@@ -43,6 +43,7 @@ import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 
+
 /**
  * @author Udayani V
  */
@@ -521,6 +522,44 @@ public class TestBeanCompletionClass {
 	}
 
 	@Test
+	public void noCompletionsInMethod_1() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.stereotype.Controller;
+				
+				@Controller
+				public class TestBeanCompletionClass {
+					public void test(String s) {
+						s.owner<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[0], 0, null);
+	}
+	
+	@Test
+	public void noCompletionsInMethod_2() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.stereotype.Controller;
+				
+				@Controller
+				public class TestBeanCompletionClass {
+					public void test(String s) {
+						s.<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[0], 0, null);
+	}
+	
+	@Test
 	public void completionsForRestController() throws Exception {
 		String content = """
 				package org.sample.test;
@@ -678,6 +717,338 @@ public class TestBeanCompletionClass {
 				""");
 	}
 
+	@Test
+	public void constructorLastStatement() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public TestBeanCompletionClass() {
+						super();
+						this.ow<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+					public TestBeanCompletionClass(OwnerRepository ownerRepository) {
+						super();
+						this.ownerRepository = ownerRepository;<*>
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void constructorAfterStatements() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public TestBeanCompletionClass() {
+						super();
+						this.ow<*>
+						System.out.println();
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+					public TestBeanCompletionClass(OwnerRepository ownerRepository) {
+						super();
+						this.ownerRepository = ownerRepository;<*>
+						System.out.println();
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void constructorNamePrefix() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public TestBeanCompletionClass() {
+						super();
+						ow<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+					public TestBeanCompletionClass(OwnerRepository ownerRepository) {
+						super();
+						this.ownerRepository = ownerRepository;<*>
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void constructorNamePrefixAfterStatements() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public TestBeanCompletionClass() {
+						super();
+						ow<*>
+						System.out.println();
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+					public TestBeanCompletionClass(OwnerRepository ownerRepository) {
+						super();
+						this.ownerRepository = ownerRepository;<*>
+						System.out.println();
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void constructorThisStatementWithoutPrefix() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public TestBeanCompletionClass() {
+						super();
+						this.<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+					public TestBeanCompletionClass(OwnerRepository ownerRepository) {
+						super();
+						this.ownerRepository = ownerRepository;<*>
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void constructorThisStatementWithoutPrefixAfterStatements() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public TestBeanCompletionClass() {
+						super();
+						this.<*>
+						System.out.println();
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+					public TestBeanCompletionClass(OwnerRepository ownerRepository) {
+						super();
+						this.ownerRepository = ownerRepository;<*>
+						System.out.println();
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void constructorNoThisNoPrefix() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public TestBeanCompletionClass() {
+						super();
+						<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+					public TestBeanCompletionClass(OwnerRepository ownerRepository) {
+						super();
+						this.ownerRepository = ownerRepository;<*>
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void constructorNoThisNoPrefixAfterStatements() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public TestBeanCompletionClass() {
+						super();
+						<*>
+						System.out.println();
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository;
+					public TestBeanCompletionClass(OwnerRepository ownerRepository) {
+						super();
+						this.ownerRepository = ownerRepository;<*>
+						System.out.println();
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void constructorNoCompletions_1() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public TestBeanCompletionClass(String s) {
+						s.<*>
+					}
+				}
+				""";
+		
+		assertCompletions(content, new String[0], 0, null);
+	}
+	
+	@Test
+	public void constructorNoCompletions_2() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					public TestBeanCompletionClass(String s) {
+						s.ow<*>
+					}
+				}
+				""";
+		
+		assertCompletions(content, new String[0], 0, null);
+	}
+	
 	private void assertCompletions(String completionLine, String[] expectedCompletions, int chosenCompletion, String expectedResult) throws Exception {
 		assertCompletions(completionLine, expectedCompletions.length, expectedCompletions, chosenCompletion, expectedResult);
 	}
