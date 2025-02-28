@@ -54,6 +54,7 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	private IDocument doc;
 	private String beanId;
 	private String beanType;
+	private String fieldName;
 	private String className;
 	private RewriteRefactorings rewriteRefactorings;
 	private double score;
@@ -64,12 +65,13 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	private DocumentEdits edits;
 
 	public BeanCompletionProposal(ASTNode node, int offset, IDocument doc, String beanId, String beanType,
-			String className, RewriteRefactorings rewriteRefactorings) {
+			String fieldName, String className, RewriteRefactorings rewriteRefactorings) {
 		this.node = node;
 		this.offset = offset;
 		this.doc = doc;
 		this.beanId = beanId;
 		this.beanType = beanType;
+		this.fieldName = fieldName;
 		this.className = className;
 		this.rewriteRefactorings = rewriteRefactorings;
 		this.prefix = computePrefix();
@@ -130,19 +132,19 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 		DocumentEdits edits = new DocumentEdits(doc, false);
 		if (isInsideConstructor(node)) {
 			if (node instanceof Block) {
-				edits.insert(offset, "this.%s = %s;".formatted(beanId, beanId));
+				edits.insert(offset, "this.%s = %s;".formatted(fieldName, fieldName));
 			} else {
 				if (node.getParent() instanceof Assignment || node.getParent() instanceof FieldAccess) {
-					edits.replace(offset - prefix.length(), offset, "%s = %s;".formatted(beanId, beanId));
+					edits.replace(offset - prefix.length(), offset, "%s = %s;".formatted(fieldName, fieldName));
 				} else {
-					edits.replace(offset - prefix.length(), offset, "this.%s = %s;".formatted(beanId, beanId));
+					edits.replace(offset - prefix.length(), offset, "this.%s = %s;".formatted(fieldName, fieldName));
 				}
 			}
 		} else {
 			if (node instanceof Block) {
-				edits.insert(offset, beanId);
+				edits.insert(offset, fieldName);
 			} else {
-				edits.replace(offset - prefix.length(), offset, beanId);
+				edits.replace(offset - prefix.length(), offset, fieldName);
 			}
 		}
 		return edits;
@@ -176,7 +178,7 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	public Optional<Command> getCommand() {
 		FixDescriptor f = new FixDescriptor(InjectBeanCompletionRecipe.class.getName(), List.of(this.doc.getUri()),
 				"Inject bean completions")
-				.withParameters(Map.of("fullyQualifiedName", beanType, "fieldName", beanId, "classFqName", className))
+				.withParameters(Map.of("fullyQualifiedName", beanType, "fieldName", fieldName, "classFqName", className))
 				.withRecipeScope(RecipeScope.NODE);
 		return Optional.of(rewriteRefactorings.createFixCommand("Inject bean '%s'".formatted(beanId), f));
 	}

@@ -678,6 +678,84 @@ public class TestBeanCompletionClass {
 	}
 	
 	@Test
+	public void sameNameFieldExists_Constructor() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					String ownerRepository;
+					public TestBeanCompletionClass(String ownerRepository) {
+						this.ownerRepository = ownerRepository;
+						ow<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository_1;
+					String ownerRepository;
+					public TestBeanCompletionClass(String ownerRepository, OwnerRepository ownerRepository_1) {
+						this.ownerRepository = ownerRepository;
+						this.ownerRepository_1 = ownerRepository_1;<*>
+					}
+				}
+				""");
+	}
+	
+	@Test
+	public void sameNameFieldExists_Method() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+					String ownerRepository;
+					public void test() {
+						ow<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.samples.petclinic.owner.OwnerRepository;
+				import org.springframework.web.bind.annotation.RestController;
+				
+				@RestController
+				public class TestBeanCompletionClass {
+				
+				    private final OwnerRepository ownerRepository_1;
+					String ownerRepository;
+					
+				    TestBeanCompletionClass(OwnerRepository ownerRepository_1) {
+				        this.ownerRepository_1 = ownerRepository_1;
+				    }
+					public void test() {
+						ownerRepository_1<*>
+					}
+				}
+				""");
+	}
+	
+	@Test
 	public void beforeStatementStartingWithThisAndPrefix() throws Exception {
 		String content = """
 				package org.sample.test;

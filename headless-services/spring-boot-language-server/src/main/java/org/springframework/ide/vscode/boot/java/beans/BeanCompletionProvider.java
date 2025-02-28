@@ -10,12 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -23,6 +21,7 @@ import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.ThisExpression;
@@ -99,23 +98,28 @@ public class BeanCompletionProvider implements CompletionProvider {
 		            String className = getFullyQualifiedName(topLevelClass);
 					Bean[] beans = this.springIndex.getBeansOfProject(project.getElementName());
 					ITypeBinding topLevelBeanType = topLevelClass.resolveBinding();
-					Set<String> declaredFiledsTypes = Arrays.stream(topLevelBeanType.getDeclaredFields())
-							.map(vd -> vd.getType())
-							.filter(Objects::nonNull)
-							.map(t -> t.getQualifiedName())
-							.collect(Collectors.toSet());
+					Set<String> fieldTypes = new HashSet<>();
+					Set<String> fieldNames = new HashSet<>();
+					for (IVariableBinding vd : topLevelBeanType.getDeclaredFields()) {
+						fieldNames.add(vd.getName());
+						fieldTypes.add(vd.getType().getQualifiedName());
+					}
 					for (Bean bean : beans) {
 						// If current class is a bean - ignore it
 						if (className.equals(bean.getType())) {
 							continue;
 						}
 						// Filter out beans already injected into this class
-						if (declaredFiledsTypes.contains(bean.getType())) {
+						if (fieldTypes.contains(bean.getType())) {
 							continue;
 						}
-							
+						
+						String fieldName = bean.getName();
+						for (int i = 0; i < Integer.MAX_VALUE && fieldNames.contains(fieldName); i++, fieldName = "%s_%d".formatted(bean.getName(), i)) {
+							// nothing
+						}
 						BeanCompletionProposal proposal = new BeanCompletionProposal(node, offset, doc, bean.getName(),
-								bean.getType(), className, rewriteRefactorings);
+								bean.getType(), fieldName, className, rewriteRefactorings);
 
 						if (proposal.getScore() > 0) {
 							completions.add(proposal);
