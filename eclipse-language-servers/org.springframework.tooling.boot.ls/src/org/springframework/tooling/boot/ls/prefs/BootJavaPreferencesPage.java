@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -54,6 +54,12 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 
 		// Experimental Modulith support
 		addField(new BooleanFieldEditor(Constants.PREF_MODULITH, "Spring Boot Modulith automatic project tracking and metadata update", fieldEditorParent));
+
+		// Experimental Bean Injections completion in Java editor
+		addField(new BooleanFieldEditor(Constants.PREF_COMPLETION_JAVA_INJECT_BEAN, "Inject Bean completion proposals in Java editor", fieldEditorParent));
+		
+		// Experimental Beans tree 
+		addField(new BooleanFieldEditor(Constants.PREF_BEANS_STRUCTURE_TREE, "Beans structure tree in the outline view", fieldEditorParent));
 		
 		Composite c = new Composite(fieldEditorParent, SWT.NONE);
 		GridDataFactory.fillDefaults().grab(true, false).applyTo(c);

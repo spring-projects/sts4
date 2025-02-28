@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -69,6 +69,10 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		preferenceStore.setDefault(Constants.PREF_PROPS_COMPLETIONS_ELIDE_PREFIX, false);
 		
 		preferenceStore.setDefault(Constants.PREF_CRON_INLAY_HINTS, true);
+		
+		preferenceStore.setDefault(Constants.PREF_COMPLETION_JAVA_INJECT_BEAN, true);
+
+		preferenceStore.setDefault(Constants.PREF_BEANS_STRUCTURE_TREE, false);
 	}
 
 }

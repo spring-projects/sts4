@@ -708,7 +708,8 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	}
 	
 	public List<? extends DocumentSymbol> getDocumentSymbols(String docURI) {
-		if (System.getProperty(OUTLINE_SYMBOLS_FROM_INDEX_PROPERTY) != null) {
+		if (System.getProperty(OUTLINE_SYMBOLS_FROM_INDEX_PROPERTY) != null
+				|| config.isBeanStructureTreeEnabled()) {
 			return getDocumentSymbolsFromMetamodelIndex(docURI);
 		}
 		else {

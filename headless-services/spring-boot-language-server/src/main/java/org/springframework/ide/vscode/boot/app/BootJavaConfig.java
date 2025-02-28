@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -168,7 +168,7 @@ public class BootJavaConfig implements InitializingBean {
 	}
 	
 	public boolean isJavaSourceReconcileEnabled() {
-		Boolean enabled = getRawSettings().getBoolean("boot-java", "validation", "java", "reconcilers");
+		Boolean enabled = getRawSettings().getBoolean("boot-java", "java", "reconcilers");
 		return enabled == null ? true : enabled.booleanValue();
 	}
 	
@@ -212,6 +212,16 @@ public class BootJavaConfig implements InitializingBean {
 	public Path getCommonPropertiesFile() {
 		String str = settings.getString("boot-java", "common", "properties-metadata");
 		return str == null || str.isBlank() ? null : Paths.get(str);
+	}
+	
+	public boolean isBeanInjectionCompletionEnabled() {
+		Boolean b = settings.getBoolean("boot-java", "java", "completions", "inject-bean");
+		return Boolean.TRUE.equals(b);
+	}
+	
+	public boolean isBeanStructureTreeEnabled() {
+		Boolean b = settings.getBoolean("boot-java", "java", "beans-structure-tree");
+		return Boolean.TRUE.equals(b);
 	}
 	
 	public Settings getRawSettings() {

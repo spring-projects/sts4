@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -182,8 +182,8 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> supportXML = new HashMap<>();
 		Map<String, Object> bootChangeDetection = new HashMap<>();
 		Map<String, Object> scanTestJavaSources = new HashMap<>();
-		Map<String, Object> validation = new HashMap<>();
-		Map<String, Object> javaValidation = new HashMap<>();
+		Map<String, Object> javaSettings = new HashMap<>();
+		Map<String, Object> javaCompletionSettings = new HashMap<>();
 
 		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
 
@@ -200,8 +200,11 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootChangeDetection.put("on", preferenceStore.getBoolean(Constants.PREF_CHANGE_DETECTION));
 		scanTestJavaSources.put("on", preferenceStore.getBoolean(Constants.PREF_SCAN_JAVA_TEST_SOURCES));
 
-		javaValidation.put("reconcilers", preferenceStore.getBoolean(Constants.PREF_JAVA_RECONCILE));
-		validation.put("java", javaValidation);
+		javaCompletionSettings.put("inject-bean", preferenceStore.getBoolean(Constants.PREF_COMPLETION_JAVA_INJECT_BEAN));
+		
+		javaSettings.put("beans-structure-tree", preferenceStore.getBoolean(Constants.PREF_BEANS_STRUCTURE_TREE));
+		javaSettings.put("completions", javaCompletionSettings);
+		javaSettings.put("reconcilers", preferenceStore.getBoolean(Constants.PREF_JAVA_RECONCILE));
 
 		bootJavaObj.put("jpql", preferenceStore.getBoolean(Constants.PREF_JPQL));
 		bootJavaObj.put("live-information", liveInformation);
@@ -209,7 +212,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("scan-java-test-sources", scanTestJavaSources);
 		bootJavaObj.put("change-detection", bootChangeDetection);
-		bootJavaObj.put("validation", validation);
+		bootJavaObj.put("java", javaSettings);
 		bootJavaObj.put("remote-apps", getAllRemoteApps());
 		bootJavaObj.put("modulith-project-tracking", preferenceStore.getBoolean(Constants.PREF_MODULITH));
 		

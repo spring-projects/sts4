@@ -281,7 +281,7 @@
             "default": true,
             "description": "Syntax Hyghlighting for Languages embedded into Java source code"
           },
-          "boot-java.validation.java.reconcilers": {
+          "boot-java.java.reconcilers": {
             "type": "boolean",
             "default": true,
             "description": "Reconciling Java Sources"
@@ -362,6 +362,16 @@
             "type": "boolean",
             "default": false,
             "description": "Enable/Disable detecting changes of running Spring Boot applications"
+          },
+          "boot-java.java.completions.inject-bean": {
+            "type": "boolean",
+            "default": true,
+            "description": "Inject Bean completion proposals in Java editor"
+          },
+          "boot-java.java.beans-structure-tree": {
+            "type": "boolean",
+            "default": false,
+            "description": "Beans structure tree in the outline view"
           },
           "boot-java.remote-apps": {
             "type": "array",

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -51,5 +51,9 @@ public class Constants {
 	public static final String PREF_PROPS_COMPLETIONS_ELIDE_PREFIX = "boot-java.properties.completions.elide-prefix";
 
 	public static final String PREF_CRON_INLAY_HINTS = "boot-java.cron.inlay-hints";
+	
+	public static final String PREF_COMPLETION_JAVA_INJECT_BEAN = "boot-java.java.completions.inject-bean";
+
+	public static final String PREF_BEANS_STRUCTURE_TREE = "boot-java.java.beans-structure-tree";
 	
 }

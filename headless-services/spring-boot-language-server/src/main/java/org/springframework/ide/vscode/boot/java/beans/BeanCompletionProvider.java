@@ -29,6 +29,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
@@ -51,17 +52,21 @@ public class BeanCompletionProvider implements CompletionProvider {
 	private final SpringMetamodelIndex springIndex;
 	private final RewriteRefactorings rewriteRefactorings;
 
+	private final BootJavaConfig config;
+
 	public BeanCompletionProvider(JavaProjectFinder javaProjectFinder, SpringMetamodelIndex springIndex,
-			RewriteRefactorings rewriteRefactorings) {
+			RewriteRefactorings rewriteRefactorings, BootJavaConfig config) {
 		this.javaProjectFinder = javaProjectFinder;
 		this.springIndex = springIndex;
 		this.rewriteRefactorings = rewriteRefactorings;
+		this.config = config;
 	}
 
 	@Override
 	public void provideCompletions(ASTNode node, int offset, TextDocument doc,
 			Collection<ICompletionProposal> completions) {
-		if (node instanceof SimpleName || node instanceof Block || node instanceof FieldAccess) {
+		if (config.isBeanInjectionCompletionEnabled() 
+				&& (node instanceof SimpleName || node instanceof Block || node instanceof FieldAccess)) {
 			try {
 				
 				if (node instanceof SimpleName) {

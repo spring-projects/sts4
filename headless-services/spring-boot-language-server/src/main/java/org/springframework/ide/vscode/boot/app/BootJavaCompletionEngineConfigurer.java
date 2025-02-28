@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2024 Pivotal, Inc.
+ * Copyright (c) 2020, 2025 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -116,7 +116,8 @@ public class BootJavaCompletionEngineConfigurer {
 			JavaSnippetManager snippetManager, 
 			CompilationUnitCache cuCache,
 			SpringMetamodelIndex springIndex,
-			RewriteRefactorings rewriteRefactorings ) {
+			RewriteRefactorings rewriteRefactorings,
+			BootJavaConfig config) {
 		
 		SpringPropertyIndexProvider indexProvider = params.indexProvider;
 		JavaProjectFinder javaProjectFinder = params.projectFinder;
@@ -171,7 +172,7 @@ public class BootJavaCompletionEngineConfigurer {
 		providers.put(Annotations.SCHEDULED, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
 				"cron", new CronExpressionCompletionProvider())));
 
-		providers.put(Annotations.BEAN, new BeanCompletionProvider(javaProjectFinder, springIndex, rewriteRefactorings));
+		providers.put(Annotations.BEAN, new BeanCompletionProvider(javaProjectFinder, springIndex, rewriteRefactorings, config));
 
 		return new BootJavaCompletionEngine(cuCache, providers, snippetManager);
 	}
