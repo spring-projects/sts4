@@ -22,9 +22,14 @@ import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Builder;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +43,59 @@ public class RestTemplateFactory {
 	private static final Logger log = LoggerFactory.getLogger(RestTemplateFactory.class);
 	
 	private BootJavaConfig config;
+	
+	private HostExclusions proxyExclusions;
 
 	public RestTemplateFactory(BootJavaConfig config) {
 		this.config = config;
+		this.proxyExclusions = null;
+		config.addListener(v -> {
+			synchronized(RestTemplateFactory.this) {
+				proxyExclusions = null;
+			}
+		});
 	}
 	
+	record HostExclusions(Set<String> hosts, List<Pattern> regexs) {
+		
+		public HostExclusions(Collection<String> exclusions) {
+			this(new HashSet<>(), new ArrayList<>());
+			for (String s : exclusions) {
+				if (s.contains("*")) {
+					// Regex
+					String regexStr = s.replace(".", "\\.").replace("*", ".*");
+					try {
+						regexs.add(Pattern.compile(regexStr));
+					} catch (PatternSyntaxException e) {
+						log.error("Unnable to compile Regular Expression for %s".formatted(s), e);
+					}
+				} else {
+					// Exact host string
+					hosts.add(s);
+				}
+			}
+		}
+		
+		boolean contains(String host) {
+			if (hosts.contains(host)) {
+				return true;
+			}
+			for (Pattern p : regexs) {
+				if (p.matcher(host).matches()) {
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+	
+	private synchronized HostExclusions getProxyExclusions() {
+		if (proxyExclusions == null) {
+			proxyExclusions = new HostExclusions(config.getRawSettings().getStringSet("http", "noProxy"));
+		}
+		return proxyExclusions;
+	}
+		
 	public RestTemplate createRestTemplate(String host) {
 		String proxyUrlStr = config.getRawSettings().getString("http", "proxy");
 		if (proxyUrlStr == null || proxyUrlStr.isBlank()) {
@@ -51,8 +104,7 @@ public class RestTemplateFactory {
 		
 		Builder clientBuilder = HttpClient.newBuilder();
 		if (proxyUrlStr != null && !proxyUrlStr.isBlank()) {
-			Set<String> exclusions = config.getRawSettings().getStringSet("http", "proxy-exclusions");
-			if (!"localhost".equals(host) && !"127.0.0.1".equals(host) && !exclusions.contains(host)) {
+			if (!"localhost".equals(host) && !"127.0.0.1".equals(host) && !getProxyExclusions().contains(host)) {
 				try {
 					URL proxyUrl = new URL(proxyUrlStr);
 					clientBuilder.proxy(new ProxySelector() {
