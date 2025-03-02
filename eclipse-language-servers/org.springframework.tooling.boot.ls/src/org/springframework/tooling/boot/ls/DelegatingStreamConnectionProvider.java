@@ -277,7 +277,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			proxy.put("proxy-user", data.getUserId());
 			proxy.put("proxy-password", data.getPassword());
 		}
-		proxy.put("proxy-exclusions", exclusions);
+		proxy.put("noProxy", exclusions);
 	}
 	
 	private void putValidationPreferences(Map<String, Object> settings) {
