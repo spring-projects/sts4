@@ -139,13 +139,16 @@ public class ConstructorInjectionRecipe extends Recipe {
 		public J.VariableDeclarations visitVariableDeclarations(J.VariableDeclarations multiVariable,
 				ExecutionContext ctx) {
 
-			Cursor blockCursor = getCursor().dropParentUntil(it -> it instanceof J.Block || it == Cursor.ROOT_VALUE);
+			Cursor blockCursor = getCursor().getParentTreeCursor();
 			if (!(blockCursor.getValue() instanceof J.Block)) {
 				return multiVariable;
 			}
+			Cursor typeDeclCursor = blockCursor.getParentTreeCursor();
+			if (!(typeDeclCursor.getValue() instanceof J.ClassDeclaration)) {
+				return multiVariable;
+			}
 			VariableDeclarations mv = multiVariable;
-			if (blockCursor.getParent() != null && blockCursor.getParent().getValue() instanceof ClassDeclaration
-					&& multiVariable.getVariables().size() == 1
+			if (multiVariable.getVariables().size() == 1
 					&& fieldName.equals(multiVariable.getVariables().get(0).getName().getSimpleName())) {
 				if (mv.getModifiers().stream().noneMatch(m -> m.getType() == J.Modifier.Type.Final)) {
 					Space prefix = Space.firstPrefix(mv.getVariables());
@@ -236,31 +239,42 @@ public class ConstructorInjectionRecipe extends Recipe {
 		@Override
 		public MethodDeclaration visitMethodDeclaration(MethodDeclaration method, ExecutionContext p) {
 			J.MethodDeclaration md = super.visitMethodDeclaration(method, p);
-			if (md == this.constructor && md.getBody() != null) {
+			if (md.getId().equals(constructor.getId()) && md.getBody() != null) {
 				
-				List<Statement> newParams = new ArrayList<>(md.getParameters().stream().filter(s -> !(s instanceof J.Empty)).toList());
-				J.VariableDeclarations vd = new J.VariableDeclarations(
-						Tree.randomId(),
-						newParams.isEmpty() ? Space.EMPTY : Space.SINGLE_SPACE,
-						Markers.EMPTY,
-						Collections.emptyList(),
-						Collections.emptyList(),
-						TypeTree.build(methodType),
-						null,
-						Collections.emptyList(),
-						List.of(JRightPadded.build(new J.VariableDeclarations.NamedVariable(
-								Tree.randomId(),
-								Space.SINGLE_SPACE,
-								Markers.EMPTY,
-								createFieldNameIdentifier(),
-								Collections.emptyList(),
-								null,
-								null
-						)))
-				);
-				newParams.add(vd);
-				md = md.withParameters(newParams);
-				updateCursor(md);
+				boolean parameterExists = md.getParameters().stream().filter(J.VariableDeclarations.class::isInstance).map(J.VariableDeclarations.class::cast).filter(vd -> {
+					if (vd.getVariables().stream().anyMatch(vn -> fieldName.equals(vn.getSimpleName()))) {
+						FullyQualified fqType = vd.getTypeAsFullyQualified();
+						if (fqType != null && methodType.equals(fqType.getClassName())) {
+							return true;
+						}
+					}
+					return false;
+				}).findFirst().isPresent();
+				if (!parameterExists) {
+					List<Statement> newParams = new ArrayList<>(md.getParameters().stream().filter(s -> !(s instanceof J.Empty)).toList());
+					J.VariableDeclarations vd = new J.VariableDeclarations(
+							Tree.randomId(),
+							newParams.isEmpty() ? Space.EMPTY : Space.SINGLE_SPACE,
+							Markers.EMPTY,
+							Collections.emptyList(),
+							Collections.emptyList(),
+							TypeTree.build(methodType),
+							null,
+							Collections.emptyList(),
+							List.of(JRightPadded.build(new J.VariableDeclarations.NamedVariable(
+									Tree.randomId(),
+									Space.SINGLE_SPACE,
+									Markers.EMPTY,
+									createFieldNameIdentifier(),
+									Collections.emptyList(),
+									null,
+									null
+							)))
+					);
+					newParams.add(vd);
+					md = md.withParameters(newParams);
+					updateCursor(md);
+				}
 
 				if (!isConstructorInitializingField(md, fieldName)) {
 					// noinspection ConstantConditions

@@ -137,6 +137,49 @@ public class ConstructorInjectionRecipeTest implements RewriteTest {
 	}
 	
 	@Test
+	void injectFieldIntoExistingSingleConstructorWithExisitngParameter() {
+		
+		String beforeSourceStr = """
+              package com.example.demo;
+                
+              import com.example.test.OwnerRepository;
+              
+              public class A {
+              
+                  private final OwnerRepository ownerRepository;
+                  
+                  A(OwnerRepository ownerRepository) {
+                  }
+              
+              }
+            """;
+		
+        String expectedSourceStr = """
+              package com.example.demo;
+                
+              import com.example.test.OwnerRepository;
+
+              public class A {
+              
+                  private final OwnerRepository ownerRepository;
+                  
+                  A(OwnerRepository ownerRepository) {
+                      this.ownerRepository = ownerRepository;
+                  }
+              
+              }
+            """;
+
+		String dependsOn = """
+				    package com.example.test;
+				    public interface OwnerRepository{}
+				""";
+
+        Recipe recipe = new ConstructorInjectionRecipe("com.example.test.OwnerRepository", "ownerRepository", "com.example.demo.A");
+        runRecipeAndAssert(recipe, beforeSourceStr, expectedSourceStr, dependsOn);
+	}
+
+	@Test
 	void injectFieldIntoAutowiredConstructor() {
 		
 		String beforeSourceStr = """

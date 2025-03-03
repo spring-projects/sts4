@@ -69,6 +69,7 @@ public class BeanCompletionProviderTest {
 	private Bean bean4;
 	private Bean bean5;
 	private Bean bean6;
+	private Bean bean7;
 	
 	@BeforeEach
 	public void setup() throws Exception {
@@ -94,8 +95,9 @@ public class BeanCompletionProviderTest {
 		bean4 = new Bean("visitService", "org.springframework.samples.petclinic.owner.VisitService", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		bean5 = new Bean("petService", "org.springframework.samples.petclinic.pet.Inner.PetService", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		bean6 = new Bean("testBeanCompletionClass", "org.sample.test.TestBeanCompletionClass", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
+		bean7 = new Bean("testIntBean", "java.lang.Integer", new Location(tempJavaDocUri, new Range(new Position(1,1), new Position(1, 20))), null, null, null, false, "symbolLabel");
 		
-		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, bean3, bean4, bean5, bean6});
+		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2, bean3, bean4, bean5, bean6, bean7});
 	}
 	
 	@AfterEach
@@ -155,7 +157,7 @@ ownerService<*>
 	
 	@Test
 	public void noPrefix_secondCompletion() throws Exception {
-		assertCompletions(getCompletion("<*>"), new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 1, 
+		assertCompletions(getCompletion("<*>"), new String[] {"ownerRepository", "ownerService", "petService", "testIntBean", "visitRepository", "visitService"}, 1, 
 				"""
 package org.sample.test;
 
@@ -180,7 +182,7 @@ ownerService<*>
 	
 	@Test
 	public void testBeanCompletion_injectInnerClass() throws Exception {
-		assertCompletions(getCompletion("<*>"), new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 2, 
+		assertCompletions(getCompletion("<*>"), new String[] {"ownerRepository", "ownerService", "petService", "testIntBean", "visitRepository", "visitService"}, 2, 
 				"""
 package org.sample.test;
 
@@ -297,7 +299,7 @@ public class TestBeanCompletionSecondClass {
 				}
 				""";
 		
-		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "testBeanCompletionClass", "visitRepository", "visitService"}, 1, 
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "testBeanCompletionClass", "testIntBean", "visitRepository", "visitService"}, 1, 
 				"""
 package org.sample.test;
 
@@ -527,6 +529,48 @@ public class TestBeanCompletionClass {
 	}
 
 	@Test
+	public void beanCompletionWithConstructorParameterPresent() throws Exception {
+		String content = """
+				package org.sample.test;
+				
+				import org.springframework.stereotype.Controller;
+				
+				@Controller
+				public class TestBeanCompletionClass {
+				
+				    TestBeanCompletionClass(Integer testIntBean) {
+				    }
+				    
+					public void test() {
+						this.testI<*>
+					}
+				}
+				""";
+		
+		
+		assertCompletions(content, new String[] {"testIntBean"}, 0, 
+				"""
+				package org.sample.test;
+				
+				import org.springframework.stereotype.Controller;
+				
+				@Controller
+				public class TestBeanCompletionClass {
+				
+				    private final Integer testIntBean;
+				
+				    TestBeanCompletionClass(Integer testIntBean) {
+				        this.testIntBean = testIntBean;
+				    }
+				    
+					public void test() {
+						this.testIntBean<*>
+					}
+				}
+				""");
+	}
+
+	@Test
 	public void noCompletionsInMethod_1() throws Exception {
 		String content = """
 				package org.sample.test;
@@ -659,7 +703,7 @@ public class TestBeanCompletionClass {
 				""";
 		
 		
-		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "testIntBean", "visitRepository", "visitService"}, 0, 
 				"""
 				package org.sample.test;
 				
@@ -965,7 +1009,7 @@ public class TestBeanCompletionClass {
 				""";
 		
 		
-		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "testIntBean", "visitRepository", "visitService"}, 0, 
 				"""
 				package org.sample.test;
 				
@@ -1002,7 +1046,7 @@ public class TestBeanCompletionClass {
 				""";
 		
 		
-		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "testIntBean", "visitRepository", "visitService"}, 0, 
 				"""
 				package org.sample.test;
 				
@@ -1039,7 +1083,7 @@ public class TestBeanCompletionClass {
 				""";
 		
 		
-		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "testIntBean", "visitRepository", "visitService"}, 0, 
 				"""
 				package org.sample.test;
 				
@@ -1076,7 +1120,7 @@ public class TestBeanCompletionClass {
 				""";
 		
 		
-		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "visitRepository", "visitService"}, 0, 
+		assertCompletions(content, new String[] {"ownerRepository", "ownerService", "petService", "testIntBean", "visitRepository", "visitService"}, 0, 
 				"""
 				package org.sample.test;
 				
