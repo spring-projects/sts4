@@ -111,7 +111,7 @@ public class Bean extends AbstractSpringIndexElement implements SymbolElement {
 		DocumentSymbol symbol = new DocumentSymbol();
 		
 		symbol.setName(this.symbolLabel);
-		symbol.setKind(SymbolKind.Interface);
+		symbol.setKind(SymbolKind.Class);
 		symbol.setRange(this.location.getRange());
 		symbol.setSelectionRange(this.location.getRange());
 		
