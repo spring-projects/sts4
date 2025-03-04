@@ -19,6 +19,7 @@ import java.util.Set;
  * @author Kris De Volder
  */
 public class Annotations {
+	
 	public static final String BEAN = "org.springframework.context.annotation.Bean";
 	public static final String PROFILE = "org.springframework.context.annotation.Profile";
 	public static final String CONDITIONAL = "org.springframework.context.annotation.Conditional";
@@ -40,7 +41,9 @@ public class Annotations {
 	public static final String JPA_JAVAX_ID_CLASS = "javax.persistence.IdClass";
 	public static final String JPA_JAKARTA_NAMED_QUERY = "jakarta.persistence.NamedQuery"; 
 	public static final String JPA_JAVAX_NAMED_QUERY = "javax.persistence.NamedQuery";
-	public static final String DATA_QUERY = "org.springframework.data.jpa.repository.Query";
+
+	public static final String DATA_QUERY_META_ANNOTATION = "org.springframework.data.annotation.QueryAnnotation";
+	public static final String DATA_JPA_QUERY = "org.springframework.data.jpa.repository.Query";
 
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 	public static final String QUALIFIER = "org.springframework.beans.factory.annotation.Qualifier";

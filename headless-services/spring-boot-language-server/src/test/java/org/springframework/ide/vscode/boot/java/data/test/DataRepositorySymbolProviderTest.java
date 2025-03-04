@@ -19,7 +19,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.ArrayUtils;
+import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,9 +31,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
-import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -48,7 +47,6 @@ public class DataRepositorySymbolProviderTest {
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private SpringSymbolIndex indexer;
-	@Autowired private SpringMetamodelIndex springIndex;
 
 	private File directory;
 
@@ -72,15 +70,40 @@ public class DataRepositorySymbolProviderTest {
         List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
         assertEquals(1, symbols.size());
         assertTrue(containsSymbol(symbols, "@+ 'customerRepository' (Customer) Repository<Customer,Long>", docUri, 6, 17, 6, 35));
+    }
 
-        Bean[] repoBean = this.springIndex.getBeansWithName("test-spring-data-symbols", "customerRepository");
-        assertEquals(1, repoBean.length);
-        assertEquals("customerRepository", repoBean[0].getName());
-        assertEquals("org.test.CustomerRepository", repoBean[0].getType());
+    @Test
+    void testDocumentSymbolsForRepository() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepository.java").toUri().toString();
+        List<? extends DocumentSymbol> symbols = indexer.getDocumentSymbolsFromMetamodelIndex(docUri);
+        assertEquals(1, symbols.size());
+        assertTrue(containsDocumentSymbol(symbols, "@+ 'customerRepository' (Customer) Repository<Customer,Long>", docUri, 6, 17, 6, 35));
         
-        Bean[] matchingBeans = springIndex.getMatchingBeans("test-spring-data-symbols", "org.springframework.data.repository.CrudRepository");
-        assertEquals(2, matchingBeans.length);
-        ArrayUtils.contains(matchingBeans, repoBean[0]);
+        DocumentSymbol documentSymbol = symbols.get(0);
+        List<DocumentSymbol> children = documentSymbol.getChildren();
+        DocumentSymbol childSymbol = children.get(0);
+        assertEquals("findByLastName", childSymbol.getName());
+        
+        assertEquals(1, children.size());
+    }
+
+    @Test
+    void testNestedDocumentSymbolsForRepositoryWithQuery() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepositoryWithQuery.java").toUri().toString();
+        List<? extends DocumentSymbol> symbols = indexer.getDocumentSymbolsFromMetamodelIndex(docUri);
+        assertEquals(1, symbols.size());
+        assertTrue(containsDocumentSymbol(symbols, "@+ 'customerRepositoryWithQuery' (Customer) Repository<Customer,Long>", docUri, 7, 17, 7, 44));
+        
+        DocumentSymbol documentSymbol = symbols.get(0);
+        List<DocumentSymbol> children = documentSymbol.getChildren();
+        DocumentSymbol queryMethodSymbol = children.get(0);
+        assertEquals("findPetTypes", queryMethodSymbol.getName());
+        assertEquals(1, children.size());
+        
+        List<DocumentSymbol> queryChildren = queryMethodSymbol.getChildren();
+        DocumentSymbol queryStringSymbol = queryChildren.get(0);
+        assertEquals("SELECT ptype FROM PetType ptype ORDER BY ptype.name", queryStringSymbol.getName());
+        assertEquals(SymbolKind.Constant, queryStringSymbol.getKind());
     }
 
 	private boolean containsSymbol(List<? extends WorkspaceSymbol> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
@@ -93,6 +116,22 @@ public class DataRepositorySymbolProviderTest {
 					&& symbol.getLocation().getLeft().getRange().getStart().getCharacter() == startCHaracter
 					&& symbol.getLocation().getLeft().getRange().getEnd().getLine() == endLine
 					&& symbol.getLocation().getLeft().getRange().getEnd().getCharacter() == endCharacter) {
+				return true;
+			}
+ 		}
+
+		return false;
+	}
+
+	private boolean containsDocumentSymbol(List<? extends DocumentSymbol> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
+		for (Iterator<? extends DocumentSymbol> iterator = symbols.iterator(); iterator.hasNext();) {
+			DocumentSymbol symbol = iterator.next();
+
+			if (symbol.getName().equals(name)
+					&& symbol.getRange().getStart().getLine() == startLine
+					&& symbol.getRange().getStart().getCharacter() == startCHaracter
+					&& symbol.getRange().getEnd().getLine() == endLine
+					&& symbol.getRange().getEnd().getCharacter() == endCharacter) {
 				return true;
 			}
  		}

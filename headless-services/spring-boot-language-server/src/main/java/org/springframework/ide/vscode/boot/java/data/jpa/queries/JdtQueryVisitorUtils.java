@@ -102,8 +102,8 @@ public class JdtQueryVisitorUtils {
 	}
 	
 	static boolean isQueryAnnotation(AnnotationHierarchies annotationHierarchies, Annotation a) {
-		if (Annotations.DATA_QUERY.equals(a.getTypeName().getFullyQualifiedName()) || QUERY.equals(a.getTypeName().getFullyQualifiedName())) {
-			return annotationHierarchies.isAnnotatedWith(a.resolveAnnotationBinding(), Annotations.DATA_QUERY);
+		if (Annotations.DATA_JPA_QUERY.equals(a.getTypeName().getFullyQualifiedName()) || QUERY.equals(a.getTypeName().getFullyQualifiedName())) {
+			return annotationHierarchies.isAnnotatedWith(a.resolveAnnotationBinding(), Annotations.DATA_JPA_QUERY);
 		}
 		return false;
 	}

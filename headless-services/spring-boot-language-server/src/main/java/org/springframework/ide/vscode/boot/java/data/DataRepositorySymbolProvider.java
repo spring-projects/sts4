@@ -16,15 +16,25 @@ import java.util.Set;
 
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.beans.CachedBean;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitorUtils.EmbeddedQueryExpression;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
@@ -62,6 +72,9 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 						SymbolKind.Interface,
 						Either.forLeft(location));
 
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
+
+				// index elements
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
 				
 				ITypeBinding concreteBeanTypeBindung = typeDeclaration.resolveBinding();
@@ -75,14 +88,67 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(annotationsOnMethod, doc);
 				
 				Bean beanDefinition = new Bean(beanName, concreteRepoType, location, injectionPoints, supertypes, annotations, false, symbol.getName());
+				indexQueryMethods(beanDefinition, typeDeclaration, context, doc);
 				
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 
 			} catch (BadLocationException e) {
 				log.error("error creating data repository symbol for a specific range", e);
 			}
 		}
+	}
+
+	private void indexQueryMethods(Bean beanDefinition, TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+		MethodDeclaration[] methods = typeDeclaration.getMethods();
+		if (methods == null) return;
+		
+		for (MethodDeclaration method : methods) {
+			int modifiers = method.getModifiers();
+			SimpleName nameNode = method.getName();
+			
+			if (nameNode != null && (modifiers & Modifier.DEFAULT) == 0) {
+				String methodName = nameNode.getFullyQualifiedName();
+				DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, method);
+
+				try {
+					Range range = doc.toRange(nodeRegion);
+				
+					if (methodName != null) {
+						String queryString = identifyQueryString(method);
+						beanDefinition.addChild(new QueryMethodIndexElement(methodName, queryString, range));
+					}
+	
+				} catch (BadLocationException e) {
+					log.error("query method range computation failed", e);
+				}
+			}
+		}
+	}
+
+	private String identifyQueryString(MethodDeclaration method) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(method);
+		
+		EmbeddedQueryExpression queryExpression = null;
+
+		Collection<Annotation> annotations = ASTUtils.getAnnotations(method);
+		for (Annotation annotation : annotations) {
+			ITypeBinding typeBinding = annotation.resolveTypeBinding();
+			
+			if (typeBinding != null && annotationHierarchies.isAnnotatedWith(typeBinding, Annotations.DATA_QUERY_META_ANNOTATION)) {
+				if (annotation instanceof SingleMemberAnnotation) {
+					queryExpression = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, (SingleMemberAnnotation)annotation);
+				}
+				else if (annotation instanceof NormalAnnotation) {
+					queryExpression = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, (NormalAnnotation)annotation);
+				}
+			}
+		}
+		
+		if (queryExpression != null) {
+			return queryExpression.query().getText();
+		}
+
+		return null;
 	}
 
 	protected String beanLabel(boolean isFunctionBean, String beanName, String beanType, String markerString) {
