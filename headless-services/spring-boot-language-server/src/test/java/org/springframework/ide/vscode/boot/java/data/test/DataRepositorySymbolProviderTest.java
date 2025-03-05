@@ -79,7 +79,7 @@ public class DataRepositorySymbolProviderTest {
         assertEquals(2, symbols.size());
 
         assertTrue(containsSymbol(symbols, "@NoRepositoryBean", docUri, 8, 0, 8, 17));
-        assertTrue(containsSymbol(symbols, "@Query(\"PARENT REPO INTERFACE QUERY STATEMENT\")", docUri, 11, 4, 11, 51));
+        assertTrue(containsSymbol(symbols, "@Query(\"PARENT REPO INTERFACE QUERY STATEMENT\")", docUri, 11, 1, 11, 48));
     }
 
     @Test
