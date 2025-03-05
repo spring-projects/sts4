@@ -167,9 +167,10 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 	}
 
 	private static Tuple4<String, ITypeBinding, String, DocumentRegion> getRepositoryBean(TypeDeclaration typeDeclaration, TextDocument doc) {
-		ITypeBinding resolvedType = typeDeclaration.resolveBinding();
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(typeDeclaration);
 
-		if (resolvedType != null) {
+		ITypeBinding resolvedType = typeDeclaration.resolveBinding();
+		if (resolvedType != null && !annotationHierarchies.isAnnotatedWith(resolvedType, Annotations.NO_REPO_BEAN)) {
 			return getRepositoryBean(typeDeclaration, doc, resolvedType);
 		}
 		else {
@@ -177,8 +178,7 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 		}
 	}
 
-	private static Tuple4<String, ITypeBinding, String, DocumentRegion> getRepositoryBean(TypeDeclaration typeDeclaration, TextDocument doc,
-			ITypeBinding resolvedType) {
+	private static Tuple4<String, ITypeBinding, String, DocumentRegion> getRepositoryBean(TypeDeclaration typeDeclaration, TextDocument doc, ITypeBinding resolvedType) {
 
 		ITypeBinding[] interfaces = resolvedType.getInterfaces();
 		for (ITypeBinding resolvedInterface : interfaces) {

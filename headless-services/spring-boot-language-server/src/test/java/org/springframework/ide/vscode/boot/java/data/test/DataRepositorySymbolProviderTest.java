@@ -73,6 +73,16 @@ public class DataRepositorySymbolProviderTest {
     }
 
     @Test
+    void testNoRepositorySymbolForNoRepositoryAnnotation() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepositoryParentInterface.java").toUri().toString();
+        List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
+        assertEquals(2, symbols.size());
+
+        assertTrue(containsSymbol(symbols, "@NoRepositoryBean", docUri, 8, 0, 8, 17));
+        assertTrue(containsSymbol(symbols, "@Query(\"PARENT REPO INTERFACE QUERY STATEMENT\")", docUri, 11, 4, 11, 51));
+    }
+
+    @Test
     void testDocumentSymbolsForRepository() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepository.java").toUri().toString();
         List<? extends DocumentSymbol> symbols = indexer.getDocumentSymbolsFromMetamodelIndex(docUri);
