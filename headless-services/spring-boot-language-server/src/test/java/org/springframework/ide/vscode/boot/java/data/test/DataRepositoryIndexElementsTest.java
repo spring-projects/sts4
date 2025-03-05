@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data.test;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
@@ -20,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +84,7 @@ public class DataRepositoryIndexElementsTest {
         assertEquals("org.test.CustomerRepository", repoBean[0].getType());
         
         Bean[] matchingBeans = springIndex.getMatchingBeans("test-spring-data-symbols", "org.springframework.data.repository.CrudRepository");
-        assertEquals(3, matchingBeans.length);
+        assertEquals(4, matchingBeans.length);
         ArrayUtils.contains(matchingBeans, repoBean[0]);
     }
 
@@ -115,7 +117,35 @@ public class DataRepositoryIndexElementsTest {
         QueryMethodIndexElement queryMethod = (QueryMethodIndexElement) queryMethods.get(0);
         assertEquals("findPetTypes", queryMethod.getMethodName());
         assertEquals("SELECT ptype FROM PetType ptype ORDER BY ptype.name", queryMethod.getQueryString());
+    }
+
+    @Test
+    void testNoRepositoryBeanAnnotationResultsInNoBeanIndexElement() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepositoryParentInterface.java").toUri().toString();
         
+        DocumentElement document = springIndex.getDocument(docUri);
+        assertNull(document); // nothing in the doc, therefore not even the doc node is around
+    }
+
+    @Test
+    @Disabled // query methods from superclasses or interfaces not yet implemented, maybe requires a different way to think about this (separate index elements instead of one element with all query methods)
+    void testQueryMethodsFromParentInterfaces() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepositoryWithParentInterfaces.java").toUri().toString();
+        
+        DocumentElement document = springIndex.getDocument(docUri);
+        List<SpringIndexElement> children = document.getChildren();
+        Bean repositoryElement = (Bean) children.get(0);
+        
+        List<SpringIndexElement> queryMethods = repositoryElement.getChildren();
+        assertEquals(2, queryMethods.size());
+        
+        QueryMethodIndexElement queryMethod = (QueryMethodIndexElement) queryMethods.get(0);
+        assertEquals("findConcretePetTypes", queryMethod.getMethodName());
+        assertEquals("CONCRETE REPO SELECT STATEMENT", queryMethod.getQueryString());
+        
+        QueryMethodIndexElement parentQueryMethod = (QueryMethodIndexElement) queryMethods.get(1);
+        assertEquals("findParentPetTypes", parentQueryMethod.getMethodName());
+        assertEquals("PARENT REPO INTERFACE QUERY STATEMENT", parentQueryMethod.getQueryString());
     }
 
 }

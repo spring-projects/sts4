@@ -10,17 +10,21 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
@@ -99,14 +103,14 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 	}
 
 	private void indexQueryMethods(Bean beanDefinition, TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
-		MethodDeclaration[] methods = typeDeclaration.getMethods();
-		if (methods == null) return;
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(typeDeclaration);
+		
+		List<MethodDeclaration> methods = identifyQueryMethods(typeDeclaration, annotationHierarchies);
 		
 		for (MethodDeclaration method : methods) {
-			int modifiers = method.getModifiers();
 			SimpleName nameNode = method.getName();
 			
-			if (nameNode != null && (modifiers & Modifier.DEFAULT) == 0) {
+			if (nameNode != null) {
 				String methodName = nameNode.getFullyQualifiedName();
 				DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, method);
 
@@ -114,7 +118,7 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 					Range range = doc.toRange(nodeRegion);
 				
 					if (methodName != null) {
-						String queryString = identifyQueryString(method);
+						String queryString = identifyQueryString(method, annotationHierarchies);
 						beanDefinition.addChild(new QueryMethodIndexElement(methodName, queryString, range));
 					}
 	
@@ -125,8 +129,24 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 		}
 	}
 
-	private String identifyQueryString(MethodDeclaration method) {
-		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(method);
+	private List<MethodDeclaration> identifyQueryMethods(TypeDeclaration type, AnnotationHierarchies annotationHierarchies) {
+		List<MethodDeclaration> result = new ArrayList<>();
+		
+		MethodDeclaration[] methods = type.getMethods();
+		if (methods == null) return result;
+		
+		for (MethodDeclaration method : methods) {
+			int modifiers = method.getModifiers();
+			
+			if ((modifiers & Modifier.DEFAULT) == 0) {
+				result.add(method);
+			}
+		}
+		
+		return result;
+	}
+
+	private String identifyQueryString(MethodDeclaration method, AnnotationHierarchies annotationHierarchies) {
 		
 		EmbeddedQueryExpression queryExpression = null;
 
@@ -150,7 +170,7 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 
 		return null;
 	}
-
+	
 	protected String beanLabel(boolean isFunctionBean, String beanName, String beanType, String markerString) {
 		StringBuilder symbolLabel = new StringBuilder();
 		symbolLabel.append("@+");
