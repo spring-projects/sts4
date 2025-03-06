@@ -366,11 +366,11 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/simrel/orbit-aggregation/2025-03</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>mpc-client</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/mpc/drops/1.11.0/v20250125-1342/</url>
-				</repository>
+				</repository> -->
 				<repository> <!-- temporary p2 repo to grab early snapshot builds for testing fixes -->
 					<id>buildship-snapshots</id>
 					<layout>p2</layout>
@@ -426,8 +426,8 @@
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
-<!--					<url>https://download.eclipse.org/lsp4e/releases/0.26.0/</url> -->
-					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
+					<url>https://download.eclipse.org/lsp4e/releases/0.27.1/</url>
+<!--					<url>https://download.eclipse.org/lsp4e/snapshots/</url> -->
 				</repository>
 				<repository>
 					<id>tm4e-snapshots</id>
