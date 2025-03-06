@@ -1,3 +1,39 @@
+## 2025-03-12 (4.29.0 RELEASE, incl. language servers version 1.61.0)
+
+#### important highlights
+
+* _(Spring Boot)_ Inject Bean completion proposal available in Spring Components
+* _(Spring Boot)_ Experimental Spring Structural view in the Outline (Work in Progress)
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ [structure view] add query methods as children to repository nodes [#1491](https://github.com/spring-projects/sts4/issues/1491)
+* _(Spring Boot)_ [structural view] add on/off preference for structural outline [#1490](https://github.com/spring-projects/sts4/issues/1490)
+* _(Spring Boot)_ bean completion proposal [#1325](https://github.com/spring-projects/sts4/pull/1325)
+* _(Spring Boot)_ Inject a bean completion proposal [#1196](https://github.com/spring-projects/sts4/issues/1196)
+* _(Spring Boot)_ do not create repository bean symbols for `@NoRepositoryBean` annotated types [#1500](https://github.com/spring-projects/sts4/issues/1500)
+* _(Spring Boot)_ [bean completion proposals] add on/off preference [#1489](https://github.com/spring-projects/sts4/issues/1489)
+* _(Spring Boot)_ [bean completion proposals] already having a field with the name of the bean causes weird results [#1488](https://github.com/spring-projects/sts4/issues/1488)
+* _(Spring Boot)_ [bean completion proposals] polish the proposal appearance in the completion list [#1485](https://github.com/spring-projects/sts4/issues/1485)
+* _(Spring Boot)_ [bean completion proposals] need to polish result when invoking autowire bean completion inside of constructor [#1484](https://github.com/spring-projects/sts4/issues/1484)
+* _(Spring Boot)_ [bean completion proposals] autowire bean proposals do not show up before statements [#1483](https://github.com/spring-projects/sts4/issues/1483)
+* _(Spring Boot)_ [bean completion proposals] shout not include own class in proposals [#1476](https://github.com/spring-projects/sts4/issues/1476)
+* _(Spring Boot)_ [bean completion proposals] proposals should show up for `this.` prefix [#1470](https://github.com/spring-projects/sts4/issues/1470)
+* _(Spring Boot)_ [bean completion proposals] proposals should show up for empty prefix [#1469](https://github.com/spring-projects/sts4/issues/1469)
+* _(Spring Boot)_ [bean completion proposals] assignment in constructor not generated [#1497](https://github.com/spring-projects/sts4/issues/1497)
+* _(Spring Boot)_ [bean completion proposals] completion proposals sometimes do not show up [#1475](https://github.com/spring-projects/sts4/issues/1475)
+* _(Spring Boot)_ [bean completion proposals] bean proposal filtering on language server side prevents proposals from showing up [#1471](https://github.com/spring-projects/sts4/issues/1471)
+* _(Spring Boot)_ [bean completion proposals] beans of type `Object` results in no constructor param being generated [#1468](https://github.com/spring-projects/sts4/issues/1468)
+* _(Spring Boot)_ [events] take event type attribute into account when indexing event listeners [#1465](https://github.com/spring-projects/sts4/issues/1465)
+* _(Spring Boot)_ correctly deal with concatenated values in annotation attributes [#1463](https://github.com/spring-projects/sts4/issues/1463)
+* _(Spring Boot)_ [events] take type hierarchy of events into account when finding references across event listeners and publishers [#1461](https://github.com/spring-projects/sts4/issues/1461)
+* _(Spring Boot)_ JPQL syntax highlighting support with constant string concatenation [#1460](https://github.com/spring-projects/sts4/issues/1460)
+* _(Spring Boot)_ Remove `EnhancedSymbolInformation` wrapper class from indexer codebase [#1450](https://github.com/spring-projects/sts4/issues/1450)
+* _(Spring Boot)_ Navigational aid for Spring Events [#1348](https://github.com/spring-projects/sts4/issues/1348)
+* _(Spring Boot)_ Wrong or undocumented proxy exclusions list [#1495](https://github.com/spring-projects/sts4/issues/1495)
+* _(Spring Boot)_ index cache struggles to deserialize JSON due to duplicated usage of `type` [#1473](https://github.com/spring-projects/sts4/issues/1473)
+* _(Spring Boot)_ `Upgrade Spring Boot...` UI does not show Spring Boot 3.4 upgrade [#1466](https://github.com/spring-projects/sts4/issues/1466)
+
 ## 2025-02-05 (4.28.0 RELEASE, incl. language servers version 1.60.0)
 
 #### important highlights
