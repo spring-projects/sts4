@@ -95,7 +95,7 @@ codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" -
 cd ${dir}/${destination_folder_name}
 echo "Generating dmg-config.json..."
 echo '{' >> dmg-config.json
-echo '  "title": "Spring Tool Suite 4",' >> dmg-config.json
+echo '  "title": "Spring Tools for Eclipse",' >> dmg-config.json
 echo '  "icon": "'$icns'",' >> dmg-config.json
 echo '  "contents": [' >> dmg-config.json
 echo '    { "x": 192, "y": 100, "type": "file", "path": "./SpringToolSuite4.app" },' >> dmg-config.json
