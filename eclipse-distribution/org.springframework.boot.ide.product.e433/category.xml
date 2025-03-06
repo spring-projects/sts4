@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site pack200="true">
 	<description url="https://spring.io/tools">
-		Spring Tool Suite 4
+		Spring Tools for Eclipse
 	</description>
 
 	<category-def name="Spring Tools" label="Spring Tools"/>

@@ -65,9 +65,9 @@
 
 	<properties>
 		<p2.qualifier>${buildQualifier}-SNAPSHOT</p2.qualifier>
-		<p2.repository.name>Spring Tool Suite</p2.repository.name>
+		<p2.repository.name>Spring Tools for Eclipse</p2.repository.name>
 
-		<dist.name>Spring Tool Suite 4</dist.name>
+		<dist.name>Spring Tools for Eclipse</dist.name>
 
 		<dist.key>TOOLS</dist.key>
 

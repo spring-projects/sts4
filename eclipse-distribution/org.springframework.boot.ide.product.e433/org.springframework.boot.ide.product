@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
-<product name="Spring Tool Suite 4" id="org.springframework.boot.ide.branding.sts4" uid="org.springframework.boot.ide.branding.sts4" application="org.eclipse.ui.ide.workbench" version="4.29.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="Spring Tools for Eclipse" id="org.springframework.boot.ide.branding.sts4" uid="org.springframework.boot.ide.branding.sts4" application="org.eclipse.ui.ide.workbench" version="4.29.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -126,7 +126,7 @@
 
    <configurations>
    	  <property name="eclipse.buildId" value="${dist.platform.version}.${buildQualifier}"/>
-   	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}"/>
+   	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-tools-for-eclipse-${unqualifiedVersion}.${p2.qualifier}"/>
 
    	  <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
         <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="2" />

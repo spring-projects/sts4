@@ -126,7 +126,7 @@
 
    <configurations>
    	  <property name="eclipse.buildId" value="${dist.platform.version}.${buildQualifier}"/>
-   	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}"/>
+   	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-tools-for-eclipse-${unqualifiedVersion}.${p2.qualifier}"/>
 
    	  <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
         <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="2" />

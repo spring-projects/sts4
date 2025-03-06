@@ -88,7 +88,7 @@
 							<rootFolders>
 								<macosx>SpringToolSuite4.app</macosx>
 							</rootFolders>
-							<archiveFileName>spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}</archiveFileName>
+							<archiveFileName>spring-tools-for-eclipse-${unqualifiedVersion}.${p2.qualifier}-${dist.target}</archiveFileName>
 						</product>
 					</products>
 					<formats>
