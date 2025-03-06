@@ -8,7 +8,7 @@ download_url_root=$5
 
 s3_url=s3://${s3_bucket}/${dist_path}
 downloads_html="sts4-nightly-${eclipse_version}.html"
-files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
+files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tools-for-eclipse*.zip" --include "spring-tools-for-eclipse*.dmg" --include "spring-tools-for-eclipse*.self-extracting.jar" --include "spring-tools-for-eclipse*.tar.gz" --exclude "*/*" --dryrun`
 rm -f ./${downloads_html}
 echo '<ul>' >> $downloads_html
 s3_url_prefix="s3://${AWS_S3_BUCKET}"

@@ -117,7 +117,7 @@ jobs:
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
-          files=`ls spring-tool-suite-4*linux*.tar.gz`
+          files=`ls spring-tools-for-eclipse*linux*.tar.gz`
           for file in $files
           do
             echo "Re-archive using tar.gz on linux runner to remove LIBARCHIVE headers"
@@ -134,11 +134,11 @@ jobs:
           done
           echo "Processing S3 update..."
           dist_path=${{ steps.s3-paths.outputs.dist_path }}
-          ls spring-tool-suite-4*linux*.tar.gz*
+          ls spring-tools-for-eclipse*linux*.tar.gz*
           echo "Removing old Linux .tar.gz files from s3..."
-          aws s3 rm s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
+          aws s3 rm s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tools-for-eclipse*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .tar.gz files to s3..."
-          aws s3 cp . s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
+          aws s3 cp . s3://$AWS_S3_BUCKET/$dist_path --recursive --exclude "*" --include "spring-tools-for-eclipse*linux*.tar.gz*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
@@ -149,7 +149,7 @@ jobs:
         run: |
           echo "Uploading Win Zips and OSX tar.gz to S3 for signing..."
           id=${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
-          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tools-for-eclipse*win*.zip" --include "spring-tools-for-eclipse*macosx*.tar.gz" --exclude "*/*" --no-progress
     outputs:
       id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
       dist_path: ${{ steps.s3-paths.outputs.dist_path }}
@@ -172,14 +172,14 @@ jobs:
             .github
       - name: Download Win Zips from S3 for Signing
         run: |
-          rm -f spring-tool-suite-4*win*.zip*
-          rm -f spring-tool-suite-4*win*.self-extracting.jar*
+          rm -f spring-tools-for-eclipse*win*.zip*
+          rm -f spring-tools-for-eclipse*win*.self-extracting.jar*
           ls
-          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
+          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tools-for-eclipse*win*.zip*" --exclude "*/*" --no-progress
       - name: Sign EXE within zip files
         id: sign
         run: |
-          files=`ls spring-tool-suite-4*win*.zip`
+          files=`ls spring-tools-for-eclipse*win*.zip`
           for file in $files
           do
             ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ github.run_id }} &
@@ -201,11 +201,11 @@ jobs:
         run: |
           dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           echo "Processing S3 update..."
-          ls spring-tool-suite-4*win*
+          ls spring-tools-for-eclipse*win*
           echo "Removing old win zip and self extracting jar files from S3..."
-          aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
+          aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tools-for-eclipse*win*.zip*" --include "spring-tools-for-eclipse*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to S3..."
-          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
+          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tools-for-eclipse*win*.zip*" --include "spring-tools-for-eclipse*win*.self-extracting.jar*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
@@ -254,7 +254,7 @@ jobs:
         run: |
           rm -rf *macosx*
           ls
-          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 mv s3://$AWS_S3_BUCKET/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tools-for-eclipse*macosx*.tar.gz" --exclude "*/*" --no-progress
       - name: Sign .app, Create and Sign DMG
         env:
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
@@ -262,7 +262,7 @@ jobs:
         run: |
           export KEYCHAIN=$RUNNER_TEMP/app-signing.keychain-db
           ls ${{ github.workspace }}/.github/assets
-          files=`ls spring-tool-suite-4*macosx*.tar.gz`
+          files=`ls spring-tools-for-eclipse*macosx*.tar.gz`
           for file in $files
           do
             ${{ github.workspace }}/.github/scripts/sign-osx-distro-file.sh $file ${{ github.workspace }}/.github/assets/entitlements.plist ${{ github.workspace }}/.github/assets/sts4.icns
@@ -272,7 +272,7 @@ jobs:
           NOTARIZE_PROFILE: notarize-app-dmg-profile
         run: |
           xcrun notarytool store-credentials $NOTARIZE_PROFILE --apple-id ${{ secrets.VMWARE_APPLE_USER }} --team-id ${{ secrets.VMWARE_APPLE_TEAM_ID }} --password ${{ secrets.VMWARE_APPLE_PASSWORD }}
-          dmg_files=`ls spring-tool-suite-4*macosx*.dmg`
+          dmg_files=`ls spring-tools-for-eclipse*macosx*.dmg`
           for dmg_file in $dmg_files
           do
             ${{ github.workspace }}/.github/scripts/notarize-osx-distro-file.sh $dmg_file $NOTARIZE_PROFILE &
@@ -294,11 +294,11 @@ jobs:
         run: |
           dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           echo "Processing S3 update..."
-          ls spring-tool-suite-4*macosx*.dmg*
+          ls spring-tools-for-eclipse*macosx*.dmg*
           echo "Removing old dmg files from S3..."
-          aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
+          aws s3 rm s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tools-for-eclipse*macosx*.dmg*" --exclude "*/*"
           echo "Uploading new dmg files to S3..."
-          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress
+          aws s3 mv . s3://$AWS_S3_BUCKET/${dist_path} --recursive --exclude "*" --include "spring-tools-for-eclipse*macosx*.dmg*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |
@@ -309,7 +309,7 @@ jobs:
       - name: Cleanup
         if: ${{ always() }}
         run: |
-          rm -rf *spring-tool-suite-4*macosx*
+          rm -rf *spring-tools-for-eclipse*macosx*
 
   purge_cache:
     needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
@@ -354,7 +354,7 @@ jobs:
           downloads_html="sts4-distro-downloads-${{ inputs.eclipse_profile }}.txt"
           rm -f ./downloads_html
           s3_url=s3://${AWS_S3_BUCKET}/${{ needs.eclipse-distro-build.outputs.dist_path }}
-          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
+          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tools-for-eclipse*.zip" --include "spring-tools-for-eclipse*.dmg" --include "spring-tools-for-eclipse*.self-extracting.jar" --include "spring-tools-for-eclipse*.tar.gz" --exclude "*/*" --dryrun --checksum-algorithm CRC32`
           s3_url_prefix="s3://${AWS_S3_BUCKET}"
           s3_url_prefix_length=${#s3_url_prefix}
           for file in $files
