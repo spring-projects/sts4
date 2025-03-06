@@ -86,7 +86,7 @@
 							<id>org.springframework.boot.ide.branding.sts4</id>
 							<rootFolder>sts-${unqualifiedVersion}.${p2.qualifier}</rootFolder>
 							<rootFolders>
-								<macosx>SpringToolSuite4.app</macosx>
+								<macosx>SpringToolsForEclipse.app</macosx>
 							</rootFolders>
 							<archiveFileName>spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}</archiveFileName>
 						</product>
@@ -190,7 +190,7 @@
 								<arg>org.eclipse.equinox.p2.director</arg>
 								<arg>-nosplash</arg>
 								<arg>-destination</arg>
-								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app/Contents/Eclipse</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolsForEclipse.app/Contents/Eclipse</arg>
 								<arg>-repository</arg>
 								<arg>${justj.repository}</arg>
 								<arg>-installIUs</arg>
@@ -211,7 +211,7 @@
 								<arg>org.eclipse.equinox.p2.director</arg>
 								<arg>-nosplash</arg>
 								<arg>-destination</arg>
-								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app/Contents/Eclipse</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolsForEclipse.app/Contents/Eclipse</arg>
 								<arg>-repository</arg>
 								<arg>${justj.repository}</arg>
 								<arg>-installIUs</arg>
@@ -301,10 +301,10 @@
 							<arguments>
 								<argument>-jar</argument>
 								<argument>${project.build.directory}/../../common/eclipse-distribution-license-file-generator.jar</argument>
-								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app/Contents/Eclipse/plugins/</argument>
-								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app/Contents/Eclipse/open-source-licenses.txt</argument>
-								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app/Contents/Eclipse/plugins/</argument>
-								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app/Contents/Eclipse/open-source-licenses.txt</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolsForEclipse.app/Contents/Eclipse/plugins/</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolsForEclipse.app/Contents/Eclipse/open-source-licenses.txt</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolsForEclipse.app/Contents/Eclipse/plugins/</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolsForEclipse.app/Contents/Eclipse/open-source-licenses.txt</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/plugins/</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/open-source-licenses.txt</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier}/plugins/</argument>
