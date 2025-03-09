@@ -3,10 +3,6 @@ name: Wipe out temp build artifacts
 # configure manual trigger
 on:
   workflow_dispatch:
-#on:
-#  push:
-#    branches:
-#      - 'main'
 
 env:
   AWS_ACCESS_KEY_ID: ${{ secrets.CDN_S3_ACCESS_KEY }}
@@ -22,5 +18,6 @@ jobs:
       - name: Remove Temp Build Artifacts from S3
         id: cleanup-s3-temp-storage
         run: |
-          aws s3 rm s3://${AWS_S#_BUCKET}/sts4-distro-ci-temp --recursive --exclude "*" --include "*.zip"
+          aws s3 rm s3://${AWS_S3_BUCKET}/sts4-distro-ci-temp --recursive --exclude "*" --include "*.zip"
+          aws s3 rm s3://${AWS_S3_BUCKET}/exes-signed --recursive --exclude "*" --include "*.exe"
 
