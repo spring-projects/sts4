@@ -6,12 +6,12 @@ on:
       version:
         description: version
         required: true
-        default: 4.24.0
+        default: 4.29.0
         type: string
       eclipse_profile:
-        description: Eclipse profile 'e429' etc
+        description: Eclipse profile 'e435' etc
         required: true
-        default: 'e429'
+        default: 'e435'
         type: string
       build_type:
         description: Build type such as 'snapshot', 'milestone' or 'release'
@@ -20,12 +20,12 @@ on:
         type: string
       p2_path:
         description: p2 path
-        default: 'release/TOOLS/sts4/update/4.24.0.RELEASE/e4.32'
+        default: 'release/TOOLS/sts4/update/4.29.0.RELEASE/e4.35'
         required: true
         type: string
       dist_path:
         description: distro path
-        default: 'release/STS4/4.24.0.RELEASE/dist/e4.32'
+        default: 'release/STS4/4.29.0.RELEASE/dist/e4.35'
         required: true
         type: string
 
