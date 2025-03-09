@@ -337,12 +337,16 @@ jobs:
           cloudflare_cache_token: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
 
   gchat-message:
-#    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
-    needs: [ eclipse-distro-build, sign-osx-distros ]
+    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
     if: ${{ inputs.build_type == 'release' }}
     name: Send GChat message
     runs-on: ubuntu-latest
     steps:
+      - name: Setup AWS CLI 2.22
+        run: |
+          curl -s "https://awscli.amazonaws.com/AWSCLIV2-2.22.35.pkg" -o "awscliv2.pkg"
+          sudo installer -pkg ./awscliv2.pkg -target /
+          aws --version
       - name: Google Chat Notification
         run: |
           echo "P2 Update Site: ${DOWNLOAD_URL_ROOT}/${{ needs.eclipse-distro-build.outputs.p2_path }}"
