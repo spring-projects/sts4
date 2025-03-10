@@ -135,11 +135,20 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		indexEventListeners(beanDefinition, type, annotationType, metaAnnotations, context, doc);
 		indexEventListenerInterfaceImplementation(beanDefinition, type, context, doc);
 		indexRequestMappings(beanDefinition, type, annotationType, metaAnnotations, context, doc);
+		indexConfigurationProperties(beanDefinition, type, context, doc);
 
 		context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 		context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 	}
 	
+	private void indexConfigurationProperties(Bean beanDefinition, TypeDeclaration type, SpringIndexerJavaContext context, TextDocument doc) {
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(type);
+
+		if (annotationHierarchies.isAnnotatedWith(type.resolveBinding(), Annotations.CONFIGURATION_PROPERTIES)) {
+			ConfigurationPropertiesSymbolProvider.indexConfigurationProperties(beanDefinition, type, context, doc);
+		}
+	}
+
 	private void indexBeanMethods(Bean bean, TypeDeclaration type, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(type);
 		if (bean.isConfiguration()) {
@@ -323,7 +332,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		return null;
 	}
 	
-	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {
+	public static String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {
 		StringBuilder symbolLabel = new StringBuilder();
 		symbolLabel.append("@");
 		symbolLabel.append(searchPrefix);

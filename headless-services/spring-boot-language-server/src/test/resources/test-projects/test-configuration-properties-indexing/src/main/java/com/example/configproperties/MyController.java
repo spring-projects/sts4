@@ -1,4 +1,4 @@
-package com.example.events.demo;
+package com.example.configproperties;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

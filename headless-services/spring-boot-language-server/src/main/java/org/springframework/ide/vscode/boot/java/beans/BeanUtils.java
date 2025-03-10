@@ -39,8 +39,8 @@ public class BeanUtils {
 			return ASTUtils.getExpressionValueAsString(attribute.get(), (a) -> {});
 		}
 		else {
-			String beanName = type.getName().toString();
-			return BeanUtils.getBeanNameFromType(beanName);
+			String beanType = type.getName().toString();
+			return BeanUtils.getBeanNameFromType(beanType);
 		}
 	}
 	
