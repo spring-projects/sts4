@@ -58,7 +58,7 @@ jobs:
               filename=${file:${#s3_url}+1}
               echo $download_url
               echo $filename
-              echo "<li><a href=${download_url}>${filename}</a></li>" >> $downloads_html
+              echo "<a href=${download_url}>${filename}</a>" >> $downloads_html
             fi
           done
           distro_links=`cat ./$downloads_html`
@@ -98,6 +98,41 @@ jobs:
                         ]
                       }
                     ]
+                  }
+              ]
+          }"
+          
+          curl --location --request POST '${{ secrets.TOOLS_TEAM_GCHAT_WEBHOOK_URL }}' \
+          --header 'Content-Type: application/json' \
+          --data-raw "{
+              \"cardsV2\": [
+                  {
+                    \"card\": {
+                      \"header\": {
+                        \"title\": \"STS ${{ inputs.version }} ${build_type}\",
+                        \"subtitle\": \"Eclipse ${eclipse_version}\",
+                        \"imageUrl\": \"https://avatars.githubusercontent.com/u/317776?s=48&amp;v=4\",
+                      },
+                      \"sections\": [
+                        {
+                          \"widgets\": [
+                            {
+                              \"decoratedText\": {
+                                \"topLabel\": \"P2 Update Site\",
+                                \"text\": \"<a href=${DOWNLOAD_URL_ROOT}/${{ inputs.p2_path }}>${DOWNLOAD_URL_ROOT}/${{ inputs.p2_path }}</a>\"
+                              }
+                            },
+                            {
+                              \"decoratedText\": {
+                                \"topLabel\": \"Distributions\",
+                                \"text\": \"${distro_links}\",
+                                \"wrapText\": true
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
                   }
               ]
           }"          
