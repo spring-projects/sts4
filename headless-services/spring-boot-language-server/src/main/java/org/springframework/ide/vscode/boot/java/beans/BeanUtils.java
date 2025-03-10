@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -33,7 +34,7 @@ public class BeanUtils {
 	
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
 
-	public static String getBeanNameFromComponentAnnotation(Annotation annotation, TypeDeclaration type) {
+	public static String getBeanNameFromComponentAnnotation(Annotation annotation, AbstractTypeDeclaration type) {
 		Optional<Expression> attribute = ASTUtils.getAttribute(annotation, "value");
 		if (attribute.isPresent()) {
 			return ASTUtils.getExpressionValueAsString(attribute.get(), (a) -> {});

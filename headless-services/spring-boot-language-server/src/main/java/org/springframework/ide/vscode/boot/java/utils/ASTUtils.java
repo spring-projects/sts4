@@ -22,6 +22,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.BodyDeclaration;
@@ -39,6 +40,7 @@ import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.RecordDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
@@ -284,8 +286,24 @@ public class ASTUtils {
 		}
 	}
 
+	public static Collection<Annotation> getAnnotations(AbstractTypeDeclaration abstractTypeDeclaration) {
+		if (abstractTypeDeclaration instanceof TypeDeclaration typeDeclaration) {
+			return getAnnotations(typeDeclaration);
+		}
+		else if (abstractTypeDeclaration instanceof RecordDeclaration recordDeclaration) {
+			return getAnnotations(recordDeclaration);
+		}
+		else {
+			return null;
+		}
+	}
+	
 	public static Collection<Annotation> getAnnotations(TypeDeclaration typeDeclaration) {
 		return getAnnotationsFromModifiers(typeDeclaration.getStructuralProperty(TypeDeclaration.MODIFIERS2_PROPERTY));
+	}
+	
+	public static Collection<Annotation> getAnnotations(RecordDeclaration recordDeclaration) {
+		return getAnnotationsFromModifiers(recordDeclaration.getStructuralProperty(RecordDeclaration.MODIFIERS2_PROPERTY));
 	}
 	
 	public static Collection<Annotation> getAnnotations(MethodDeclaration methodDeclaration) {
@@ -488,7 +506,16 @@ public class ASTUtils {
 		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : DefaultValues.EMPTY_INJECTION_POINTS;
 	}
 	
-	public static InjectionPoint[] findInjectionPoints(TypeDeclaration type, TextDocument doc) throws BadLocationException {
+	public static InjectionPoint[] findInjectionPoints(AbstractTypeDeclaration abstractType, TextDocument doc) throws BadLocationException {
+		if (abstractType instanceof TypeDeclaration type) {
+			return findInjectionPointsForType(type, doc);
+		}
+		else {
+			return DefaultValues.EMPTY_INJECTION_POINTS;
+		}
+	}
+	
+	public static InjectionPoint[] findInjectionPointsForType(TypeDeclaration type, TextDocument doc) throws BadLocationException {
 		List<InjectionPoint> result = new ArrayList<>();
 
 		findInjectionPoints(type.getMethods(), doc, result);
