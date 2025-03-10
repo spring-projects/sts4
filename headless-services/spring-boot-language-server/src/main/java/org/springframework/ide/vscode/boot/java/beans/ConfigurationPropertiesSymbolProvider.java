@@ -18,10 +18,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.RecordDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
@@ -55,8 +58,10 @@ public class ConfigurationPropertiesSymbolProvider implements SymbolProvider {
 	@Override
 	public void addSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		try {
-			if (node != null && node.getParent() != null && node.getParent() instanceof TypeDeclaration) {
-				createSymbol(node, annotationType, metaAnnotations, context, doc);
+			if (node != null && node.getParent() != null) {
+				if (node.getParent() instanceof AbstractTypeDeclaration abstractType) {
+					createSymbolForType(abstractType, node, annotationType, metaAnnotations, context, doc);
+				}
 			}
 		}
 		catch (BadLocationException e) {
@@ -64,14 +69,13 @@ public class ConfigurationPropertiesSymbolProvider implements SymbolProvider {
 		}
 	}
 
-	protected void createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) throws BadLocationException {
+	protected void createSymbolForType(AbstractTypeDeclaration type, Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) throws BadLocationException {
 		String annotationTypeName = annotationType.getName();
 		
 		Collection<String> metaAnnotationNames = metaAnnotations.stream()
 				.map(ITypeBinding::getName)
 				.collect(Collectors.toList());
 		
-		TypeDeclaration type = (TypeDeclaration) node.getParent();
 		ITypeBinding typeBinding = type.resolveBinding();
 		
 		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(type);
@@ -79,12 +83,11 @@ public class ConfigurationPropertiesSymbolProvider implements SymbolProvider {
 		
 		if (!isComponentAnnotated) {
 			String beanName = BeanUtils.getBeanNameFromType(type.getName().getFullyQualifiedName());
-			ITypeBinding beanType = type.resolveBinding();
 
 			Location location = new Location(doc.getUri(), doc.toRange(type.getStartPosition(), type.getLength()));
 		
 			WorkspaceSymbol symbol = new WorkspaceSymbol(
-					ComponentSymbolProvider.beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType.getName()), SymbolKind.Interface,
+					ComponentSymbolProvider.beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, typeBinding.getName()), SymbolKind.Interface,
 					Either.forLeft(location));
 		
 			boolean isConfiguration = false; // otherwise, the ComponentSymbolProvider takes care of the bean definiton for this type
@@ -92,7 +95,7 @@ public class ConfigurationPropertiesSymbolProvider implements SymbolProvider {
 			InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(type, doc);
 
 			Set<String> supertypes = new HashSet<>();
-			ASTUtils.findSupertypes(beanType, supertypes);
+			ASTUtils.findSupertypes(typeBinding, supertypes);
 
 			Collection<Annotation> annotationsOnType = ASTUtils.getAnnotations(type);
 
@@ -103,7 +106,7 @@ public class ConfigurationPropertiesSymbolProvider implements SymbolProvider {
 					.map(an -> new AnnotationMetadata(an.getQualifiedName(), true, null, null)))
 					.toArray(AnnotationMetadata[]::new);
 		
-			Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration, symbol.getName());
+			Bean beanDefinition = new Bean(beanName, typeBinding.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration, symbol.getName());
 		
 			indexConfigurationProperties(beanDefinition, type, context, doc);
 
@@ -112,7 +115,16 @@ public class ConfigurationPropertiesSymbolProvider implements SymbolProvider {
 		}
 	}
 
-	public static void indexConfigurationProperties(Bean beanDefinition, TypeDeclaration type, SpringIndexerJavaContext context, TextDocument doc) {
+	public static void indexConfigurationProperties(Bean beanDefinition, AbstractTypeDeclaration abstractType, SpringIndexerJavaContext context, TextDocument doc) {
+		if (abstractType instanceof TypeDeclaration type) {
+			indexConfigurationPropertiesForType(beanDefinition, type, context, doc);
+		}
+		else if (abstractType instanceof RecordDeclaration record) {
+			indexConfigurationPropertiesForRecord(beanDefinition, record, context, doc);
+		}
+	}
+	
+	public static void indexConfigurationPropertiesForType(Bean beanDefinition, TypeDeclaration type, SpringIndexerJavaContext context, TextDocument doc) {
 		
 		FieldDeclaration[] fields = type.getFields();
 		if (fields != null) {
@@ -145,4 +157,32 @@ public class ConfigurationPropertiesSymbolProvider implements SymbolProvider {
 		
 	}
 	
+	public static void indexConfigurationPropertiesForRecord(Bean beanDefinition, RecordDeclaration record, SpringIndexerJavaContext context, TextDocument doc) {
+		
+		@SuppressWarnings("unchecked")
+		List<SingleVariableDeclaration> fields = record.recordComponents();
+
+		if (fields != null) {
+			for (SingleVariableDeclaration field : fields) {
+				try {
+					Type fieldType = field.getType();
+					if (fieldType != null) {
+						
+						SimpleName name = field.getName();
+						if (name != null) {
+
+							DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, field);
+							Range range = doc.toRange(nodeRegion);
+							ConfigPropertyIndexElement configPropElement = new ConfigPropertyIndexElement(name.getFullyQualifiedName(), fieldType.resolveBinding().getQualifiedName(), range);
+								
+							beanDefinition.addChild(configPropElement);
+						}
+					}
+				} catch (BadLocationException e) {
+					log.error("error identifying config property field", e);
+				}
+			}
+		}
+		
+	}
 }

@@ -102,4 +102,51 @@ public class SpringIndexerConfigurationPropertiesTest {
         assertEquals("java.lang.String", configPropElement.getType());
     }
 
+    @Test
+    void testSimpleConfigPropertiesRecord() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/com/example/configproperties/ConfigurationPropertiesWithRecords.java").toUri().toString();
+
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(1, beans.length);
+        
+        Bean configPropertiesComponentBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("configurationPropertiesWithRecords")).findFirst().get();
+        assertEquals("com.example.configproperties.ConfigurationPropertiesWithRecords", configPropertiesComponentBean.getType());
+        
+        List<SpringIndexElement> children = configPropertiesComponentBean.getChildren();
+        assertEquals(2, children.size());
+        
+        ConfigPropertyIndexElement configPropElement1 = (ConfigPropertyIndexElement) children.get(0);
+        assertEquals("name", configPropElement1.getName());
+        assertEquals("java.lang.String", configPropElement1.getType());
+
+        ConfigPropertyIndexElement configPropElement2 = (ConfigPropertyIndexElement) children.get(1);
+        assertEquals("duration", configPropElement2.getName());
+        assertEquals("int", configPropElement2.getType());
+    }
+    
+    @Test
+    void testSimpleConfigPropertiesRecordAndConfigurationAnnotation() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/com/example/configproperties/ConfigurationPropertiesWithRecordsAndConfigurationAnnotation.java").toUri().toString();
+
+        Bean[] beans = springIndex.getBeansOfDocument(docUri);
+        assertEquals(1, beans.length);
+        
+        Bean configPropertiesComponentBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("configurationPropertiesWithRecordsAndConfigurationAnnotation")).findFirst().get();
+        assertEquals("com.example.configproperties.ConfigurationPropertiesWithRecordsAndConfigurationAnnotation", configPropertiesComponentBean.getType());
+        
+        List<SpringIndexElement> children = configPropertiesComponentBean.getChildren();
+        assertEquals(2, children.size());
+        
+        ConfigPropertyIndexElement configPropElement1 = (ConfigPropertyIndexElement) children.get(0);
+        assertEquals("name", configPropElement1.getName());
+        assertEquals("java.lang.String", configPropElement1.getType());
+
+        ConfigPropertyIndexElement configPropElement2 = (ConfigPropertyIndexElement) children.get(1);
+        assertEquals("duration", configPropElement2.getName());
+        assertEquals("int", configPropElement2.getType());
+
+    }
+    
+    
+    
 }
