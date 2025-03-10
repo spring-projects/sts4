@@ -348,7 +348,7 @@ jobs:
           downloads_html="sts4-distro-downloads-${{ inputs.eclipse_profile }}.txt"
           rm -f ./downloads_html
           s3_url=s3://${AWS_S3_BUCKET}/${{ needs.eclipse-distro-build.outputs.dist_path }}
-          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tools-for-eclipse*.zip" --include "spring-tools-for-eclipse*.dmg" --include "spring-tools-for-eclipse*.self-extracting.jar" --include "spring-tools-for-eclipse*.tar.gz" --exclude "*/*" --dryrun --checksum-algorithm CRC32`
+          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tools-for-eclipse*.zip" --include "spring-tools-for-eclipse*.dmg" --include "spring-tools-for-eclipse*.self-extracting.jar" --include "spring-tools-for-eclipse*.tar.gz" --exclude "*/*" --dryrun`
           s3_url_prefix="s3://${AWS_S3_BUCKET}"
           s3_url_prefix_length=${#s3_url_prefix}
           for file in $files
