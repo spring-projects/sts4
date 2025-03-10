@@ -17,6 +17,7 @@ import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
+import org.springframework.ide.vscode.boot.java.beans.ConfigurationPropertiesSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.FeignClientSymbolProvider;
 import org.springframework.ide.vscode.boot.java.data.DataRepositorySymbolProvider;
 import org.springframework.ide.vscode.boot.java.events.EventListenerSymbolProvider;
@@ -34,9 +35,11 @@ public class SpringSymbolIndexerConfig {
 		RequestMappingSymbolProvider requestMappingSymbolProvider = new RequestMappingSymbolProvider();
 		BeansSymbolProvider beansSymbolProvider = new BeansSymbolProvider();
 		ComponentSymbolProvider componentSymbolProvider = new ComponentSymbolProvider();
-		RestrictedDefaultSymbolProvider restrictedDefaultSymbolProvider = new RestrictedDefaultSymbolProvider();
+		ConfigurationPropertiesSymbolProvider configPropsSymbolProvider = new ConfigurationPropertiesSymbolProvider();
 		DataRepositorySymbolProvider dataRepositorySymbolProvider = new DataRepositorySymbolProvider();
 		EventListenerSymbolProvider eventListenerSymbolProvider = new EventListenerSymbolProvider();
+
+		RestrictedDefaultSymbolProvider restrictedDefaultSymbolProvider = new RestrictedDefaultSymbolProvider();
 
 		providers.put(Annotations.SPRING_REQUEST_MAPPING, requestMappingSymbolProvider);
 		providers.put(Annotations.SPRING_GET_MAPPING, requestMappingSymbolProvider);
@@ -49,6 +52,7 @@ public class SpringSymbolIndexerConfig {
 		providers.put(Annotations.COMPONENT, componentSymbolProvider);
 		providers.put(Annotations.NAMED_JAKARTA, componentSymbolProvider);
 		providers.put(Annotations.NAMED_JAVAX, componentSymbolProvider);
+		providers.put(Annotations.CONFIGURATION_PROPERTIES, configPropsSymbolProvider);
 
 		providers.put(Annotations.PROFILE, restrictedDefaultSymbolProvider);
 

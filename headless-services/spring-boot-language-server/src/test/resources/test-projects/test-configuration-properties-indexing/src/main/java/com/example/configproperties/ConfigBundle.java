@@ -1,4 +1,4 @@
-package com.example.events.demo;
+package com.example.configproperties;
 
 import java.util.Date;
 

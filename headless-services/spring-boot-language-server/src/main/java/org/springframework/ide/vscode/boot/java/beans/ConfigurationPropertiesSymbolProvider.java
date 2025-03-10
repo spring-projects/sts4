@@ -1,0 +1,148 @@
+/*******************************************************************************
+ * Copyright (c) 2025 Broadcom
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Broadcom - initial API and implementation
+ *******************************************************************************/
+package org.springframework.ide.vscode.boot.java.beans;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+/**
+ * @author Martin Lippert
+ */
+public class ConfigurationPropertiesSymbolProvider implements SymbolProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(ConfigurationPropertiesSymbolProvider.class);
+
+	@Override
+	public void addSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+		try {
+			if (node != null && node.getParent() != null && node.getParent() instanceof TypeDeclaration) {
+				createSymbol(node, annotationType, metaAnnotations, context, doc);
+			}
+		}
+		catch (BadLocationException e) {
+			log.error("", e);
+		}
+	}
+
+	protected void createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) throws BadLocationException {
+		String annotationTypeName = annotationType.getName();
+		
+		Collection<String> metaAnnotationNames = metaAnnotations.stream()
+				.map(ITypeBinding::getName)
+				.collect(Collectors.toList());
+		
+		TypeDeclaration type = (TypeDeclaration) node.getParent();
+		ITypeBinding typeBinding = type.resolveBinding();
+		
+		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(type);
+		boolean isComponentAnnotated = annotationHierarchies.isAnnotatedWith(typeBinding, Annotations.COMPONENT);
+		
+		if (!isComponentAnnotated) {
+			String beanName = BeanUtils.getBeanNameFromType(type.getName().getFullyQualifiedName());
+			ITypeBinding beanType = type.resolveBinding();
+
+			Location location = new Location(doc.getUri(), doc.toRange(type.getStartPosition(), type.getLength()));
+		
+			WorkspaceSymbol symbol = new WorkspaceSymbol(
+					ComponentSymbolProvider.beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType.getName()), SymbolKind.Interface,
+					Either.forLeft(location));
+		
+			boolean isConfiguration = false; // otherwise, the ComponentSymbolProvider takes care of the bean definiton for this type
+
+			InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(type, doc);
+
+			Set<String> supertypes = new HashSet<>();
+			ASTUtils.findSupertypes(beanType, supertypes);
+
+			Collection<Annotation> annotationsOnType = ASTUtils.getAnnotations(type);
+
+			AnnotationMetadata[] annotations = Stream.concat(
+					Arrays.stream(ASTUtils.getAnnotationsMetadata(annotationsOnType, doc))
+					,
+					metaAnnotations.stream()
+					.map(an -> new AnnotationMetadata(an.getQualifiedName(), true, null, null)))
+					.toArray(AnnotationMetadata[]::new);
+		
+			Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, isConfiguration, symbol.getName());
+		
+			indexConfigurationProperties(beanDefinition, type, context, doc);
+
+			context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
+			context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
+		}
+	}
+
+	public static void indexConfigurationProperties(Bean beanDefinition, TypeDeclaration type, SpringIndexerJavaContext context, TextDocument doc) {
+		
+		FieldDeclaration[] fields = type.getFields();
+		if (fields != null) {
+			for (FieldDeclaration field : fields) {
+				try {
+					Type fieldType = field.getType();
+					if (fieldType != null) {
+						
+						@SuppressWarnings("unchecked")
+						List<VariableDeclarationFragment> fragments = field.fragments();
+
+						for (VariableDeclarationFragment fragment : fragments) {
+							SimpleName name = fragment.getName();
+
+							if (name != null) {
+
+								DocumentRegion nodeRegion = ASTUtils.nodeRegion(doc, field);
+								Range range = doc.toRange(nodeRegion);
+								ConfigPropertyIndexElement configPropElement = new ConfigPropertyIndexElement(name.getFullyQualifiedName(), fieldType.resolveBinding().getQualifiedName(), range);
+								
+								beanDefinition.addChild(configPropElement);
+							}
+						}
+					}
+				} catch (BadLocationException e) {
+					log.error("error identifying config property field", e);
+				}
+			}
+		}
+		
+	}
+	
+}
