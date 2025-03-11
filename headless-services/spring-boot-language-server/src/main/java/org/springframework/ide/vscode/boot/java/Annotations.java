@@ -99,6 +99,10 @@ public class Annotations {
 	public static final String APPLICATION_LISTENER = "org.springframework.context.ApplicationListener";
 	public static final String EVENT_PUBLISHER = "org.springframework.context.ApplicationEventPublisher";
 	
+	public static final String BEAN_REGISTRAR_INTERFACE = "org.springframework.beans.factory.BeanRegistrar";
+	public static final String BEAN_REGISTRY_INTERFACE = "org.springframework.beans.factory.BeanRegistry";
+
+	
 	public static final Map<String, String> AOP_ANNOTATIONS = Map.of(
 	        "org.aspectj.lang.annotation.Pointcut", "Pointcut",
 	        "org.aspectj.lang.annotation.Before", "Before",
@@ -108,7 +112,6 @@ public class Annotations {
 	        "org.aspectj.lang.annotation.AfterThrowing", "AfterThrowing",
 	        "org.aspectj.lang.annotation.DeclareParents", "DeclareParents"
 	);
-	
-	
+
 
 }

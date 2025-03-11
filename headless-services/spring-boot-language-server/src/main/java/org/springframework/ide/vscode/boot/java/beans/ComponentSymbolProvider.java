@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -18,9 +19,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -140,6 +143,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		indexEventListenerInterfaceImplementation(beanDefinition, type, context, doc);
 		indexRequestMappings(beanDefinition, type, annotationType, metaAnnotations, context, doc);
 		indexConfigurationProperties(beanDefinition, type, context, doc);
+		indexBeanRegistrarImplementation(beanDefinition, type, context, doc);
 
 		context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 		context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
@@ -321,6 +325,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		// check for event listener implementations on classes that are not annotated with component, but created via bean methods (for example)
 		if (!isComponment) {
 			indexEventListenerInterfaceImplementation(null, typeDeclaration, context, doc);
+			indexBeanRegistrarImplementation(null, typeDeclaration, context, doc);
 		}
 		
 	}
@@ -377,6 +382,191 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		return null;
 	}
 	
+	private MethodDeclaration findRegisterMethod(TypeDeclaration type, ITypeBinding beanRegistrarType) {
+		IMethodBinding[] beanRegistrarMethods = beanRegistrarType.getDeclaredMethods();
+		if (beanRegistrarMethods == null || beanRegistrarMethods.length != 1 || !"register".equals(beanRegistrarMethods[0].getName())) {
+			return null;
+		}
+		
+		MethodDeclaration[] methods = type.getMethods();
+		
+		for (MethodDeclaration method : methods) {
+			IMethodBinding binding = method.resolveBinding();
+			boolean overrides = binding.overrides(beanRegistrarMethods[0]);
+			if (overrides) {
+				return method;
+			}
+		}
+
+		return null;
+	}
+	
+	private void indexBeanRegistrarImplementation(Bean bean, TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+		try {
+			ITypeBinding typeBinding = typeDeclaration.resolveBinding();
+			if (typeBinding == null) return;
+			
+			ITypeBinding inTypeHierarchy = ASTUtils.findInTypeHierarchy(typeDeclaration, doc, typeBinding, Set.of(Annotations.BEAN_REGISTRAR_INTERFACE));
+			if (inTypeHierarchy == null) return;
+	
+			MethodDeclaration registerMethod = findRegisterMethod(typeDeclaration, inTypeHierarchy);
+			if (registerMethod == null) return;
+			
+			if (!context.isFullAst()) { // needs full method bodies to continue
+				throw new RequiredCompleteAstException();
+			}
+			
+			if (bean == null) { // need to create and register bean element
+				String beanType = typeBinding.getQualifiedName();
+				String beanName = BeanUtils.getBeanNameFromType(typeBinding.getName());
+				
+				Location location = new Location(doc.getUri(), doc.toRange(typeDeclaration.getStartPosition(), typeDeclaration.getLength()));
+				
+				WorkspaceSymbol symbol = new WorkspaceSymbol(
+						beanLabel("+", null, null, beanName, beanType),
+						SymbolKind.Class,
+						Either.forLeft(location));
+				
+				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
+				
+				Set<String> supertypes = new HashSet<>();
+				ASTUtils.findSupertypes(typeBinding, supertypes);
+				
+				Collection<Annotation> annotationsOnMethod = ASTUtils.getAnnotations(typeDeclaration);
+				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(annotationsOnMethod, doc);
+				
+				bean = new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, false, symbol.getName());
+
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
+				context.getBeans().add(new CachedBean(context.getDocURI(), bean));
+			}
+			
+			scanBeanRegistryInvocations(bean, registerMethod.getBody(), context, doc);
+			
+		} catch (BadLocationException e) {
+			log.error("", e);
+		}
+	}
+
+	private void scanBeanRegistryInvocations(Bean component, Block body, SpringIndexerJavaContext context, TextDocument doc) {
+		if (body == null) {
+			return;
+		}
+
+		body.accept(new ASTVisitor() {
+			
+			@Override
+			public boolean visit(MethodInvocation methodInvocation) {
+				try {
+					String methodName = methodInvocation.getName().toString();
+					if ("registerBean".equals(methodName)) {
+
+						IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
+						ITypeBinding declaringClass = methodBinding.getDeclaringClass();
+						
+						if (declaringClass != null && Annotations.BEAN_REGISTRY_INTERFACE.equals(declaringClass.getQualifiedName())) {
+							
+							@SuppressWarnings("unchecked")
+							List<Expression> arguments = methodInvocation.arguments();
+							List<ITypeBinding> types = new ArrayList<>();
+							
+							for (Expression argument : arguments) {
+								ITypeBinding typeBinding = argument.resolveTypeBinding();
+								if (typeBinding != null) {
+									types.add(typeBinding);
+								}
+								else {
+									return true;
+								}
+							}
+							
+							if (arguments.size() == 1 && "java.lang.Class".equals(types.get(0).getBinaryName())) {
+								// <T> String registerBean(Class<T> beanClass);
+ 
+								ITypeBinding typeBinding = types.get(0);
+								ITypeBinding[] typeParameters = typeBinding.getTypeArguments();
+								if (typeParameters != null && typeParameters.length == 1) {
+									String typeParamName = typeParameters[0].getBinaryName();
+									
+									String beanName = BeanUtils.getBeanNameFromType(typeParameters[0].getName());
+									String beanType = typeParamName;
+									
+									createBean(component, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
+								}
+							}
+							else if (arguments.size() == 2 && "java.lang.String".equals(types.get(0).getQualifiedName()) && "java.lang.Class".equals(types.get(1).getBinaryName())) {
+								// <T> void registerBean(String name, Class<T> beanClass);
+								
+								String beanName = ASTUtils.getExpressionValueAsString(arguments.get(0), (dep) -> {});
+								
+								ITypeBinding typeBinding = types.get(1);
+								ITypeBinding[] typeParameters = typeBinding.getTypeArguments();
+								if (typeParameters != null && typeParameters.length == 1) {
+									String typeParamName = typeParameters[0].getBinaryName();
+									String beanType = typeParamName;
+									
+									createBean(component, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
+								}
+							}
+							else if (arguments.size() == 2 && "java.lang.Class".equals(types.get(0).getBinaryName()) && "java.util.function.Consumer".equals(types.get(1).getBinaryName())) {
+								// <T> String registerBean(Class<T> beanClass, Consumer<Spec<T>> customizer);
+								
+								ITypeBinding typeBinding = types.get(0);
+								ITypeBinding[] typeParameters = typeBinding.getTypeArguments();
+								if (typeParameters != null && typeParameters.length == 1) {
+									String typeParamName = typeParameters[0].getBinaryName();
+									
+									String beanName = BeanUtils.getBeanNameFromType(typeParameters[0].getName());
+									String beanType = typeParamName;
+									
+									createBean(component, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
+								}
+							}
+							else if (arguments.size() == 3 && "java.lang.String".equals(types.get(0).getQualifiedName())
+									&& "java.lang.Class".equals(types.get(1).getBinaryName()) && "java.util.function.Consumer".equals(types.get(2).getBinaryName())) {
+								// <T> void registerBean(String name, Class<T> beanClass, Consumer<Spec<T>> customizer);
+								
+								String beanName = ASTUtils.getExpressionValueAsString(arguments.get(0), (dep) -> {});
+								
+								ITypeBinding typeBinding = types.get(1);
+								ITypeBinding[] typeParameters = typeBinding.getTypeArguments();
+								if (typeParameters != null && typeParameters.length == 1) {
+									String typeParamName = typeParameters[0].getBinaryName();
+									String beanType = typeParamName;
+									
+									createBean(component, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
+								}
+							}
+						}
+					}
+				
+				} catch (BadLocationException e) {
+					log.error("", e);
+				}
+				return super.visit(methodInvocation);
+			}
+		});
+	}
+	
+	public void createBean(Bean parentBean, String beanName, String beanType, ITypeBinding beanTypeBinding, ASTNode node, SpringIndexerJavaContext context, TextDocument doc) throws BadLocationException {
+		Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
+		
+		WorkspaceSymbol symbol = new WorkspaceSymbol(
+				beanLabel("+", null, null, beanName, beanType),
+				SymbolKind.Class,
+				Either.forLeft(location));
+		context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
+		
+		InjectionPoint[] injectionPoints = DefaultValues.EMPTY_INJECTION_POINTS;
+		Set<String> supertypes = new HashSet<>();
+		ASTUtils.findSupertypes(beanTypeBinding, supertypes);
+		
+		AnnotationMetadata[] annotations = DefaultValues.EMPTY_ANNOTATIONS;
+		
+		Bean bean = new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, false, symbol.getName());
+		parentBean.addChild(bean);
+	}
+	
 	public static String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {
 		StringBuilder symbolLabel = new StringBuilder();
 		symbolLabel.append("@");
@@ -385,21 +575,25 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		symbolLabel.append('\'');
 		symbolLabel.append(beanName);
 		symbolLabel.append('\'');
-		symbolLabel.append(" (@");
-		symbolLabel.append(annotationTypeName);
-		if (!metaAnnotationNames.isEmpty()) {
-			symbolLabel.append(" <: ");
-			boolean first = true;
-			for (String ma : metaAnnotationNames) {
-				if (!first) {
-					symbolLabel.append(", ");
+		
+		if (annotationTypeName != null) {
+			symbolLabel.append(" (@");
+			symbolLabel.append(annotationTypeName);
+			if (!metaAnnotationNames.isEmpty()) {
+				symbolLabel.append(" <: ");
+				boolean first = true;
+				for (String ma : metaAnnotationNames) {
+					if (!first) {
+						symbolLabel.append(", ");
+					}
+					symbolLabel.append("@");
+					symbolLabel.append(ma);
+					first = false;
 				}
-				symbolLabel.append("@");
-				symbolLabel.append(ma);
-				first = false;
 			}
+			symbolLabel.append(")");
 		}
-		symbolLabel.append(") ");
+		symbolLabel.append(" ");
 		symbolLabel.append(beanType);
 		return symbolLabel.toString();
 	}

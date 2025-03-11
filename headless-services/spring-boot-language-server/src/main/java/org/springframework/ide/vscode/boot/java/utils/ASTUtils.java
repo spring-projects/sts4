@@ -403,7 +403,7 @@ public class ASTUtils {
 				simplifiedType = resolvedInterface.getBinaryName();
 			}
 			else {
-				simplifiedType = resolvedType.getQualifiedName();
+				simplifiedType = resolvedInterface.getQualifiedName();
 			}
 
 			if (typesToCheck.contains(simplifiedType)) {
