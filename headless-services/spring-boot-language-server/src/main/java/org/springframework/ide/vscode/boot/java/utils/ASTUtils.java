@@ -393,7 +393,7 @@ public class ASTUtils {
 		return false;
 	}
 	
-	public static ITypeBinding findInTypeHierarchy(TypeDeclaration typeDeclaration, TextDocument doc, ITypeBinding resolvedType, Set<String> typesToCheck) {
+	public static ITypeBinding findInTypeHierarchy(ITypeBinding resolvedType, Set<String> typesToCheck) {
 		ITypeBinding[] interfaces = resolvedType.getInterfaces();
 
 		for (ITypeBinding resolvedInterface : interfaces) {
@@ -410,7 +410,7 @@ public class ASTUtils {
 				return resolvedInterface;
 			}
 			else {
-				ITypeBinding result = findInTypeHierarchy(typeDeclaration, doc, resolvedInterface, typesToCheck);
+				ITypeBinding result = findInTypeHierarchy(resolvedInterface, typesToCheck);
 				if (result != null) {
 					return result;
 				}
@@ -419,7 +419,7 @@ public class ASTUtils {
 
 		ITypeBinding superclass = resolvedType.getSuperclass();
 		if (superclass != null) {
-			return findInTypeHierarchy(typeDeclaration, doc, superclass, typesToCheck);
+			return findInTypeHierarchy(superclass, typesToCheck);
 		}
 		else {
 			return null;

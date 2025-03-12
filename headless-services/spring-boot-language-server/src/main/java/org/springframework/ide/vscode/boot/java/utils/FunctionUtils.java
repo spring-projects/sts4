@@ -34,7 +34,7 @@ public class FunctionUtils {
 		ITypeBinding resolvedType = typeDeclaration.resolveBinding();
 
 		if (resolvedType != null && !resolvedType.isInterface() && !ASTUtils.isAbstractClass(typeDeclaration)) {
-			return ASTUtils.findInTypeHierarchy(typeDeclaration, doc, resolvedType, FUNCTION_TYPES);
+			return ASTUtils.findInTypeHierarchy(resolvedType, FUNCTION_TYPES);
 		}
 		else {
 			return null;

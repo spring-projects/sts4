@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2024 VMware, Inc.
+ * Copyright (c) 2022, 2025 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,6 +24,9 @@ public class SpringProblemCategories {
 	
 	public static final ProblemCategory BOOT_3 = new ProblemCategory("boot3", "Boot 3.x Best Practices & Optimizations", 
 			new Toggle("Enablement", EnumSet.allOf(Toggle.Option.class), AUTO, "boot-java.validation.java.boot3"));
+	
+	public static final ProblemCategory BOOT_4 = new ProblemCategory("boot4", "Boot 4.x Best Practices & Optimizations", 
+			new Toggle("Enablement", EnumSet.allOf(Toggle.Option.class), AUTO, "boot-java.validation.java.boot4"));
 	
 	public static final ProblemCategory SPRING_AOT = new ProblemCategory("spring-aot", "AOT Optimizations", 
 			new Toggle("Enablement", EnumSet.of(OFF, ON), OFF, "boot-java.validation.java.spring-aot"));

@@ -335,7 +335,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 			ITypeBinding typeBinding = typeDeclaration.resolveBinding();
 			if (typeBinding == null) return;
 			
-			ITypeBinding inTypeHierarchy = ASTUtils.findInTypeHierarchy(typeDeclaration, doc, typeBinding, Set.of(Annotations.APPLICATION_LISTENER));
+			ITypeBinding inTypeHierarchy = ASTUtils.findInTypeHierarchy(typeBinding, Set.of(Annotations.APPLICATION_LISTENER));
 			if (inTypeHierarchy == null) return;
 	
 			MethodDeclaration handleEventMethod = findHandleEventMethod(typeDeclaration);
@@ -406,7 +406,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 			ITypeBinding typeBinding = typeDeclaration.resolveBinding();
 			if (typeBinding == null) return;
 			
-			ITypeBinding inTypeHierarchy = ASTUtils.findInTypeHierarchy(typeDeclaration, doc, typeBinding, Set.of(Annotations.BEAN_REGISTRAR_INTERFACE));
+			ITypeBinding inTypeHierarchy = ASTUtils.findInTypeHierarchy(typeBinding, Set.of(Annotations.BEAN_REGISTRAR_INTERFACE));
 			if (inTypeHierarchy == null) return;
 	
 			MethodDeclaration registerMethod = findRegisterMethod(typeDeclaration, inTypeHierarchy);

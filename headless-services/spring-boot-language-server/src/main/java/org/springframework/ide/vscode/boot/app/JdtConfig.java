@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.AuthorizeHttpRequest
 import org.springframework.ide.vscode.boot.java.reconcilers.AutowiredFieldIntoConstructorParameterReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.BeanMethodNotPublicReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.BeanPostProcessingIgnoreInAotReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.BeanRegistrarDeclarationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.Boot3NotSupportedTypeReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.EntityIdForRepoReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.HttpSecurityLambdaDslReconciler;
@@ -66,6 +67,11 @@ public class JdtConfig {
 	
 	@Bean AddConfigurationIfBeansPresentReconciler addConfigurationIfBeansPresentReconciler(SimpleLanguageServer server, SpringMetamodelIndex springIndex) {
 		return new AddConfigurationIfBeansPresentReconciler(server.getQuickfixRegistry(), springIndex);
+	}
+	
+	@Bean BeanRegistrarDeclarationReconciler beanRegistrarDeclarationReconciler(SimpleLanguageServer server,
+			SpringMetamodelIndex springIndex) {
+		return new BeanRegistrarDeclarationReconciler(server.getQuickfixRegistry(), springIndex);
 	}
 	
 	@Bean AutowiredFieldIntoConstructorParameterReconciler autowiredFieldIntoConstructorParameterReconciler(SimpleLanguageServer server) {
@@ -179,5 +185,5 @@ public class JdtConfig {
 	@Bean JdtCronReconciler jdtCronReconciler(CronReconciler cronReconciler) {
 		return new JdtCronReconciler(cronReconciler);
 	}
-
+	
 }
