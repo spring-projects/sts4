@@ -46,7 +46,7 @@
 	</modules>
 
 	<properties>
-		<tycho-version>4.0.10</tycho-version>
+		<tycho-version>4.0.12</tycho-version>
 
 		<!-- Signing -->
 		<signing.skip>true</signing.skip>

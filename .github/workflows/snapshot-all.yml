@@ -28,15 +28,6 @@ jobs:
       skip_tests: true
     secrets: inherit
 
-  e433-distro:
-    needs: [ eclipse-ls-extensions ]
-    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
-    with:
-      eclipse_profile: 'e433'
-      build_type: 'snapshot'
-      java_version: '21'
-    secrets: inherit
-
   e434-distro:
     needs: [ eclipse-ls-extensions ]
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
@@ -51,6 +42,15 @@ jobs:
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e435'
+      build_type: 'snapshot'
+      java_version: '21'
+    secrets: inherit
+
+  e436-distro:
+    needs: [ eclipse-ls-extensions ]
+    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e436'
       build_type: 'snapshot'
       java_version: '21'
     secrets: inherit

@@ -79,7 +79,7 @@
 		<p2.qualifier>SNAPSHOT</p2.qualifier>
 		<p2.repository.name>Spring Boot IDE Language Server</p2.repository.name>
 
-		<tycho-version>4.0.10</tycho-version>
+		<tycho-version>4.0.12</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<dist.bucket>tools-spring-io</dist.bucket>
