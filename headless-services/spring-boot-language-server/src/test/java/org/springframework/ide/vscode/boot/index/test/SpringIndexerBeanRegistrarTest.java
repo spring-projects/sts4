@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.index.test;
 
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
@@ -28,7 +29,9 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
@@ -93,6 +96,22 @@ public class SpringIndexerBeanRegistrarTest {
         Bean baz = (Bean) children.get(3);
         assertEquals("baz", baz.getName());
         assertEquals("com.example.Baz", baz.getType());
+    }
+    
+    @Test
+    void testNonRegisteredBeanRegistrar() throws Exception {
+    	
+    	Bean[] beans = springIndex.getBeansOfProject("test-framework-7-indexing");
+    	String registrarName = "com.example.MyBeanRegistrar";
+    	
+    	boolean anyMatch = Arrays.stream(beans)
+    		.filter(bean -> bean.isConfiguration()) // look into beans with @Configuration only
+    		.flatMap(bean -> Arrays.stream(bean.getAnnotations())) // look into annotations on this bean definition
+    		.filter(annotation -> Annotations.IMPORT.equals(annotation.getAnnotationType())) // look into @Import annotations only
+    		.flatMap(annotation -> Arrays.stream(annotation.getAttributes().get("value"))) // look into the attribute values of "value" attribute
+    		.anyMatch(annotationValue -> annotationValue.getName().equals(registrarName));
+    	
+    	assertTrue(anyMatch);
     }
 
 }

@@ -27,6 +27,8 @@ public class Annotations {
 
 	public static final String COMPONENT = "org.springframework.stereotype.Component";
 	public static final String CONFIGURATION = "org.springframework.context.annotation.Configuration";
+	public static final String IMPORT = "org.springframework.context.annotation.Import";
+
 	public static final String CONTROLLER = "org.springframework.stereotype.Controller";
 	
 	public static final String CONFIGURATION_PROPERTIES = "org.springframework.boot.context.properties.ConfigurationProperties";
@@ -112,6 +114,5 @@ public class Annotations {
 	        "org.aspectj.lang.annotation.AfterThrowing", "AfterThrowing",
 	        "org.aspectj.lang.annotation.DeclareParents", "DeclareParents"
 	);
-
 
 }
