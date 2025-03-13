@@ -18,7 +18,7 @@ tar -zxf $file --directory ${dir}/${destination_folder_name}
 echo "Successfully extracted ${filename}"
 
 # sign problematic binaries
-for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/fsevents\.node$"`
+for f in `find ${dir}/${destination_folder_name}/SpringToolsForEclipse.app -type f | grep -E ".*/fsevents\.node$"`
 do
   echo "Signing binary file: ${f}"
   codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
@@ -74,23 +74,23 @@ function signExecutableInsideNestedJar() {
 }
 
 # sign libjansi.jnilib inside kotlin-compiler-embeddable.jar
-signExecutableInsideJar ${dir}/${destination_folder_name}/SpringToolSuite4.app ".*/kotlin-compiler-embeddable.*\.jar$" "libjansi.jnilib" ".*/libjansi\.jnilib$"
+signExecutableInsideJar ${dir}/${destination_folder_name}/SpringToolsForEclipse.app ".*/kotlin-compiler-embeddable.*\.jar$" "libjansi.jnilib" ".*/libjansi\.jnilib$"
 
 # sign libsnappyjava.jnilib and libsnappyjava.dylib inside snappy-java.jar
-signExecutableInsideJar ${dir}/${destination_folder_name}/SpringToolSuite4.app ".*/snappy-java.*\.jar$" "libsnappyjava.jnilib" ".*/libsnappyjava\.(jni|dy)lib$"
+signExecutableInsideJar ${dir}/${destination_folder_name}/SpringToolsForEclipse.app ".*/snappy-java.*\.jar$" "libsnappyjava.jnilib" ".*/libsnappyjava\.(jni|dy)lib$"
 
 # sign libjnidispatch.jnilib inside jna.jar
-signExecutableInsideJar ${dir}/${destination_folder_name}/SpringToolSuite4.app ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib.jnilib" ".*/libjnidispatch\.jnilib$"
+signExecutableInsideJar ${dir}/${destination_folder_name}/SpringToolsForEclipse.app ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib.jnilib" ".*/libjnidispatch\.jnilib$"
 
 #sign libjnidispatch.jnilib inside jna.jar which is inside org.springframework.ide.eclipse.docker.client.jar bundle
-signExecutableInsideNestedJar ${dir}/${destination_folder_name}/SpringToolSuite4.app ".*/org.springframework.ide.eclipse.docker.client.*\.jar$" ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib" ".*/libjnidispatch\.jnilib$"
+signExecutableInsideNestedJar ${dir}/${destination_folder_name}/SpringToolsForEclipse.app ".*/org.springframework.ide.eclipse.docker.client.*\.jar$" ".*/jna-\d+.*\.jar$" "libjnidispatch.jnilib" ".*/libjnidispatch\.jnilib$"
 
 #sign libjnidispatch.jnilib inside develocity-gradle-plugin.jar which is inside rewrite-gradle.jar bundle
-signExecutableInsideNestedJar ${dir}/${destination_folder_name}/SpringToolSuite4.app ".*/rewrite-gradle-\d+.*\.jar$" ".*/develocity-gradle-plugin.*\.jar$" "libjnidispatch.jnilib" ".*/libjnidispatch\.jnilib$"
+signExecutableInsideNestedJar ${dir}/${destination_folder_name}/SpringToolsForEclipse.app ".*/rewrite-gradle-\d+.*\.jar$" ".*/develocity-gradle-plugin.*\.jar$" "libjnidispatch.jnilib" ".*/libjnidispatch\.jnilib$"
 
 # Sign the app
-ls -la ${dir}/${destination_folder_name}/SpringToolSuite4.app/
-codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" ${dir}/${destination_folder_name}/SpringToolSuite4.app
+ls -la ${dir}/${destination_folder_name}/SpringToolsForEclipse.app/
+codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" ${dir}/${destination_folder_name}/SpringToolsForEclipse.app
 
 cd ${dir}/${destination_folder_name}
 echo "Generating dmg-config.json..."
@@ -98,7 +98,7 @@ echo '{' >> dmg-config.json
 echo '  "title": "Spring Tools for Eclipse",' >> dmg-config.json
 echo '  "icon": "'$icns'",' >> dmg-config.json
 echo '  "contents": [' >> dmg-config.json
-echo '    { "x": 192, "y": 100, "type": "file", "path": "./SpringToolSuite4.app" },' >> dmg-config.json
+echo '    { "x": 192, "y": 100, "type": "file", "path": "./SpringToolsForEclipse.app" },' >> dmg-config.json
 echo '    { "x": 448, "y": 100, "type": "link", "path": "/Applications" },' >> dmg-config.json
 echo '    { "x": 1000, "y": 2000, "type": "file", "path": "'$icns'", "name": ".VolumeIcon.icns" }' >> dmg-config.json
 echo '  ],' >> dmg-config.json

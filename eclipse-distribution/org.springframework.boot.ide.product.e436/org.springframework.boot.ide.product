@@ -12,7 +12,7 @@
       <vmArgs>-Dosgi.requiredJavaVersion=21
 -Dosgi.dataAreaRequiresExplicitInit=true
 -Dorg.slf4j.simpleLogger.defaultLogLevel=off
--Dsun.java.command=SpringToolSuite4
+-Dsun.java.command=SpringToolsForEclipse
 -Dp2.trustedAuthorities=https://download.eclipse.org,https://archive.eclipse.org,https://cdn.spring.io
 -Xms256m
 -Xmx2048m
@@ -36,7 +36,7 @@
       startupMessageRect="7,220,441,20"
       startupForegroundColor="c1d72e" />
 
-   <launcher name="SpringToolSuite4">
+   <launcher name="SpringToolsForEclipse">
       <macosx icon="../org.springframework.boot.ide.branding/sts4.icns"/>
       <solaris/>
       <win useIco="true">
