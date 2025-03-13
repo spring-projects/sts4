@@ -360,21 +360,11 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/staging/2025-06/</url>
 				</repository>
-				<!--				<repository>
-                                    <id>2025-06-i-builds</id>
-                                    <layout>p2</layout>
-                                    <url>https://download.eclipse.org/eclipse/updates/4.36-I-builds/</url>
-                                </repository> -->
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/simrel/orbit-aggregation/2025-06</url>
 				</repository>
-				<!--				<repository>
-                                    <id>mpc-client</id>
-                                    <layout>p2</layout>
-                                    <url>https://download.eclipse.org/mpc/drops/1.11.0/v20250125-1342/</url>
-                                </repository> -->
 				<repository> <!-- temporary p2 repo to grab early snapshot builds for testing fixes -->
 					<id>buildship-snapshots</id>
 					<layout>p2</layout>
@@ -453,7 +443,7 @@
                                 <module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.macosx.x86_64</module>
                                 <module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module>
                 -->
-				<module>org.springframework.boot.ide.product.e435</module>
+				<module>org.springframework.boot.ide.product.e436</module>
 			</modules>
 
 		</profile>
