@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Live Beans Tree
 Bundle-SymbolicName: org.springframework.ide.eclipse.beans.ui.live;singleton:=true
 Bundle-Version: 4.30.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.springframework.ide.eclipse.beans.ui.live,
  org.springframework.ide.eclipse.beans.ui.live.actions,
  org.springframework.ide.eclipse.beans.ui.live.model,

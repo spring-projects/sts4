@@ -38,7 +38,7 @@ Export-Package: org.springframework.ide.eclipse.editor.support,
  org.springframework.ide.eclipse.editor.support.yaml.schema,
  org.springframework.ide.eclipse.editor.support.yaml.schema.constraints,
  org.springframework.ide.eclipse.editor.support.yaml.structure
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Automatic-Module-Name: org.springframework.ide.eclipse.editor.support
 Import-Package: org.eclipse.core.runtime,
  org.eclipse.core.runtime.jobs,

@@ -9,7 +9,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.p2.ui.sdk,
  org.springsource.ide.eclipse.commons.core,
  org.eclipse.equinox.p2.engine
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Localization: plugin
 Bundle-ActivationPolicy: lazy
 Import-Package: org.eclipse.core.runtime,

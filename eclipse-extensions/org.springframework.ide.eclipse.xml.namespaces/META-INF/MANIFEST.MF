@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: org.springframework.ide.eclipse.xml.namespaces
 Bundle-SymbolicName: org.springframework.ide.eclipse.xml.namespaces;singleton:=true
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Import-Package: org.eclipse.core.commands.common,
  org.eclipse.core.resources,
  org.eclipse.core.runtime,

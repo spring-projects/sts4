@@ -18,6 +18,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.springframework.ide.eclipse.editor.support,
  org.eclipse.jface,
  org.springsource.ide.eclipse.commons.frameworks.core
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.ide.eclipse.boot.validation.framework
