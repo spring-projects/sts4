@@ -34,7 +34,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.lsp4j,
  com.google.gson,
  org.eclipse.jdt.junit.core
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.ide.eclipse.boot.launch,
  org.springframework.ide.eclipse.boot.launch.cli,

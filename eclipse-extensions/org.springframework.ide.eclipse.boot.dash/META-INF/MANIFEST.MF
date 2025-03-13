@@ -46,7 +46,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.lsp4j,
  org.eclipse.jdt.debug,
  org.springsource.ide.eclipse.commons.boot.ls
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Export-Package: org.springframework.ide.eclipse.boot.dash,

@@ -6,6 +6,6 @@ Bundle-Version: 4.26.0.qualifier
 Bundle-Vendor: VMware
 Fragment-Host: org.springframework.ide.eclipse.xterm;bundle-version="4.8.2"
 Automatic-Module-Name: org.springframework.ide.eclipse.xterm.linux.x86.64
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Eclipse-PlatformFilter: (& (osgi.ws=gtk) (osgi.os=linux) (osgi.arch=x86_64))
 Eclipse-BundleShape: dir

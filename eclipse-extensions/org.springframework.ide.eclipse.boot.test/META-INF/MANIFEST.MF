@@ -27,7 +27,7 @@ Require-Bundle: org.eclipse.ui,
  org.springframework.ide.eclipse.boot.launch,
  com.google.guava,
  org.eclipse.m2e.core
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: Broadcom
 Export-Package: org.springframework.ide.eclipse.boot.test,

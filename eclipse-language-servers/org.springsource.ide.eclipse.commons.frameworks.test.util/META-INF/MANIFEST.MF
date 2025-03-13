@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.springsource.ide.eclipse.commons.frameworks.test.util;s
 Bundle-Version: 4.30.0.qualifier
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: Broadcom
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Require-Bundle: org.springsource.ide.eclipse.commons.tests.util,
  org.eclipse.debug.core,
  org.hamcrest.library,

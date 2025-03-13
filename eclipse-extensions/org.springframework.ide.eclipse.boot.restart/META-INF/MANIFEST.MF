@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.workbench.texteditor;bundle-version="3.9.0",
  org.springframework.ide.eclipse.boot.launch,
  org.springframework.ide.eclipse.boot
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Activator: org.springframework.ide.eclipse.boot.restart.RestartPlugin
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: org.springframework.ide.eclipse.boot.restart

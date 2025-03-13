@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: SpringSource Tool Suite (JDK Tools)
 Bundle-SymbolicName: org.springsource.ide.eclipse.commons.jdk_tools;singleton:=true
 Bundle-Version: 4.30.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ClassPath: external:$java.home$/../lib/tools.jar
 Export-Package: com.sun.tools.attach
 Bundle-Vendor: Broadcom

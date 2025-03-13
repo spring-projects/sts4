@@ -23,7 +23,7 @@ Require-Bundle: org.eclipse.ui,
  org.springsource.ide.eclipse.commons.frameworks.core,
  org.springframework.ide.eclipse.editor.support,
  org.eclipse.jdt.core.manipulation
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Bundle-Vendor: %providerName

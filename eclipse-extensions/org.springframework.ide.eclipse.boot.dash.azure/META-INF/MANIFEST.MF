@@ -20,7 +20,7 @@ Import-Package: com.google.gson,
  com.google.gson.annotations,
  com.google.gson.reflect,
  com.google.gson.stream
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Activator: org.springframework.ide.eclipse.boot.dash.azure.BootDashAzurePlugin
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.ide.eclipse.boot.dash.azure
