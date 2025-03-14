@@ -225,7 +225,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				boolean isIncomplete = rawCompletionList.isIncomplete();
 				
 				List<CompletionItem> items = new ArrayList<>(completions.size());
-				SortKeys sortkeys = new SortKeys();
+				Optional<SortKeys> sortkeysOpt = engine.keepCompletionsOrder(doc) ? Optional.of(new SortKeys()) : Optional.empty();
 				int count = 0;
 
 				for (ICompletionProposal c : completions) {
@@ -237,7 +237,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 						break;
 					}
 					try {
-						items.add(adaptItem(doc, c, sortkeys));
+						items.add(adaptItem(doc, c, sortkeysOpt));
 					} catch (Exception e) {
 						log.error("error computing completion", e);
 					}
@@ -274,11 +274,11 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		return SimpleTextDocumentService.NO_COMPLETIONS;
 	}
 
-	private CompletionItem adaptItem(TextDocument doc, ICompletionProposal completion, SortKeys sortkeys) throws Exception {
+	private CompletionItem adaptItem(TextDocument doc, ICompletionProposal completion, Optional<SortKeys> sortkeysOpt) throws Exception {
 		CompletionItem item = new CompletionItem();
 		item.setLabel(completion.getLabel());
 		item.setKind(completion.getKind());
-		item.setSortText(sortkeys.next());
+		sortkeysOpt.ifPresent(sortkeys -> item.setSortText(sortkeys.next()));
 		item.setFilterText(completion.getFilterText());
 		item.setInsertTextMode(InsertTextMode.AsIs);
 		item.setLabelDetails(completion.getLabelDetails());

@@ -24,6 +24,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Internal
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -77,6 +78,11 @@ public class SpringPropertiesCompletionEngine implements ICompletionEngine, Lang
 	@Override
 	public Collection<LanguageId> supportedLanguages() {
 		return ImmutableList.of(LanguageId.BOOT_PROPERTIES);
+	}
+
+	@Override
+	public boolean keepCompletionsOrder(IDocument doc) {
+		return true;
 	}
 
 }

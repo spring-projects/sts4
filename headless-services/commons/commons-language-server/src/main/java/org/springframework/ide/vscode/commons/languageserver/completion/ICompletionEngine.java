@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -18,5 +19,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public interface ICompletionEngine {
 
 	InternalCompletionList getCompletions(TextDocument document, int offset) throws Exception;
+
+	default boolean keepCompletionsOrder(IDocument doc) { return false; };
 
 }

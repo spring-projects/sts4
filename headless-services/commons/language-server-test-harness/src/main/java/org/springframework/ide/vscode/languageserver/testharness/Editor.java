@@ -585,21 +585,6 @@ public class Editor {
 	public List<CompletionItem> getCompletions() throws Exception {
 		CompletionList cl = harness.getCompletions(this.doc, this.getCursor());
 		ArrayList<CompletionItem> items = new ArrayList<>(cl.getItems());
-		Collections.sort(items, new Comparator<CompletionItem>() {
-
-			@Override
-			public int compare(CompletionItem o1, CompletionItem o2) {
-				return sortKey(o1).compareTo(sortKey(o2));
-			}
-
-			private String sortKey(CompletionItem item) {
-				String k = item.getSortText();
-				if (k == null) {
-					k = item.getLabel();
-				}
-				return k;
-			}
-		});
 		return items;
 	}
 	

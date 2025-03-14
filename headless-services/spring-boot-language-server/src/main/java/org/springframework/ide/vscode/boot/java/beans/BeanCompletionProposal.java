@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.apache.commons.text.similarity.JaroWinklerSimilarity;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.Block;
@@ -36,7 +37,6 @@ import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.InjectBeanCompletionRecipe;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -76,7 +76,7 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 		this.rewriteRefactorings = rewriteRefactorings;
 		this.prefix = computePrefix();
 		this.edits = computeEdit();
-		this.score = FuzzyMatcher.matchScore(prefix, beanId);
+		this.score = /*FuzzyMatcher.matchScore*/computeJaroWinklerScore(prefix, beanId);
 	}
 
 	@Override
@@ -87,6 +87,10 @@ public class BeanCompletionProposal implements ICompletionProposalWithScore {
 	@Override
 	public CompletionItemKind getKind() {
 		return CompletionItemKind.Field;
+	}
+	
+	private static double computeJaroWinklerScore(CharSequence pattern, CharSequence data) {
+		return pattern.isEmpty() ? 1 / (double) Integer.MAX_VALUE : new JaroWinklerSimilarity().apply(pattern, data);
 	}
 
 	private String computePrefix() {

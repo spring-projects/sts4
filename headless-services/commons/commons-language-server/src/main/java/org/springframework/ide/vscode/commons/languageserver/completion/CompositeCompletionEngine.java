@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -78,5 +79,19 @@ public class CompositeCompletionEngine implements ICompletionEngine {
 			return new InternalCompletionList(completions.build(), isIncomplete);
 		}
 	};
+	
+	@Override
+	public boolean keepCompletionsOrder(IDocument doc) {
+		Collection<ICompletionEngine> engines = subEngines.get(doc.getLanguageId());
+		if (engines != null) {
+			for (ICompletionEngine e : engines) {
+				if (e.keepCompletionsOrder(doc)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 
 }

@@ -114,7 +114,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		if (toReplace.startsWith(lastWord)) {
 			DocumentEdits edits = new DocumentEdits(null, false);
 			edits.replace(offset - lastWord.length(), offset, toReplace);
-			ICompletionProposal proposal = new FindByCompletionProposal(toReplace, CompletionItemKind.Text, edits, "property " + toReplace, null, null, lastWord, true);
+			ICompletionProposal proposal = new FindByCompletionProposal(toReplace, CompletionItemKind.Property, edits, "property " + toReplace, null, null, lastWord, true);
 			completions.add(proposal);
 		}
 	}
