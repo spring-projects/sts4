@@ -480,4 +480,10 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			throw new IllegalStateException("Missing case");
 		}
 	}
+	
+	@Override
+	public boolean keepCompletionsOrder(IDocument doc) {
+		return true;
+	}
+
 }

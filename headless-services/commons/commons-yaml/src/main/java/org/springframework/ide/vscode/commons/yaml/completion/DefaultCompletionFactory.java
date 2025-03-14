@@ -113,7 +113,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 
 		@Override
 		public CompletionItemKind getKind() {
-			return CompletionItemKind.Keyword;
+			return CompletionItemKind.Value;
 		}
 
 		@Override
