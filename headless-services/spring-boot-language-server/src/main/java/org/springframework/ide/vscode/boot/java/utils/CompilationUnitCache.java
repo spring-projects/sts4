@@ -216,8 +216,6 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		logger.info("CU Cache: work item submitted for doc {}", uri.toASCIIString());
 
 		if (project != null) {
-			ReadLock lock = environmentCacheLock.readLock();
-			lock.lock();
 			try {
 				CompilationUnit cu = null;
 				try {
@@ -234,10 +232,16 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 				}
 	
 				if (cu != null) {
-						projectToDocs.get(project.getLocationUri(), () -> new HashSet<>()).add(uri);
-	
-						logger.debug("CU Cache: start work on AST for {}", uri.toString());
+					ReadLock lock = environmentCacheLock.readLock();
+					lock.lock();
+					try {
+						logger.info("CU Cache: start work on AST for {}", uri.toString());
 						return requestor.apply(cu);
+					} finally {
+						logger.info("CU Cache: end work on AST for {}", uri.toString());
+						lock.unlock();
+					}
+
 				}
 			}
 			catch (CancellationException e) {
@@ -245,10 +249,6 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			}
 			catch (Exception e) {
 				logger.error("", e);
-			}
-			finally {
-				logger.debug("CU Cache: end work on AST for {}", uri.toString());
-				lock.unlock();
 			}
 		}
 
@@ -259,34 +259,49 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		CompletableFuture<CompilationUnit> cuFuture = uriToCu.getIfPresent(uri);
 		if (cuFuture == null) {
 			cuFuture = CompletableFuture.supplyAsync(() -> {
+				ReadLock lock = environmentCacheLock.readLock();
+				lock.lock();
+				logger.info("Started parsing CU for " + uri);
 				
 				try {
-					logger.info("Started parsing CU for " + uri);
 					Tuple2<List<Classpath>, INameEnvironmentWithProgress> lookupEnvTuple = loadLookupEnvTuple(project);
 					String uriStr = uri.toASCIIString();
 					String unitName = uriStr.substring(uriStr.lastIndexOf("/") + 1); // skip over '/'
 					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), uriStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2(),
 							annotationHierarchies.get(project.getLocationUri(), AnnotationHierarchies::new));
-
 					logger.debug("CU Cache: created new AST for {}", uri.toASCIIString());
-
 					logger.info("Parsed successfully CU for " + uri);
 					return cUnit;
 				} catch (Throwable t) {
 					// Complete future exceptionally
 					throw new CompletionException(t);
+				} finally {
+					logger.info("Finished parsing CU for {}", uri);
+					lock.unlock();
 				}
 			}, createCuExecutorThreadPool);
 			// Cache the future
 			uriToCu.put(uri, cuFuture);
 			// If CU future completed exceptionally invalidate the cache entry
-			cuFuture.exceptionally(t -> {
-				if (!(t instanceof CancellationException)) {
-					logger.error("", t);
-				}
-				uriToCu.invalidate(uri);
-				return null;
-			});
+			cuFuture
+				.thenAccept(cu -> {
+					synchronized(CompilationUnitCache.this) {
+						try {
+							projectToDocs.get(project.getLocationUri(), () -> new HashSet<>()).add(uri);
+						} catch (ExecutionException e) {
+							// shouldn't happen
+						}
+					}
+				})
+				.exceptionally(t -> {
+					if (!(t instanceof CancellationException)) {
+						logger.error("", t);
+					}
+					synchronized(CompilationUnitCache.this) {
+						uriToCu.invalidate(uri);
+					}
+					return null;
+				});
 		}
 		return cuFuture;
 	}
