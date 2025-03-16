@@ -6410,6 +6410,18 @@ public interface MySqlParserListener extends ParseTreeListener {
 	 */
 	void exitInPredicate(MySqlParser.InPredicateContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code inPredicateWithParameter}
+	 * labeled alternative in {@link MySqlParser#predicate}.
+	 * @param ctx the parse tree
+	 */
+	void enterInPredicateWithParameter(MySqlParser.InPredicateWithParameterContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code inPredicateWithParameter}
+	 * labeled alternative in {@link MySqlParser#predicate}.
+	 * @param ctx the parse tree
+	 */
+	void exitInPredicateWithParameter(MySqlParser.InPredicateWithParameterContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code betweenPredicate}
 	 * labeled alternative in {@link MySqlParser#predicate}.
 	 * @param ctx the parse tree

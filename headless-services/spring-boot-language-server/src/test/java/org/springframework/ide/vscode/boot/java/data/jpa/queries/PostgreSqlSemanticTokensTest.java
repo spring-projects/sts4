@@ -347,4 +347,19 @@ public class PostgreSqlSemanticTokensTest {
 		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(43, 44, "operator", new String[0])); // ;
 	}
 	
+	@Test
+	void parameterIn() {
+		List<SemanticTokenData> tokens = provider.computeTokens("DELETE FROM t WHERE ID IN :ids");
+		assertThat(tokens.size()).isEqualTo(8);
+		
+		assertThat(tokens.get(0)).isEqualTo(new SemanticTokenData(0, 6, "keyword", new String[0])); // DELETE
+		assertThat(tokens.get(1)).isEqualTo(new SemanticTokenData(7, 11, "keyword", new String[0])); // FROM 
+		assertThat(tokens.get(2)).isEqualTo(new SemanticTokenData(12, 13, "variable", new String[0])); // t
+		assertThat(tokens.get(3)).isEqualTo(new SemanticTokenData(14, 19, "keyword", new String[0])); // WHERE
+		assertThat(tokens.get(4)).isEqualTo(new SemanticTokenData(20, 22, "variable", new String[0])); // ID
+		assertThat(tokens.get(5)).isEqualTo(new SemanticTokenData(23, 25, "keyword", new String[0])); // IN
+		assertThat(tokens.get(6)).isEqualTo(new SemanticTokenData(26, 27, "operator", new String[0])); // :
+		assertThat(tokens.get(7)).isEqualTo(new SemanticTokenData(27, 30, "parameter", new String[0])); // ids
+	}
+	
 }

@@ -2531,6 +2531,7 @@ expression
 
 predicate
     : predicate NOT? IN '(' (selectStatement | expressions) ')'                            # inPredicate
+    | predicate NOT? IN parameter                                                          # inPredicateWithParameter
     | predicate IS nullNotnull                                                             # isNullPredicate
     | left = predicate comparisonOperator right = predicate                                # binaryComparisonPredicate
     | predicate comparisonOperator quantifier = (ALL | ANY | SOME) '(' selectStatement ')' # subqueryComparisonPredicate

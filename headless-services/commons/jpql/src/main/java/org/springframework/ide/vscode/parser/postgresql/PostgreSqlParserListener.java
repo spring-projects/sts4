@@ -6590,6 +6590,18 @@ public interface PostgreSqlParserListener extends ParseTreeListener {
 	 */
 	void exitIn_expr_list(PostgreSqlParser.In_expr_listContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code in_parameter}
+	 * labeled alternative in {@link PostgreSqlParser#in_expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterIn_parameter(PostgreSqlParser.In_parameterContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code in_parameter}
+	 * labeled alternative in {@link PostgreSqlParser#in_expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitIn_parameter(PostgreSqlParser.In_parameterContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PostgreSqlParser#case_expr}.
 	 * @param ctx the parse tree
 	 */

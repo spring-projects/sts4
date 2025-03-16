@@ -7025,6 +7025,18 @@ public class MySqlParserBaseListener implements MySqlParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterInPredicateWithParameter(MySqlParser.InPredicateWithParameterContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitInPredicateWithParameter(MySqlParser.InPredicateWithParameterContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterBetweenPredicate(MySqlParser.BetweenPredicateContext ctx) { }
 	/**
 	 * {@inheritDoc}
