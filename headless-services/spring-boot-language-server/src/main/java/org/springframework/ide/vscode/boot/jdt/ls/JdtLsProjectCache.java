@@ -338,43 +338,52 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	
 	private class JstLsClasspathListener implements ClasspathListener {
 		
+		/*
+		 * Synchronize to make non-reentrant such that events handled in predictable order 
+		 */
 		@Override
-		public void changed(Event event) {
+		public synchronized void changed(Event event) {
 			log.debug("claspath event received {}", event);
 			server.doOnInitialized(() -> {
 				try {
-					synchronized (table) {
-						String uri = UriUtil.normalize(event.projectUri);
-						log.debug("uri = {}", uri);
-						if (event.deleted) {
-							log.debug("event.deleted = true");
-							IJavaProject deleted = table.remove(uri);
-							if (deleted!=null) {
-								log.debug("removed from table = true");
-								notifyDelete(deleted);
-							} else {
-								log.warn("Deleted project not removed because uri {} not found in {}", uri, table.keySet());
-							}
+					String uri = UriUtil.normalize(event.projectUri);
+					log.debug("uri = {}", uri);
+					if (event.deleted) {
+						log.debug("event.deleted = true");
+						IJavaProject deleted;
+						synchronized (table) {
+							deleted = table.remove(uri);
+						}
+						// Notify outside of the lock 
+						if (deleted!=null) {
+							log.debug("removed from table = true");
+							notifyDelete(deleted);
 						} else {
-							log.debug("deleted = false");
-							URI projectUri = new URI(uri);
-							ClasspathData classpath = new ClasspathData(event.name, event.classpath.getEntries(), event.classpath.getJavaVersion());
-							IJavaProject oldProject = table.get(uri);
+							log.warn("Deleted project not removed because uri {} not found in {}", uri, table.keySet());
+						}
+					} else {
+						log.debug("deleted = false");
+						URI projectUri = new URI(uri);
+						ClasspathData classpath = new ClasspathData(event.name, event.classpath.getEntries(), event.classpath.getJavaVersion());
+						IJavaProject oldProject, newProject;
+						synchronized(table) {
+							oldProject = table.get(uri);
 							if (oldProject != null && classpath.equals(oldProject.getClasspath())) {
 								// nothing has changed
 								return;
 							}
-							IProjectBuild projectBuild = from(event.projectBuild);							
-							IJavaProject newProject = IS_JANDEX_INDEX
+							IProjectBuild projectBuild = from(event.projectBuild);
+							newProject = IS_JANDEX_INDEX
 									? new JavaProject(getFileObserver(), projectUri, classpath,
 											JdtLsProjectCache.this, projectBuild)
 									: new JdtLsJavaProject(server.getClient(), projectUri, classpath, JdtLsProjectCache.this, projectBuild);
 							table.put(uri, newProject);
-							if (oldProject != null) {
-								notifyChanged(newProject);
-							} else {
-								notifyCreated(newProject);
-							}
+						}
+						// Notify outside of the lock 
+						if (oldProject != null) {
+							notifyChanged(newProject);
+						} else {
+							notifyCreated(newProject);
 						}
 					}
 				} catch (Exception e) {
