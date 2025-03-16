@@ -338,6 +338,9 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	
 	private class JstLsClasspathListener implements ClasspathListener {
 		
+		/*
+		 * Synchronize to make non-reentrant such that events handled in predictable order 
+		 */
 		@Override
 		public synchronized void changed(Event event) {
 			log.debug("claspath event received {}", event);
@@ -351,6 +354,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 						synchronized (table) {
 							deleted = table.remove(uri);
 						}
+						// Notify outside of the lock 
 						if (deleted!=null) {
 							log.debug("removed from table = true");
 							notifyDelete(deleted);
@@ -375,6 +379,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 									: new JdtLsJavaProject(server.getClient(), projectUri, classpath, JdtLsProjectCache.this, projectBuild);
 							table.put(uri, newProject);
 						}
+						// Notify outside of the lock 
 						if (oldProject != null) {
 							notifyChanged(newProject);
 						} else {
