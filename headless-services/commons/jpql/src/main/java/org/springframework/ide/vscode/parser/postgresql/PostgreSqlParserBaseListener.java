@@ -7903,6 +7903,18 @@ public class PostgreSqlParserBaseListener implements PostgreSqlParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterIn_parameter(PostgreSqlParser.In_parameterContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIn_parameter(PostgreSqlParser.In_parameterContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterCase_expr(PostgreSqlParser.Case_exprContext ctx) { }
 	/**
 	 * {@inheritDoc}

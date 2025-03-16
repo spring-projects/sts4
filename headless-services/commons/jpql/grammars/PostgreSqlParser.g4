@@ -4044,6 +4044,7 @@ trim_list
 in_expr
     : select_with_parens               # in_expr_select
     | OPEN_PAREN expr_list CLOSE_PAREN # in_expr_list
+    | parameter                        # in_parameter
     ;
 
 case_expr
