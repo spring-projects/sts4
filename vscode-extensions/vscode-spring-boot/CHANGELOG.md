@@ -1,3 +1,15 @@
+## 2025-03-19 (4.29.1 RELEASE, incl. language server version 1.61.1)
+
+#### important highlights
+
+* _(Spring Boot)_ Spring Boot completion proposals show up at higher priority than regular Java proposals
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ [bean completion proposals] completion proposals show up at higher priority than regular Java proposals [#1505](https://github.com/spring-projects/sts4/issues/1505)
+* _(Spring Boot)_ Fine grain locking to avoid deadlocks in CU cache [#1509](https://github.com/spring-projects/sts4/pull/1509)
+* _(Spring Boot)_ More false positive SQL errors [#1504](https://github.com/spring-projects/sts4/issues/1504)
+
 ## 2025-03-12 (4.29.0 RELEASE, incl. language servers version 1.61.0)
 
 #### important highlights
