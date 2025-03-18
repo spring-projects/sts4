@@ -9,6 +9,7 @@
 * _(Spring Boot)_ [bean completion proposals] completion proposals show up at higher priority than regular Java proposals [#1505](https://github.com/spring-projects/sts4/issues/1505)
 * _(Spring Boot)_ Fine grain locking to avoid deadlocks in CU cache [#1509](https://github.com/spring-projects/sts4/pull/1509)
 * _(Spring Boot)_ More false positive SQL errors [#1504](https://github.com/spring-projects/sts4/issues/1504)
+* _(Spring Boot)_ Opening brackets causes suggestion box to appear unwanted [#1511](https://github.com/spring-projects/sts4/issues/1511)
 
 ## 2025-03-12 (4.29.0 RELEASE, incl. language servers version 1.61.0)
 
