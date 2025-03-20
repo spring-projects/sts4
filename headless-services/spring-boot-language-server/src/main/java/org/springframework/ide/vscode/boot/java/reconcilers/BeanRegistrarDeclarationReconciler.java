@@ -68,37 +68,40 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 			@Override
 			public boolean visit(TypeDeclaration node) {
 				ITypeBinding type = node.resolveBinding();
-				if (type != null) {
-					List<Bean> configBeans = new ArrayList<>();
-					Path p = Path.of(docURI);
-					List<Path> sourceFolders = IClasspathUtil.getSourceFolders(project.getClasspath()).map(f -> f.toPath()).filter(f -> p.startsWith(f)).collect(Collectors.toList());
+				
+				if (type == null) {
+					return true;
+				}
+				
+				List<Bean> configBeans = new ArrayList<>();
+				Path p = Path.of(docURI);
+				List<Path> sourceFolders = IClasspathUtil.getSourceFolders(project.getClasspath()).map(f -> f.toPath()).filter(f -> p.startsWith(f)).collect(Collectors.toList());
 
-					for (Bean b : springIndex.getBeansOfProject(project.getElementName())) {
-//						if (b.getType().equals(type.getQualifiedName())) {
-//							return true;
-//						}
-						if (b.isConfiguration() && b.getLocation() != null) {
-							Path configBeanPath = Path.of(URI.create(b.getLocation().getUri()));
-							if (sourceFolders.stream().anyMatch(configBeanPath::startsWith)) {
-								configBeans.add(b);
-							}
+				for (Bean b : springIndex.getBeansOfProject(project.getElementName())) {
+					//						if (b.getType().equals(type.getQualifiedName())) {
+					//							return true;
+					//						}
+					if (b.isConfiguration() && b.getLocation() != null) {
+						Path configBeanPath = Path.of(URI.create(b.getLocation().getUri()));
+						if (sourceFolders.stream().anyMatch(configBeanPath::startsWith)) {
+							configBeans.add(b);
 						}
 					}
-					
-					if (configBeans.isEmpty() || !isImportedBeanRegistrarInConfig(configBeans, type)) {
-						ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), "Bean not registered", node.getName().getStartPosition(), node.getName().getLength());
-						List<FixDescriptor> fixes = configBeans.stream()
+				}
+
+				if (configBeans.isEmpty() || !isImportedBeanRegistrarInConfig(configBeans, type)) {
+					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), "Bean not registered", node.getName().getStartPosition(), node.getName().getLength());
+					List<FixDescriptor> fixes = configBeans.stream()
 							.filter(b -> b.getLocation() != null && b.getLocation().getUri() != null)
 							.map(b -> new FixDescriptor(ImportBeanRegistrarInConfigRecipe.class.getName(), List.of(b.getLocation().getUri()), "Add %s to `@Import` in %s".formatted(type.getName(), b.getName()))
 									.withParameters(Map.of(
 											"configBeanFqn", b.getType(),
 											"beanRegFqn", type.getQualifiedName()
-									))
+											))
 									.withRecipeScope(RecipeScope.FILE)
-							).toList();
-						ReconcileUtils.setRewriteFixes(registry, problem, fixes);
-						problemCollector.accept(problem);
-					}
+									).toList();
+					ReconcileUtils.setRewriteFixes(registry, problem, fixes);
+					problemCollector.accept(problem);
 				}
 				return true;
 			}
