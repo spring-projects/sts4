@@ -64,6 +64,7 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.reconcilers.CachedDiagnostics;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
+import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteIndexException;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -104,7 +105,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	private final JavaProjectFinder projectFinder;
 	private final ProgressService progressService;
 	private final CompilationUnitCache cuCache;
-
+	
 	private boolean scanTestJavaSources = false;
 	private JsonObject validationSeveritySettings;
 	private int scanChunkSize = 1000;
@@ -219,7 +220,101 @@ public class SpringIndexerJava implements SpringIndexer {
 		this.cache.removeFiles(beansCacheKey, files, CachedBean.class);
 		this.cache.removeFiles(diagnosticsCacheKey, files, CachedDiagnostics.class);
 	}
+	
+	/**
+	 * Computes document symbols ad-hoc, based on the given doc URI and the given content,
+	 * re-using the AST from the compilation unit cache. This is meant to compute symbols
+	 * for files opened in editors, so that symbols can be based on editor buffer content,
+	 * not the file content on disc.
+	 * 
+	 * @deprecated (will use computeDocumentSymbols in the future exclusively)
+	 */
+	public List<WorkspaceSymbol> computeSymbols(IJavaProject project, String docURI, String content) throws Exception {
+		if (content != null) {
+			URI uri = URI.create(docURI);
+			
+			return cuCache.withCompilationUnit(project, uri, cu -> {
+				String file = UriUtil.toFileString(docURI);
+				SpringIndexerJavaScanResult result = new SpringIndexerJavaScanResult(project, new String[] {file});
 
+				IProblemCollector voidProblemCollector = new IProblemCollector() {
+					@Override
+					public void endCollecting() {
+					}
+
+					@Override
+					public void beginCollecting() {
+					}
+
+					@Override
+					public void accept(ReconcileProblem problem) {
+					}
+				};
+
+				AtomicReference<TextDocument> docRef = new AtomicReference<>();
+				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
+						0, docRef, content, voidProblemCollector, new ArrayList<>(), true, true, result);
+
+				scanAST(context, false);
+
+				return result.getGeneratedSymbols().stream().map(s -> s.getEnhancedSymbol()).collect(Collectors.toList());
+			});
+		}
+		
+		return Collections.emptyList();
+	}
+	
+	/**
+	 * Computes document symbols ad-hoc, based on the given doc URI and the given content,
+	 * re-using the AST from the compilation unit cache. This is meant to compute symbols
+	 * for files opened in editors, so that symbols can be based on editor buffer content,
+	 * not the file content on disc.
+	 */
+	@Override
+	public List<DocumentSymbol> computeDocumentSymbols(IJavaProject project, String docURI, String content) throws Exception {
+		if (content != null) {
+			URI uri = URI.create(docURI);
+			
+			return cuCache.withCompilationUnit(project, uri, cu -> {
+				String file = UriUtil.toFileString(docURI);
+
+				SpringIndexerJavaScanResult result = new SpringIndexerJavaScanResult(project, new String[] {file});
+				
+				IProblemCollector voidProblemCollector = new IProblemCollector() {
+					@Override
+					public void endCollecting() {
+					}
+
+					@Override
+					public void beginCollecting() {
+					}
+
+					@Override
+					public void accept(ReconcileProblem problem) {
+					}
+				};
+
+				AtomicReference<TextDocument> docRef = new AtomicReference<>();
+				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
+						0, docRef, content, voidProblemCollector, new ArrayList<>(), true, true, result);
+
+				scanAST(context, false);
+
+				List<SpringIndexElement> indexElements = result.getGeneratedBeans().stream()
+					.map(cachedBean -> cachedBean.getBean())
+					.toList();
+
+				return SpringIndexToSymbolsConverter.createDocumentSymbols(indexElements);
+			});
+		}
+		
+		return Collections.emptyList();
+	}
+
+	/**
+	 * filter the list of given documents down to those that should be processed and that don't have
+	 * valid up-to-date cache data anymore
+	 */
 	private DocumentDescriptor[] filterDocuments(IJavaProject project, DocumentDescriptor[] updatedDocs) {
 		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
 		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
@@ -232,6 +327,10 @@ public class SpringIndexerJava implements SpringIndexer {
 				.toArray(DocumentDescriptor[]::new);
 	}
 
+	/**
+	 * checks whether the given doc URI is from inside the given projects "interesting" folders
+	 * This is used to filter out file updates for files that are outside of the source folders (for example)
+	 */
 	private boolean shouldProcessDocument(IJavaProject project, String docURI) {
 		try {
 			Path path = new File(new URI(docURI)).toPath();
@@ -281,126 +380,47 @@ public class SpringIndexerJava implements SpringIndexer {
 		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
 		if (cu != null) {
-			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
-			List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
-			List<CachedDiagnostics> generatedDiagnostics = new ArrayList<CachedDiagnostics>();
+			String file = UriUtil.toFileString(docURI);
+
+			SpringIndexerJavaScanResult result = new SpringIndexerJavaScanResult(project, new String[] {file});
 			
 			AtomicReference<TextDocument> docRef = new AtomicReference<>();
-			String file = UriUtil.toFileString(docURI);
-			
 			BiConsumer<String, Diagnostic> diagnosticsAggregator = new BiConsumer<>() {
 				@Override
 				public void accept(String docURI, Diagnostic diagnostic) {
-					generatedDiagnostics.add(new CachedDiagnostics(docURI, diagnostic));
+					result.getGeneratedDiagnostics().add(new CachedDiagnostics(docURI, diagnostic));
 				}
 			};
 			
 			IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
 
 			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-					lastModified, docRef, content, generatedSymbols, generatedBeans, problemCollector, new ArrayList<>(), !ignoreMethodBodies);
+					lastModified, docRef, content, problemCollector, new ArrayList<>(), !ignoreMethodBodies, true, result);
 
 			scanAST(context, true);
 
+			result.publishResults(symbolHandler);
+
+			// update cache
+			
 			IndexCacheKey symbolCacheKey = getCacheKey(project, SYMBOL_KEY);
 			IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
 			IndexCacheKey diagnosticsCacheKey = getCacheKey(project, DIAGNOSTICS_KEY);
 			
-			this.cache.update(symbolCacheKey, file, lastModified, generatedSymbols, context.getDependencies(), CachedSymbol.class);
-			this.cache.update(beansCacheKey, file, lastModified, generatedBeans, context.getDependencies(), CachedBean.class);
-			this.cache.update(diagnosticsCacheKey, file, lastModified, generatedDiagnostics, context.getDependencies(), CachedDiagnostics.class);
-//			dependencyTracker.dump();
-
-			WorkspaceSymbol[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(WorkspaceSymbol[]::new);
-			List<SpringIndexElement> beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toList();
-			List<Diagnostic> diagnostics = generatedDiagnostics.stream().filter(cachedDiagnostics -> cachedDiagnostics.getDiagnostic() != null).map(cachedDiagnostic -> cachedDiagnostic.getDiagnostic()).collect(Collectors.toList());
-
-			symbolHandler.addSymbols(project, docURI, symbols, beans, diagnostics);
+			this.cache.update(symbolCacheKey, file, lastModified, result.getGeneratedSymbols(), context.getDependencies(), CachedSymbol.class);
+			this.cache.update(beansCacheKey, file, lastModified, result.getGeneratedBeans(), context.getDependencies(), CachedBean.class);
+			this.cache.update(diagnosticsCacheKey, file, lastModified, result.getGeneratedDiagnostics(), context.getDependencies(), CachedDiagnostics.class);
 			
 			Set<String> scannedFiles = new HashSet<>();
 			scannedFiles.add(file);
 			fileScannedEvent(file);
+
+			reconcileWithCompleteIndex(project, result.getMarkedForReconcilingWithCompleteIndex());
+
 			scanAffectedFiles(project, context.getScannedTypes(), scannedFiles);
 		}
 	}
 	
-	public List<WorkspaceSymbol> computeSymbols(IJavaProject project, String docURI, String content) throws Exception {
-		if (content != null) {
-			URI uri = URI.create(docURI);
-			
-			return cuCache.withCompilationUnit(project, uri, cu -> {
-				List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
-				List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
-
-				IProblemCollector voidProblemCollector = new IProblemCollector() {
-					@Override
-					public void endCollecting() {
-					}
-
-					@Override
-					public void beginCollecting() {
-					}
-
-					@Override
-					public void accept(ReconcileProblem problem) {
-					}
-				};
-
-				AtomicReference<TextDocument> docRef = new AtomicReference<>();
-				String file = UriUtil.toFileString(docURI);
-				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, new ArrayList<>(), true);
-
-				scanAST(context, false);
-
-				return generatedSymbols.stream().map(s -> s.getEnhancedSymbol()).collect(Collectors.toList());
-			});
-		}
-		
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public List<DocumentSymbol> computeDocumentSymbols(IJavaProject project, String docURI, String content) throws Exception {
-		if (content != null) {
-			URI uri = URI.create(docURI);
-			
-			return cuCache.withCompilationUnit(project, uri, cu -> {
-				List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
-				List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
-
-				IProblemCollector voidProblemCollector = new IProblemCollector() {
-					@Override
-					public void endCollecting() {
-					}
-
-					@Override
-					public void beginCollecting() {
-					}
-
-					@Override
-					public void accept(ReconcileProblem problem) {
-					}
-				};
-
-				AtomicReference<TextDocument> docRef = new AtomicReference<>();
-				String file = UriUtil.toFileString(docURI);
-				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, new ArrayList<>(), true);
-
-				scanAST(context, false);
-
-				List<SpringIndexElement> indexElements = generatedBeans.stream()
-					.map(cachedBean -> cachedBean.getBean())
-					.toList();
-
-				return SpringIndexToSymbolsConverter.createDocumentSymbols(indexElements);
-			});
-		}
-		
-		return Collections.emptyList();
-	}
-
 	private Set<String> scanFilesInternally(IJavaProject project, DocumentDescriptor[] docs) throws Exception {
 		final boolean ignoreMethodBodies = false;
 		
@@ -420,16 +440,13 @@ public class SpringIndexerJava implements SpringIndexer {
 			lastModified[i] = docs[i].getLastModified();
 		}
 		
-		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
-		List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
-		List<CachedDiagnostics> generatedDiagnostics = new ArrayList<CachedDiagnostics>();
-
+		SpringIndexerJavaScanResult result = new SpringIndexerJavaScanResult(project, javaFiles);
 		Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
 		
 		BiConsumer<String, Diagnostic> diagnosticsAggregator = new BiConsumer<>() {
 			@Override
 			public void accept(String docURI, Diagnostic diagnostic) {
-				generatedDiagnostics.add(new CachedDiagnostics(docURI, diagnostic));
+				result.getGeneratedDiagnostics().add(new CachedDiagnostics(docURI, diagnostic));
 			}
 		};
 
@@ -447,7 +464,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, new ArrayList<>(), !ignoreMethodBodies);
+						lastModified, docRef, null, problemCollector, new ArrayList<>(), !ignoreMethodBodies, false, result);
 				
 				scanAST(context, true);
 				
@@ -468,20 +485,19 @@ public class SpringIndexerJava implements SpringIndexer {
 			parser.cleanup();
 		}
 		
-		WorkspaceSymbol[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(WorkspaceSymbol[]::new);
-		Map<String, List<SpringIndexElement>> beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).collect(Collectors.groupingBy(CachedBean::getDocURI, Collectors.mapping(CachedBean::getBean, Collectors.toList())));
-		Map<String, List<Diagnostic>> diagnosticsByDoc = generatedDiagnostics.stream().filter(cachedDiagnostic -> cachedDiagnostic.getDiagnostic() != null).collect(Collectors.groupingBy(CachedDiagnostics::getDocURI, Collectors.mapping(CachedDiagnostics::getDiagnostic, Collectors.toList())));
-		addEmptyDiagnostics(diagnosticsByDoc, javaFiles);
-		symbolHandler.addSymbols(project, symbols, beans, diagnosticsByDoc);
-
+		// update the cache
+		
 		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
 		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
 		IndexCacheKey diagnosticsCacheKey = getCacheKey(project, DIAGNOSTICS_KEY);
 
-		this.cache.update(symbolsCacheKey, javaFiles, lastModified, generatedSymbols, dependencies, CachedSymbol.class);
-		this.cache.update(beansCacheKey, javaFiles, lastModified, generatedBeans, dependencies, CachedBean.class);
-		this.cache.update(diagnosticsCacheKey, javaFiles, lastModified, generatedDiagnostics, dependencies, CachedDiagnostics.class);
+		this.cache.update(symbolsCacheKey, javaFiles, lastModified, result.getGeneratedSymbols(), dependencies, CachedSymbol.class);
+		this.cache.update(beansCacheKey, javaFiles, lastModified, result.getGeneratedBeans(), dependencies, CachedBean.class);
+		this.cache.update(diagnosticsCacheKey, javaFiles, lastModified, result.getGeneratedDiagnostics(), dependencies, CachedDiagnostics.class);
 		
+		result.publishResults(symbolHandler);
+		reconcileWithCompleteIndex(project, result.getMarkedForReconcilingWithCompleteIndex());
+
 		return scannedTypes;
 	}
 
@@ -519,6 +535,10 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private void scanFiles(IJavaProject project, String[] javaFiles, boolean clean) throws Exception {
+		
+		SpringIndexerJavaScanResult result = null;
+		
+		// check cached elements first
 		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
 		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
 		IndexCacheKey diagnosticsCacheKey = getCacheKey(project, DIAGNOSTICS_KEY);
@@ -527,21 +547,26 @@ public class SpringIndexerJava implements SpringIndexer {
 		Pair<CachedBean[], Multimap<String, String>> cachedBeans = this.cache.retrieve(beansCacheKey, javaFiles, CachedBean.class);
 		Pair<CachedDiagnostics[], Multimap<String, String>> cachedDiagnostics = this.cache.retrieve(diagnosticsCacheKey, javaFiles, CachedDiagnostics.class);
 
-		CachedSymbol[] symbols;
-		CachedBean[] beans;
-		CachedDiagnostics[] diagnostics;
+		if (!clean && cachedSymbols != null && cachedBeans != null && cachedDiagnostics != null) {
+			// use cached data
 
-		if (clean || cachedSymbols == null || cachedBeans == null || cachedDiagnostics == null) {
-			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
-			List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
-			List<CachedDiagnostics> generatedDiagnostics = new ArrayList<CachedDiagnostics>();
+			result = new SpringIndexerJavaScanResult(project, javaFiles, symbolHandler, cachedSymbols.getLeft(), cachedBeans.getLeft(), cachedDiagnostics.getLeft());
+			this.dependencyTracker.restore(cachedSymbols.getRight());
 
-			log.info("scan java files, AST parse, pass 1 for files: {}", javaFiles.length);
+			log.info("scan java files used cached data: {} - no. of cached symbols retrieved: {}", project.getElementName(), result.getGeneratedSymbols().size());
+			log.info("scan java files restored cached dependency data: {} - no. of cached dependencies: {}", cachedSymbols.getRight().size());
 
+		}
+		else {
+			// continue scanning everything
+
+			result = new SpringIndexerJavaScanResult(project, javaFiles);
+
+			final SpringIndexerJavaScanResult finalResult = result;
 			BiConsumer<String, Diagnostic> diagnosticsAggregator = new BiConsumer<>() {
 				@Override
 				public void accept(String docURI, Diagnostic diagnostic) {
-					generatedDiagnostics.add(new CachedDiagnostics(docURI, diagnostic));
+					finalResult.getGeneratedDiagnostics().add(new CachedDiagnostics(docURI, diagnostic));
 				}
 			};
 			
@@ -550,49 +575,30 @@ public class SpringIndexerJava implements SpringIndexer {
 			for (int i = 0; i < chunks.size(); i++) {
 
 				log.info("scan java files, AST parse, chunk {} for files: {}", i, javaFiles.length);
-	            String[] pass2Files = scanFiles(project, annotations, chunks.get(i), generatedSymbols, generatedBeans, diagnosticsAggregator, true);
+	            String[] pass2Files = scanFiles(project, annotations, chunks.get(i), diagnosticsAggregator, true, result);
 
 	            if (pass2Files.length > 0) {
 					log.info("scan java files, AST parse, pass 2, chunk {} for files: {}", i, javaFiles.length);
-					scanFiles(project, annotations, pass2Files, generatedSymbols, generatedBeans, diagnosticsAggregator, false);
+					scanFiles(project, annotations, pass2Files, diagnosticsAggregator, false, result);
 				}
 	        }
 			
-			log.info("scan java files done, number of symbols created: " + generatedSymbols.size());
+			log.info("scan java files done, number of symbols created: " + result.getGeneratedSymbols().size());
 
-			this.cache.store(symbolsCacheKey, javaFiles, generatedSymbols, dependencyTracker.getAllDependencies(), CachedSymbol.class);
-			this.cache.store(beansCacheKey, javaFiles, generatedBeans, dependencyTracker.getAllDependencies(), CachedBean.class);
-			this.cache.store(diagnosticsCacheKey, javaFiles, generatedDiagnostics, dependencyTracker.getAllDependencies(), CachedDiagnostics.class);
-//			dependencyTracker.dump();
-
-			symbols = (CachedSymbol[]) generatedSymbols.toArray(new CachedSymbol[generatedSymbols.size()]);
-			beans = (CachedBean[]) generatedBeans.toArray(new CachedBean[generatedBeans.size()]);
-			diagnostics = (CachedDiagnostics[]) generatedDiagnostics.toArray(new CachedDiagnostics[generatedDiagnostics.size()]);
+			this.cache.store(symbolsCacheKey, javaFiles, result.getGeneratedSymbols(), dependencyTracker.getAllDependencies(), CachedSymbol.class);
+			this.cache.store(beansCacheKey, javaFiles, result.getGeneratedBeans(), dependencyTracker.getAllDependencies(), CachedBean.class);
+			this.cache.store(diagnosticsCacheKey, javaFiles, result.getGeneratedDiagnostics(), dependencyTracker.getAllDependencies(), CachedDiagnostics.class);
 		}
-		else {
-			symbols = cachedSymbols.getLeft();
-			beans = cachedBeans.getLeft();
-			diagnostics = cachedDiagnostics.getLeft();
-
-			log.info("scan java files used cached data: {} - no. of cached symbols retrieved: {}", project.getElementName(), symbols.length);
-			this.dependencyTracker.restore(cachedSymbols.getRight());
-			log.info("scan java files restored cached dependency data: {} - no. of cached dependencies: {}", cachedSymbols.getRight().size());
-		}
-
-		if (symbols != null && beans != null) {
-			WorkspaceSymbol[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(WorkspaceSymbol[]::new);
-			Map<String, List<SpringIndexElement>> allBeans = Arrays.stream(beans).filter(cachedBean -> cachedBean.getBean() != null).collect(Collectors.groupingBy(CachedBean::getDocURI, Collectors.mapping(CachedBean::getBean, Collectors.toList())));
-			Map<String, List<Diagnostic>> diagnosticsByDoc = Arrays.stream(diagnostics).filter(cachedDiagnostic -> cachedDiagnostic.getDiagnostic() != null).collect(Collectors.groupingBy(CachedDiagnostics::getDocURI, Collectors.mapping(CachedDiagnostics::getDiagnostic, Collectors.toList())));
-			addEmptyDiagnostics(diagnosticsByDoc, javaFiles);
-			symbolHandler.addSymbols(project, enhancedSymbols, allBeans, diagnosticsByDoc);
-		}
+		
+		result.publishResults(symbolHandler);
+		reconcileWithCompleteIndex(project, result.getMarkedForReconcilingWithCompleteIndex());
 		
 		log.info("reconciling stats - counter: " + reconciler.getStatsCounter());
 		log.info("reconciling stats - timer: " + reconciler.getStatsTimer());
 	}
 
-	private String[] scanFiles(IJavaProject project, AnnotationHierarchies annotations, String[] javaFiles, List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans,
-			BiConsumer<String, Diagnostic> diagnosticsAggregator, boolean ignoreMethodBodies) throws Exception {
+	private String[] scanFiles(IJavaProject project, AnnotationHierarchies annotations, String[] javaFiles,
+			BiConsumer<String, Diagnostic> diagnosticsAggregator, boolean ignoreMethodBodies, SpringIndexerJavaScanResult result) throws Exception {
 		
 		PercentageProgressTask progressTask = this.progressService.createPercentageProgressTask(INDEX_FILES_TASK_ID + project.getElementName(),
 				javaFiles.length, "Spring Tools: Indexing Java Sources for '" + project.getElementName() + "'");
@@ -611,7 +617,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, nextPassFiles, !ignoreMethodBodies);
+						lastModified, docRef, null, problemCollector, nextPassFiles, !ignoreMethodBodies, false, result);
 
 				scanAST(context, true);
 				progressTask.increment();
@@ -632,15 +638,68 @@ public class SpringIndexerJava implements SpringIndexer {
 		}
 	}
 
-	private void addEmptyDiagnostics(Map<String, List<Diagnostic>> diagnosticsByDoc, String[] javaFiles) {
-		for (int i = 0; i < javaFiles.length; i++) {
-			File file = new File(javaFiles[i]);
-			String docURI = UriUtil.toUri(file).toASCIIString();
-
-			if (!diagnosticsByDoc.containsKey(docURI)) {
-				diagnosticsByDoc.put(docURI, Collections.emptyList());
-			}
+	private void reconcileWithCompleteIndex(IJavaProject project, Map<String, Long> markedForReconcilingWithCompleteIndex) throws Exception {
+		if (markedForReconcilingWithCompleteIndex.isEmpty()) {
+			return;
 		}
+		
+		boolean ignoreMethodBodies = false;
+		
+		String[] javaFiles = markedForReconcilingWithCompleteIndex.keySet().toArray(String[]::new);
+		long[] modificationTimestamps = new long[javaFiles.length];
+		for (int i = 0; i < javaFiles.length; i++) {
+			modificationTimestamps[i] = markedForReconcilingWithCompleteIndex.get(javaFiles[i]);
+		}
+		
+		// reconcile
+		SpringIndexerJavaScanResult reconcilingResult = new SpringIndexerJavaScanResult(project, javaFiles);
+		
+		BiConsumer<String, Diagnostic> diagnosticsAggregator = new BiConsumer<>() {
+			@Override
+			public void accept(String docURI, Diagnostic diagnostic) {
+				reconcilingResult.getGeneratedDiagnostics().add(new CachedDiagnostics(docURI, diagnostic));
+			}
+		};
+
+		FileASTRequestor requestor = new FileASTRequestor() {
+
+			@Override
+			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
+				File file = new File(sourceFilePath);
+				String docURI = UriUtil.toUri(file).toASCIIString();
+				long lastModified = file.lastModified();
+				AtomicReference<TextDocument> docRef = new AtomicReference<>();
+
+				IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
+
+				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
+						lastModified, docRef, null, problemCollector, new ArrayList<>(), !ignoreMethodBodies, true, reconcilingResult);
+
+				try {
+					DocumentUtils.getTempTextDocument(docURI, docRef, null);
+					reconcile(context);
+				} catch (Exception e) {
+					log.error("problem creating temp document during re-reconciling for: " + docURI, e);
+				}
+				
+			}
+		};
+
+		AnnotationHierarchies annotations = new AnnotationHierarchies();
+		ASTParserCleanupEnabled parser = createParser(project, annotations, ignoreMethodBodies);
+		try {
+			parser.createASTs(javaFiles, null, new String[0], requestor, null);
+		}
+		finally {
+			parser.cleanup();
+		}
+		
+		// cache update
+		IndexCacheKey diagnosticsCacheKey = getCacheKey(project, DIAGNOSTICS_KEY);
+		this.cache.update(diagnosticsCacheKey, javaFiles, modificationTimestamps, reconcilingResult.getGeneratedDiagnostics(), dependencyTracker.getAllDependencies(), CachedDiagnostics.class);
+
+		// publish
+		reconcilingResult.publishResults(symbolHandler);
 	}
 
 	private void scanAST(final SpringIndexerJavaContext context, boolean includeReconcile) {
@@ -739,19 +798,12 @@ public class SpringIndexerJava implements SpringIndexer {
 		
 		dependencyTracker.update(context.getFile(), context.getDependencies());;
 	}
-	
+
 	private void reconcile(SpringIndexerJavaContext context) {
 		// reconciling
 		IProblemCollector problemCollector = new IProblemCollector() {
 			
 			List<ReconcileProblem> problems = new ArrayList<>();
-			
-			@Override
-			public void endCollecting() {
-				for (ReconcileProblem p : problems) {
-					context.getProblemCollector().accept(p);
-				}
-			}
 			
 			@Override
 			public void beginCollecting() {
@@ -762,12 +814,21 @@ public class SpringIndexerJava implements SpringIndexer {
 			public void accept(ReconcileProblem problem) {
 				problems.add(problem);
 			}
+
+			@Override
+			public void endCollecting() {
+				for (ReconcileProblem p : problems) {
+					context.getProblemCollector().accept(p);
+				}
+			}
 		};
 
 		try {
+
 			problemCollector.beginCollecting();
-			reconciler.reconcile(context.getProject(), URI.create(context.getDocURI()), context.getCu(), problemCollector, context.isFullAst());
+			reconciler.reconcile(context.getProject(), URI.create(context.getDocURI()), context.getCu(), problemCollector, context.isFullAst(), context.isIndexComplete());
 			problemCollector.endCollecting();
+			
 		} catch (RequiredCompleteAstException e) {
 			if (!context.isFullAst()) {
 				// Let problems be found in the next pass, don't add the problems to the aggregate problems collector to not duplicate them with the next pass
@@ -777,6 +838,9 @@ public class SpringIndexerJava implements SpringIndexer {
 				problemCollector.endCollecting();
 				log.error("Complete AST required but it is complete already. Parsing ", context.getDocURI());
 			}
+		} catch (RequiredCompleteIndexException e) {
+			context.getResult().markForReconcilingWithCompleteIndex(context.getFile(), context.getLastModified());
+			log.error("Complete AST required but it is complete already. Parsing ", context.getDocURI());
 		}
 	}
 
@@ -812,9 +876,9 @@ public class SpringIndexerJava implements SpringIndexer {
 			AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(node);
 			for (Iterator<IAnnotationBinding> itr = annotationHierarchies.iterator(typeBinding); itr.hasNext();) {
 				IAnnotationBinding ab = itr.next();
-				/*
-				 * If meta annotations of the current annotation is a "sub-type" of one of the annotations from symbol providers then add it to meta annotations
-				 */
+				//
+				// If meta annotations of the current annotation is a "sub-type" of one of the annotations from symbol providers then add it to meta annotations
+				//
 				if (annotationHierarchies.isAnnotatedWithAnnotationByBindingKey(ab, symbolProviders::containsKey)) {
 					metaAnnotations.add(ab.getAnnotationType());
 				}
@@ -934,7 +998,6 @@ public class SpringIndexerJava implements SpringIndexer {
 				.map(file -> file.getAbsolutePath() + "#" + file.lastModified())
 				.collect(Collectors.joining(","));
 
-//		return new IndexCacheKey(project.getElementName(), "java", elementType, DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
 		return new IndexCacheKey(project.getElementName(), "java", elementType, DigestUtils.md5Hex(GENERATION + "-" + validationSeveritySettings.toString() + "-" + classpathIdentifier).toUpperCase());
 	}
 	
@@ -1017,16 +1080,16 @@ public class SpringIndexerJava implements SpringIndexer {
 		}
 	}
 
+	public void setScanChunkSize(int chunkSize) {
+		this.scanChunkSize = chunkSize;
+	}
+
 	public void setValidationSeveritySettings(JsonObject javaValidationSettingsJson) {
 		this.validationSeveritySettings = javaValidationSettingsJson;
 	}
 
 	public void setFileScanListener(FileScanListener fileScanListener) {
 		this.fileScanListener = fileScanListener;
-	}
-
-	public void setScanChunkSize(int chunkSize) {
-		this.scanChunkSize = chunkSize;
 	}
 
 	private void fileScannedEvent(String file) {

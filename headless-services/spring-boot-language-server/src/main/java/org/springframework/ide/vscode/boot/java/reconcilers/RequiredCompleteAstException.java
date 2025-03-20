@@ -10,8 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.reconcilers;
 
+/**
+ * Indicates that a reconciler or indexer requires the full AST (including method bodies)
+ * to do its work accordingly.
+ */
 public class RequiredCompleteAstException extends RuntimeException {
-
-	private static final long serialVersionUID = 1L;
-
+	private static final long serialVersionUID = -3422411902406544588L;
 }

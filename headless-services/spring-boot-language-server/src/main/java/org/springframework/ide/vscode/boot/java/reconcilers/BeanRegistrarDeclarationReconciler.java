@@ -78,6 +78,10 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 				if (ASTUtils.findInTypeHierarchy(type, Set.of(Annotations.BEAN_REGISTRAR_INTERFACE)) == null) {
 					return true;
 				}
+				
+				if (!isIndexComplete) {
+					throw new RequiredCompleteIndexException();
+				}
 					
 				List<Bean> configBeans = new ArrayList<>();
 				Path p = Path.of(docURI);

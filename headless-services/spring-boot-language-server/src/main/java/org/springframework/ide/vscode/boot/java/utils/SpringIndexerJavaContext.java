@@ -35,15 +35,15 @@ public class SpringIndexerJavaContext {
 	private final long lastModified;
 	private final AtomicReference<TextDocument> docRef;
 	private final String content;
-	private final List<CachedSymbol> generatedSymbols;
-	private final List<CachedBean> beans;
 	private final IProblemCollector getProblemCollector;
 	private final List<String> nextPassFiles;
 	private final boolean fullAst;
+	private final boolean isIndexComplete;
+	private final SpringIndexerJavaScanResult scanResult;
 	
 	private final Set<String> dependencies = new HashSet<>();
 	private final Set<String> scannedTypes = new HashSet<>();
-	
+
 	public SpringIndexerJavaContext(
 			IJavaProject project, 
 			CompilationUnit cu, 
@@ -52,11 +52,11 @@ public class SpringIndexerJavaContext {
 			long lastModified,
 			AtomicReference<TextDocument> docRef, 
 			String content, 
-			List<CachedSymbol> generatedSymbols,
-			List<CachedBean> beans,
 			IProblemCollector problemCollector,
 			List<String> nextPassFiles,
-			boolean fullAst
+			boolean fullAst,
+			boolean isIndexComplete,
+			SpringIndexerJavaScanResult scanResult
 	) {
 		super();
 		this.project = project;
@@ -66,11 +66,11 @@ public class SpringIndexerJavaContext {
 		this.lastModified = lastModified;
 		this.docRef = docRef;
 		this.content = content;
-		this.generatedSymbols = generatedSymbols;
 		this.getProblemCollector = problemCollector;
-		this.beans = beans;
 		this.nextPassFiles = nextPassFiles;
 		this.fullAst = fullAst;
+		this.isIndexComplete = isIndexComplete;
+		this.scanResult = scanResult;
 	}
 
 	public IJavaProject getProject() {
@@ -100,13 +100,17 @@ public class SpringIndexerJavaContext {
 	public String getContent() {
 		return content;
 	}
+	
+	public SpringIndexerJavaScanResult getResult() {
+		return scanResult;
+	}
 
 	public List<CachedSymbol> getGeneratedSymbols() {
-		return generatedSymbols;
+		return getResult().getGeneratedSymbols();
 	}
 	
 	public List<CachedBean> getBeans() {
-		return beans;
+		return getResult().getGeneratedBeans();
 	}
 	
 	public List<String> getNextPassFiles() {
@@ -147,15 +151,19 @@ public class SpringIndexerJavaContext {
 		return fullAst;
 	}
 	
+	public boolean isIndexComplete() {
+		return isIndexComplete;
+	}
+	
 	public void resetDocumentRelatedElements(String docURI) {
-		Iterator<CachedBean> beansIterator = beans.iterator();
+		Iterator<CachedBean> beansIterator = getBeans().iterator();
 		while (beansIterator.hasNext()) {
 			if (beansIterator.next().getDocURI().equals(docURI)) {
 				beansIterator.remove();
 			}
 		}
 		
-		Iterator<CachedSymbol> symbolsIterator = generatedSymbols.iterator();
+		Iterator<CachedSymbol> symbolsIterator = getGeneratedSymbols().iterator();
 		while (symbolsIterator.hasNext()) {
 			if (symbolsIterator.next().getDocURI().equals(docURI)) {
 				symbolsIterator.remove();
