@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2023 VMware, Inc.
+ * Copyright (c) 2022, 2025 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -112,7 +112,7 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 							List<CodeAction> cas = new ArrayList<>();
 							List<ReconcileProblem> problems = new ArrayList<>();
 							BasicProblemCollector problemsCollector = new BasicProblemCollector(problems);
-							jdtReconciler.reconcile(project, uri, cu, problemsCollector, true);
+							jdtReconciler.reconcile(project, uri, cu, problemsCollector, true, true);
 							for (ReconcileProblem p : problems) {
 								if (p.getOffset() <= region.getOffset() && p.getOffset() + p.getLength() >= region.getOffset() + region.getLength() && severityProvider.getDiagnosticSeverity(p) == null) {
 									for (QuickfixData<?> qf :  p.getQuickfixes()) {

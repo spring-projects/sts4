@@ -65,7 +65,7 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
 		return new ASTVisitor() {
 
 			@Override

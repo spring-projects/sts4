@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2024 Broadcom, Inc.
+ * Copyright (c) 2024, 2025 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -54,7 +54,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) throws RequiredCompleteAstException {
 		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 		return new ASTVisitor() {
 

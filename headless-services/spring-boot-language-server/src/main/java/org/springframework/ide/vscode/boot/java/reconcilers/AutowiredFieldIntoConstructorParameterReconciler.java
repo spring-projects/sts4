@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023, 2024 VMware, Inc.
+ * Copyright (c) 2023, 2025 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -67,7 +67,7 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
 		Path sourceFile = Paths.get(docUri);
 		// Check if source file belongs to non-test java sources folder
 		if (IClasspathUtil.getProjectJavaSourceFoldersWithoutTests(project.getClasspath())

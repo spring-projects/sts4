@@ -81,10 +81,21 @@ public abstract class BaseReconcilerTest {
 	}
 
 	List<ReconcileProblem> reconcile(String fileName, String source, boolean isCompleteAst, Path... additionalSources) throws Exception {
-		return reconcile(this::getReconciler, fileName, source, isCompleteAst, additionalSources);
+		return reconcile(this::getReconciler, fileName, source, isCompleteAst, true, additionalSources);
 	}
 
-	List<ReconcileProblem> reconcile(Supplier<JdtAstReconciler> reconcilerFactory, String fileName, String source, boolean isCompleteAst, Path... additionalSources) throws Exception {
+	List<ReconcileProblem> reconcile(String fileName, String source, boolean isCompleteAst, boolean isIndexComplete, Path... additionalSources) throws Exception {
+		return reconcile(this::getReconciler, fileName, source, isCompleteAst, isIndexComplete, additionalSources);
+	}
+
+	List<ReconcileProblem> reconcile(Supplier<JdtAstReconciler> reconcilerFactory, String fileName, String source, boolean isCompleteAst,
+			Path... additionalSources) throws Exception {
+		return reconcile(reconcilerFactory, fileName, source, isCompleteAst, true, additionalSources);
+	}
+		
+	List<ReconcileProblem> reconcile(Supplier<JdtAstReconciler> reconcilerFactory, String fileName, String source, boolean isCompleteAst,
+			boolean isIndexComplete, Path... additionalSources) throws Exception {
+
 		Path path = createFile(fileName, source);
 		TestProblemCollector problemCollector = new TestProblemCollector();
 		AtomicBoolean requiredCompleteAst = new AtomicBoolean(false);
@@ -95,7 +106,7 @@ public abstract class BaseReconcilerTest {
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				try {
 					JdtAstReconciler reconciler = reconcilerFactory.get();
-					ASTVisitor visitor = reconciler.createVisitor(project,  path.toUri(), cu, problemCollector, isCompleteAst);
+					ASTVisitor visitor = reconciler.createVisitor(project,  path.toUri(), cu, problemCollector, isCompleteAst, isIndexComplete);
 					
 					if (visitor != null) {
 						// use a composite visitor here to make sure that the tests will fail if there is anything missing in the composite

@@ -88,21 +88,23 @@ public class JdtReconciler implements JavaReconciler {
 		compilationUnitCache.withCompilationUnit(project, uri, cu -> {
 			if (cu != null) {
 				try {
-					reconcile(project, URI.create(doc.getUri()), cu, problemCollector, true);
+					reconcile(project, URI.create(doc.getUri()), cu, problemCollector, true, true);
 				} catch (RequiredCompleteAstException e) {
 					log.error("Unexpected incomplete AST", e);
 				}
+				// TODO: is the index indeed complete?!? do need to react to complete index exception instead ?!?
 			}
 			log.info("reconciling (JDT): " + doc.getUri() + " done in " + (System.currentTimeMillis() - s) + "ms");
 			return null;
 		});
 	}
 
-	public ASTVisitor createCompositeVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+	public ASTVisitor createCompositeVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst,
+			boolean isIndexComplete) throws RequiredCompleteAstException {
 		CompositeASTVisitor compositeVisitor = new CompositeASTVisitor();
 		
 		for (JdtAstReconciler reconciler : getApplicableReconcilers(project)) {
-			ASTVisitor visitor = reconciler.createVisitor(project, docURI, cu, problemCollector, isCompleteAst);
+			ASTVisitor visitor = reconciler.createVisitor(project, docURI, cu, problemCollector, isCompleteAst, isIndexComplete);
 			
 			if (visitor != null) {
 				compositeVisitor.add(visitor);
@@ -113,7 +115,9 @@ public class JdtReconciler implements JavaReconciler {
 	}
 	
 
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete)
+			throws RequiredCompleteAstException, RequiredCompleteIndexException {
+
 		long start = System.currentTimeMillis();
 		
 		if (!config.isJavaSourceReconcileEnabled()) {
@@ -121,7 +125,7 @@ public class JdtReconciler implements JavaReconciler {
 		}
 		
 		try {
-			ASTVisitor compositeVisitor = createCompositeVisitor(project, docUri, cu, problemCollector, isCompleteAst);
+			ASTVisitor compositeVisitor = createCompositeVisitor(project, docUri, cu, problemCollector, isCompleteAst, isIndexComplete);
 			cu.accept(compositeVisitor);
 		
 //			for (JdtAstReconciler reconciler : getApplicableReconcilers(project)) {

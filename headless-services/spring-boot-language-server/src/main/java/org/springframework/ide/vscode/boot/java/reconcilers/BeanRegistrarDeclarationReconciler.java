@@ -64,7 +64,7 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 
 	@Override
 	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu,
-			IProblemCollector problemCollector, boolean isCompleteAst) {
+			IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
 		return new ASTVisitor() {
 
 			@Override
