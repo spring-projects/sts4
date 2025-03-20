@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -93,7 +94,7 @@ public class BeanCompletionProvider implements CompletionProvider {
 				}
 	
 				IJavaProject project = optionalProject.get();
-				TypeDeclaration topLevelClass = findParentClass(node);
+				TypeDeclaration topLevelClass = ASTUtils.findDeclaringType(node);
 		        if (topLevelClass == null) {
 		            return;
 		        }
@@ -134,17 +135,6 @@ public class BeanCompletionProvider implements CompletionProvider {
 				log.error("problem while looking for bean completions", e);
 			}
 		}
-	}
-	
-	private static TypeDeclaration findParentClass(ASTNode node) {
-		ASTNode current = node;
-		while (current != null) {
-	        if (current instanceof TypeDeclaration) {
-	            return (TypeDeclaration) current;
-	        }
-	        current = current.getParent();
-	    }
-	    return null;
 	}
 	
 	private static String getFullyQualifiedName(TypeDeclaration typeDecl) {

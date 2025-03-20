@@ -54,14 +54,16 @@ public abstract class AbstractScoreableProposal implements ICompletionProposalWi
 			return p1.getLabel().compareTo(p2.getLabel());
 		}
 	};
+
 	public abstract double getBaseScore();
+	
 	public final double getScore() {
 		return getBaseScore() - deemphasizedBy;
 	}
 	@Override
 	public AbstractScoreableProposal deemphasize(double howmuch) {
-		Assert.isLegal(howmuch>=0.0);
-		deemphasizedBy+= howmuch*DEEMP_VALUE;
+		Assert.isLegal(howmuch >= 0.0);
+		deemphasizedBy += howmuch * DEEMP_VALUE;
 		return this;
 	}
 	public boolean isDeemphasized() {
