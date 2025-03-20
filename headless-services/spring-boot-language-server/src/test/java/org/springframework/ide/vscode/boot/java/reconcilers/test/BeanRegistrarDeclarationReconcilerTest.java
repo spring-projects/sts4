@@ -59,6 +59,33 @@ public class BeanRegistrarDeclarationReconcilerTest extends BaseReconcilerTest {
 	}
 	
 	@Test
+	void noValidationIfNoBeanRegistrar() throws Throwable {
+		String source = """
+		package com.example.demo;
+		
+		import org.springframework.beans.factory.BeanRegistrar;
+		import org.springframework.beans.factory.BeanRegistry;
+		import org.springframework.core.env.Environment;
+		
+		public class MyBeanRegistrar {
+		
+			public void register(BeanRegistry registry, Environment env) {
+			}
+		
+		}
+		""";
+		List<ReconcileProblem> problems = reconcile(() -> {
+			SpringMetamodelIndex springIndex = new SpringMetamodelIndex();
+
+			BeanRegistrarDeclarationReconciler r = new BeanRegistrarDeclarationReconciler(new QuickfixRegistry(), springIndex);
+			
+			return r;
+		}, "A.java", source, false);
+		
+		assertEquals(0, problems.size());
+	}
+
+	@Test
 	void noConfigBeans() throws Throwable {
 		String source = """
 		package com.example.demo;

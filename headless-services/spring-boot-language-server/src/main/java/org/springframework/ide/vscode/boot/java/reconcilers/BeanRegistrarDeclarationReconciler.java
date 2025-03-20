@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,6 +27,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot4JavaProblemType;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.Version;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -73,6 +75,10 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 					return true;
 				}
 				
+				if (ASTUtils.findInTypeHierarchy(type, Set.of(Annotations.BEAN_REGISTRAR_INTERFACE)) == null) {
+					return true;
+				}
+					
 				List<Bean> configBeans = new ArrayList<>();
 				Path p = Path.of(docURI);
 				List<Path> sourceFolders = IClasspathUtil.getSourceFolders(project.getClasspath()).map(f -> f.toPath()).filter(f -> p.startsWith(f)).collect(Collectors.toList());
