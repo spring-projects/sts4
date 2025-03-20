@@ -114,5 +114,11 @@ public class Annotations {
 	        "org.aspectj.lang.annotation.AfterThrowing", "AfterThrowing",
 	        "org.aspectj.lang.annotation.DeclareParents", "DeclareParents"
 	);
+	
+	public static final Set<String> JAKARTA_ANNOTATIONS = Set.of(
+			Annotations.RESOURCE_JAKARTA, Annotations.INJECT_JAKARTA, Annotations.NAMED_JAKARTA,
+			Annotations.RESOURCE_JAVAX, Annotations.INJECT_JAVAX, Annotations.NAMED_JAVAX
+	);
+
 
 }

@@ -114,11 +114,6 @@ public class SpringIndexerJava implements SpringIndexer {
 	private final SpringIndexerJavaDependencyTracker dependencyTracker = new SpringIndexerJavaDependencyTracker();
 	private final BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator;
 
-	private final Set<String> jakartaAnnnotations = Set.of(
-			Annotations.RESOURCE_JAKARTA, Annotations.INJECT_JAKARTA, Annotations.NAMED_JAKARTA,
-			Annotations.RESOURCE_JAVAX, Annotations.INJECT_JAVAX, Annotations.NAMED_JAVAX
-	);
-
 	
 	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, IndexCache cache,
 			JavaProjectFinder projectFimder, ProgressService progressService, JdtReconciler jdtReconciler,
@@ -861,7 +856,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				String qualifiedName = type.getQualifiedName();
 				if (qualifiedName != null
 						&& ((qualifiedName.startsWith("org.springframework") && !qualifiedName.startsWith("org.springframework.lang"))
-							|| isJakartaAnnotationWithDefaultSymbol(qualifiedName))) {
+							|| Annotations.JAKARTA_ANNOTATIONS.contains(qualifiedName))) {
 					TextDocument doc = DocumentUtils.getTempTextDocument(context.getDocURI(), context.getDocRef(), context.getContent());
 					return DefaultSymbolProvider.provideDefaultSymbol(node, doc);
 				}
@@ -875,10 +870,6 @@ public class SpringIndexerJava implements SpringIndexer {
 		}
 
 		return null;
-	}
-
-	private boolean isJakartaAnnotationWithDefaultSymbol(String qualifiedName) {
-		return jakartaAnnnotations.contains(qualifiedName);
 	}
 
 	public static ASTParserCleanupEnabled createParser(IJavaProject project, AnnotationHierarchies annotationHierarchies, boolean ignoreMethodBodies) throws Exception {
