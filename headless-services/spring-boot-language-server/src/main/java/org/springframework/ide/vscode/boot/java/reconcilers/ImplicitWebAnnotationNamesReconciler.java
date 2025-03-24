@@ -34,7 +34,6 @@ import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
@@ -74,7 +73,7 @@ public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 	}
 	
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 
 		return new ASTVisitor() {
 
@@ -109,7 +108,7 @@ public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 									ReconcileUtils.buildLabel(FIX_LABEL_PLURAL, RecipeScope.PROJECT))
 								.withRecipeScope(RecipeScope.PROJECT)
 							));
-					problemCollector.accept(problem);
+					context.getProblemCollector().accept(problem);
 				}
 			}
 		};

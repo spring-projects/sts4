@@ -63,6 +63,7 @@ import org.springframework.ide.vscode.boot.java.beans.CachedBean;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.reconcilers.CachedDiagnostics;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.ReconcilingContext;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteIndexException;
 import org.springframework.ide.vscode.commons.java.IClasspath;
@@ -356,8 +357,8 @@ public class SpringIndexerJava implements SpringIndexer {
 			scannedFiles.add(file);
 		}
 		
-		Set<String> scannedTypes = scanFilesInternally(project, docs);
-		scanAffectedFiles(project, scannedTypes, scannedFiles);
+		ScanFilesInternallyResult result = scanFilesInternally(project, docs);
+		scanAffectedFiles(project, result.scannedTypes, scannedFiles, result.scanResult.getMarkedForAffectedFilesIndexing());
 	}
 
 	private void scanFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception {
@@ -417,11 +418,11 @@ public class SpringIndexerJava implements SpringIndexer {
 
 			reconcileWithCompleteIndex(project, result.getMarkedForReconcilingWithCompleteIndex());
 
-			scanAffectedFiles(project, context.getScannedTypes(), scannedFiles);
+			scanAffectedFiles(project, context.getScannedTypes(), scannedFiles, result.getMarkedForAffectedFilesIndexing());
 		}
 	}
 	
-	private Set<String> scanFilesInternally(IJavaProject project, DocumentDescriptor[] docs) throws Exception {
+	private ScanFilesInternallyResult scanFilesInternally(IJavaProject project, DocumentDescriptor[] docs) throws Exception {
 		final boolean ignoreMethodBodies = false;
 		
 		// this is to keep track of already scanned files to avoid endless loops due to circular dependencies
@@ -498,14 +499,18 @@ public class SpringIndexerJava implements SpringIndexer {
 		result.publishResults(symbolHandler);
 		reconcileWithCompleteIndex(project, result.getMarkedForReconcilingWithCompleteIndex());
 
-		return scannedTypes;
+		return new ScanFilesInternallyResult(scannedTypes, result);
 	}
+	
+	private static record ScanFilesInternallyResult(Set<String> scannedTypes, SpringIndexerJavaScanResult scanResult) {};
 
-	private void scanAffectedFiles(IJavaProject project, Set<String> changedTypes, Set<String> alreadyScannedFiles) throws Exception {
+
+	private void scanAffectedFiles(IJavaProject project, Set<String> changedTypes, Set<String> alreadyScannedFiles, Set<String> alreadyMarkedForAffectedFilesIndexing) throws Exception {
 		log.info("Start scanning affected files for types {}", changedTypes);
 		
 		Multimap<String, String> dependencies = dependencyTracker.getAllDependencies();
 		Set<String> filesToScan = new HashSet<>();
+		filesToScan.addAll(alreadyMarkedForAffectedFilesIndexing);
 		
 		for (String file : dependencies.keys()) {
 			if (!alreadyScannedFiles.contains(file)) {
@@ -646,6 +651,9 @@ public class SpringIndexerJava implements SpringIndexer {
 		boolean ignoreMethodBodies = false;
 		
 		String[] javaFiles = markedForReconcilingWithCompleteIndex.keySet().toArray(String[]::new);
+		
+		log.info("additional reconciling with complete index triggere for: " + Arrays.toString(javaFiles));
+		
 		long[] modificationTimestamps = new long[javaFiles.length];
 		for (int i = 0; i < javaFiles.length; i++) {
 			modificationTimestamps[i] = markedForReconcilingWithCompleteIndex.get(javaFiles[i]);
@@ -676,7 +684,7 @@ public class SpringIndexerJava implements SpringIndexer {
 						lastModified, docRef, null, problemCollector, new ArrayList<>(), !ignoreMethodBodies, true, reconcilingResult);
 
 				try {
-					DocumentUtils.getTempTextDocument(docURI, docRef, null);
+					DocumentUtils.getTempTextDocument(docURI, docRef, null); // initialize the docRef with a real document before running validations
 					reconcile(context);
 				} catch (Exception e) {
 					log.error("problem creating temp document during re-reconciling for: " + docURI, e);
@@ -826,7 +834,22 @@ public class SpringIndexerJava implements SpringIndexer {
 		try {
 
 			problemCollector.beginCollecting();
-			reconciler.reconcile(context.getProject(), URI.create(context.getDocURI()), context.getCu(), problemCollector, context.isFullAst(), context.isIndexComplete());
+
+			List<SpringIndexElement> createdElements = context.getBeans().stream()
+					.filter(cachedBean -> cachedBean.getDocURI().equals(context.getDocURI()))
+					.map(cachedBean -> cachedBean.getBean())
+					.toList();
+
+			ReconcilingContext reconcilingContext = new ReconcilingContext(context.getDocURI(), problemCollector, context.isFullAst(), context.isIndexComplete(), createdElements);
+
+			reconciler.reconcile(context.getProject(), URI.create(context.getDocURI()), context.getCu(), reconcilingContext);
+			
+			for (String dependency : reconcilingContext.getDependencies()) {
+				context.addDependency(dependency);
+			}
+			
+			context.getResult().markForAffectedFilesIndexing(reconcilingContext.getMarkedForAffectedFilesIndexing());
+			
 			problemCollector.endCollecting();
 			
 		} catch (RequiredCompleteAstException e) {

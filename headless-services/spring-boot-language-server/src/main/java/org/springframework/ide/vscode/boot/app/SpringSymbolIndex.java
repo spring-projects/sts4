@@ -235,7 +235,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			@Override
 			public void removeSymbols(IJavaProject project, String docURI) {
 				SpringSymbolIndex.this.removeSymbolsByDoc(project, docURI);
-				springIndex.removeElements(project.getElementName(), docURI);
+//				springIndex.removeElements(project.getElementName(), docURI);
 				
 				// TODO remove diagnostics ?!? maybe, maybe not
 				

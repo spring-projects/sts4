@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2023 VMware, Inc.
+ * Copyright (c) 2022, 2025 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -86,25 +86,28 @@ public class JdtReconciler implements JavaReconciler {
 		final long s = System.currentTimeMillis();
 		URI uri = URI.create(doc.getUri());
 		compilationUnitCache.withCompilationUnit(project, uri, cu -> {
+			
 			if (cu != null) {
+
 				try {
-					reconcile(project, URI.create(doc.getUri()), cu, problemCollector, true, true);
+					ReconcilingContext reconcilingContext = new ReconcilingContext(doc.getUri(), problemCollector, true, true, Collections.emptyList());
+					reconcile(project, URI.create(doc.getUri()), cu, reconcilingContext);
 				} catch (RequiredCompleteAstException e) {
 					log.error("Unexpected incomplete AST", e);
 				}
 				// TODO: is the index indeed complete?!? do need to react to complete index exception instead ?!?
 			}
+
 			log.info("reconciling (JDT): " + doc.getUri() + " done in " + (System.currentTimeMillis() - s) + "ms");
 			return null;
 		});
 	}
 
-	public ASTVisitor createCompositeVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst,
-			boolean isIndexComplete) throws RequiredCompleteAstException {
+	public ASTVisitor createCompositeVisitor(IJavaProject project, URI docURI, CompilationUnit cu, ReconcilingContext context) throws RequiredCompleteAstException {
 		CompositeASTVisitor compositeVisitor = new CompositeASTVisitor();
 		
 		for (JdtAstReconciler reconciler : getApplicableReconcilers(project)) {
-			ASTVisitor visitor = reconciler.createVisitor(project, docURI, cu, problemCollector, isCompleteAst, isIndexComplete);
+			ASTVisitor visitor = reconciler.createVisitor(project, docURI, cu, context);
 			
 			if (visitor != null) {
 				compositeVisitor.add(visitor);
@@ -115,7 +118,7 @@ public class JdtReconciler implements JavaReconciler {
 	}
 	
 
-	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete)
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context)
 			throws RequiredCompleteAstException, RequiredCompleteIndexException {
 
 		long start = System.currentTimeMillis();
@@ -125,7 +128,7 @@ public class JdtReconciler implements JavaReconciler {
 		}
 		
 		try {
-			ASTVisitor compositeVisitor = createCompositeVisitor(project, docUri, cu, problemCollector, isCompleteAst, isIndexComplete);
+			ASTVisitor compositeVisitor = createCompositeVisitor(project, docUri, cu, context);
 			cu.accept(compositeVisitor);
 		
 //			for (JdtAstReconciler reconciler : getApplicableReconcilers(project)) {

@@ -39,7 +39,6 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchie
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
@@ -67,7 +66,7 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 		Path sourceFile = Paths.get(docUri);
 		// Check if source file belongs to non-test java sources folder
 		if (IClasspathUtil.getProjectJavaSourceFoldersWithoutTests(project.getClasspath())
@@ -91,14 +90,14 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 							String fieldName = variableDeclarationFragment.getName().getIdentifier();
 
 							if (constructors.isEmpty()) {
-								problemCollector.accept(createProblem(cu, field, fieldName, docUri));
+								context.getProblemCollector().accept(createProblem(cu, field, fieldName, docUri));
 							} else if (constructors.size() == 1) {
-								if (!isCompleteAst) {
+								if (!context.isCompleteAst()) {
 									throw new RequiredCompleteAstException();
 								}
 								if (!isAssigningField(constructors.get(0), variableDeclarationFragment.resolveBinding(),
 										fieldName)) {
-									problemCollector.accept(createProblem(cu, field, fieldName, docUri));
+									context.getProblemCollector().accept(createProblem(cu, field, fieldName, docUri));
 								}
 							} else {
 								List<MethodDeclaration> autowiredConstructors = constructors.stream()
@@ -106,11 +105,11 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 												Annotations.AUTOWIRED, true) != null)
 										.limit(2).collect(Collectors.toList());
 								if (autowiredConstructors.size() == 1) {
-									if (!isCompleteAst) {
+									if (!context.isCompleteAst()) {
 										throw new RequiredCompleteAstException();
 									} else if (!isAssigningField(autowiredConstructors.get(0),
 											variableDeclarationFragment.resolveBinding(), fieldName)) {
-										problemCollector.accept(createProblem(cu, field, fieldName, docUri));
+										context.getProblemCollector().accept(createProblem(cu, field, fieldName, docUri));
 									}
 								}
 							}

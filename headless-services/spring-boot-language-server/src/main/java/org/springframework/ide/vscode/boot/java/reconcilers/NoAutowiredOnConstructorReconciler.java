@@ -29,7 +29,6 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchie
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
@@ -57,7 +56,7 @@ public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 
 		return new ASTVisitor() {
@@ -91,7 +90,7 @@ public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 									List.of(new FixDescriptor(NoAutowiredOnConstructor.class.getName(), List.of(docUri.toASCIIString()), FIX_LABEL)
 											.withRecipeScope(RecipeScope.NODE)
 											.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl, null))));
-							problemCollector.accept(problem);
+							context.getProblemCollector().accept(problem);
 						}
 					}
 

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.ReconcilingContext;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
@@ -105,14 +106,20 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 
 			URI uri = URI.create(doc.getUri());
 			final QuickfixType rewriteFixType = quickfixRegistry.getQuickfixType(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX);
+
 			if (isSupported(capabilities, context) && rewriteFixType != null) {
 				List<CodeAction> codeActions = cuCache.withCompilationUnit(project, uri, cu -> {
+
 					if (cu != null) {
+
 						try {
 							List<CodeAction> cas = new ArrayList<>();
 							List<ReconcileProblem> problems = new ArrayList<>();
 							BasicProblemCollector problemsCollector = new BasicProblemCollector(problems);
-							jdtReconciler.reconcile(project, uri, cu, problemsCollector, true, true);
+							
+							ReconcilingContext reconcilingContext = new ReconcilingContext(doc.getUri(), problemsCollector, true, true, Collections.emptyList());
+							jdtReconciler.reconcile(project, uri, cu, reconcilingContext);
+
 							for (ReconcileProblem p : problems) {
 								if (p.getOffset() <= region.getOffset() && p.getOffset() + p.getLength() >= region.getOffset() + region.getLength() && severityProvider.getDiagnosticSeverity(p) == null) {
 									for (QuickfixData<?> qf :  p.getQuickfixes()) {
@@ -123,6 +130,7 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 								}
 							}
 							return cas;
+							
 						} catch (Exception e) {
 							log.error("", e);
 						}

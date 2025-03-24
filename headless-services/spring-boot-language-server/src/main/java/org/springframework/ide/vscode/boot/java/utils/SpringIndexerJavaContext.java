@@ -123,11 +123,17 @@ public class SpringIndexerJavaContext {
 	
 	public void addDependency(ITypeBinding dependsOn) {
 		if (dependsOn != null && dependsOn.isFromSource()) {
-			String type = dependsOn.getKey();
+			String type = dependsOn.getQualifiedName();
 		
 			if (type != null && !scannedTypes.contains(type)) {
 				dependencies.add(type);
 			}
+		}
+	}
+	
+	public void addDependency(String qualifiedTypeName) {
+		if (qualifiedTypeName != null) {
+			dependencies.add(qualifiedTypeName);
 		}
 	}
 
@@ -137,7 +143,7 @@ public class SpringIndexerJavaContext {
 	
 	public void addScannedType(ITypeBinding scannedType) {
 		if (scannedType != null) {
-			String type = scannedType.getKey();
+			String type = scannedType.getQualifiedName();
 			scannedTypes.add(type);
 			dependencies.remove(type);
 		}
@@ -171,5 +177,5 @@ public class SpringIndexerJavaContext {
 		}
 		
 	}
-	
+
 }

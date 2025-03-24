@@ -109,8 +109,9 @@ public class RequestMappingSymbolProviderTest {
     }
 
     @Test
-    //TODO: Enable when JDT Core 3.41 or higher is adopted. See: https://github.com/eclipse-jdt/eclipse.jdt.core/pull/3416
-	@DisabledOnOs(OS.WINDOWS)
+    // TODO: Enable when JDT Core 3.41 or higher is adopted. See: https://github.com/eclipse-jdt/eclipse.jdt.core/pull/3416
+    // additional comment: switched the string to not contain the "key" of the AST node, but the fully qualified type name, therefore enabling this again everywhere 
+//	@DisabledOnOs(OS.WINDOWS)
     void testSimpleRequestMappingSymbolFromConstantInDifferentClass() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
         String constantsUri = directory.toPath().resolve("src/main/java/org/test/Constants.java").toUri().toString();
@@ -120,7 +121,7 @@ public class RequestMappingSymbolProviderTest {
 
         //Verify whether dependency tracker logics works properly for this example.
         SpringIndexerJavaDependencyTracker dt = indexer.getJavaIndexer().getDependencyTracker();
-        assertEquals(ImmutableSet.of("Lorg/test/Constants;"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
+        assertEquals(ImmutableSet.of("org.test.Constants"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
 
         TestFileScanListener fileScanListener = new TestFileScanListener();
         indexer.getJavaIndexer().setFileScanListener(fileScanListener);
@@ -135,7 +136,8 @@ public class RequestMappingSymbolProviderTest {
 
     @Test
     //TODO: Enable when JDT Core 3.41 or higher is adopted. See: https://github.com/eclipse-jdt/eclipse.jdt.core/pull/3416
-	@DisabledOnOs(OS.WINDOWS)
+    // additional comment: switched the string to not contain the "key" of the AST node, but the fully qualified type name, therefore enabling this again everywhere 
+//	@DisabledOnOs(OS.WINDOWS)
     void testUpdateDocumentWithConstantFromDifferentClass() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
         String constantsUri = directory.toPath().resolve("src/main/java/org/test/Constants.java").toUri().toString();
@@ -145,7 +147,7 @@ public class RequestMappingSymbolProviderTest {
 
         //Verify whether dependency tracker logics works properly for this example.
         SpringIndexerJavaDependencyTracker dt = indexer.getJavaIndexer().getDependencyTracker();
-        assertEquals(ImmutableSet.of("Lorg/test/Constants;"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
+        assertEquals(ImmutableSet.of("org.test.Constants"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
 
         TestFileScanListener fileScanListener = new TestFileScanListener();
         indexer.getJavaIndexer().setFileScanListener(fileScanListener);
@@ -153,7 +155,7 @@ public class RequestMappingSymbolProviderTest {
         CompletableFuture<Void> updateFuture = indexer.updateDocument(docUri, FileUtils.readFileToString(UriUtil.toFile(docUri), Charset.defaultCharset()), "test triggered");
         updateFuture.get(5, TimeUnit.SECONDS);
 
-        assertEquals(ImmutableSet.of("Lorg/test/Constants;"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
+        assertEquals(ImmutableSet.of("org.test.Constants"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
 
         fileScanListener.assertScannedUris(docUri);
         fileScanListener.assertScannedUri(constantsUri, 0);

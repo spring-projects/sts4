@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.index;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -247,6 +248,25 @@ public class SpringMetamodelIndex {
 		}
 
 		return (Bean[]) result.toArray(new Bean[result.size()]);
+	}
+
+	public static <T extends SpringIndexElement> List<T> getNodesOfType(Class<T> type, Collection<SpringIndexElement> rootNodes) {
+		List<T> result = new ArrayList<>();
+		
+		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
+		elementsToVisit.addAll(rootNodes);
+		
+		while (!elementsToVisit.isEmpty()) {
+			SpringIndexElement element = elementsToVisit.pop();
+
+			if (type.isInstance(element)) {
+				result.add(type.cast(element));
+			}
+			
+			elementsToVisit.addAll(element.getChildren());
+		}
+		
+		return result;
 	}
 
 }

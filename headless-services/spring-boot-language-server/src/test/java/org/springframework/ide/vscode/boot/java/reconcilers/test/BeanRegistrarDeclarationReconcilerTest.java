@@ -32,7 +32,7 @@ import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 
 public class BeanRegistrarDeclarationReconcilerTest extends BaseReconcilerTest {
-
+	
 	@Override
 	protected String getFolder() {
 		return "sf7validation";

@@ -66,14 +66,14 @@ public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 	}
 	
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 
 		return new ASTVisitor() {
 
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
 				try {
-					visitAnnotation(project, cu, docUri, node, problemCollector);
+					visitAnnotation(project, cu, docUri, node, context.getProblemCollector());
 				} catch (Exception e) {
 				}
 				return super.visit(node);
@@ -82,7 +82,7 @@ public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 			@Override
 			public boolean visit(NormalAnnotation node) {
 				try {
-					visitAnnotation(project, cu, docUri, node, problemCollector);
+					visitAnnotation(project, cu, docUri, node, context.getProblemCollector());
 				} catch (Exception e) {
 				}
 				return super.visit(node);
@@ -91,7 +91,7 @@ public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 			@Override
 			public boolean visit(MarkerAnnotation node) {
 				try {
-					visitAnnotation(project, cu, docUri, node, problemCollector);
+					visitAnnotation(project, cu, docUri, node, context.getProblemCollector());
 				} catch (Exception e) {
 				}
 				return super.visit(node);

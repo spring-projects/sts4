@@ -71,7 +71,7 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 
 		return new ASTVisitor() {
 
@@ -86,7 +86,7 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler {
 						Bean[] registeredBeans = springIndex.getBeansWithType(project.getElementName(), beanClassName);
 						
 						if (registeredBeans == null || registeredBeans.length == 0) {
-							createProblemAndQuickFixes(project, problemCollector, node, type);
+							createProblemAndQuickFixes(project, context.getProblemCollector(), node, type);
 						}
 					}
 				}

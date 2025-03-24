@@ -44,7 +44,6 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchie
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.JavaUtils;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 
@@ -70,7 +69,7 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, ReconcilingContext context) {
 		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 
 		return new ASTVisitor() {
@@ -129,7 +128,7 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 			}
 
 			private void markProblem(ITypeBinding idType, ASTNode node) {
-				problemCollector.accept(new ReconcileProblemImpl(getProblemType(),
+				context.getProblemCollector().accept(new ReconcileProblemImpl(getProblemType(),
 						"Expected Domain ID type is '" + idType.getQualifiedName() + "'", node.getStartPosition(),
 						node.getLength()));
 			}

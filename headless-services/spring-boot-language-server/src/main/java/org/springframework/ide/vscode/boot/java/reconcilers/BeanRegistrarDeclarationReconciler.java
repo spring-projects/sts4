@@ -14,6 +14,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,13 +34,16 @@ import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.ImportBeanRegistrarInConfigRecipe;
+import org.springframework.ide.vscode.commons.util.UriUtil;
+
+import com.google.common.collect.Streams;
 
 public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 
@@ -63,8 +67,7 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu,
-			IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, ReconcilingContext context) {
 		return new ASTVisitor() {
 
 			@Override
@@ -75,11 +78,14 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 					return true;
 				}
 				
+				// this is not a bean registrar, but maybe a config class that has changed and is now importing a bean registrar
+				// so we need to mark the bean registrar for reconciling
 				if (ASTUtils.findInTypeHierarchy(type, Set.of(Annotations.BEAN_REGISTRAR_INTERFACE)) == null) {
+					identifyPossibleRegistrarsForReconciling(context);
 					return true;
 				}
 				
-				if (!isIndexComplete) {
+				if (!context.isIndexComplete()) {
 					throw new RequiredCompleteIndexException();
 				}
 					
@@ -99,7 +105,9 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 					}
 				}
 
-				if (configBeans.isEmpty() || !isImportedBeanRegistrarInConfig(configBeans, type)) {
+				List<String> importingBeanRegistrarConfigs = getImportedBeanRegistrarConfigs(configBeans, type);
+				if (configBeans.isEmpty() || importingBeanRegistrarConfigs.size() == 0) {
+
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), "Bean not registered", node.getName().getStartPosition(), node.getName().getLength());
 					List<FixDescriptor> fixes = configBeans.stream()
 							.filter(b -> b.getLocation() != null && b.getLocation().getUri() != null)
@@ -111,7 +119,18 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 									.withRecipeScope(RecipeScope.FILE)
 									).toList();
 					ReconcileUtils.setRewriteFixes(registry, problem, fixes);
-					problemCollector.accept(problem);
+					context.getProblemCollector().accept(problem);
+					
+					// record dependencies on types where we found import annotations for this bean registrar
+					// mark this file
+					
+				}
+				else {
+					// record dependencies on types where we found import annotations for this bean registrar
+					for (String typeOfConfigClassWithImport : importingBeanRegistrarConfigs) {
+						context.addDependency(typeOfConfigClassWithImport);
+					}
+
 				}
 				return true;
 			}
@@ -119,12 +138,65 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 		};
 	}
 	
-	private boolean isImportedBeanRegistrarInConfig(List<Bean> configBeans, ITypeBinding beanRegType) {
+	private List<String> getImportedBeanRegistrarConfigs(List<Bean> configBeans, ITypeBinding beanRegType) {
 		return configBeans.stream()
-				.flatMap(bean -> Arrays.stream(bean.getAnnotations())) // look into annotations on this bean definition
+				.filter(configBean -> isImportingBeanRegistrar(configBean, beanRegType))
+				.map(configBean -> configBean.getType())
+				.toList();
+	}
+	
+	private boolean isImportingBeanRegistrar(Bean configBean, ITypeBinding beanRegType) {
+		if (configBean.getAnnotations() == null) {
+			return false;
+		}
+		else {
+			return Arrays.stream(configBean.getAnnotations())
+					.filter(annotation -> Annotations.IMPORT.equals(annotation.getAnnotationType())) // look into @Import annotations only
+					.flatMap(annotation -> annotation.getAttributes().get("value") == null ? Stream.empty() : Arrays.stream(annotation.getAttributes().get("value"))) // look into the attribute values of "value" attribute
+					.anyMatch(annotationValue -> annotationValue.getName().equals(beanRegType.getQualifiedName()));
+		}
+	}
+	
+	/**
+	 * This is basically the reverse check: it tries to identify possible bean registrars that need to be
+	 * reconciled because the type this reconciler is currently looking at refers to it or has referred to it.
+	 */
+	protected void identifyPossibleRegistrarsForReconciling(ReconcilingContext context) {
+		List<SpringIndexElement> createdIndexElements = context.getCreatedIndexElements();
+		List<SpringIndexElement> previuosIndexElements = springIndex.getDocument(context.getDocURI()) != null ? 
+				springIndex.getDocument(context.getDocURI()).getChildren() : Collections.emptyList();
+		
+		Set<String> importedTypesDelta = getImportAnnotationTypesDelta(createdIndexElements, previuosIndexElements);
+		
+		Arrays.stream(springIndex.getBeans())
+				.filter(bean -> bean.isTypeCompatibleWith(Annotations.BEAN_REGISTRAR_INTERFACE))
+				.filter(bean -> importedTypesDelta.contains(bean.getType()))
+				.map(bean -> bean.getLocation().getUri())
+				.map(docURI -> UriUtil.toFileString(docURI))
+				.forEach(file -> context.markForAffetcedFilesIndexing(file));
+	}
+
+	public Set<String> getImportAnnotationTypesDelta(List<SpringIndexElement> updatedElements, List<SpringIndexElement> previousElements) {
+		Set<String> updatedImportedTypes = getImportAnnotationTypes(updatedElements);
+		Set<String> previousImportedTypes = getImportAnnotationTypes(previousElements);
+		
+		return Streams.concat(updatedImportedTypes.stream(), previousImportedTypes.stream()
+				.filter(element -> 
+					(updatedImportedTypes.contains(element) && !previousImportedTypes.contains(element))
+					|| (!updatedImportedTypes.contains(element) && previousImportedTypes.contains(element))))
+				.collect(Collectors.toSet());
+	}
+	
+	public Set<String> getImportAnnotationTypes(List<SpringIndexElement> elements) {
+		return elements.stream()
+				.filter(element -> element instanceof Bean)
+				.map(element -> (Bean) element)
+				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
 				.filter(annotation -> Annotations.IMPORT.equals(annotation.getAnnotationType())) // look into @Import annotations only
 				.flatMap(annotation -> annotation.getAttributes().get("value") == null ? Stream.empty() : Arrays.stream(annotation.getAttributes().get("value"))) // look into the attribute values of "value" attribute
-				.anyMatch(annotationValue -> annotationValue.getName().equals(beanRegType.getQualifiedName()));
+				.map(attributeValue -> attributeValue.getName())
+				.distinct()
+				.collect(Collectors.toSet());
 	}
 
 }

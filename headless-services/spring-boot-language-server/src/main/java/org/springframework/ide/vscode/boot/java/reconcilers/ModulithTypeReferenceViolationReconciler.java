@@ -28,7 +28,6 @@ import org.springframework.ide.vscode.boot.modulith.AppModules;
 import org.springframework.ide.vscode.boot.modulith.ModulithService;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 
@@ -52,7 +51,7 @@ public class ModulithTypeReferenceViolationReconciler implements JdtAstReconcile
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 
 		Path sourceFile = Paths.get(docUri);
 		if (IClasspathUtil.getProjectJavaSourceFoldersWithoutTests(project.getClasspath())
@@ -81,7 +80,7 @@ public class ModulithTypeReferenceViolationReconciler implements JdtAstReconcile
 					private void validate(ASTNode node, ITypeBinding type) {
 						if (type != null) {
 							appModules.getModuleNotExposingType(packageName, type.getBinaryName()).ifPresent(module -> {
-								problemCollector.accept(new ReconcileProblemImpl(getProblemType(),
+								context.getProblemCollector().accept(new ReconcileProblemImpl(getProblemType(),
 										"Invalid reference to non-exposed type of module '%s'!".formatted(module.name()),
 										node.getStartPosition(), node.getLength()));
 							});

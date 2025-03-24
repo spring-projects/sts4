@@ -25,11 +25,11 @@ import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryVisitor
 import org.springframework.ide.vscode.boot.java.embedded.lang.AntlrReconcilerWithSpel;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.ReconcilingContext;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
 import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.parser.mysql.MySqlLexer;
 import org.springframework.ide.vscode.parser.mysql.MySqlParser;
@@ -54,7 +54,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) throws RequiredCompleteAstException {
+	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, ReconcilingContext context) throws RequiredCompleteAstException {
 		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 		return new ASTVisitor() {
 
@@ -63,7 +63,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, node);
 				if (q != null) {
 					Optional<Reconciler> reconcilerOpt = q.isNative() ? getSqlReconciler(project) : Optional.of(getQueryReconciler(project));
-					reconcilerOpt.ifPresent(r -> r.reconcile(q.query().getText(), q.query()::toSingleJavaRange, problemCollector));
+					reconcilerOpt.ifPresent(r -> r.reconcile(q.query().getText(), q.query()::toSingleJavaRange, context.getProblemCollector()));
 				}
 				return super.visit(node);
 			}
@@ -72,7 +72,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 			public boolean visit(SingleMemberAnnotation node) {
 				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, node);
 				if (q != null) {
-					getQueryReconciler(project).reconcile(q.query().getText(), q.query()::toSingleJavaRange, problemCollector);
+					getQueryReconciler(project).reconcile(q.query().getText(), q.query()::toSingleJavaRange, context.getProblemCollector());
 				}
 				return super.visit(node);
 			}
@@ -81,7 +81,7 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 			public boolean visit(MethodInvocation node) {
 				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(node);
 				if (q != null) {
-					getQueryReconciler(project).reconcile(q.query().getText(), q.query()::toSingleJavaRange, problemCollector);
+					getQueryReconciler(project).reconcile(q.query().getText(), q.query()::toSingleJavaRange, context.getProblemCollector());
 				}
 				return super.visit(node);
 			}

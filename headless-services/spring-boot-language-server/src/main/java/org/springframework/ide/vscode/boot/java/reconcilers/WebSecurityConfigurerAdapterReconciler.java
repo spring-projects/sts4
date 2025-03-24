@@ -28,7 +28,6 @@ import org.springframework.ide.vscode.commons.Version;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
@@ -85,7 +84,7 @@ public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler 
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 		return new ASTVisitor() {
 			
@@ -111,7 +110,7 @@ public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler 
 
 						);
 					}
-					problemCollector.accept(problem);
+					context.getProblemCollector().accept(problem);
 				}
 				return super.visit(typeDecl);
 			}

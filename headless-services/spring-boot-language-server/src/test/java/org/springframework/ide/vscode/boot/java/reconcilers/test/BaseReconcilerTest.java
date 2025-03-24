@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2025 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,6 +32,7 @@ import org.eclipse.jdt.core.dom.FileASTRequestor;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.reconcilers.CompositeASTVisitor;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.ReconcilingContext;
 import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
 import org.springframework.ide.vscode.boot.java.value.test.ValueSpelExpressionValidationTest.TestProblemCollector;
@@ -106,7 +108,10 @@ public abstract class BaseReconcilerTest {
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				try {
 					JdtAstReconciler reconciler = reconcilerFactory.get();
-					ASTVisitor visitor = reconciler.createVisitor(project,  path.toUri(), cu, problemCollector, isCompleteAst, isIndexComplete);
+					String docURI = path.toUri().toASCIIString();
+
+					ReconcilingContext reconcilingContext = new ReconcilingContext(docURI, problemCollector, isCompleteAst, isIndexComplete, Collections.emptyList());
+					ASTVisitor visitor = reconciler.createVisitor(project,  path.toUri(), cu, reconcilingContext);
 					
 					if (visitor != null) {
 						// use a composite visitor here to make sure that the tests will fail if there is anything missing in the composite

@@ -19,9 +19,9 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.ReconcilingContext;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
 public class JdtSpelReconciler implements JdtAstReconciler {
@@ -44,8 +44,7 @@ public class JdtSpelReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu,
-			IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, ReconcilingContext context) {
 		return new ASTVisitor() {
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
@@ -53,7 +52,7 @@ public class JdtSpelReconciler implements JdtAstReconciler {
 					.map(e -> e.getSpelRegion(node))
 					.filter(o -> o.isPresent())
 					.map(o -> o.get())
-					.forEach(snippet -> spelReconciler.reconcile(snippet.getText(), snippet::toSingleJavaRange, problemCollector));
+					.forEach(snippet -> spelReconciler.reconcile(snippet.getText(), snippet::toSingleJavaRange, context.getProblemCollector()));
 				return super.visit(node);
 			}
 			
@@ -63,7 +62,7 @@ public class JdtSpelReconciler implements JdtAstReconciler {
 					.map(e -> e.getSpelRegion(node))
 					.filter(o -> o.isPresent())
 					.map(o -> o.get())
-					.forEach(snippet -> spelReconciler.reconcile(snippet.getText(), snippet::toSingleJavaRange, problemCollector));
+					.forEach(snippet -> spelReconciler.reconcile(snippet.getText(), snippet::toSingleJavaRange, context.getProblemCollector()));
 				return super.visit(node);
 			}
 

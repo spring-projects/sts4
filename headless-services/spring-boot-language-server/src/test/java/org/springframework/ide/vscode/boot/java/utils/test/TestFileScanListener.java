@@ -65,4 +65,8 @@ public class TestFileScanListener implements FileScanListener {
 	public void reset() {
 		scannedFiles.clear();
 	}
+
+	public void assertNoFileScans(int count) {
+		assertEquals(count, scannedFiles.size());
+	}
 }

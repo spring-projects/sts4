@@ -25,7 +25,6 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
@@ -56,7 +55,7 @@ public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 
 		return new ASTVisitor() {
 
@@ -73,7 +72,7 @@ public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler
 						}
 					}
 					if (foundMethod != null) {
-						if (isCompleteAst) {
+						if (context.isCompleteAst()) {
 							AtomicBoolean returnsTrue = new AtomicBoolean(false);
 							foundMethod.accept(new ASTVisitor() {
 								@Override
@@ -99,7 +98,7 @@ public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler
 										.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl, null))
 										.withRecipeScope(RecipeScope.NODE)
 						));
-						problemCollector.accept(problem);
+						context.getProblemCollector().accept(problem);
 					}
 				}
 				return true;

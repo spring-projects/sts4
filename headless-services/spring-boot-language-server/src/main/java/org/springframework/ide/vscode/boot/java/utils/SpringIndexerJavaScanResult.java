@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,7 +38,8 @@ import org.springframework.ide.vscode.commons.util.UriUtil;
  */
 public class SpringIndexerJavaScanResult {
 	
-	private final Map<String, Long> markedForReconciling;
+	private final Map<String, Long> markedForReconciling; // file + modification timestamp
+	private final Set<String> markedForAffetcedFilesIndexing; // file
 	
 	private final List<CachedSymbol> generatedSymbols;
 	private final List<CachedBean> generatedBeans;
@@ -45,12 +47,15 @@ public class SpringIndexerJavaScanResult {
 
 	private final IJavaProject project;
 	private final String[] javaFiles;
+
 	
 	public SpringIndexerJavaScanResult(IJavaProject project, String[] javaFiles) {
 		this.project = project;
 		this.javaFiles = javaFiles;
 
 		this.markedForReconciling = new HashMap<>();
+		this.markedForAffetcedFilesIndexing = new HashSet<>();
+		
 		this.generatedSymbols = new ArrayList<CachedSymbol>();
 		this.generatedBeans = new ArrayList<CachedBean>();
 		this.generatedDiagnostics = new ArrayList<CachedDiagnostics>();
@@ -63,10 +68,13 @@ public class SpringIndexerJavaScanResult {
 		this.javaFiles = javaFiles;
 		
 		this.markedForReconciling = new HashMap<>();
+		this.markedForAffetcedFilesIndexing = new HashSet<>();
+
 		this.generatedSymbols = Arrays.asList(symbols);
 		this.generatedBeans = Arrays.asList(beans);
 		this.generatedDiagnostics = Arrays.asList(diagnostics);
 	}
+	
 
 	public Map<String, Long> getMarkedForReconcilingWithCompleteIndex() {
 		return markedForReconciling;
@@ -76,6 +84,15 @@ public class SpringIndexerJavaScanResult {
 		this.markedForReconciling.put(file, lastModified);
 	}
 	
+	public void markForAffectedFilesIndexing(Collection<String> markedForAffectedFilesIndexing) {
+		this.markedForAffetcedFilesIndexing.addAll(markedForAffectedFilesIndexing);
+	}
+	
+	public Set<String> getMarkedForAffectedFilesIndexing() {
+		return this.markedForAffetcedFilesIndexing;
+	}
+	
+
 	public List<CachedBean> getGeneratedBeans() {
 		return generatedBeans;
 	}
@@ -108,5 +125,5 @@ public class SpringIndexerJavaScanResult {
 			}
 		}
 	}
-	
+
 }

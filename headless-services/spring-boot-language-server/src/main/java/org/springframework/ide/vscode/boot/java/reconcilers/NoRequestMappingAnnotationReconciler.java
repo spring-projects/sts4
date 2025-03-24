@@ -37,7 +37,6 @@ import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
@@ -69,7 +68,7 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 
 		return new ASTVisitor() {
 
@@ -108,12 +107,12 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 											"Replace all `@RequestMapping` in project '%s' with `@GetMapping`, `@PostMapping`, etc.".formatted(project.getElementName()))
 										.withRecipeScope(RecipeScope.PROJECT)
 							));
-							problemCollector.accept(problem);
+							context.getProblemCollector().accept(problem);
 						} else if (SUPPORTED_REQUEST_METHODS == requestMethods) { // the case of no request methods specified
 							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, a.getStartPosition(), a.getLength());
 							ReconcileUtils.setRewriteFixes(registry, problem, 
 									requestMethods.stream().map(m -> createFixDescriptor(uri, range, m)).collect(Collectors.toList()));
-							problemCollector.accept(problem);
+							context.getProblemCollector().accept(problem);
 						}
 					}
 				}

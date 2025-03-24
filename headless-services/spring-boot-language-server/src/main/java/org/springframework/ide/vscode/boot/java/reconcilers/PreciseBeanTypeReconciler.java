@@ -30,7 +30,6 @@ import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
@@ -57,7 +56,7 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 		final AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(cu);
 
 		return new ASTVisitor() {
@@ -72,7 +71,7 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 				if (methodBinding != null) {
 					boolean isBeanMethod = annotationHierarchies.isAnnotatedWith(methodBinding, Annotations.BEAN);
 					if (isBeanMethod) {
-						if (isCompleteAst) {
+						if (context.isCompleteAst()) {
 							if (currentMethod == null)  {// Do not jump into anonymous class methods
 								currentMethod = method;
 								currentReturnTypes = new ArrayList<>();
@@ -91,7 +90,7 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 				if (currentMethod == method) {
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, method.getReturnType2().getStartPosition(), method.getReturnType2().getLength());
 					if (currentReturnTypes.size() > 1) {
-						problemCollector.accept(problem);
+						context.getProblemCollector().accept(problem);
 					} else if (currentReturnTypes.size() == 1 && !method.resolveBinding().getReturnType().isAssignmentCompatible(currentReturnTypes.get(0))) {
 						String uri = docUri.toASCIIString();
 						String replacementType = currentReturnTypes.get(0).getName();
@@ -105,7 +104,7 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 							new FixDescriptor(recipeId, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
 								.withRecipeScope(RecipeScope.PROJECT)
 						));
-						problemCollector.accept(problem);
+						context.getProblemCollector().accept(problem);
 					}
 					
 					currentMethod = null;

@@ -22,7 +22,6 @@ import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.SimpleType;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 
@@ -45,14 +44,14 @@ public class Boot3NotSupportedTypeReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docURI, CompilationUnit cu, ReconcilingContext context) {
 		return new ASTVisitor() {
 
 			@Override
 			public boolean visit(ImportDeclaration node) {
 				String fqName = node.getName().getFullyQualifiedName();
 				if (TYPE_FQNAMES.contains(fqName)) {
-					problemCollector.accept(createProblem(fqName, node.getName().getStartPosition(), node.getName().getLength()));
+					context.getProblemCollector().accept(createProblem(fqName, node.getName().getStartPosition(), node.getName().getLength()));
 				}
 				return super.visit(node);
 			}
@@ -61,7 +60,7 @@ public class Boot3NotSupportedTypeReconciler implements JdtAstReconciler {
 			public boolean visit(SimpleType node) {
 				String fqName = processType(cu, node.getName().getFullyQualifiedName());
 				if (fqName != null) {
-					problemCollector.accept(createProblem(fqName, node.getStartPosition(), node.getLength()));
+					context.getProblemCollector().accept(createProblem(fqName, node.getStartPosition(), node.getLength()));
 				}
 				return super.visit(node);
 			}

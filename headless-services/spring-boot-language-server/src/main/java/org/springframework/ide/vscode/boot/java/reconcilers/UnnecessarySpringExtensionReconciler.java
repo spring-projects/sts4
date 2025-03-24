@@ -27,7 +27,6 @@ import org.openrewrite.java.spring.boot2.UnnecessarySpringExtension;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
@@ -74,7 +73,7 @@ public class UnnecessarySpringExtensionReconciler implements JdtAstReconciler {
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 		return new ASTVisitor() {
 
 			@Override
@@ -95,7 +94,7 @@ public class UnnecessarySpringExtensionReconciler implements JdtAstReconciler {
 							ReconcileUtils.setRewriteFixes(registry, problem, List.of(
 									new FixDescriptor(UnnecessarySpringExtension.class.getName(), List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
 							));
-							problemCollector.accept(problem);
+							context.getProblemCollector().accept(problem);
 							break;
 						}
 					}

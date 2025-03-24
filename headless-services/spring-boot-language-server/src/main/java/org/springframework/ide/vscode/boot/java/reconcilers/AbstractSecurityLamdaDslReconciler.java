@@ -20,7 +20,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
@@ -34,9 +33,9 @@ public abstract class AbstractSecurityLamdaDslReconciler implements JdtAstReconc
 	}
 
 	@Override
-	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst, boolean isIndexComplete) {
+	public ASTVisitor createVisitor(IJavaProject project, URI docUri, CompilationUnit cu, ReconcilingContext context) {
 
-		if (isCompleteAst) {
+		if (context.isCompleteAst()) {
 			return new ASTVisitor() {
 
 				@Override
@@ -59,7 +58,7 @@ public abstract class AbstractSecurityLamdaDslReconciler implements JdtAstReconc
 											ReconcileUtils.buildLabel(getFixLabel(), RecipeScope.PROJECT))
 											.withRecipeScope(RecipeScope.PROJECT)
 							));
-							problemCollector.accept(problem);
+							context.getProblemCollector().accept(problem);
 							return false;
 						}
 					}
