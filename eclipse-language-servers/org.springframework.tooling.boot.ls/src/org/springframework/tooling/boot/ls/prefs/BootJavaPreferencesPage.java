@@ -41,8 +41,6 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		addField(new BooleanFieldEditor(Constants.PREF_START_LS_EARLY, "Start Language Server at startup if Spring Boot is a dependency", fieldEditorParent));
 		addField(new BooleanFieldEditor(Constants.PREF_SCAN_JAVA_TEST_SOURCES, "Scan Java test sources", fieldEditorParent));
 		
-		addField(new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", fieldEditorParent));
-
 		// JPQL Support switch
 		addField(new BooleanFieldEditor(Constants.PREF_JPQL, "JPA Query language support", fieldEditorParent));
 		

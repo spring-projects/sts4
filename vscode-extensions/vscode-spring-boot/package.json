@@ -358,11 +358,6 @@
             "default": true,
             "description": "Show CRON expressions inlay-hints"
           },
-          "boot-java.change-detection.on": {
-            "type": "boolean",
-            "default": false,
-            "description": "Enable/Disable detecting changes of running Spring Boot applications"
-          },
           "boot-java.java.completions.inject-bean": {
             "type": "boolean",
             "default": true,

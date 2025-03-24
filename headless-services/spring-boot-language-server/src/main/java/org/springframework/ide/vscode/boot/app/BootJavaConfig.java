@@ -131,11 +131,6 @@ public class BootJavaConfig implements InitializingBean {
 		return cleanedFolders.toArray(new String[cleanedFolders.size()]);
 	}
 
-	public boolean isChangeDetectionEnabled() {
-		Boolean enabled = settings.getBoolean("boot-java", "change-detection", "on");
-		return enabled != null && enabled.booleanValue();
-	}
-
 	public boolean isSpelExpressionValidationEnabled() {
 		Toggle categorySwitch = SpringProblemCategories.SPEL.getToggle();
 		return isProblemCategoryEnabled(categorySwitch);

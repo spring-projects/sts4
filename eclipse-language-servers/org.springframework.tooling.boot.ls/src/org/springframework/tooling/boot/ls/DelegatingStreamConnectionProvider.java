@@ -180,7 +180,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> liveInformation = new HashMap<>();
 		Map<String, Object> liveInformationFetchData = new HashMap<>();
 		Map<String, Object> supportXML = new HashMap<>();
-		Map<String, Object> bootChangeDetection = new HashMap<>();
 		Map<String, Object> scanTestJavaSources = new HashMap<>();
 		Map<String, Object> javaSettings = new HashMap<>();
 		Map<String, Object> javaCompletionSettings = new HashMap<>();
@@ -197,7 +196,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		supportXML.put("scan-folders", preferenceStore.getString(Constants.PREF_XML_CONFIGS_SCAN_FOLDERS));
 		supportXML.put("hyperlinks", preferenceStore.getString(Constants.PREF_XML_CONFIGS_HYPERLINKS));
 		supportXML.put("content-assist", preferenceStore.getString(Constants.PREF_XML_CONFIGS_CONTENT_ASSIST));
-		bootChangeDetection.put("on", preferenceStore.getBoolean(Constants.PREF_CHANGE_DETECTION));
 		scanTestJavaSources.put("on", preferenceStore.getBoolean(Constants.PREF_SCAN_JAVA_TEST_SOURCES));
 
 		javaCompletionSettings.put("inject-bean", preferenceStore.getBoolean(Constants.PREF_COMPLETION_JAVA_INJECT_BEAN));
@@ -209,9 +207,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootJavaObj.put("jpql", preferenceStore.getBoolean(Constants.PREF_JPQL));
 		bootJavaObj.put("live-information", liveInformation);
 		bootJavaObj.put("support-spring-xml-config", supportXML);
-		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("scan-java-test-sources", scanTestJavaSources);
-		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("java", javaSettings);
 		bootJavaObj.put("remote-apps", getAllRemoteApps());
 		bootJavaObj.put("modulith-project-tracking", preferenceStore.getBoolean(Constants.PREF_MODULITH));

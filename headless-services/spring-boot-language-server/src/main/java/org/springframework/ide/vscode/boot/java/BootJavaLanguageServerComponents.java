@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -63,7 +62,6 @@ import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerCod
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouteHighlightProdivder;
 import org.springframework.ide.vscode.boot.java.spel.SpelSemanticTokens;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -111,7 +109,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	private final SpringProcessConnectorService liveDataService;
 
-	private final SpringLiveChangeDetectionWatchdog liveChangeDetectionWatchdog;
 	private final ProjectObserver projectObserver;
 	private final CompilationUnitCache cuCache;
 	private final ResponseModifier responseModifier;
@@ -179,14 +176,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(springSymbolIndex,
 				new LiveAppURLSymbolProvider(liveDataProvider)));
 
-		liveChangeDetectionWatchdog = new SpringLiveChangeDetectionWatchdog(
-				this,
-				server,
-				serverParams.projectObserver,
-				projectFinder,
-				Duration.ofSeconds(5),
-				sourceLinks);
-		
 		spelSemanticTokens = appContext.getBean(SpelSemanticTokens.class);
 
 		codeLensHandler = createCodeLensEngine(springIndex, projectFinder, server, spelSemanticTokens);
@@ -211,14 +200,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			// live information data fetch params
 			liveDataService.setMaxRetryCount(config.getLiveInformationFetchDataMaxRetryCount());
 			liveDataService.setRetryDelayInSeconds(config.getLiveInformationFetchDataRetryDelayInSeconds());
-
-			// live change detection watchdog
-			if (config.isChangeDetectionEnabled()) {
-				liveChangeDetectionWatchdog.enableHighlights();
-			}
-			else {
-				liveChangeDetectionWatchdog.disableHighlights();
-			}
 			
 			log.info("update live process tracker settings - done");
 		});
@@ -255,11 +236,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	private void initialized() {
-		this.liveChangeDetectionWatchdog.start();
 	}
 
 	private void shutdown() {
-		this.liveChangeDetectionWatchdog.shutdown();
 		this.cuCache.dispose();
 	}
 
