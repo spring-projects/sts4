@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.Predicate;
 
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DocumentElement;
@@ -31,6 +32,128 @@ public class SpringMetamodelIndex {
 	public SpringMetamodelIndex() {
 		projectRootElements = new ConcurrentHashMap<>();
 	}
+	
+	public void updateElements(String projectName, String docURI, SpringIndexElement[] elements) {
+		ProjectElement project = this.projectRootElements.computeIfAbsent(projectName, name -> new ProjectElement(name));
+		project.removeDocument(docURI);
+		
+		DocumentElement document = new DocumentElement(docURI);
+		for (SpringIndexElement bean : elements) {
+			document.addChild(bean);
+		}
+		
+		project.addChild(document);
+	}
+
+	public void removeElements(String projectName, String docURI) {
+		ProjectElement project = projectRootElements.get(projectName);
+		if (project != null) {
+			project.removeDocument(docURI);
+		}
+	}
+	
+	public void removeProject(String projectName) {
+		projectRootElements.remove(projectName);
+	}
+
+	public DocumentElement getDocument(String docURI) {
+		List<SpringIndexElement> rootNodes = new ArrayList<SpringIndexElement>(this.projectRootElements.values());
+		List<DocumentElement> documents = getNodesOfType(DocumentElement.class, rootNodes, document -> document.getDocURI().equals(docURI));
+
+		if (documents.size() == 1) {
+			return documents.get(0);
+		}
+		else {
+			return null;
+		}
+	}
+
+	public <T extends SpringIndexElement> List<T> getNodesOfType(Class<T> type) {
+		List<SpringIndexElement> rootNodes = new ArrayList<SpringIndexElement>(this.projectRootElements.values());
+		return getNodesOfType(type, rootNodes);
+	}
+
+	public Bean[] getBeans() {
+		List<SpringIndexElement> rootNodes = new ArrayList<SpringIndexElement>(this.projectRootElements.values());
+		return getNodesOfType(Bean.class, rootNodes).toArray(Bean[]::new);
+	}
+
+	public Bean[] getBeansOfProject(String projectName) {
+		ProjectElement project = this.projectRootElements.get(projectName);
+		if (project != null) {
+			return getNodesOfType(Bean.class, List.of(project)).toArray(Bean[]::new);
+		}
+		else {
+			return new Bean[0];
+		}
+	}
+	
+	public Bean[] getBeansOfDocument(String docURI) {
+		DocumentElement document = getDocument(docURI);
+		if (document != null) {
+			return getNodesOfType(Bean.class, List.of(document)).toArray(Bean[]::new);
+		}
+		else {
+			return new Bean[0];
+		}
+	}
+	
+	public Bean[] getBeansWithName(String projectName, String name) {
+		ProjectElement project = this.projectRootElements.get(projectName);
+		if (project != null) {
+			return getNodesOfType(Bean.class, List.of(project), bean -> bean.getName().equals(name)).toArray(Bean[]::new);
+		}
+		else {
+			return new Bean[0];
+		}
+	}
+
+	public Bean[] getBeansWithType(String projectName, String type) {
+		ProjectElement project = this.projectRootElements.get(projectName);
+		if (project != null) {
+			return getNodesOfType(Bean.class, List.of(project), bean -> bean.getType().equals(type)).toArray(Bean[]::new);
+		}
+		else {
+			return new Bean[0];
+		}
+	}
+
+	public Bean[] getMatchingBeans(String projectName, String matchType) {
+		ProjectElement project = this.projectRootElements.get(projectName);
+		if (project != null) {
+			return getNodesOfType(Bean.class, List.of(project), bean -> bean.isTypeCompatibleWith(matchType)).toArray(Bean[]::new);
+		}
+		else {
+			return new Bean[0];
+		}
+	}
+
+	public static <T extends SpringIndexElement> List<T> getNodesOfType(Class<T> type, Collection<SpringIndexElement> rootNodes) {
+		return getNodesOfType(type, rootNodes, element -> true);
+	}
+
+	public static <T extends SpringIndexElement> List<T> getNodesOfType(Class<T> type, Collection<SpringIndexElement> rootNodes, Predicate<T> predicate) {
+		List<T> result = new ArrayList<>();
+		
+		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
+		elementsToVisit.addAll(rootNodes);
+		
+		while (!elementsToVisit.isEmpty()) {
+			SpringIndexElement element = elementsToVisit.pop();
+
+			if (type.isInstance(element) && predicate.test(type.cast(element))) {
+				result.add(type.cast(element));
+			}
+			
+			elementsToVisit.addAll(element.getChildren());
+		}
+		
+		return result;
+	}
+	
+	//
+	// for test purposes
+	//
 	
 	public void updateBeans(String projectName, Bean[] beanDefinitions) {
 		ProjectElement projectRoot = new ProjectElement(projectName);
@@ -55,218 +178,6 @@ public class SpringMetamodelIndex {
 		}
 		
 		projectRootElements.put(projectName, projectRoot);
-	}
-
-	public void updateElements(String projectName, String docURI, SpringIndexElement[] beanDefinitions) {
-		ProjectElement project = this.projectRootElements.computeIfAbsent(projectName, name -> new ProjectElement(name));
-		project.removeDocument(docURI);
-		
-		DocumentElement document = new DocumentElement(docURI);
-		for (SpringIndexElement bean : beanDefinitions) {
-			document.addChild(bean);
-		}
-		
-		project.addChild(document);
-	}
-
-	public void removeProject(String projectName) {
-		projectRootElements.remove(projectName);
-	}
-
-	public void removeElements(String projectName, String docURI) {
-		ProjectElement project = projectRootElements.get(projectName);
-		if (project != null) {
-			project.removeDocument(docURI);
-		}
-	}
-	
-	public DocumentElement getDocument(String docURI) {
-		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
-		elementsToVisit.addAll(this.projectRootElements.values());
-		
-		while (!elementsToVisit.isEmpty()) {
-			SpringIndexElement element = elementsToVisit.pop();
-
-			if (element instanceof DocumentElement doc && doc.getDocURI().equals(docURI)) {
-				return doc;
-			}
-
-			elementsToVisit.addAll(element.getChildren());
-		}
-		
-		return null;
-	}
-
-	public <T extends SpringIndexElement> List<T> getNodesOfType(Class<T> type) {
-		List<T> result = new ArrayList<>();
-		
-		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
-		elementsToVisit.addAll(this.projectRootElements.values());
-		
-		while (!elementsToVisit.isEmpty()) {
-			SpringIndexElement element = elementsToVisit.pop();
-
-			if (type.isInstance(element)) {
-				result.add(type.cast(element));
-			}
-			
-			elementsToVisit.addAll(element.getChildren());
-		}
-		
-		return result;
-	}
-
-	public Bean[] getBeans() {
-		List<Bean> result = new ArrayList<>();
-		
-		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
-		elementsToVisit.addAll(this.projectRootElements.values());
-		
-		while (!elementsToVisit.isEmpty()) {
-			SpringIndexElement element = elementsToVisit.pop();
-
-			if (element instanceof Bean bean) {
-				result.add(bean);
-			}
-			
-			elementsToVisit.addAll(element.getChildren());
-		}
-		
-		return (Bean[]) result.toArray(new Bean[result.size()]);
-	}
-
-	public Bean[] getBeansOfProject(String projectName) {
-		List<Bean> result = new ArrayList<>();
-		
-		ProjectElement project = this.projectRootElements.get(projectName);
-		if (project != null) {
-			ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
-			elementsToVisit.push(project);
-		
-			while (!elementsToVisit.isEmpty()) {
-				SpringIndexElement element = elementsToVisit.pop();
-
-				if (element instanceof Bean bean) {
-					result.add(bean);
-				}
-
-				elementsToVisit.addAll(element.getChildren());
-			}
-		}
-		
-		return (Bean[]) result.toArray(new Bean[result.size()]);
-	}
-	
-	public Bean[] getBeansOfDocument(String docURI) {
-		List<Bean> result = new ArrayList<>();
-		
-		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
-		elementsToVisit.addAll(this.projectRootElements.values());
-		
-		while (!elementsToVisit.isEmpty()) {
-			SpringIndexElement element = elementsToVisit.pop();
-
-			if (element instanceof Bean bean) {
-				result.add(bean);
-			}
-			
-			if (element instanceof DocumentElement doc) {
-				if (doc.getDocURI().equals(docURI)) {
-					elementsToVisit.addAll(doc.getChildren());
-				}
-				// else do not look into other document structures
-			}
-			else {
-				elementsToVisit.addAll(element.getChildren());
-			}
-		}
-		
-		return (Bean[]) result.toArray(new Bean[result.size()]);
-	}
-	
-	public Bean[] getBeansWithName(String projectName, String name) {
-		List<Bean> result = new ArrayList<>();
-
-		ProjectElement project = this.projectRootElements.get(projectName);
-		if (project != null) {
-			ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
-			elementsToVisit.push(project);
-
-			while (!elementsToVisit.isEmpty()) {
-				SpringIndexElement element = elementsToVisit.pop();
-
-				if (element instanceof Bean bean && bean.getName().equals(name)) {
-					result.add(bean);
-				}
-
-				elementsToVisit.addAll(element.getChildren());
-			}
-		}
-
-		return (Bean[]) result.toArray(new Bean[result.size()]);
-	}
-
-	public Bean[] getBeansWithType(String projectName, String type) {
-		List<Bean> result = new ArrayList<>();
-
-		ProjectElement project = this.projectRootElements.get(projectName);
-		if (project != null) {
-			ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
-			elementsToVisit.push(project);
-
-			while (!elementsToVisit.isEmpty()) {
-				SpringIndexElement element = elementsToVisit.pop();
-
-				if (element instanceof Bean bean && bean.getType().equals(type)) {
-					result.add(bean);
-				}
-
-				elementsToVisit.addAll(element.getChildren());
-			}
-		}
-
-		return (Bean[]) result.toArray(new Bean[result.size()]);
-	}
-
-	public Bean[] getMatchingBeans(String projectName, String matchType) {
-		List<Bean> result = new ArrayList<>();
-
-		ProjectElement project = this.projectRootElements.get(projectName);
-		if (project != null) {
-			ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
-			elementsToVisit.push(project);
-
-			while (!elementsToVisit.isEmpty()) {
-				SpringIndexElement element = elementsToVisit.pop();
-
-				if (element instanceof Bean bean && bean.isTypeCompatibleWith(matchType)) {
-					result.add(bean);
-				}
-
-				elementsToVisit.addAll(element.getChildren());
-			}
-		}
-
-		return (Bean[]) result.toArray(new Bean[result.size()]);
-	}
-
-	public static <T extends SpringIndexElement> List<T> getNodesOfType(Class<T> type, Collection<SpringIndexElement> rootNodes) {
-		List<T> result = new ArrayList<>();
-		
-		ArrayDeque<SpringIndexElement> elementsToVisit = new ArrayDeque<>();
-		elementsToVisit.addAll(rootNodes);
-		
-		while (!elementsToVisit.isEmpty()) {
-			SpringIndexElement element = elementsToVisit.pop();
-
-			if (type.isInstance(element)) {
-				result.add(type.cast(element));
-			}
-			
-			elementsToVisit.addAll(element.getChildren());
-		}
-		
-		return result;
 	}
 
 }
