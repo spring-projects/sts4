@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.index.test;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,8 +32,9 @@ import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.BeanRegistrarElement;
+import org.springframework.ide.vscode.commons.protocol.spring.DocumentElement;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -72,15 +74,17 @@ public class SpringIndexerBeanRegistrarTest {
     void testSimpleBeanRegistration() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/com/example/MyBeanRegistrar.java").toUri().toString();
 
-        Bean[] beans = springIndex.getBeansOfDocument(docUri);
-        assertEquals(5, beans.length);
+        Bean[] beansOfDoc = springIndex.getBeansOfDocument(docUri);
+        assertFalse(Arrays.stream(beansOfDoc).anyMatch(bean -> bean.getName().equals("myBeanRegistrar")));
         
-        Bean beanRegistrarBean = Arrays.stream(beans).filter(bean -> bean.getName().equals("myBeanRegistrar")).findFirst().get();
-        assertEquals("com.example.MyBeanRegistrar", beanRegistrarBean.getType());
+        DocumentElement document = springIndex.getDocument(docUri);
+        List<SpringIndexElement> docChildren = document.getChildren();
+        assertEquals(1, docChildren.size());
+        assertTrue(docChildren.get(0) instanceof BeanRegistrarElement);
         
-        List<SpringIndexElement> children = beanRegistrarBean.getChildren();
+        List<SpringIndexElement> children = docChildren.get(0).getChildren();
         assertEquals(4, children.size());
-        
+
         Bean fooFoo = (Bean) children.get(0);
         assertEquals("fooFoo", fooFoo.getName());
         assertEquals("com.example.FooFoo", fooFoo.getType());

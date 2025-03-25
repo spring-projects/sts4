@@ -37,6 +37,7 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRe
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.BeanRegistrarElement;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
@@ -168,10 +169,11 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 		
 		Set<String> importedTypesDelta = getImportAnnotationTypesDelta(createdIndexElements, previuosIndexElements);
 		
-		Arrays.stream(springIndex.getBeans())
-				.filter(bean -> bean.isTypeCompatibleWith(Annotations.BEAN_REGISTRAR_INTERFACE))
-				.filter(bean -> importedTypesDelta.contains(bean.getType()))
-				.map(bean -> bean.getLocation().getUri())
+		List<BeanRegistrarElement> registrarElements = springIndex.getNodesOfType(BeanRegistrarElement.class);
+		
+		registrarElements.stream()
+				.filter(registrar -> importedTypesDelta.contains(registrar.getType()))
+				.map(registrar -> registrar.getLocation().getUri())
 				.map(docURI -> UriUtil.toFileString(docURI))
 				.forEach(file -> context.markForAffetcedFilesIndexing(file));
 	}

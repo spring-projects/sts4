@@ -30,6 +30,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.RecordDeclaration;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolKind;
@@ -51,9 +52,11 @@ import org.springframework.ide.vscode.boot.java.utils.DefaultSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.BeanRegistrarElement;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.protocol.spring.SimpleSymbolElement;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -401,7 +404,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		return null;
 	}
 	
-	private void indexBeanRegistrarImplementation(Bean bean, TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+	private void indexBeanRegistrarImplementation(SpringIndexElement parentNode, TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		try {
 			ITypeBinding typeBinding = typeDeclaration.resolveBinding();
 			if (typeBinding == null) return;
@@ -416,39 +419,32 @@ public class ComponentSymbolProvider implements SymbolProvider {
 				throw new RequiredCompleteAstException();
 			}
 			
-			if (bean == null) { // need to create and register bean element
-				String beanType = typeBinding.getQualifiedName();
-				String beanName = BeanUtils.getBeanNameFromType(typeBinding.getName());
+			if (parentNode == null) { // need to create and register bean element
+				String name = typeBinding.getName();
+				String type = typeBinding.getQualifiedName();
 				
-				Location location = new Location(doc.getUri(), doc.toRange(typeDeclaration.getStartPosition(), typeDeclaration.getLength()));
+				SimpleName typeNameNode = typeDeclaration.getName();
+				Location location = new Location(doc.getUri(), doc.toRange(typeNameNode.getStartPosition(), typeNameNode.getLength()));
 				
 				WorkspaceSymbol symbol = new WorkspaceSymbol(
-						beanLabel("+", null, null, beanName, beanType),
-						SymbolKind.Class,
+						name + " (Bean Registrar)",
+						SymbolKind.Interface,
 						Either.forLeft(location));
 				
-				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
-				
-				Set<String> supertypes = new HashSet<>();
-				ASTUtils.findSupertypes(typeBinding, supertypes);
-				
-				Collection<Annotation> annotationsOnMethod = ASTUtils.getAnnotations(typeDeclaration);
-				AnnotationMetadata[] annotations = ASTUtils.getAnnotationsMetadata(annotationsOnMethod, doc);
-				
-				bean = new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, false, symbol.getName());
+				parentNode = new BeanRegistrarElement(name, type, location);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
-				context.getBeans().add(new CachedBean(context.getDocURI(), bean));
+				context.getBeans().add(new CachedBean(context.getDocURI(), parentNode));
 			}
 			
-			scanBeanRegistryInvocations(bean, registerMethod.getBody(), context, doc);
+			scanBeanRegistryInvocations(parentNode, registerMethod.getBody(), context, doc);
 			
 		} catch (BadLocationException e) {
 			log.error("", e);
 		}
 	}
 
-	private void scanBeanRegistryInvocations(Bean component, Block body, SpringIndexerJavaContext context, TextDocument doc) {
+	private void scanBeanRegistryInvocations(SpringIndexElement parent, Block body, SpringIndexerJavaContext context, TextDocument doc) {
 		if (body == null) {
 			return;
 		}
@@ -491,7 +487,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 									String beanName = BeanUtils.getBeanNameFromType(typeParameters[0].getName());
 									String beanType = typeParamName;
 									
-									createBean(component, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
+									createBean(parent, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
 								}
 							}
 							else if (arguments.size() == 2 && "java.lang.String".equals(types.get(0).getQualifiedName()) && "java.lang.Class".equals(types.get(1).getBinaryName())) {
@@ -505,7 +501,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 									String typeParamName = typeParameters[0].getBinaryName();
 									String beanType = typeParamName;
 									
-									createBean(component, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
+									createBean(parent, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
 								}
 							}
 							else if (arguments.size() == 2 && "java.lang.Class".equals(types.get(0).getBinaryName()) && "java.util.function.Consumer".equals(types.get(1).getBinaryName())) {
@@ -519,7 +515,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 									String beanName = BeanUtils.getBeanNameFromType(typeParameters[0].getName());
 									String beanType = typeParamName;
 									
-									createBean(component, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
+									createBean(parent, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
 								}
 							}
 							else if (arguments.size() == 3 && "java.lang.String".equals(types.get(0).getQualifiedName())
@@ -534,7 +530,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 									String typeParamName = typeParameters[0].getBinaryName();
 									String beanType = typeParamName;
 									
-									createBean(component, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
+									createBean(parent, beanName, beanType, typeParameters[0], methodInvocation, context, doc);
 								}
 							}
 						}
@@ -548,7 +544,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		});
 	}
 	
-	public void createBean(Bean parentBean, String beanName, String beanType, ITypeBinding beanTypeBinding, ASTNode node, SpringIndexerJavaContext context, TextDocument doc) throws BadLocationException {
+	public void createBean(SpringIndexElement parentNode, String beanName, String beanType, ITypeBinding beanTypeBinding, ASTNode node, SpringIndexerJavaContext context, TextDocument doc) throws BadLocationException {
 		Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
 		
 		WorkspaceSymbol symbol = new WorkspaceSymbol(
@@ -564,7 +560,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		AnnotationMetadata[] annotations = DefaultValues.EMPTY_ANNOTATIONS;
 		
 		Bean bean = new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations, false, symbol.getName());
-		parentBean.addChild(bean);
+		parentNode.addChild(bean);
 	}
 	
 	public static String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {
