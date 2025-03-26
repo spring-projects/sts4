@@ -109,7 +109,7 @@ public class BeanRegistrarDeclarationReconciler implements JdtAstReconciler {
 				List<String> importingBeanRegistrarConfigs = getImportedBeanRegistrarConfigs(configBeans, type);
 				if (configBeans.isEmpty() || importingBeanRegistrarConfigs.size() == 0) {
 
-					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), "Bean not registered", node.getName().getStartPosition(), node.getName().getLength());
+					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), "No @Import found for bean registrar", node.getName().getStartPosition(), node.getName().getLength());
 					List<FixDescriptor> fixes = configBeans.stream()
 							.filter(b -> b.getLocation() != null && b.getLocation().getUri() != null)
 							.map(b -> new FixDescriptor(ImportBeanRegistrarInConfigRecipe.class.getName(), List.of(b.getLocation().getUri()), "Add %s to `@Import` in %s".formatted(type.getName(), b.getName()))
