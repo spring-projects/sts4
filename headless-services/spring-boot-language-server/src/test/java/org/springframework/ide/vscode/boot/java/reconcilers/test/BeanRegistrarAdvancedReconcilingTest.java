@@ -111,7 +111,7 @@ public class BeanRegistrarAdvancedReconcilingTest {
         fileScanListener.assertScannedUri(configDoc, 1);
         fileScanListener.assertScannedUri(registeredRegistrarDocUri, 1);
         fileScanListener.assertScannedUri(nonRegisteredRegistrarDocUri, 1);
-        fileScanListener.assertNoFileScans(3);
+        fileScanListener.assertFileScanCount(3);
         
         // check diagnostics result
         PublishDiagnosticsParams diagnosticsResultForRegisteredRegistrar = harness.getDiagnostics(registeredRegistrarDocUri);
@@ -143,7 +143,7 @@ public class BeanRegistrarAdvancedReconcilingTest {
 
         fileScanListener.assertScannedUri(configDoc, 1);
         fileScanListener.assertScannedUri(registeredRegistrarDocUri, 1);
-        fileScanListener.assertNoFileScans(2);
+        fileScanListener.assertFileScanCount(2);
         
         PublishDiagnosticsParams diagnosticsResultForPreviouslyRegisteredRegistrar = harness.getDiagnostics(registeredRegistrarDocUri);
         List<Diagnostic> diagnosticsForPreviouslyRegisteredRegistrar = diagnosticsResultForPreviouslyRegisteredRegistrar.getDiagnostics();
