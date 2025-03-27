@@ -84,7 +84,7 @@ public class SpringIndexViaLSPMethodTest {
 		List<Bean> beans = result.get(5, TimeUnit.SECONDS);
 
 		assertNotNull(beans);
-		assertEquals(26, beans.size());
+		assertEquals(SpringMetamodelIndexingTest.NO_OF_EXPECTED_BEANS, beans.size());
 	}
 
 	@Test
@@ -98,7 +98,7 @@ public class SpringIndexViaLSPMethodTest {
 		List<Bean> beans = result.get(5, TimeUnit.SECONDS);
 
 		assertNotNull(beans);
-		assertEquals(25, beans.size());
+		assertEquals(SpringMetamodelIndexingTest.NO_OF_EXPECTED_BEANS - 1, beans.size());
 	}
 
 	@Test

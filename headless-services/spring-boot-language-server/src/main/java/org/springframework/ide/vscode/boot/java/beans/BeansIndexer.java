@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -49,7 +50,7 @@ public class BeansIndexer {
 	
 	private static final Logger log = LoggerFactory.getLogger(BeansIndexer.class);
 
-	public static void indexBeanMethod(Bean configBean, Annotation node, SpringIndexerJavaContext context, TextDocument doc) {
+	public static void indexBeanMethod(SpringIndexElement parentNode, Annotation node, SpringIndexerJavaContext context, TextDocument doc) {
 		if (node == null) return;
 		
 		ASTNode parent = node.getParent();
@@ -89,7 +90,7 @@ public class BeansIndexer {
 					WebfluxRouterSymbolProvider.createWebfluxElements(beanDefinition, method, context, doc);
 				}
 
-				configBean.addChild(beanDefinition);
+				parentNode.addChild(beanDefinition);
 
 			} catch (BadLocationException e) {
 				log.error("", e);

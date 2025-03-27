@@ -52,6 +52,7 @@ import org.springframework.ide.vscode.boot.java.utils.DefaultSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.BeanMethodContainerElement;
 import org.springframework.ide.vscode.commons.protocol.spring.BeanRegistrarElement;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
@@ -201,27 +202,48 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		}
 	}
 
-	private void indexBeanMethods(Bean bean, TypeDeclaration type, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+	private void indexBeanMethods(final Bean bean, TypeDeclaration type, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		AnnotationHierarchies annotationHierarchies = AnnotationHierarchies.get(type);
-		if (bean.isConfiguration()) {
-			MethodDeclaration[] methods = type.getMethods();
-			if (methods == null) {
+		
+		SpringIndexElement parent = bean;
+
+		if (bean == null) {
+			try {
+
+				Location location = new Location(doc.getUri(), doc.toRange(type.getName().getStartPosition(), type.getName().getLength()));
+				String typeName = type.resolveBinding().getQualifiedName();
+				parent = new BeanMethodContainerElement(location, typeName);
+
+			} catch (BadLocationException e) {
+				log.error("error while looking up position for type: " + type.toString(), e);
 				return;
 			}
-			
-			for (int i = 0; i < methods.length; i++) {
-				MethodDeclaration methodDecl = methods[i];
-				Collection<Annotation> annotations = ASTUtils.getAnnotations(methodDecl);
-				
-				for (Annotation annotation : annotations) {
-					ITypeBinding typeBinding = annotation.resolveTypeBinding();
-					
-					boolean isBeanMethod = annotationHierarchies.isAnnotatedWith(typeBinding, Annotations.BEAN);
-					if (isBeanMethod) {
-						BeansIndexer.indexBeanMethod(bean, annotation, context, doc);
-					}
+		}
+		else if (!bean.isConfiguration()) {
+			return;
+		}
+		
+		MethodDeclaration[] methods = type.getMethods();
+		if (methods == null) {
+			return;
+		}
+
+		for (int i = 0; i < methods.length; i++) {
+			MethodDeclaration methodDecl = methods[i];
+			Collection<Annotation> annotations = ASTUtils.getAnnotations(methodDecl);
+
+			for (Annotation annotation : annotations) {
+				ITypeBinding typeBinding = annotation.resolveTypeBinding();
+
+				boolean isBeanMethod = annotationHierarchies.isAnnotatedWith(typeBinding, Annotations.BEAN);
+				if (isBeanMethod) {
+					BeansIndexer.indexBeanMethod(parent, annotation, context, doc);
 				}
 			}
+		}
+		
+		if (bean == null && parent.getChildren().size() > 0) {
+			context.getBeans().add(new CachedBean(context.getDocURI(), parent));
 		}
 	}
 
@@ -329,6 +351,7 @@ public class ComponentSymbolProvider implements SymbolProvider {
 		if (!isComponment) {
 			indexEventListenerInterfaceImplementation(null, typeDeclaration, context, doc);
 			indexBeanRegistrarImplementation(null, typeDeclaration, context, doc);
+			indexBeanMethods(null, typeDeclaration, null, null, context, doc);
 		}
 		
 	}

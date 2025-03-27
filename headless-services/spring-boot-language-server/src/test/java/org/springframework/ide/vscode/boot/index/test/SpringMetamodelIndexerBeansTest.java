@@ -40,9 +40,12 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.BeanMethodContainerElement;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
+import org.springframework.ide.vscode.commons.protocol.spring.DocumentElement;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
+import org.springframework.ide.vscode.commons.protocol.spring.SymbolElement;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -543,6 +546,34 @@ public class SpringMetamodelIndexerBeansTest {
 
 		assertEquals("prof2", profileAttributeValues[1].getName());
 		assertEquals(new Location(beans[0].getLocation().getUri(), new Range(new Position(9, 19), new Position(9, 26))), profileAttributeValues[1].getLocation());
+	}
+	
+	@Test
+	void testBeanMethodsWithoutConfiguration() {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/BeanMethodsWithoutConfiguration.java").toUri().toString();
+		
+		DocumentElement document = springIndex.getDocument(docUri);
+		List<SpringIndexElement> docChildren = document.getChildren();
+		assertEquals(1, docChildren.size());
+		assertTrue(docChildren.get(0) instanceof BeanMethodContainerElement);
+		
+		BeanMethodContainerElement container = (BeanMethodContainerElement) docChildren.get(0);
+		assertEquals(docUri, container.getLocation().getUri());
+		assertEquals("org.test.BeanMethodsWithoutConfiguration", container.getType());
+		assertFalse(container instanceof SymbolElement);
+		
+		List<SpringIndexElement> beans = container.getChildren();
+		assertEquals(2, beans.size());
+		
+		Bean bean1 = (Bean) beans.get(0);
+		Bean bean2 = (Bean) beans.get(1);
+		
+		assertEquals("beanWithoutConfig", bean1.getName());
+		assertEquals("beanWithoutConfig2", bean2.getName());
+		
+		Bean[] beansFound = springIndex.getBeansWithName("test-spring-indexing", "beanWithoutConfig");
+		assertEquals(1, beansFound.length);
+		assertSame(bean1, beansFound[0]);
 	}
 
 
