@@ -41,6 +41,10 @@ public class SpringIndexerJavaDependencyTracker {
 	public Multimap<String, String> getAllDependencies() {
 		return dependencies;
 	}
+	
+	public Collection<String> get(String file) {
+		return dependencies.get(file);
+	}
 
 	public void update(String file, Set<String> dependenciesForFile) {
 		dependencies.replaceValues(file, dependenciesForFile);

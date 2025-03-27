@@ -61,8 +61,8 @@ public class ReconcilingContext {
 		return isIndexComplete;
 	}
 
-	public void addDependency(String typeOfConfigClassWithImport) {
-		this.dependencies.add(typeOfConfigClassWithImport);
+	public void addDependency(String type) {
+		this.dependencies.add(type);
 	}
 	
 	public Set<String> getDependencies() {

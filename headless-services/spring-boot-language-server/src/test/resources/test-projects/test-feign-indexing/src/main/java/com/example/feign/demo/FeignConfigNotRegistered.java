@@ -2,10 +2,10 @@ package com.example.feign.demo;
 
 import org.springframework.context.annotation.Bean;
 
-public class FeignConfigExample {
+public class FeignConfigNotRegistered {
 	
 	@Bean
-	BeanType specialBean() {
+	BeanType specialBean2() {
 		return new BeanType();
 	}
 

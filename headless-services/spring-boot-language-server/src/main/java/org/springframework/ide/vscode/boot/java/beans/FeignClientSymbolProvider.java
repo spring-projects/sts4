@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.beans;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,10 +32,13 @@ import org.eclipse.lsp4j.jsonrpc.messages.Tuple;
 import org.eclipse.lsp4j.jsonrpc.messages.Tuple.Two;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
+import org.springframework.ide.vscode.commons.protocol.spring.AnnotationAttributeValue;
 import org.springframework.ide.vscode.commons.protocol.spring.AnnotationMetadata;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
@@ -53,13 +57,29 @@ public class FeignClientSymbolProvider implements SymbolProvider {
 
 				WorkspaceSymbol symbol = result.getFirst();
 				Bean beanDefinition = result.getSecond();
+				
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), symbol));
 				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
+				
+				markNewFeignConfigTypeForReconciling(beanDefinition, context);
 			}
 		}
 		catch (BadLocationException e) {
 			log.error("", e);
 		}
+	}
+
+	private void markNewFeignConfigTypeForReconciling(Bean beanDefinition, SpringIndexerJavaContext context) {
+		List<String> configurationTypes = Arrays.stream(beanDefinition.getAnnotations())
+			.filter(annotation -> annotation.getAnnotationType().equals(Annotations.FEIGN_CLIENT))
+			.map(annotation -> annotation.getAttributes())
+			.filter(attributes -> attributes.containsKey("configuration"))
+			.map(attributes -> attributes.get("configuration"))
+			.flatMap(attributeValues -> Arrays.stream(attributeValues))
+			.map(attributeValue -> attributeValue.getName())
+			.toList();
+		
+		
 	}
 
 	private Two<WorkspaceSymbol, Bean> createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
@@ -94,7 +114,7 @@ public class FeignClientSymbolProvider implements SymbolProvider {
 				.toArray(AnnotationMetadata[]::new);
 		
 		Bean beanDefinition = new Bean(beanName, beanType == null ? "" : beanType.getQualifiedName(), location, injectionPoints, supertypes, annotations, false, symbol.getName());
-
+		
 		return Tuple.two(symbol, beanDefinition);
 	}
 

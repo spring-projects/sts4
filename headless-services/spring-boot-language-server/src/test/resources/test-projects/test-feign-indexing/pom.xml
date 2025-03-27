@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example.qualifier</groupId>
-	<artifactId>feign-demo</artifactId>
+	<artifactId>test-feign-indexing</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>feign-demo</name>
 	<description>Demo project for Spring Boot</description>

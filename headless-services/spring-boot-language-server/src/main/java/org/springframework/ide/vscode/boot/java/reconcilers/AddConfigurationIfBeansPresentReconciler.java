@@ -69,7 +69,7 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 
 			@Override
 			public boolean visit(TypeDeclaration classDecl) {
-				if (isApplicableClass(project, cu, classDecl)) {
+				if (isApplicableClass(project, cu, classDecl, context)) {
 					SimpleName nameAst = classDecl.getName();
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL,
 							nameAst.getStartPosition(), nameAst.getLength());
@@ -92,7 +92,7 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 		};
 	}
 
-	private boolean isApplicableClass(IJavaProject project, CompilationUnit cu, TypeDeclaration classDecl) {
+	private boolean isApplicableClass(IJavaProject project, CompilationUnit cu, TypeDeclaration classDecl, ReconcilingContext context) {
 		if (classDecl.isInterface()) {
 			return false;
 		}
@@ -128,15 +128,22 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 		
 		// No '@Configuration' present. Check if any methods have '@Bean' annotation
 		for (MethodDeclaration m : classDecl.getMethods()) {
-			if (isBeanMethod(m) && !isException(project, classDecl)) {
-				return true;
+			if (isBeanMethod(m)) {
+				if (context.isIndexComplete()) {
+					if (!isException(project, classDecl, context)) {
+						return true;
+					}
+				}
+				else {
+					throw new RequiredCompleteIndexException();
+				}
 			}
 		}
 
 		return false;
 	}
 	
-	private boolean isException(IJavaProject project, TypeDeclaration classDecl) {
+	private boolean isException(IJavaProject project, TypeDeclaration classDecl, ReconcilingContext context) {
 		if (springIndex == null) {
 			return false;
 		}
@@ -154,18 +161,29 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 			return true;
 		}
 
-		boolean isConfiguredAsfeignConfigClass = Arrays.stream(beans)
-				.flatMap(bean -> Arrays.stream(bean.getAnnotations()))
-				.filter(annotation -> annotation.getAnnotationType().equals(Annotations.FEIGN_CLIENT))
-				.map(annotation -> annotation.getAttributes().get("configuration"))
-				.flatMap(attributeValues -> attributeValues != null ? Arrays.stream(attributeValues) : Stream.empty())
-				.anyMatch(attributeValue -> attributeValue.getName().equals(beanClassName));
+		List<Bean> feignClients = Arrays.stream(beans)
+				.filter(bean -> isConfiguredAsFeignConfigClass(bean, beanClassName))
+				.toList();
 
-		if (isConfiguredAsfeignConfigClass) {
+		if (!feignClients.isEmpty()) {
+
+			// record dependency for feign clients that have this type configured as feign configuration
+			for (Bean feignClient : feignClients) {
+				context.addDependency(feignClient.getType());
+			}
+			
 			return true;
 		}
 
 		return false;
+	}
+	
+	private boolean isConfiguredAsFeignConfigClass(Bean bean, String beanClassName) {
+		return Arrays.stream(bean.getAnnotations())
+			.filter(annotation -> annotation.getAnnotationType().equals(Annotations.FEIGN_CLIENT))
+			.map(annotation -> annotation.getAttributes().get("configuration"))
+			.flatMap(attributeValues -> attributeValues != null ? Arrays.stream(attributeValues) : Stream.empty())
+			.anyMatch(attributeValue -> attributeValue.getName().equals(beanClassName));
 	}
 
 	private static boolean isBeanMethod(MethodDeclaration m) {

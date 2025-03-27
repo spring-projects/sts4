@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.BeanPostProcessingIg
 import org.springframework.ide.vscode.boot.java.reconcilers.BeanRegistrarDeclarationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.Boot3NotSupportedTypeReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.EntityIdForRepoReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.FeignClientReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.HttpSecurityLambdaDslReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.ImplicitWebAnnotationNamesReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.ModulithTypeReferenceViolationReconciler;
@@ -72,6 +73,10 @@ public class JdtConfig {
 	@Bean BeanRegistrarDeclarationReconciler beanRegistrarDeclarationReconciler(SimpleLanguageServer server,
 			SpringMetamodelIndex springIndex) {
 		return new BeanRegistrarDeclarationReconciler(server.getQuickfixRegistry(), springIndex);
+	}
+	
+	@Bean FeignClientReconciler feignClientReconciler(SpringMetamodelIndex springIndex) {
+		return new FeignClientReconciler(springIndex);
 	}
 	
 	@Bean AutowiredFieldIntoConstructorParameterReconciler autowiredFieldIntoConstructorParameterReconciler(SimpleLanguageServer server) {
