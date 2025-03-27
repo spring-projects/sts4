@@ -1,6 +1,6 @@
-# STS4
+# Spring Tools
 
-The all-new Spring Tools for Eclipse, Visual Studio Code, and Theia. Learn more at https://spring.io/tools.
+The all-new Spring Tools for Visual Studio Code, Eclipse, and Theia. Learn more at https://spring.io/tools.
 
 ## Getting started
 
@@ -14,27 +14,27 @@ Depending on your development environment, you can choose between:
 - __Eclipse Theia:__ You can install the same extensions into Theia-based environments like gitpod.
 
 For all those choices, you can find detailed installation instructions from the user guide:
-https://github.com/spring-projects/sts4/wiki/Installation
+https://github.com/spring-projects/spring-tools/wiki/Installation
 
 ## User documentation
 
 The project wiki contains a comprehensive user documentation:
-https://github.com/spring-projects/sts4/wiki
+https://github.com/spring-projects/spring-tools4/wiki
 
 ## Ask questions
 
-Please ask general questions on StackOverflow and tag them with `spring-tools-4`:
-https://stackoverflow.com/questions/ask?tags=spring-tools-4
+Please ask general questions on StackOverflow and tag them with `spring-tools`:
+https://stackoverflow.com/questions/ask?tags=spring-tools
 
 ## Raise an issue
 
 Please raise issues by creating a new GitHub issue at:
-https://github.com/spring-projects/sts4/issues
+https://github.com/spring-projects/spring-tools/issues
 
 ## Contributing
 
 Find details about how to contribute:
-https://github.com/spring-projects/sts4/blob/master/CONTRIBUTING.adoc
+https://github.com/spring-projects/spring-tools/blob/master/CONTRIBUTING.adoc
 
 ### Code of Conduct
 
