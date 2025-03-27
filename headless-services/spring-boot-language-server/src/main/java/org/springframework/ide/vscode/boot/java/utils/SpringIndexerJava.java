@@ -686,6 +686,12 @@ public class SpringIndexerJava implements SpringIndexer {
 				try {
 					DocumentUtils.getTempTextDocument(docURI, docRef, null); // initialize the docRef with a real document before running validations
 					reconcile(context);
+					
+					Collection<String> dependencies = dependencyTracker.get(context.getFile());
+					for (String dependency : context.getDependencies()) {
+						dependencies.add(dependency);
+					}
+					
 				} catch (Exception e) {
 					log.error("problem creating temp document during re-reconciling for: " + docURI, e);
 				}
