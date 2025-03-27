@@ -145,4 +145,32 @@ public class AddConfigurationIfBeansPresentAdvancedReconcilingTest {
 		assertEquals(Boot2JavaProblemType.MISSING_CONFIGURATION_ANNOTATION.getCode(), diagnostics.get(0).getCode().getLeft());
     }
     
+    @Test
+    void testErrorAppearsWhenFeignClientAnnotationDoesAwayEntirely() throws Exception {
+		String feignClientDocUri = directory.toPath().resolve("src/main/java/com/example/feign/demo/FeignClientExample.java").toUri().toString();
+		String feignConfigRegisterd = directory.toPath().resolve("src/main/java/com/example/feign/demo/FeignConfigExample.java").toUri().toString();
+
+        // now change the config class source code and update doc
+        TestFileScanListener fileScanListener = new TestFileScanListener();
+        indexer.getJavaIndexer().setFileScanListener(fileScanListener);
+
+        String feignClientSource = FileUtils.readFileToString(UriUtil.toFile(feignClientDocUri), Charset.defaultCharset());
+        String updatedFeignClientSource = feignClientSource.replace("@FeignClient(name = \"stores\", configuration = FeignConfigExample.class)",
+        		"");
+
+        CompletableFuture<Void> updateFuture = indexer.updateDocument(feignClientDocUri, updatedFeignClientSource, "test triggered");
+        updateFuture.get(5, TimeUnit.SECONDS);
+
+        // check if the bean registrar files have been re-scanned
+        fileScanListener.assertScannedUri(feignClientDocUri, 1);
+        fileScanListener.assertScannedUri(feignConfigRegisterd, 1);
+        fileScanListener.assertFileScanCount(2);
+        
+        // check diagnostics result
+		PublishDiagnosticsParams diagnosticsResult = harness.getDiagnostics(feignConfigRegisterd);
+		List<Diagnostic> diagnostics = diagnosticsResult.getDiagnostics();
+		assertEquals(1, diagnostics.size());
+		assertEquals(Boot2JavaProblemType.MISSING_CONFIGURATION_ANNOTATION.getCode(), diagnostics.get(0).getCode().getLeft());
+    }
+    
 }

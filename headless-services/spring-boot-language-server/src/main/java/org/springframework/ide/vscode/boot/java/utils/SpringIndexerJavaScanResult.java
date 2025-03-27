@@ -110,11 +110,30 @@ public class SpringIndexerJavaScanResult {
 		Map<String, List<SpringIndexElement>> allBeans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).collect(Collectors.groupingBy(CachedBean::getDocURI, Collectors.mapping(CachedBean::getBean, Collectors.toList())));
 		Map<String, List<Diagnostic>> diagnosticsByDoc = generatedDiagnostics.stream().filter(cachedDiagnostic -> cachedDiagnostic.getDiagnostic() != null).collect(Collectors.groupingBy(CachedDiagnostics::getDocURI, Collectors.mapping(CachedDiagnostics::getDiagnostic, Collectors.toList())));
 
-		addEmptyDiagnostics(diagnosticsByDoc, javaFiles); // to make sure that files without diagnostics publish an empty array of diagnostics
+		// to make sure that files without index elements or diagnostics publish an empty array of diagnostics
+		addEmptyDiagnostics(diagnosticsByDoc, javaFiles);
+		addEmptyIndexElements(allBeans, javaFiles);
 
 		symbolHandler.addSymbols(this.project, enhancedSymbols, allBeans, diagnosticsByDoc);
 	}
 	
+	public void publishDiagnosticsOnly(SymbolHandler symbolHandler) {
+		Map<String, List<Diagnostic>> diagnosticsByDoc = generatedDiagnostics.stream().filter(cachedDiagnostic -> cachedDiagnostic.getDiagnostic() != null).collect(Collectors.groupingBy(CachedDiagnostics::getDocURI, Collectors.mapping(CachedDiagnostics::getDiagnostic, Collectors.toList())));
+		addEmptyDiagnostics(diagnosticsByDoc, javaFiles); // to make sure that files without index elements or diagnostics publish an empty array of diagnostics
+		symbolHandler.addSymbols(this.project, null, null, diagnosticsByDoc);
+	}
+	
+	private void addEmptyIndexElements(Map<String, List<SpringIndexElement>> allBeans, String[] javaFiles) {
+		for (int i = 0; i < javaFiles.length; i++) {
+			File file = new File(javaFiles[i]);
+			String docURI = UriUtil.toUri(file).toASCIIString();
+
+			if (!allBeans.containsKey(docURI)) {
+				allBeans.put(docURI, Collections.emptyList());
+			}
+		}
+	}
+
 	private void addEmptyDiagnostics(Map<String, List<Diagnostic>> diagnosticsByDoc, String[] javaFiles) {
 		for (int i = 0; i < javaFiles.length; i++) {
 			File file = new File(javaFiles[i]);

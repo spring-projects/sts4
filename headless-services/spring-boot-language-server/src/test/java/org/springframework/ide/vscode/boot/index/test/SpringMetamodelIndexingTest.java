@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.index.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
 import java.net.URI;
@@ -46,7 +45,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @Import(SymbolProviderTestConf.class)
 public class SpringMetamodelIndexingTest {
 	
-	public static final int NO_OF_EXPECTED_BEANS = 28;
+	public static final int NO_OF_EXPECTED_BEANS = 29;
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
@@ -140,6 +139,22 @@ public class SpringMetamodelIndexingTest {
         assertEquals("bean1", updatedInjectionPoints[0].getName());
 
 		assertEquals(2, harness.getIndexUpdatedCount()); // 1x project created, 1x document updated
+    }
+
+    @Test
+    void testUpdatedDocumentHasNoIndexElementsAnymore() throws Exception {
+        String changedDocURI = directory.toPath().resolve("src/main/java/org/test/SimpleComponentClass.java").toUri().toString();
+
+        Bean[] beans = springIndex.getBeansOfDocument(changedDocURI);
+        assertEquals(1, beans.length);
+        assertEquals("simpleComponentClass", beans[0].getName());
+        
+        String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI)), Charset.defaultCharset()).replace("@Component", "");
+        CompletableFuture<Void> updateFuture = indexer.updateDocument(changedDocURI, newContent, "test triggered");
+        updateFuture.get(5, TimeUnit.SECONDS);
+        
+        Bean[] updatedBeans = springIndex.getBeansOfDocument(changedDocURI);
+        assertEquals(0, updatedBeans.length);
     }
 
     @Test

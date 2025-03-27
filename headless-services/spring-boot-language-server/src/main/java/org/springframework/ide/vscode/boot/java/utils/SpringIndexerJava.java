@@ -712,8 +712,8 @@ public class SpringIndexerJava implements SpringIndexer {
 		IndexCacheKey diagnosticsCacheKey = getCacheKey(project, DIAGNOSTICS_KEY);
 		this.cache.update(diagnosticsCacheKey, javaFiles, modificationTimestamps, reconcilingResult.getGeneratedDiagnostics(), dependencyTracker.getAllDependencies(), CachedDiagnostics.class);
 
-		// publish
-		reconcilingResult.publishResults(symbolHandler);
+		// publish diagnostics
+		reconcilingResult.publishDiagnosticsOnly(symbolHandler);
 	}
 
 	private void scanAST(final SpringIndexerJavaContext context, boolean includeReconcile) {

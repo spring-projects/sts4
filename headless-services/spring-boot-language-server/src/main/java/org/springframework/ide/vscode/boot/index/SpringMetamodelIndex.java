@@ -37,12 +37,15 @@ public class SpringMetamodelIndex {
 		ProjectElement project = this.projectRootElements.computeIfAbsent(projectName, name -> new ProjectElement(name));
 		project.removeDocument(docURI);
 		
-		DocumentElement document = new DocumentElement(docURI);
-		for (SpringIndexElement bean : elements) {
-			document.addChild(bean);
-		}
+		if (elements != null && elements.length > 0) {
+			DocumentElement document = new DocumentElement(docURI);
+			for (SpringIndexElement bean : elements) {
+				document.addChild(bean);
+			}
+			
+			project.addChild(document);
+		}	
 		
-		project.addChild(document);
 	}
 
 	public void removeElements(String projectName, String docURI) {
