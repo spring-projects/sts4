@@ -14,9 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.lsp4j.DocumentSymbol;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexElement;
 import org.springframework.ide.vscode.commons.protocol.spring.SymbolElement;
 
@@ -26,41 +23,40 @@ public class SpringIndexToSymbolsConverter {
 		List<DocumentSymbol> result = new ArrayList<>();
 		
 		for (SpringIndexElement indexElement : indexElements) {
-			result.add(createSymbol(indexElement));
+			result.addAll(createSymbol(indexElement));
 		}
 		
 		return result;
 	}
 
-	private static DocumentSymbol createSymbol(SpringIndexElement indexElement) {
+	private static List<DocumentSymbol> createSymbol(SpringIndexElement indexElement) {
 		
-		DocumentSymbol symbol = null;
-		if (indexElement instanceof SymbolElement symbolElement) {
-			symbol = symbolElement.getDocumentSymbol();
-		}
-		else {
-			symbol = new DocumentSymbol(indexElement.toString(), SymbolKind.String,
-					new Range(new Position(), new Position()),
-					new Range(new Position(), new Position()));
-		}
-		
+		List<DocumentSymbol> subTreeSymbols = new ArrayList<>();
 		List<SpringIndexElement> children = indexElement.getChildren();
+
 		if (children != null && children.size() > 0) {
-			List<DocumentSymbol> childSymbols = new ArrayList<>();
-			
 			for (SpringIndexElement child : children) {
-				DocumentSymbol childSymbol = createSymbol(child);
-				if (childSymbol != null) {
-					childSymbols.add(childSymbol);
+				List<DocumentSymbol> childSymbols = createSymbol(child);
+				if (childSymbols != null) {
+					subTreeSymbols.addAll(childSymbols);
 				}
 			}
-			
-			if (childSymbols.size() > 0) {
-				symbol.setChildren(childSymbols);
-			}
 		}
 		
-		return symbol;
+		if (indexElement instanceof SymbolElement symbolElement) {
+			DocumentSymbol documentSymbol = symbolElement.getDocumentSymbol();
+			if (subTreeSymbols.size() > 0) {
+				documentSymbol.setChildren(subTreeSymbols);
+			}
+			
+			return List.of(documentSymbol);
+		}
+		else {
+//			symbol = new DocumentSymbol(indexElement.toString(), SymbolKind.String,
+//					new Range(new Position(), new Position()),
+//					new Range(new Position(), new Position()));
+			return subTreeSymbols;
+		}
 	}
 
 }
