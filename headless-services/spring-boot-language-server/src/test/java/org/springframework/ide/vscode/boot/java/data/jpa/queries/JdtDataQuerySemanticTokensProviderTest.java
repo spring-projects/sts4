@@ -292,7 +292,7 @@ public class JdtDataQuerySemanticTokensProviderTest {
 	}
 
 	@Test
-	void nativeQuery() throws Exception {
+	void nativeQueryAttribute() throws Exception {
 		String source = """
 		package my.package
 		
@@ -357,7 +357,141 @@ public class JdtDataQuerySemanticTokensProviderTest {
         assertThat(token).isEqualTo(new SemanticTokenData(167, 168, "number", new String[0]));
         
 	}
+	
+	@Test
+	void nativeQuery_1() throws Exception {
+		String source = """
+		package my.package
+		
+		import org.springframework.data.jpa.repository.NativeQuery;
+		
+		public interface OwnerRepository {
+		
+			@NativeQuery(value = "SELECT * FROM USERS u WHERE u.status = 1")
+			void findByLastName();
+		}
+		""";
+        
+        String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/OwnerRepository.java").toUri().toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "OwnerRepository.java", jp);
+        
+        assertThat(cu).isNotNull();
+        
+        List<SemanticTokenData> tokens = computeTokens(cu);
+        
+        SemanticTokenData token = tokens.get(0);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
+        assertThat(token).isEqualTo(new SemanticTokenData(140, 146, "keyword", new String[0]));
+        
+        token = tokens.get(1);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
+        assertThat(token).isEqualTo(new SemanticTokenData(147, 148, "operator", new String[0]));
+        
+        token = tokens.get(2);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
+        assertThat(token).isEqualTo(new SemanticTokenData(149, 153, "keyword", new String[0]));
+        
+        token = tokens.get(3);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("USERS");
+        assertThat(token).isEqualTo(new SemanticTokenData(154, 159, "variable", new String[0]));
+        
+        token = tokens.get(4);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("u");
+        assertThat(token).isEqualTo(new SemanticTokenData(160, 161, "variable", new String[0]));
+        
+        token = tokens.get(5);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("WHERE");
+        assertThat(token).isEqualTo(new SemanticTokenData(162, 167, "keyword", new String[0]));
+        
+        token = tokens.get(6);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("u");
+        assertThat(token).isEqualTo(new SemanticTokenData(168, 169, "variable", new String[0]));
+        
+        token = tokens.get(7);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo(".");
+        assertThat(token).isEqualTo(new SemanticTokenData(169, 170, "operator", new String[0]));
+        
+        token = tokens.get(8);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("status");
+        assertThat(token).isEqualTo(new SemanticTokenData(170, 176, "property", new String[0]));
 
+        token = tokens.get(9);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("=");
+        assertThat(token).isEqualTo(new SemanticTokenData(177, 178, "operator", new String[0]));
+
+        token = tokens.get(10);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("1");
+        assertThat(token).isEqualTo(new SemanticTokenData(179, 180, "number", new String[0]));
+        
+	}
+
+	@Test
+	void nativeQuery_2() throws Exception {
+		String source = """
+		package my.package
+		
+		import org.springframework.data.jpa.repository.NativeQuery;
+		
+		public interface OwnerRepository {
+		
+			@NativeQuery("SELECT  * FROM USERS u WHERE u.status = 1")
+			void findByLastName();
+		}
+		""";
+        
+        String uri = Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/OwnerRepository.java").toUri().toASCIIString();
+		CompilationUnit cu = CompilationUnitCache.parse2(source.toCharArray(), uri, "OwnerRepository.java", jp);
+        
+        assertThat(cu).isNotNull();
+        
+        List<SemanticTokenData> tokens = computeTokens(cu);
+        
+        SemanticTokenData token = tokens.get(0);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("SELECT");
+        assertThat(token).isEqualTo(new SemanticTokenData(132, 138, "keyword", new String[0]));
+        
+        token = tokens.get(1);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("*");
+        assertThat(token).isEqualTo(new SemanticTokenData(140, 141, "operator", new String[0]));
+        
+        token = tokens.get(2);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("FROM");
+        assertThat(token).isEqualTo(new SemanticTokenData(142, 146, "keyword", new String[0]));
+        
+        token = tokens.get(3);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("USERS");
+        assertThat(token).isEqualTo(new SemanticTokenData(147, 152, "variable", new String[0]));
+        
+        token = tokens.get(4);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("u");
+        assertThat(token).isEqualTo(new SemanticTokenData(153, 154, "variable", new String[0]));
+        
+        token = tokens.get(5);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("WHERE");
+        assertThat(token).isEqualTo(new SemanticTokenData(155, 160, "keyword", new String[0]));
+        
+        token = tokens.get(6);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("u");
+        assertThat(token).isEqualTo(new SemanticTokenData(161, 162, "variable", new String[0]));
+        
+        token = tokens.get(7);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo(".");
+        assertThat(token).isEqualTo(new SemanticTokenData(162, 163, "operator", new String[0]));
+        
+        token = tokens.get(8);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("status");
+        assertThat(token).isEqualTo(new SemanticTokenData(163, 169, "property", new String[0]));
+
+        token = tokens.get(9);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("=");
+        assertThat(token).isEqualTo(new SemanticTokenData(170, 171, "operator", new String[0]));
+
+        token = tokens.get(10);
+        assertThat(source.substring(token.getStart(), token.getEnd())).isEqualTo("1");
+        assertThat(token).isEqualTo(new SemanticTokenData(172, 173, "number", new String[0]));
+        
+	}
+	
 	@Test
 	void nativeQueryWithSpel() throws Exception {
 		String source = """

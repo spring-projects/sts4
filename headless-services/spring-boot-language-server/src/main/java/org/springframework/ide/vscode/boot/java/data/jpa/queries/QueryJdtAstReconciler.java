@@ -72,7 +72,8 @@ public class QueryJdtAstReconciler implements JdtAstReconciler {
 			public boolean visit(SingleMemberAnnotation node) {
 				EmbeddedQueryExpression q = JdtQueryVisitorUtils.extractQueryExpression(annotationHierarchies, node);
 				if (q != null) {
-					getQueryReconciler(project).reconcile(q.query().getText(), q.query()::toSingleJavaRange, context.getProblemCollector());
+					Optional<Reconciler> reconcilerOpt = q.isNative() ? getSqlReconciler(project) : Optional.of(getQueryReconciler(project));
+					reconcilerOpt.ifPresent(r -> r.reconcile(q.query().getText(), q.query()::toSingleJavaRange, context.getProblemCollector()));
 				}
 				return super.visit(node);
 			}
