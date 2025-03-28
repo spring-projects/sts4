@@ -81,8 +81,12 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler {
 
 					ITypeBinding type = node.resolveBinding();
 					if (type != null && ReconcileUtils.implementsAnyType(AOT_BEANS, type)) {
-						String beanClassName = type.getQualifiedName();
 						
+						if (!context.isIndexComplete()) {
+							throw new RequiredCompleteIndexException();
+						}
+						
+						String beanClassName = type.getQualifiedName();
 						Bean[] registeredBeans = springIndex.getBeansWithType(project.getElementName(), beanClassName);
 						
 						if (registeredBeans == null || registeredBeans.length == 0) {
