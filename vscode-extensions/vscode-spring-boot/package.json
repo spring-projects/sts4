@@ -725,9 +725,38 @@
         }
       },
       {
+        "id": "boot4",
+        "title": "Boot 4.x Best Practices & Optimizations",
+        "order": 403,
+        "properties": {
+          "boot-java.validation.java.boot4": {
+            "type": "string",
+            "default": "AUTO",
+            "description": "Enablement",
+            "enum": [
+              "AUTO",
+              "OFF",
+              "ON"
+            ]
+          },
+          "spring-boot.ls.problem.boot4.REGISTRAR_BEAN_DECLARATION": {
+            "type": "string",
+            "default": "WARNING",
+            "description": "Bean derived from BeanRegistrar should be registered via `@Import` over configuration bean",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          }
+        }
+      },
+      {
         "id": "spring-aot",
         "title": "AOT Optimizations",
-        "order": 403,
+        "order": 404,
         "properties": {
           "boot-java.validation.java.spring-aot": {
             "type": "string",
@@ -779,7 +808,7 @@
       {
         "id": "application-properties",
         "title": "Property Config Files",
-        "order": 404,
+        "order": 405,
         "properties": {
           "spring-boot.ls.problem.application-properties.PROP_INVALID_BEAN_NAVIGATION": {
             "type": "string",
@@ -918,7 +947,7 @@
       {
         "id": "application-yaml",
         "title": "YAML Config Files",
-        "order": 405,
+        "order": 406,
         "properties": {
           "spring-boot.ls.problem.application-yaml.YAML_SYNTAX_ERROR": {
             "type": "string",
@@ -1081,7 +1110,7 @@
       {
         "id": "spel",
         "title": "SpEL Expressions",
-        "order": 406,
+        "order": 407,
         "properties": {
           "boot-java.validation.spel.on": {
             "type": "string",
@@ -1121,7 +1150,7 @@
       {
         "id": "version-validation",
         "title": "Versions and Support Ranges",
-        "order": 407,
+        "order": 408,
         "properties": {
           "boot-java.validation.java.version-validation": {
             "type": "string",
@@ -1221,7 +1250,7 @@
       {
         "id": "data-query",
         "title": "Data Queries",
-        "order": 408,
+        "order": 409,
         "properties": {
           "boot-java.validation.data-query": {
             "type": "string",
@@ -1273,7 +1302,7 @@
       {
         "id": "cron",
         "title": "CRON Expressions",
-        "order": 409,
+        "order": 410,
         "properties": {
           "boot-java.validation.cron": {
             "type": "string",

@@ -124,6 +124,29 @@
     ]
   },
   {
+    "id": "boot4",
+    "label": "Boot 4.x Best Practices & Optimizations",
+    "toggle": {
+      "label": "Enablement",
+      "values": [
+        "AUTO",
+        "OFF",
+        "ON"
+      ],
+      "preferenceKey": "boot-java.validation.java.boot4",
+      "defaultValue": "AUTO"
+    },
+    "order": 3,
+    "problemTypes": [
+      {
+        "code": "REGISTRAR_BEAN_DECLARATION",
+        "label": "Not registered via `@Import` in a configuration bean",
+        "description": "Bean derived from BeanRegistrar should be registered via `@Import` over configuration bean",
+        "defaultSeverity": "WARNING"
+      }
+    ]
+  },
+  {
     "id": "spring-aot",
     "label": "AOT Optimizations",
     "toggle": {
@@ -135,7 +158,7 @@
       "preferenceKey": "boot-java.validation.java.spring-aot",
       "defaultValue": "OFF"
     },
-    "order": 3,
+    "order": 4,
     "problemTypes": [
       {
         "code": "JAVA_CONCRETE_BEAN_TYPE",
@@ -160,7 +183,7 @@
   {
     "id": "application-properties",
     "label": "Property Config Files",
-    "order": 4,
+    "order": 5,
     "problemTypes": [
       {
         "code": "PROP_INVALID_BEAN_NAVIGATION",
@@ -233,7 +256,7 @@
   {
     "id": "application-yaml",
     "label": "YAML Config Files",
-    "order": 5,
+    "order": 6,
     "problemTypes": [
       {
         "code": "YAML_SYNTAX_ERROR",
@@ -327,7 +350,7 @@
       "preferenceKey": "boot-java.validation.spel.on",
       "defaultValue": "ON"
     },
-    "order": 6,
+    "order": 7,
     "problemTypes": [
       {
         "code": "JAVA_SPEL_EXPRESSION_SYNTAX",
@@ -355,7 +378,7 @@
       "preferenceKey": "boot-java.validation.java.version-validation",
       "defaultValue": "ON"
     },
-    "order": 7,
+    "order": 8,
     "problemTypes": [
       {
         "code": "SUPPORTED_OSS_VERSION",
@@ -413,7 +436,7 @@
       "preferenceKey": "boot-java.validation.data-query",
       "defaultValue": "ON"
     },
-    "order": 8,
+    "order": 9,
     "problemTypes": [
       {
         "code": "JPQL_SYNTAX",
@@ -447,7 +470,7 @@
       "preferenceKey": "boot-java.validation.cron",
       "defaultValue": "ON"
     },
-    "order": 9,
+    "order": 10,
     "problemTypes": [
       {
         "code": "SYNTAX",

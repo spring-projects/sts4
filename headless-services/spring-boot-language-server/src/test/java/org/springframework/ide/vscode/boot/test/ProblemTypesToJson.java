@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
+import org.springframework.ide.vscode.boot.java.Boot4JavaProblemType;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.boot.java.cron.CronProblemType;
@@ -177,6 +178,7 @@ public class ProblemTypesToJson {
 		writer.collectProblemTypeData(Boot2JavaProblemType.values());
 		writer.collectProblemTypeData(ApplicationPropertiesProblemType.values());
 		writer.collectProblemTypeData(Boot3JavaProblemType.values());
+		writer.collectProblemTypeData(Boot4JavaProblemType.values());
 		writer.collectProblemTypeData(SpringAotJavaProblemType.values());
 		writer.collectProblemTypeData(VersionValidationProblemType.values());
 		writer.collectProblemTypeData(QueryProblemType.values());
