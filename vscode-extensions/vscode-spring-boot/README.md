@@ -121,7 +121,7 @@ hovers while editing Spring Boot Properties in either `.properties` or `.yml` fo
 
 ## Issues and Feature Requests
 
-Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues). 
+Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/spring-tools/issues). 
 
 # Releases:
 
@@ -132,12 +132,12 @@ that can be donwloaded from
 [here](https://cdn.spring.io/spring-tools/snapshot/STS4/nightly-distributions.html). To install it
 open vscode, press `CTRL-SHIFT-P` and search for VSIX, then select `Extension: Install from VSIX`
 
-[yaml-completion]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-completion.png
-[properties-completion]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/properties-completion.png
-[yaml-validation]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-validation.png
-[properties-validation]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/properties-validation.png
-[yaml-hovers]: https://github.com/spring-projects/sts4/raw/1d731ed1ad5c8defcca4e4abb3cf5f2d89daba43/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-hover.png
-[java-code-completion]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-spring-boot/readme-imgs/java-code-completion.png
-[java-live-apps-quick-access]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-spring-boot/readme-imgs/java-live-apps-quick-access.png
-[java-live-hovers]: https://github.com/spring-projects/sts4/raw/e32a22cfd4c12b19ffbb55ca6619bf9f6eb213ea/vscode-extensions/vscode-spring-boot/readme-imgs/java-live-hovers.png
-[java-navigation]: https://github.com/spring-projects/sts4/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-spring-boot/readme-imgs/java-navigation.png
+[yaml-completion]: https://github.com/spring-projects/spring-tools/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-completion.png
+[properties-completion]: https://github.com/spring-projects/spring-tools/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/properties-completion.png
+[yaml-validation]: https://github.com/spring-projects/spring-tools/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-validation.png
+[properties-validation]: https://github.com/spring-projects/spring-tools/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/properties-validation.png
+[yaml-hovers]: https://github.com/spring-projects/spring-tools/raw/1d731ed1ad5c8defcca4e4abb3cf5f2d89daba43/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-hover.png
+[java-code-completion]: https://github.com/spring-projects/spring-tools/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-spring-boot/readme-imgs/java-code-completion.png
+[java-live-apps-quick-access]: https://github.com/spring-projects/spring-tools/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-spring-boot/readme-imgs/java-live-apps-quick-access.png
+[java-live-hovers]: https://github.com/spring-projects/spring-tools/raw/e32a22cfd4c12b19ffbb55ca6619bf9f6eb213ea/vscode-extensions/vscode-spring-boot/readme-imgs/java-live-hovers.png
+[java-navigation]: https://github.com/spring-projects/spring-tools/raw/facac2003191bc29bf79049aa02a091457ffbe47/vscode-extensions/vscode-spring-boot/readme-imgs/java-navigation.png

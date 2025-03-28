@@ -46,7 +46,7 @@ read its detailed documentation.
 ![Hover Docs Screenshot][hovers]
 
 
-[linting]: https://raw.githubusercontent.com/spring-projects/sts4/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/linting.png
-[ca]: https://raw.githubusercontent.com/spring-projects/sts4/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/content-assist.png
-[dcfca]: https://raw.githubusercontent.com/spring-projects/sts4/c504571767d2a4a95a2442281b66db10e59f5610/vscode-extensions/vscode-manifest-yaml/readme-imgs/cf-dynamic-content-assist.png
-[hovers]: https://raw.githubusercontent.com/spring-projects/sts4/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/hovers.png
+[linting]: https://raw.githubusercontent.com/spring-projects/spring-tools/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/linting.png
+[ca]: https://raw.githubusercontent.com/spring-projects/spring-tools/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/content-assist.png
+[dcfca]: https://raw.githubusercontent.com/spring-projects/spring-tools/c504571767d2a4a95a2442281b66db10e59f5610/vscode-extensions/vscode-manifest-yaml/readme-imgs/cf-dynamic-content-assist.png
+[hovers]: https://raw.githubusercontent.com/spring-projects/spring-tools/7ba2a3cd1f1a1a7067ccf26266196757cc1acbf3/vscode-extensions/vscode-manifest-yaml/readme-imgs/hovers.png

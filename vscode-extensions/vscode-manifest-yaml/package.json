@@ -7,7 +7,7 @@
   "publisher": "vmware",
   "repository": {
     "type": "git",
-    "url": "https://github.com/spring-projects/sts4.git"
+    "url": "https://github.com/spring-projects/spring-tools.git"
   },
   "license": "EPL-1.0",
   "engines": {

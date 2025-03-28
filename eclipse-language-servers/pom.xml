@@ -22,19 +22,19 @@
 	</licenses>
 
 	<scm>
-		<connection>https://github.com/spring-projects/sts4.git</connection>
+		<connection>https://github.com/spring-projects/spring-tools.git</connection>
 		<tag>HEAD</tag>
-		<url>https://github.com/spring-projects/sts4/</url>
+		<url>https://github.com/spring-projects/spring-tools/</url>
 	</scm>
 
 	<issueManagement>
-		<url>https://github.com/spring-projects/sts4/issues</url>
+		<url>https://github.com/spring-projects/spring-tools/issues</url>
 		<system>GitHub</system>
 	</issueManagement>
 
 	<ciManagement>
-		<url>https://build.spring.io/browse/IDE</url>
-		<system>BAMBOO</system>
+		<url>https://github.com/spring-projects/spring-tools/actions</url>
+		<system>GitHub Actions</system>
 	</ciManagement>
 
 	<modules>

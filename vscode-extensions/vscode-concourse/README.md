@@ -81,11 +81,11 @@ the near future.
 
 ## Issues and Feature Requests
 
-Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues). 
+Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/spring-tools/issues). 
 
-[linting]: https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/linting.png
-[ca1]:     https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/content-assist-1.png
-[ca2]:     https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/content-assist-2.png
-[hovers]:  https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/hover.png
-[peek]:    https://raw.githubusercontent.com/spring-projects/sts4/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/peek.png
-[goto_symbol]: https://raw.githubusercontent.com/spring-projects/sts4/d095208cfb34b0f129e6b66d41d099955a712f81/vscode-extensions/vscode-concourse/readme-imgs/goto-symbol.png
+[linting]: https://raw.githubusercontent.com/spring-projects/spring-tools/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/linting.png
+[ca1]:     https://raw.githubusercontent.com/spring-projects/spring-tools/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/content-assist-1.png
+[ca2]:     https://raw.githubusercontent.com/spring-projects/spring-tools/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/content-assist-2.png
+[hovers]:  https://raw.githubusercontent.com/spring-projects/spring-tools/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/hover.png
+[peek]:    https://raw.githubusercontent.com/spring-projects/spring-tools/98148c08b608ff365fb87b2de955d6833f7ee082/vscode-extensions/vscode-concourse/readme-imgs/peek.png
+[goto_symbol]: https://raw.githubusercontent.com/spring-projects/spring-tools/d095208cfb34b0f129e6b66d41d099955a712f81/vscode-extensions/vscode-concourse/readme-imgs/goto-symbol.png

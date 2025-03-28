@@ -149,11 +149,11 @@ If you subsequently launch vscode from that same terminal the dynamic CA and lin
 
 ## Issues and Feature Requests
 
-Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/sts4/issues).
+Please report bugs, issues and feature requests on the [Github STS4 issue tracker](https://github.com/spring-projects/spring-tools/issues).
 
-[linting]:     https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/linting.png
-[ca1]:         https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/content-assist-1.png
-[ca2]:         https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/content-assist-2.png
-[hovers]:      https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/hover.png
-[peek]:        https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/peek.png
-[goto_symbol]: https://raw.githubusercontent.com/spring-projects/sts4/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/goto-symbol.png
+[linting]:     https://raw.githubusercontent.com/spring-projects/spring-tools/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/linting.png
+[ca1]:         https://raw.githubusercontent.com/spring-projects/spring-tools/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/content-assist-1.png
+[ca2]:         https://raw.githubusercontent.com/spring-projects/spring-tools/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/content-assist-2.png
+[hovers]:      https://raw.githubusercontent.com/spring-projects/spring-tools/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/hover.png
+[peek]:        https://raw.githubusercontent.com/spring-projects/spring-tools/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/peek.png
+[goto_symbol]: https://raw.githubusercontent.com/spring-projects/spring-tools/7e3cf4808095f8b126bf1e5a90c09f3917f60fa4/vscode-extensions/vscode-bosh/readme-imgs/goto-symbol.png
