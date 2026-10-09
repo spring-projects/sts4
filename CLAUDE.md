@@ -31,7 +31,9 @@ sts4/
 │   └── boot-dev-pack/          # Extension pack bundling Spring Boot extensions
 ├── nodejs-packages/            # Shared Node.js utilities
 └── claude-plugins/             # Claude Code plugin (standalone LS + MCP server)
-    ├── spring-tools/           # Plugin source
+    ├── spring-tools/           # Plugin source (skills, agents, hooks, explanations/<CODE>.md playbooks)
+    ├── tools/                  # Node.js checkers + tests keeping playbooks/skills/agents in sync with the LS
+    ├── research-notes/         # TODO_quickfixes.md: problem code → quick fix → playbook coverage table
     └── update-local-jars.sh    # Rebuilds the standalone LS JAR for the plugin
 ```
 
@@ -92,6 +94,18 @@ cd claude-plugins
 ./update-local-jars.sh    # Rebuild and copy the standalone LS JAR into the plugin
 ```
 
+Every diagnostic code (the `*ProblemType` enums plus `BOOT_VERSION_VALIDATION_CODE`) needs a playbook `claude-plugins/spring-tools/explanations/<CODE>.md` and a row in `claude-plugins/research-notes/TODO_quickfixes.md`. Every MCP tool the language server exposes (`boot/mcp/*Tools.java`) must be reachable through a skill (`skills/<name>/SKILL.md`, listed in its `allowed-tools` and mentioned in its body) or a hook (`hooks/hooks.json`); the plugin also ships the `agents/spring-reviewer.md` subagent. When adding or renaming a problem type or an MCP tool, run from the repository root:
+
+```bash
+node claude-plugins/tools/check-explanations.mjs --require-all --todo --links
+node claude-plugins/tools/check-plugin-config.mjs
+node --test --test-reporter=spec 'claude-plugins/tools/test/*.test.mjs'
+```
+
+In the plugin the LSP transport is disabled, so the standalone LS watches the project directory itself (`StandaloneFileWatcher`, `-Dspring.boot.ls.project.watch`, exposed as `SPRING_TOOLS_LS_WATCH`) and the hooks additionally call `fileChanged`/`refreshWorkspace` for Claude's own edits. After changing `launcher.js`, `install.js`, `hooks/hooks.json` or the standalone LS, run the end-to-end MCP smoke test (needs the rebuilt JAR from `update-local-jars.sh` and Java 21+): `node claude-plugins/tools/smoke/mcp-smoke.mjs`
+
+Behavioral evals live in `claude-plugins/spring-tools/evals/` (`claude plugin eval .` from the plugin directory; needs a logged-in Claude Code 2.1.269+ and costs model calls). Every skill and the agent must keep a case there, and every MCP tool a mock under `evals/mocks/spring-tools-mcp/` — re-record with `node claude-plugins/tools/evals/record-mocks.mjs` after changing a tool or the `sf7-validation` fixture; `check-plugin-config.mjs` enforces both.
+
 ## Running Tests
 
 ```bash
@@ -139,6 +153,7 @@ IDE Client (VSCode/Eclipse) ←—LSP over stdio/socket—→ Java Language Serv
 
 - The full Spring Boot LS (`spring-boot-language-server`) requires JDT Language Server in the same process for Java type resolution
 - The standalone variant (`spring-boot-language-server-standalone`) resolves types via Maven/Gradle classpath + Jandex indexing — used by the Claude Code plugin
+- In the plugin the LSP transport is disabled (`-Dlanguageserver.enabled=false`), so no document is ever "open": the `getProjectDiagnostics` MCP tool only sees what the indexers produce — Java diagnostics from `SpringIndexerJava`, config-file diagnostics (`application*`, `bootstrap*`, `*.factories`) from `SpringIndexerConfigFiles`, plus the build-file version validation
 
 ### Key Commons Modules
 
