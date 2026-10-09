@@ -112,7 +112,7 @@ engine* differ between the two mechanisms:
     ./mvnw -q -o test -pl commons/commons-rewrite   # if you removed a recipe/test from this module
     ```
 
-12. **Plugin docs** — if `claude-plugins/spring-tools/explanations/<ProblemType code>.md`
+12. **Plugin docs** — if `agent-plugins/spring-tools/explanations/<ProblemType code>.md`
     exists for this diagnostic, check its before/after examples still match; usually no
     change is needed since that file documents observable behavior, not implementation.
 
