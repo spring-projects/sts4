@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2021, 2026 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,19 +47,18 @@ public class ImplicitWebAnnotationNames extends Recipe {
                 new UsesType<>("org.springframework.web.bind.annotation.RequestHeader", false),
                 new UsesType<>("org.springframework.web.bind.annotation.RequestAttribute", false),
                 new UsesType<>("org.springframework.web.bind.annotation.CookieValue", false),
-                new UsesType<>("org.springframework.web.bind.annotation.ModelAttribute", false),
                 new UsesType<>("org.springframework.web.bind.annotation.SessionAttribute", false)
         ), new ImplicitWebAnnotationNamesVisitor());
     }
 
     private static class ImplicitWebAnnotationNamesVisitor extends JavaIsoVisitor<ExecutionContext> {
+        // ModelAttribute uses a type-derived default name and is deliberately excluded.
         private static final Set<String> PARAM_ANNOTATIONS = Stream.of(
                 "PathVariable",
                 "RequestParam",
                 "RequestHeader",
                 "RequestAttribute",
                 "CookieValue",
-                "ModelAttribute",
                 "SessionAttribute"
         ).map(className -> "org.springframework.web.bind.annotation." + className).collect(toSet());
 

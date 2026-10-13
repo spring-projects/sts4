@@ -17,11 +17,15 @@ import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.reconcilers.ImplicitWebAnnotationNamesReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
+import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class ImplicitWebAnnotationNamesReconcilerTest extends BaseReconcilerTest {
 
@@ -48,6 +52,92 @@ public class ImplicitWebAnnotationNamesReconcilerTest extends BaseReconcilerTest
 	@AfterEach
 	void tearDown() throws Exception {
 		super.tearDown();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"@ModelAttribute(\"form\") UserRegistrationForm form",
+			"@ModelAttribute(value = \"form\") UserRegistrationForm form",
+			"@ModelAttribute(name = \"form\") UserRegistrationForm form",
+			"@ModelAttribute(name = \"form\", binding = false) UserRegistrationForm form",
+			"@ModelAttribute(\"registration\") UserRegistrationForm form",
+			"@ModelAttribute UserRegistrationForm form",
+			"@ModelAttribute(binding = false) UserRegistrationForm form",
+			"@ModelAttribute(\"fo\" + \"rm\") UserRegistrationForm form",
+			"@ModelAttribute(\"userRegistrationForm\") UserRegistrationForm form",
+			"@ModelAttribute(\"userRegistrationForm\") UserRegistrationForm userRegistrationForm",
+			"@org.springframework.web.bind.annotation.ModelAttribute(\"form\") UserRegistrationForm form",
+			"@org.springframework.web.bind.annotation.ModelAttribute(value = \"form\") UserRegistrationForm form",
+			"@org.springframework.web.bind.annotation.ModelAttribute(name = \"form\") UserRegistrationForm form"
+	})
+	void modelAttributeNamesAreNotParameterNames(String parameter) throws Exception {
+		String source = """
+				package example.demo;
+
+				import org.springframework.stereotype.Controller;
+				import org.springframework.validation.BindingResult;
+				import org.springframework.web.bind.annotation.ModelAttribute;
+				import org.springframework.web.bind.annotation.PostMapping;
+
+				@Controller
+				class A {
+					@PostMapping("/register")
+					public String register(%s, BindingResult result) {
+						return "success";
+					}
+				}
+
+				class UserRegistrationForm {}
+				""".formatted(parameter);
+
+		// ModelAttribute is intentionally excluded, even when its name matches the type-derived default.
+		assertEquals(0, reconcile("A.java", source, false).size());
+	}
+
+	@Test
+	void mixedWebAnnotationsRetainOnlyParameterNameQuickfixes() throws Exception {
+		String source = """
+				package example.demo;
+
+				import org.springframework.stereotype.Controller;
+				import org.springframework.web.bind.annotation.*;
+
+				@Controller
+				class A {
+					@PostMapping("/register/{userId}")
+					public String register(@ModelAttribute("form") UserRegistrationForm form,
+							@RequestParam("id") String id,
+							@PathVariable("userId") String userId,
+							@RequestHeader(value = "header") String header,
+							@RequestAttribute(name = "attribute") String attribute,
+							@CookieValue("cookie") String cookie,
+							@SessionAttribute("session") String session,
+							@FormParam("extra") String extra) {
+						return "success";
+					}
+
+					@GetMapping("/user")
+					public String user(@RequestParam("user_id") String userId) {
+						return userId;
+					}
+				}
+
+				class UserRegistrationForm {}
+				@interface FormParam { String value(); }
+				""";
+
+		List<ReconcileProblem> problems = reconcile("A.java", source, false);
+		assertEquals(List.of("\"id\"", "\"userId\"", "value = \"header\"", "name = \"attribute\"", "\"cookie\"", "\"session\""),
+				problems.stream().map(p -> source.substring(p.getOffset(), p.getOffset() + p.getLength())).toList());
+		for (ReconcileProblem problem : problems) {
+			assertEquals(Boot2JavaProblemType.WEB_ANNOTATION_NAMES, problem.getType());
+			List<FixDescriptor> fixes = problem.getQuickfixes().stream().map(f -> (FixDescriptor) f.params).toList();
+			assertEquals(List.of(RecipeScope.NODE, RecipeScope.FILE, RecipeScope.PROJECT),
+					fixes.stream().map(FixDescriptor::getRecipeScope).toList());
+			for (FixDescriptor fix : fixes) {
+				assertEquals(org.openrewrite.java.spring.ImplicitWebAnnotationNames.class.getName(), fix.getRecipeId());
+			}
+		}
 	}
 	
 	@Test

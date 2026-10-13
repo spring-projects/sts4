@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 the original author or authors.
+ * Copyright 2021, 2026 the original author or authors.
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,15 @@
 package org.openrewrite.java.spring;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.openrewrite.DocumentExample;
 import org.openrewrite.Issue;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 
 import static org.openrewrite.java.Assertions.java;
 
@@ -29,7 +33,150 @@ class ImplicitWebAnnotationNamesTest implements RewriteTest {
     @Override
     public void defaults(RecipeSpec spec) {
         spec.recipe(new ImplicitWebAnnotationNames())
-          .parser(JavaParser.fromJavaVersion().classpath("spring-web", "jspecify", "spring-context"));
+          .parser(JavaParser.fromJavaVersion().classpath("spring-web", "spring-core", "jspecify", "spring-context"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+      "@ModelAttribute(\"form\") UserRegistrationForm form",
+      "@ModelAttribute(value = \"form\") UserRegistrationForm form",
+      "@ModelAttribute(name = \"form\") UserRegistrationForm form",
+      "@ModelAttribute(name = \"form\", binding = false) UserRegistrationForm form",
+      "@ModelAttribute(\"registration\") UserRegistrationForm form",
+      "@ModelAttribute UserRegistrationForm form",
+      "@ModelAttribute(binding = false) UserRegistrationForm form",
+      "@ModelAttribute(\"fo\" + \"rm\") UserRegistrationForm form",
+      "@ModelAttribute(\"userRegistrationForm\") UserRegistrationForm form",
+      "@ModelAttribute(\"userRegistrationForm\") UserRegistrationForm userRegistrationForm",
+      "@org.springframework.web.bind.annotation.ModelAttribute(\"form\") UserRegistrationForm form",
+      "@org.springframework.web.bind.annotation.ModelAttribute(value = \"form\") UserRegistrationForm form",
+      "@org.springframework.web.bind.annotation.ModelAttribute(name = \"form\") UserRegistrationForm form"
+    })
+    void preserveModelAttributeNamesDuringCleanup(String parameter) {
+        // Include RequestParam so that the recipe's precondition permits visiting this file.
+        rewriteRun(
+          java(
+            """
+              import org.springframework.web.bind.annotation.*;
+
+              class RegistrationController {
+                  @PostMapping("/register")
+                  public String register(%s, @RequestParam("id") String id) {
+                      return "success";
+                  }
+              }
+
+              class UserRegistrationForm {}
+              """.formatted(parameter),
+            """
+              import org.springframework.web.bind.annotation.*;
+
+              class RegistrationController {
+                  @PostMapping("/register")
+                  public String register(%s, @RequestParam String id) {
+                      return "success";
+                  }
+              }
+
+              class UserRegistrationForm {}
+              """.formatted(parameter)
+          )
+        );
+    }
+
+    @Test
+    void preserveModelAttributeNamesAcrossFiles() {
+        rewriteRun(
+          java(
+            """
+              import org.springframework.web.bind.annotation.*;
+
+              class RegistrationController {
+                  public String register(@ModelAttribute("form") UserRegistrationForm form) {
+                      return "success";
+                  }
+              }
+
+              class UserRegistrationForm {}
+              """
+          ),
+          java(
+            """
+              import org.springframework.web.bind.annotation.*;
+
+              class UsersController {
+                  public void user(@RequestParam("id") String id,
+                                   @PathVariable("userId") String userId,
+                                   @RequestHeader(value = "header") String header,
+                                   @RequestAttribute(name = "attribute") String attribute,
+                                   @CookieValue("cookie") String cookie,
+                                   @SessionAttribute("session") String session,
+                                   @ModelAttribute(name = "form", binding = false) UserRegistrationForm form) {
+                  }
+
+                  public void search(@RequestParam("user_id") String userId) {
+                  }
+              }
+              """,
+            """
+              import org.springframework.web.bind.annotation.*;
+
+              class UsersController {
+                  public void user(@RequestParam String id,
+                                   @PathVariable String userId,
+                                   @RequestHeader String header,
+                                   @RequestAttribute String attribute,
+                                   @CookieValue String cookie,
+                                   @SessionAttribute String session,
+                                   @ModelAttribute(name = "form", binding = false) UserRegistrationForm form) {
+                  }
+
+                  public void search(@RequestParam("user_id") String userId) {
+                  }
+              }
+              """
+          )
+        );
+    }
+
+    @Test
+    void removeOnlySelectedParameterName() {
+        // The node-scoped wrapper holds a runtime predicate and is not serialized by Spring Tools.
+        rewriteRun(
+          spec -> spec.recipe(ORAstUtils.nodeRecipe(new ImplicitWebAnnotationNames(),
+            node -> node instanceof J.Annotation annotation && "RequestParam".equals(annotation.getSimpleName())))
+            .validateRecipeSerialization(false),
+          java(
+            """
+              import org.springframework.web.bind.annotation.ModelAttribute;
+              import org.springframework.web.bind.annotation.PathVariable;
+              import org.springframework.web.bind.annotation.RequestParam;
+
+              class RegistrationController {
+                  public void register(@ModelAttribute("form") UserRegistrationForm form,
+                                       @RequestParam("id") String id,
+                                       @PathVariable("userId") String userId) {
+                  }
+              }
+
+              class UserRegistrationForm {}
+              """,
+            """
+              import org.springframework.web.bind.annotation.ModelAttribute;
+              import org.springframework.web.bind.annotation.PathVariable;
+              import org.springframework.web.bind.annotation.RequestParam;
+
+              class RegistrationController {
+                  public void register(@ModelAttribute("form") UserRegistrationForm form,
+                                       @RequestParam String id,
+                                       @PathVariable("userId") String userId) {
+                  }
+              }
+
+              class UserRegistrationForm {}
+              """
+          )
+        );
     }
 
     @DocumentExample
