@@ -1,3 +1,15 @@
+## 2026-09-09 (language servers version 2.4.1)
+
+#### important highlights
+* _(Spring Boot)_ Allow `vscode-spring-boot` extension to work in VSCode with IntelliJ Language Server besides RedHat Language Server
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ Allow to run Spring Boot LS with IntelliJ LS [#2050](https://github.com/spring-projects/spring-tools/issues/2050)
+* _(Spring Boot)_ [5.4.1 backport] Spring Data repositories are dropped from the index when the project build is neither Maven nor Gradle (NPE in DataRepositoryAotMetadataService) [#2053](https://github.com/spring-projects/spring-tools/issues/2053)
+* _(Spring Boot)_ [5.4.1 backport] Resolve linked source folders when building the classpath- #1984 [#2052](https://github.com/spring-projects/spring-tools/issues/2052)
+* _(Spring Boot)_ [5.4.1 backport] reduce logging for document changes [#2051](https://github.com/spring-projects/spring-tools/issues/2051)
+
 ## 2026-09-09 (5.4.0.RELEASE, incl. language servers version 2.4.0)
 
 #### important highlights
