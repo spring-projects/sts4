@@ -913,6 +913,18 @@
               "ERROR"
             ]
           },
+          "spring-boot.ls.problem.boot2.MODEL_ATTRIBUTE_NAMES": {
+            "type": "string",
+            "default": "HINT",
+            "description": "`@ModelAttribute` names are unnecessary when they are the same as the default name derived from the parameter type",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
           "spring-boot.ls.problem.boot2.VALUE_CLASSPATH_RESOURCE_TYPE": {
             "type": "string",
             "default": "WARNING",

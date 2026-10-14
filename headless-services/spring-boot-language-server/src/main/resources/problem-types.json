@@ -99,6 +99,12 @@
         "defaultSeverity": "HINT"
       },
       {
+        "code": "MODEL_ATTRIBUTE_NAMES",
+        "label": "Implicit `@ModelAttribute` names",
+        "description": "`@ModelAttribute` names are unnecessary when they are the same as the default name derived from the parameter type",
+        "defaultSeverity": "HINT"
+      },
+      {
         "code": "VALUE_CLASSPATH_RESOURCE_TYPE",
         "label": "Invalid type for classpath resource in `@Value`",
         "description": "Type is not compatible with classpath resource injection",

@@ -1,5 +1,5 @@
 ## Explanations
-This error occurs when a Spring web annotation (such as `@PathVariable`, `@RequestParam`, `@RequestHeader`, `@RequestAttribute`, `@CookieValue`, `@ModelAttribute`, or `@SessionAttribute`) explicitly specifies a `value` or `name` attribute that is exactly the same as the method parameter's name.
+This error occurs when a Spring web annotation (such as `@PathVariable`, `@RequestParam`, `@RequestHeader`, `@RequestAttribute`, `@CookieValue`, or `@SessionAttribute`) explicitly specifies a `value` or `name` attribute that is exactly the same as the method parameter's name.
 
 For example, `@PathVariable("id") Long id` or `@RequestParam(name = "count", defaultValue = "3") int count`.
 
@@ -16,4 +16,6 @@ If the annotation has other attributes (like `required`, `defaultValue`, etc.), 
 - *Before:* `@RequestParam(name = "count", defaultValue = "3") int count`
 - *After:* `@RequestParam(defaultValue = "3") int count`
 
-*Note: Do not remove the annotation name/value if it differs from the method parameter name (e.g., `@PathVariable("userId") Long id`), or if the annotation is applied at the method level (e.g., `@ModelAttribute("types")`).*
+*Note: Do not remove the annotation name/value if it differs from the method parameter name (e.g., `@PathVariable("userId") Long id`).*
+
+*Note: `@ModelAttribute` is not covered by this check. Its default name is derived from the parameter type rather than the parameter name, so removing it because it matches the parameter name can change the model attribute name - see `MODEL_ATTRIBUTE_NAMES`.*
