@@ -44,7 +44,7 @@ public class ImplicitWebAnnotationNamesReconciler implements JdtAstReconciler {
 	private static final String FIX_LABEL = "Remove implicit web annotation name";
 	private static final String FIX_LABEL_PLURAL = "Remove implicit web annotation names";
 	
-	// ModelAttribute uses a type-derived default name and is deliberately excluded.
+	// ModelAttribute uses a type-derived default name and is deliberately excluded, see ImplicitModelAttributeNamesReconciler.
 	private static final Set<String> PARAM_ANNOTATIONS = new HashSet<>(
 	        Arrays.asList(
 	            "PathVariable",

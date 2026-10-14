@@ -24,6 +24,7 @@ import org.springframework.ide.vscode.boot.java.jdt.refactoring.JdtRefactoring;
 import org.springframework.ide.vscode.boot.java.jdt.refactoring.MovePathToRequestMappingRefactoring;
 import org.springframework.ide.vscode.boot.java.jdt.refactoring.PreciseBeanTypeRefactoring;
 import org.springframework.ide.vscode.boot.java.jdt.refactoring.RemoveAnnotationRefactoring;
+import org.springframework.ide.vscode.boot.java.jdt.refactoring.RemoveModelAttributeNameRefactoring;
 import org.springframework.ide.vscode.boot.java.jdt.refactoring.ReplaceScopeAnnotationRefactoring;
 import org.springframework.ide.vscode.boot.java.jdt.refactoring.RestControllerRefactoring;
 import org.springframework.ide.vscode.boot.java.jdt.refactoring.SpringJUnitConfigRefactoring;
@@ -139,6 +140,7 @@ public final class IndexGsonTypeFactories {
 				.registerSubtype(ReplaceScopeAnnotationRefactoring.class, ReplaceScopeAnnotationRefactoring.class.getName())
 				.registerSubtype(RestControllerRefactoring.class, RestControllerRefactoring.class.getName())
 				.registerSubtype(SpringJUnitConfigRefactoring.class, SpringJUnitConfigRefactoring.class.getName())
-				.registerSubtype(PreciseBeanTypeRefactoring.class, PreciseBeanTypeRefactoring.class.getName());
+				.registerSubtype(PreciseBeanTypeRefactoring.class, PreciseBeanTypeRefactoring.class.getName())
+				.registerSubtype(RemoveModelAttributeNameRefactoring.class, RemoveModelAttributeNameRefactoring.class.getName());
 	}
 }

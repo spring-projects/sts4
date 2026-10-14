@@ -36,6 +36,7 @@ public enum Boot2JavaProblemType implements ProblemType {
 	WEB_SECURITY_CONFIGURER_ADAPTER(WARNING, "'WebSecurityConfigurerAdapter' is removed in Spring-Security 6.x. Refactor classes extending the 'WebSecurityConfigurerAdapter' into 'Configuration' beans and methods into 'Bean' definitions ", "Replace usage of 'WebSecurityConfigurerAdapter' as this class to be removed in Security 6.x"),
 	DOMAIN_ID_FOR_REPOSITORY(ERROR, "Invalid Domain ID type for Spring Data Repository", "Invalid Domain ID Type for Spring Data Repository"),
 	WEB_ANNOTATION_NAMES(HINT, "Web annotation names are unnecessary when it is the same as method parameter name", "Implicit web annotations names", List.of(DiagnosticTag.Unnecessary)),
+	MODEL_ATTRIBUTE_NAMES(HINT, "`@ModelAttribute` names are unnecessary when they are the same as the default name derived from the parameter type", "Implicit `@ModelAttribute` names", List.of(DiagnosticTag.Unnecessary)),
 	VALUE_CLASSPATH_RESOURCE_TYPE(WARNING, "Type is not compatible with classpath resource injection", "Invalid type for classpath resource in `@Value`"),
 	WEB_CONFIGURER_CONFIGURATION(WARNING, "Class implementing a web configurer interface should be annotated with '@Configuration'", "Missing '@Configuration' on web configurer"),
 	MISSING_VALIDATED_ANNOTATION(WARNING, "Component class using bean validation annotations should be annotated with '@Validated'", "Missing '@Validated' on component"),

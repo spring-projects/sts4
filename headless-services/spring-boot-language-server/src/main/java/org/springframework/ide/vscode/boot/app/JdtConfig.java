@@ -54,6 +54,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.ClientRefersToConfig
 import org.springframework.ide.vscode.boot.java.reconcilers.ExtractRequestMappingParentPathReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.FinalAutowiredFieldReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.HttpSecurityLambdaDslReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.ImplicitModelAttributeNamesReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.ImplicitWebAnnotationNamesReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.ModulithTypeReferenceViolationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.NoAutowiredOnConstructorReconciler;
@@ -285,6 +286,10 @@ public class JdtConfig {
 		return new ImplicitWebAnnotationNamesReconciler(server.getQuickfixRegistry());
 	}
 	
+	@Bean ImplicitModelAttributeNamesReconciler implicitModelAttributeNamesReconciler(SimpleLanguageServer server) {
+		return new ImplicitModelAttributeNamesReconciler(server.getQuickfixRegistry());
+	}
+
 	@Bean JdtCronReconciler jdtCronReconciler(CronReconciler cronReconciler) {
 		return new JdtCronReconciler(cronReconciler);
 	}
