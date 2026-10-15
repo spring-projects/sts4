@@ -110,7 +110,7 @@ class RemoveModelAttributeNameRefactoringTest {
 	}
 
 	@Test
-	void valueAttributeIsRemoved() throws Exception {
+	void valueAttributeIsRemovedAndAnnotationBecomesMarker() throws Exception {
 		String source = controller("@ModelAttribute(value = \"user\") User user");
 
 		assertEquals(controller("@ModelAttribute User user"), removeName(source, "@ModelAttribute", "user"));
@@ -131,7 +131,7 @@ class RemoveModelAttributeNameRefactoringTest {
 	}
 
 	@Test
-	void fullyQualifiedAnnotationIsKept() throws Exception {
+	void fullyQualifiedAnnotationIsKeptWhenNameIsRemoved() throws Exception {
 		String source = controller("@org.springframework.web.bind.annotation.ModelAttribute(\"user\") User user");
 
 		assertEquals(controller("@org.springframework.web.bind.annotation.ModelAttribute User user"),
@@ -158,11 +158,17 @@ class RemoveModelAttributeNameRefactoringTest {
 	}
 
 	@Test
-	void namesThatChangedSinceReconcilingAreKept() throws Exception {
-		String source = controller("@ModelAttribute(\"account\") User user, @RequestParam(\"user\") String name, @ModelAttribute(Names.USER) User other");
+	void nameThatChangedSinceReconcilingIsKept() throws Exception {
+		String source = controller("@ModelAttribute(\"account\") User user");
+
+		assertEquals(source, removeName(source, "@ModelAttribute", "user"));
+	}
+
+	@Test
+	void nonModelAttributeAndNonLiteralNamesAreKept() throws Exception {
+		String source = controller("@RequestParam(\"user\") String name, @ModelAttribute(Names.USER) User other");
 
 		RemoveModelAttributeNameRefactoring refactoring = new RemoveModelAttributeNameRefactoring(
-				new Fix(source.indexOf("@ModelAttribute(\"account\")"), "user"),
 				new Fix(source.indexOf("@RequestParam"), "user"),
 				new Fix(source.indexOf("@ModelAttribute(Names.USER)"), "user"));
 

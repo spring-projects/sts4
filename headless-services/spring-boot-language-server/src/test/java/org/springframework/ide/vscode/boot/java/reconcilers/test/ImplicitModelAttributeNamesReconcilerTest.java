@@ -134,7 +134,7 @@ public class ImplicitModelAttributeNamesReconcilerTest extends BaseReconcilerTes
 			"@ModelAttribute(\"inner\") Outer.Inner value",
 			"@ModelAttribute(\"signupForm\") SignupForm form"
 	})
-	void nameDerivedFromTypeIsFlagged(String parameter) throws Exception {
+	void redundantNameIsFlagged(String parameter) throws Exception {
 		List<ReconcileProblem> problems = reconcile("A.java", controller(parameter), false);
 
 		assertEquals(1, problems.size());
@@ -144,12 +144,26 @@ public class ImplicitModelAttributeNamesReconcilerTest extends BaseReconcilerTes
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"@ModelAttribute(\"account\") User account",
-			"@ModelAttribute(\"uRLInfo\") URLInfo info",
+			"@ModelAttribute(\"uRLInfo\") URLInfo info"
+	})
+	void differingNameIsNotFlagged(String parameter) throws Exception {
+		assertEquals(0, reconcile("A.java", controller(parameter), false).size());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
 			"@ModelAttribute User user",
 			"@ModelAttribute(binding = false) User user",
 			"@ModelAttribute(\"us\" + \"er\") User user",
 			"@ModelAttribute(Names.USER) User user",
-			"@ModelAttribute(value = \"user\", name = \"user\") User user",
+			"@ModelAttribute(value = \"user\", name = \"user\") User user"
+	})
+	void missingOrNonLiteralNameIsNotFlagged(String parameter) throws Exception {
+		assertEquals(0, reconcile("A.java", controller(parameter), false).size());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
 			"@ModelAttribute(\"orderList\") List<Order> orders",
 			"@ModelAttribute(\"orderList\") Order[] orders",
 			"@ModelAttribute(\"order\") Order... orders",
@@ -160,12 +174,12 @@ public class ImplicitModelAttributeNamesReconcilerTest extends BaseReconcilerTes
 			"@ModelAttribute(\"missing\") Missing missing",
 			"@ModelAttribute(\"incomplete\") Incomplete incomplete"
 	})
-	void nameNotDerivedFromTypeIsNotFlagged(String parameter) throws Exception {
+	void unsupportedParameterTypeIsNotFlagged(String parameter) throws Exception {
 		assertEquals(0, reconcile("A.java", controller(parameter), false).size());
 	}
 
 	@Test
-	void sanityTest() throws Exception {
+	void redundantNameOffersSingleAndFileQuickfix() throws Exception {
 		String source = controller("@ModelAttribute(\"user\") User account");
 
 		List<ReconcileProblem> problems = reconcile("A.java", source, false);
@@ -256,7 +270,7 @@ public class ImplicitModelAttributeNamesReconcilerTest extends BaseReconcilerTes
 	}
 
 	@Test
-	void otherWebAnnotationsAreNotFlagged() throws Exception {
+	void otherParameterAnnotationsAreIgnored() throws Exception {
 		String source = """
 				package example.demo;
 

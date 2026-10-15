@@ -25,9 +25,12 @@ import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.jdt.refactoring.JdtFixDescriptor;
 import org.springframework.ide.vscode.boot.java.jdt.refactoring.JdtRefactorings;
 import org.springframework.ide.vscode.boot.java.jdt.refactoring.RemoveModelAttributeNameRefactoring;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.ModelAttributeNames;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 
@@ -39,7 +42,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
  * Unlike for the web annotations checked by {@link ImplicitWebAnnotationNamesReconciler}, the
  * default name does not depend on the parameter name. Only parameter types for which that default
  * can be derived reliably are checked, everything else is skipped. The check is shared with the
- * quickfix, see {@link RemoveModelAttributeNameRefactoring#findRedundantName}.
+ * quickfix, see {@link ModelAttributeNames#findRedundantName}.
  *
  * @author Nihal Kumar Sharma
  */
@@ -74,22 +77,18 @@ public class ImplicitModelAttributeNamesReconciler implements JdtAstReconciler {
 
 			@Override
 			public boolean visit(SingleVariableDeclaration node) {
-				for (Object modifier : node.modifiers()) {
-					if (modifier instanceof Annotation annotation) {
-						addProblemForRedundantName(annotation);
-					}
-				}
+				ASTUtils.getAnnotations(node).forEach(this::addProblemForRedundantName);
 				return false;
 			}
 
 			private void addProblemForRedundantName(Annotation annotation) {
-				StringLiteral name = RemoveModelAttributeNameRefactoring.findRedundantName(annotation);
+				StringLiteral name = ModelAttributeNames.findRedundantName(annotation);
 				if (name != null) {
 					ASTNode problemNode = name.getParent() instanceof MemberValuePair pair ? pair : name;
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, problemNode.getStartPosition(), problemNode.getLength());
 
 					RemoveModelAttributeNameRefactoring.Fix fix = new RemoveModelAttributeNameRefactoring.Fix(annotation.getStartPosition(), name.getLiteralValue());
-					problem.addQuickfix(createQuickfix(docUri, new RemoveModelAttributeNameRefactoring(fix), FIX_LABEL, true));
+					addQuickfix(problem, createQuickfix(docUri, new RemoveModelAttributeNameRefactoring(fix), FIX_LABEL, true));
 
 					problems.add(problem);
 					fixes.add(fix);
@@ -102,7 +101,7 @@ public class ImplicitModelAttributeNamesReconciler implements JdtAstReconciler {
 				if (!problems.isEmpty()) {
 					QuickfixData<JdtFixDescriptor> fixAll = createQuickfix(docUri, new RemoveModelAttributeNameRefactoring(fixes), FIX_ALL_LABEL, false);
 					for (ReconcileProblemImpl problem : problems) {
-						problem.addQuickfix(fixAll);
+						addQuickfix(problem, fixAll);
 						context.getProblemCollector().accept(problem);
 					}
 				}
@@ -111,9 +110,19 @@ public class ImplicitModelAttributeNamesReconciler implements JdtAstReconciler {
 		});
 	}
 
+	private static void addQuickfix(ReconcileProblemImpl problem, QuickfixData<JdtFixDescriptor> quickfix) {
+		if (quickfix != null) {
+			problem.addQuickfix(quickfix);
+		}
+	}
+
 	private QuickfixData<JdtFixDescriptor> createQuickfix(URI docUri, RemoveModelAttributeNameRefactoring refactoring, String label, boolean preferred) {
+		QuickfixType quickfixType = registry.getQuickfixType(JdtRefactorings.JDT_QUICKFIX);
+		if (quickfixType == null) {
+			return null;
+		}
 		JdtFixDescriptor descriptor = new JdtFixDescriptor(refactoring, List.of(docUri.toASCIIString()), label);
-		return new QuickfixData<>(registry.getQuickfixType(JdtRefactorings.JDT_QUICKFIX), descriptor, label, preferred);
+		return new QuickfixData<>(quickfixType, descriptor, label, preferred);
 	}
 
 }

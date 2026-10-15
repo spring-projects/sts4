@@ -47,7 +47,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(IndexerTestConf.class)
-public class ImplicitModelAttributeNamesAdvancedReconcilingTest {
+public class ImplicitModelAttributeNamesQuickfixTest {
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
