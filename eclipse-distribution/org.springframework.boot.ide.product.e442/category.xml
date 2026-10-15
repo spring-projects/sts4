@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site pack200="true">
+	<description url="https://spring.io/tools">
+		Spring Tools for Eclipse
+	</description>
+
+	<category-def name="Spring Tools" label="Spring Tools"/>
+
+	<!-- STS4 branding and custom features -->
+	<feature
+		id="org.springframework.boot.ide.main.feature" version="0.0.0">
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature id="org.springframework.boot.ide.branding.feature" version="0.0.0" />
+
+	<feature
+		id="org.springframework.ide.eclipse.boot.dash.feature" version="0.0.0">
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.ide.eclipse.xml.namespaces.feature" version="0.0.0">
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" version="0.0.0">
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.boot.ls.feature" version="0.0.0">
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.bosh.ls.feature" version="0.0.0">
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.concourse.ls.feature" version="0.0.0">
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature id="org.eclipse.wildwebdeveloper.embedder.node.feature"/>
+
+	<bundle id="org.springframework.tooling.ls.eclipse.commons" />
+	<bundle id="org.springsource.ide.eclipse.commons.boot.ls" />
+	<bundle id="org.springframework.tooling.jdt.ls.commons"/>
+	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol"/>
+	<bundle id="org.springframework.tooling.gradle"/>
+	<bundle id="org.springsource.ide.eclipse.commons.core"/>
+	<bundle id="org.springsource.ide.eclipse.commons.ui"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui"/>
+	<bundle id="org.springsource.ide.eclipse.commons.livexp"/>
+	<bundle id="org.springsource.ide.eclipse.commons.tests.util"/>
+
+	<bundle id="io.projectreactor.reactor-core"/>
+	<bundle id="org.reactivestreams.reactive-streams"/>
+
+	<feature id="org.eclipse.mylyn.wikitext.feature"/>
+	<feature id="org.eclipse.tm4e.feature"/>
+
+	<bundle id="javassist"/>
+	<bundle id="javax.activation"/>
+	<bundle id="org.aopalliance"/>
+	<bundle id="org.apache.log4j"/>
+	<bundle id="org.yaml.snakeyaml"/>
+	<bundle id="org.snakeyaml.engine"/>
+	<bundle id="org.eclipse.lsp4e"/>
+	<bundle id="org.eclipse.lsp4e.debug"/>
+	<bundle id="org.eclipse.lsp4e.jdt"/>
+	<bundle id="org.eclipse.lsp4j"/>
+	<bundle id="org.eclipse.lsp4j.debug"/>
+	<bundle id="org.eclipse.lsp4j.jsonrpc"/>
+	<bundle id="org.eclipse.lsp4j.jsonrpc.debug"/>
+	<bundle id="org.eclipse.xtext.xbase.lib"/>
+	<bundle id="org.eclipse.zest.core"/>
+	<bundle id="org.eclipse.zest.layouts"/>
+	<bundle id="com.google.gson"/>
+	<bundle id="org.jcodings"/>
+	<bundle id="org.joni"/>
+	<bundle id="json"/>
+	<bundle id="org.jsoup"/>
+	<bundle id="org.apache.commons.lang3"/>
+	<bundle id="org.apache.commons.collections"/>
+    <bundle id="com.hierynomus.sshj"/>
+    <bundle id="com.jcraft.jzlib"/>
+	<bundle id="com.fasterxml.jackson.core.jackson-annotations"/>
+	<bundle id="com.fasterxml.jackson.core.jackson-core"/>
+	<bundle id="com.fasterxml.jackson.core.jackson-databind"/>
+    <bundle id="net.i2p.crypto.eddsa"/>
+
+</site>

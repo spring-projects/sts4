@@ -1,0 +1,12 @@
+instructions.configure=\
+ org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:https${#58}//download.eclipse.org/releases/latest,name:Latest Eclipse Release);\
+ org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:https${#58}//download.eclipse.org/releases/latest,name:Latest Eclipse Release);\
+ org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:https${#58}//cdn.spring.io/spring-tools/release/update/latest,name:Spring Tools for Eclipse);\
+ org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:1,location:https${#58}//cdn.spring.io/spring-tools/release/update/latest,name:Spring Tools for Eclipse);\
+ org.eclipse.equinox.p2.touchpoint.natives.mkdir(path:${installFolder}/dropins);
+
+instructions.unconfigure=\
+ org.eclipse.equinox.p2.touchpoint.eclipse.removeRepository(type:0,location:https${#58}//download.eclipse.org/releases/latest);\
+ org.eclipse.equinox.p2.touchpoint.eclipse.removeRepository(type:1,location:https${#58}//download.eclipse.org/releases/latest);\
+ org.eclipse.equinox.p2.touchpoint.eclipse.removeRepository(type:0,location:https${#58}//cdn.spring.io/spring-tools/release/update/latest);\
+ org.eclipse.equinox.p2.touchpoint.eclipse.removeRepository(type:1,location:https${#58}//cdn.spring.io/spring-tools/release/update/latest);

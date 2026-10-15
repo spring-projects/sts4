@@ -245,7 +245,7 @@
                 </repository>
             </repositories>
             <modules>
-                <module>org.springframework.boot.ide.product</module>
+                <module>org.springframework.boot.ide.product.e442</module>
             </modules>
         </profile>
 
