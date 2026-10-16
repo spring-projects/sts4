@@ -120,16 +120,25 @@ jobs:
           fi
           echo "dist_path=$dist_path" >> $GITHUB_OUTPUT
           echo "p2_path=$p2_path" >> $GITHUB_OUTPUT
+      - name: Resolve Product Directory
+        id: product-dir
+        run: |
+          product_dir=eclipse-distribution/org.springframework.boot.ide.product
+          if ! [[ -d "${product_dir}/target" ]]; then
+            product_dir=${product_dir}.${{ inputs.eclipse_profile }}
+          fi
+          echo "Product dir: ${product_dir}"
+          echo "product_dir=$product_dir" >> $GITHUB_OUTPUT
       - name: Upload P2 Repo Build Artifacts
         run: |
-          cd eclipse-distribution/org.springframework.boot.ide.product/target
+          cd ${{ github.workspace }}/${{ steps.product-dir.outputs.product_dir }}/target
           p2_path=${{ steps.s3-paths.outputs.p2_path }}
           echo "P2 path: ${p2_path}"
           aws s3 rm s3://$AWS_S3_BUCKET/$p2_path/ --recursive
           aws s3 cp ./repository/ s3://$AWS_S3_BUCKET/$p2_path/ --recursive --no-progress
       - name: Upload Linux Distro Build Artifacts
         run: |
-          cd eclipse-distribution/org.springframework.boot.ide.product/target/products
+          cd ${{ github.workspace }}/${{ steps.product-dir.outputs.product_dir }}/target/products
           files=`ls spring-tools-for-eclipse*linux*.tar.gz`
           for file in $files
           do
@@ -162,7 +171,7 @@ jobs:
         run: |
           echo "Uploading Win Zips and OSX tar.gz to S3 for signing..."
           id=${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
-          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product/target/products s3://$AWS_S3_BUCKET/sts-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tools-for-eclipse*win*.zip" --include "spring-tools-for-eclipse*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 cp ${{ github.workspace }}/${{ steps.product-dir.outputs.product_dir }}/target/products s3://$AWS_S3_BUCKET/sts-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tools-for-eclipse*win*.zip" --include "spring-tools-for-eclipse*macosx*.tar.gz" --exclude "*/*" --no-progress
     outputs:
       id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
       dist_path: ${{ steps.s3-paths.outputs.dist_path }}
