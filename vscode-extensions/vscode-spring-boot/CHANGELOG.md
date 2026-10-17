@@ -2,6 +2,7 @@
 
 #### all fixes and improvements in detail
 
+* _(Spring Boot)_ add validation for `@ModelAttribute` attribute (against type instead of param name) [#2054](https://github.com/spring-projects/spring-tools/issues/2054)
 * _(Spring Boot)_ Structure view baseline history fills with identical snapshots when many projects share one git repository [#2021](https://github.com/spring-projects/spring-tools/issues/2021)
 * _(Spring Boot)_ [structure view] add option to disable package nodes for regular projects [#2020](https://github.com/spring-projects/spring-tools/issues/2020)
 * _(Spring Boot)_ [structure view] allow elements from dependencies to show up for modulith projects [#2018](https://github.com/spring-projects/spring-tools/issues/2018)
@@ -20,6 +21,7 @@
 * _(Spring Boot)_ visualize changes in the logical structure view [#1974](https://github.com/spring-projects/spring-tools/issues/1974)
 * _(Spring Boot)_ use new actuator mapping data for WebMvc.fn  router functions for live hovers [#1576](https://github.com/spring-projects/spring-tools/issues/1576)
 * _(Spring Boot)_ Support CRON expression value in Spring Boot property files (`application.properties` and `application.yml`) [#1329](https://github.com/spring-projects/spring-tools/issues/1329)
+* _(Spring Boot)_ SQL syntax validation [#1273](https://github.com/spring-projects/spring-tools/issues/1273)
 
 ## 2026-09-09 (language servers version 2.4.1)
 
