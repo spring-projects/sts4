@@ -203,8 +203,9 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 			}
 
 			log.debug("Found Maven module: {}", modulePath);
-			mavenProjectCache.project(modulePom);
-			registerMavenModulePoms(modulePom, visited);
+			File normalizedPom = modulePath.toFile();
+			mavenProjectCache.project(normalizedPom);
+			registerMavenModulePoms(normalizedPom, visited);
 		}
 	}
 
