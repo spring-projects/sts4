@@ -63,7 +63,10 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  *
  * @author Martin Lippert
  */
-public class FeatureFlagGuards {
+public final class FeatureFlagGuards {
+
+	private FeatureFlagGuards() {
+	}
 
 	public static CompletionProvider onlyWhen(BootJavaConfig config, FeatureFlag feature, CompletionProvider delegate) {
 		return new CompletionProvider() {
