@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 Pivotal, Inc.
+ * Copyright (c) 2018, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -69,8 +69,14 @@ public class YamlPropertiesJavaDefinitionHandler implements DefinitionHandler, L
 		return ImmutableList.of(LanguageId.BOOT_PROPERTIES_YAML);
 	}
 
+	@Autowired
+	private BootJavaConfig config;
+
 	@Override
 	public List<LocationLink> handle(CancelChecker cancelToken, DefinitionParams definitionParams) {
+		if (!config.isFeatureEnabled(FeatureFlag.YAML_NAVIGATION)) {
+			return ImmutableList.of();
+		}
 		try {
 			TextDocument doc = documents.getLatestSnapshot(definitionParams);
 			int offset = doc.toOffset(definitionParams.getPosition());

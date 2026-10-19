@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -76,6 +77,19 @@ public class GenAotQueryMethodImplProviderTest {
 		ll.setTargetRange(new Range(new Position(140, 20), new Position(140, 66)));
 		ll.setTargetSelectionRange(new Range(new Position(140, 20), new Position(140, 66)));
 		editor.assertImplementationLinkTargets("findUserByLastnameStartingWith", List.of(ll));
+	}
+
+	@Test
+	void implementationNavigationTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("aot-query-method-implementation-navigation", false))));
+		// a configuration change re-indexes the project, wait for it before asserting
+		indexer.waitOperation().get(5, TimeUnit.SECONDS);
+
+		Path filePath = Paths.get(testProject.getLocationUri())
+				.resolve("src/main/java/example/springdata/aot/UserRepository.java");
+		Editor editor = harness.newEditor(LanguageId.JAVA, new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8), filePath.toUri().toASCIIString());
+
+		editor.assertImplementationLinkTargets("findUserByLastnameStartingWith", List.of());
 	}
 
 	@Test

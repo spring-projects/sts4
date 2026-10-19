@@ -83,6 +83,19 @@ public class WebConfigCodeLensProviderTest {
 	}
 	
 	@Test
+	void noCodeLensWhenTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of(
+				"java", Map.of("codelens-web-configs-on-controller-classes", true),
+				"feature-flags", Map.of("web-config-code-lens", false))));
+
+		Path filePath = Paths.get(testProject.getLocationUri())
+				.resolve("src/main/java/org/test/versions/MappingClassWithMultipleVersions.java");
+		Editor editor = harness.newEditor(LanguageId.JAVA, new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8), filePath.toUri().toASCIIString());
+
+		assertTrue(editor.getCodeLenses().isEmpty());
+	}
+
+	@Test
 	void codeLensOverMethodFromWebFluxConfig() throws Exception {		
 		Path filePath = Paths.get(testProject.getLocationUri())
 				.resolve("src/main/java/org/test/versions/MappingClassWithMultipleVersions.java");

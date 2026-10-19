@@ -10,11 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import static org.springframework.ide.vscode.boot.app.FeatureFlagGuards.onlyWhen;
+
 import java.util.Optional;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.HqlSemanticTokens;
+import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSemanticTokens;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.JpqlSupportState;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.QueryProblemType;
@@ -64,8 +67,8 @@ public class SpringDataConfig {
 	}
 
 	@Bean
-	SqlDialectQuickFixProvider sqlDialectQuickFixProvider(SqlDialectResolver sqlDialectResolver) {
-		return new SqlDialectQuickFixProvider(sqlDialectResolver);
+	JavaCodeActionHandler sqlDialectQuickFixProvider(SqlDialectResolver sqlDialectResolver, BootJavaConfig config) {
+		return onlyWhen(config, FeatureFlag.SQL_DIALECT_QUICKFIX, new SqlDialectQuickFixProvider(sqlDialectResolver));
 	}
 
 }

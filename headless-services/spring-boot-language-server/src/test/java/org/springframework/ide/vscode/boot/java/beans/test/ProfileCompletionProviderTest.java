@@ -103,6 +103,15 @@ public class ProfileCompletionProviderTest {
 	}
 
 	@Test
+	public void testProfileCompletionTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("profile-completion", false))));
+		// a configuration change re-indexes the project, wait for it before asserting
+		indexer.waitOperation().get(5, TimeUnit.SECONDS);
+		springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
+		assertCompletions("@Profile(<*>)", 0, null);
+	}
+
+	@Test
 	public void testProfileCompletionWithoutQuotesWithPrefix() throws Exception {
 		assertCompletions("@Profile(prof1<*>)", new String[] {"prof1"}, 0, "@Profile(\"prof1\"<*>)");
 	}

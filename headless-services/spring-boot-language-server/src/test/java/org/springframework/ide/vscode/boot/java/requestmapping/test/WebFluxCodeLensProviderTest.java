@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -79,6 +80,18 @@ public class WebFluxCodeLensProviderTest {
         assertTrue(containsCodeLens(codeLenses, "POST /echo - Accept: text/plain - Content-Type: text/plain", 30, 29, 30, 33));
         assertTrue(containsCodeLens(codeLenses, "GET /quotes - Accept: application/x-ndjson", 35, 29, 35, 41));
         assertTrue(containsCodeLens(codeLenses, "GET /quotes - Accept: application/json", 41, 29, 41, 40));
+    }
+
+    @Test
+    void noCodeLensesWhenTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("webflux-handler-code-lens", false))));
+        indexer.waitOperation().get(5, TimeUnit.SECONDS);
+
+        String docUri = directory.toPath().resolve("src/main/java/org/test/PersonHandler1.java").toUri().toString();
+        TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
+        TextDocumentInfo openedDoc = harness.openDocument(doc);
+
+        assertTrue(harness.getCodeLenses(openedDoc).isEmpty());
     }
 
     @Test

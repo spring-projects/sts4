@@ -11,10 +11,12 @@
 package org.springframework.ide.vscode.boot.java.beans.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -97,6 +99,28 @@ public class QualifierReferencesProviderTest {
 		
 		Location foundLocation = references.get(0);
 		assertEquals(expectedLocation, foundLocation);
+	}
+
+	@Test
+	public void testQualifierReferencesTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("bean-name-navigation", false))));
+		// a configuration change re-indexes the project, wait for it before asserting
+		indexer.waitOperation().get(5, TimeUnit.SECONDS);
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.stereotype.Component;
+				import org.springframework.beans.factory.annotation.Qualifier;
+
+				@Component
+				@Qualifier("be<*>an1")
+				public class TestDependsOnClass {
+				}""", tempJavaDocUri);
+		
+		List<? extends Location> references = editor.getReferences();
+		assertTrue(references == null || references.isEmpty());
 	}
 
 	@Test

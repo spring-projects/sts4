@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
@@ -559,6 +560,16 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
     }
 
     @Test
+    void testNoHoverWhenTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("properties-hover", false))));
+        defaultTestData();
+        Editor editor = newEditor(
+                "server.port=8080\n"
+        );
+        editor.assertNoHover("server.");
+    }
+
+    @Test
     void testHoverInfosWithSpaces() throws Exception {
         defaultTestData();
         Editor editor = newEditor(
@@ -603,6 +614,26 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
         Path metadataFile = getOutputFolder(p).resolve(PropertiesLoader.PROJECT_META_DATA_LOCATIONS[0]);
         assertTrue(metadataFile.toFile().isFile());
         assertContains("\"name\": \"foo.counter\"", Files.asCharSource(metadataFile.toFile(), StandardCharsets.UTF_8).read());
+    }
+
+    @Test
+    void testCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("properties-completion", false))));
+        defaultTestData();
+        assertNoCompletions("server.po<*>");
+    }
+
+    @Test
+    void testHyperlinkTargetsTurnedOffByFeatureFlag() throws Exception {
+        IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
+        useProject(p);
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("properties-navigation", false))));
+
+        Editor editor = newEditor(
+                "server.port=888\n"
+        );
+
+        definitionLinkAsserts.assertLinkTargets(editor, "server", p, editor.rangeOf("server.port", "server.port"));
     }
 
     @Test

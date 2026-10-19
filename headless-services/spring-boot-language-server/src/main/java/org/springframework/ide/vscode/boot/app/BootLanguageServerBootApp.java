@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import static org.springframework.ide.vscode.boot.app.FeatureFlagGuards.onlyWhen;
+
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
@@ -329,12 +331,12 @@ public class BootLanguageServerBootApp {
 				projectFinder, sourceLinks, config);
 	}
 
-	@Bean YamlCompletionEngine yamlCompletionEngine(YamlStructureProvider structureProvider, YamlAssistContextProvider contextProvider) {
+	@Bean YamlCompletionEngine yamlCompletionEngine(YamlStructureProvider structureProvider, YamlAssistContextProvider contextProvider, BootJavaConfig config) {
 		YamlCompletionEngineOptions options = new YamlCompletionEngineOptions() {
 			@Override
 			public boolean includeDeindentedProposals() { return false; };
 		};
-		return new SpringYamlCompletionEngine(structureProvider, contextProvider, options);
+		return new SpringYamlCompletionEngine(structureProvider, contextProvider, options, config);
 	}
 
 	@Bean JavaDocumentUriProvider javaDocumentUriProvider() {
@@ -439,20 +441,20 @@ public class BootLanguageServerBootApp {
 	}
 	
 	@Bean
-	JavaDefinitionHandler javaDefinitionHandler(SimpleLanguageServer server, CompilationUnitCache cuCache, JavaProjectFinder projectFinder, SpringMetamodelIndex springIndex, JdtDataQuerySemanticTokensProvider qurySemanticTokens) {
+	JavaDefinitionHandler javaDefinitionHandler(SimpleLanguageServer server, CompilationUnitCache cuCache, JavaProjectFinder projectFinder, SpringMetamodelIndex springIndex, JdtDataQuerySemanticTokensProvider qurySemanticTokens, BootJavaConfig config) {
 		return new JavaDefinitionHandler(cuCache, projectFinder, List.of(
-				new ValueDefinitionProvider(),
-				new ConditionalOnResourceDefinitionProvider(),
-				new BeanNameDefinitionProvider(springIndex, Set.of(Annotations.DEPENDS_ON)),
-				new ConditionalOnBeanDefinitionProvider(springIndex),
-				new BeanNameDefinitionProvider(springIndex, Set.of(Annotations.RESOURCE_JAVAX, Annotations.RESOURCE_JAKARTA)),
-				new BeanNameDefinitionProvider(springIndex, Set.of(Annotations.QUALIFIER)),
-				new NamedDefinitionProvider(springIndex),
-				new DataQueryParameterDefinitionProvider(server.getTextDocumentService(), qurySemanticTokens),
-				new SpelDefinitionProvider(springIndex, cuCache)
+				new ValueDefinitionProvider(config),
+				onlyWhen(config, FeatureFlag.CLASSPATH_RESOURCE_NAVIGATION, new ConditionalOnResourceDefinitionProvider()),
+				onlyWhen(config, FeatureFlag.BEAN_NAME_NAVIGATION, new BeanNameDefinitionProvider(springIndex, Set.of(Annotations.DEPENDS_ON))),
+				onlyWhen(config, FeatureFlag.BEAN_NAME_NAVIGATION, new ConditionalOnBeanDefinitionProvider(springIndex)),
+				onlyWhen(config, FeatureFlag.BEAN_NAME_NAVIGATION, new BeanNameDefinitionProvider(springIndex, Set.of(Annotations.RESOURCE_JAVAX, Annotations.RESOURCE_JAKARTA))),
+				onlyWhen(config, FeatureFlag.BEAN_NAME_NAVIGATION, new BeanNameDefinitionProvider(springIndex, Set.of(Annotations.QUALIFIER))),
+				onlyWhen(config, FeatureFlag.BEAN_NAME_NAVIGATION, new NamedDefinitionProvider(springIndex)),
+				onlyWhen(config, FeatureFlag.DATA_QUERY_PARAMETER_NAVIGATION, new DataQueryParameterDefinitionProvider(server.getTextDocumentService(), qurySemanticTokens)),
+				onlyWhen(config, FeatureFlag.SPEL_NAVIGATION, new SpelDefinitionProvider(springIndex, cuCache))
 			),
 			List.of(
-					new GenAotQueryMethodImplProvider(server, cuCache, projectFinder)
+					onlyWhen(config, FeatureFlag.AOT_QUERY_METHOD_IMPLEMENTATION_NAVIGATION, new GenAotQueryMethodImplProvider(server, cuCache, projectFinder))
 			));
 	}
 	

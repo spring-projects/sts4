@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2024 Broadcom
+ * Copyright (c) 2024, 2026 Broadcom
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.CompletionItem;
@@ -145,6 +146,12 @@ public class ConditionalOnPropertyCompletionTest {
         assertEquals("data.prop2", completions.get(0).getLabel());
         assertEquals("else.prop3", completions.get(1).getLabel());
         assertEquals("spring.boot.prop1", completions.get(2).getLabel());
+    }
+
+    @Test
+    public void testConditionalOnPropertyCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("conditional-on-property-completion", false))));
+        assertEquals(0, getCompletions("@ConditionalOnProperty(<*>)").size());
     }
 
     @Test

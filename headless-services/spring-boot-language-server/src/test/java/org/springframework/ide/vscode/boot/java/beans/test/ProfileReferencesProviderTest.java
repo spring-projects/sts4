@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -93,6 +94,28 @@ public class ProfileReferencesProviderTest {
 				new Range(new Position(6, 18), new Position(6, 28)));
 
 		assertTrue(references.contains(expectedLocation2));
+	}
+
+	@Test
+	public void testProfileReferencesTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("profile-navigation", false))));
+		// a configuration change re-indexes the project, wait for it before asserting
+		indexer.waitOperation().get(5, TimeUnit.SECONDS);
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.stereotype.Component;
+				import org.springframework.context.annotation.Profile;
+
+				@Component
+				@Profile("pro<*>file1")
+				public class TestDependsOnClass {
+				}""", tempJavaDocUri);
+		
+		List<? extends Location> references = editor.getReferences();
+		assertTrue(references == null || references.isEmpty());
 	}
 
 	@Test

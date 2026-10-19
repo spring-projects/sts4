@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.springframework.ide.vscode.boot.app.FeatureFlag;
 import org.springframework.ide.vscode.boot.java.codeaction.JdtAstCodeActionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
@@ -48,7 +49,7 @@ public class ReconcileProblemCodeActionProvider implements JdtAstCodeActionProvi
 
 	@Override
 	public boolean isApplicable(IJavaProject project) {
-		if (reconciler.config.isJavaSourceReconcileEnabled()) {
+		if (reconciler.config.isJavaSourceReconcileEnabled() && reconciler.config.isFeatureEnabled(FeatureFlag.IGNORED_PROBLEM_FIXES)) {
 			return Arrays.stream(reconciler.reconcilers).anyMatch(r -> r.isApplicable(project));
 		}
 		return false;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2025 Pivotal, Inc.
+ * Copyright (c) 2017, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.value;
 import static org.springframework.ide.vscode.commons.util.StringUtil.camelCaseToHyphens;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -30,6 +31,8 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.app.FeatureFlag;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeCompletionProposal;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationAttributeProposal;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
@@ -58,11 +61,13 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	private final SpringPropertyIndexProvider indexProvider;
 	private final ProjectBasedPropertyIndexProvider adHocIndexProvider;
 	private final JavaProjectFinder projectFinder;
+	private final BootJavaConfig config;
 
-	public ValueCompletionProcessor(JavaProjectFinder projectFinder, SpringPropertyIndexProvider indexProvider, ProjectBasedPropertyIndexProvider adHocIndexProvider) {
+	public ValueCompletionProcessor(JavaProjectFinder projectFinder, SpringPropertyIndexProvider indexProvider, ProjectBasedPropertyIndexProvider adHocIndexProvider, BootJavaConfig config) {
 		this.projectFinder = projectFinder;
 		this.indexProvider = indexProvider;
 		this.adHocIndexProvider = adHocIndexProvider;
+		this.config = config;
 	}
 
 	@Override
@@ -237,6 +242,11 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	}
 
 	private List<Match<PropertyInfo>> findMatches(String prefix, IDocument doc) {
+		// property key proposals can be turned off, classpath resource proposals stay
+		if (config != null && !config.isFeatureEnabled(FeatureFlag.VALUE_PROPERTY_COMPLETION)) {
+			return new ArrayList<>();
+		}
+
 		FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc).getProperties();
 		List<Match<PropertyInfo>> matches = index.find(camelCaseToHyphens(prefix));
 
@@ -260,6 +270,10 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	}
 
 	private void addClasspathResourceProposals(IJavaProject project, TextDocument doc, int startOffset, int endOffset, String prefix, boolean includeQuotes, Collection<ICompletionProposal> completions) {
+		if (config != null && !config.isFeatureEnabled(FeatureFlag.VALUE_CLASSPATH_COMPLETION)) {
+			return;
+		}
+
 		String[] resources = findResources(project, prefix);
 
 		double score = resources.length + 1000;

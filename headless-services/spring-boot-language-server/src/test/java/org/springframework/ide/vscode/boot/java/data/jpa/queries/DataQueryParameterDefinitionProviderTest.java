@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 202, 2025 Broadcom, Inc.
+ * Copyright (c) 2024, 2026 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data.jpa.queries;
 
+import java.util.Map;
 import java.nio.file.Paths;
 
 import org.eclipse.lsp4j.Range;
@@ -64,6 +65,26 @@ public class DataQueryParameterDefinitionProviderTest {
 		Range highlightRange = editor.rangeOf(":lastName%", "lastName");
 		editor.assertGotoDefinition(highlightRange.getStart(), expectedRange, highlightRange);
 		
+	}
+
+	@Test
+	void parameterNameDefinitionTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("data-query-parameter-navigation", false))));
+		String source = """
+		package my.package
+		
+		import org.springframework.data.jpa.repository.Query;
+		
+		public interface OwnerRepository {
+		
+			@Query("SELECT DISTINCT owner FROM Owner owner left join  owner.pets WHERE owner.lastName LIKE :lastName%")
+			Object findByLastName(@Param("lastName") String lastName);
+		}
+		""";
+		
+		Editor editor = harness.newEditor(LanguageId.JAVA, source, Paths.get(jp.getLocationUri()).resolve("src/main/resource/my/package/OwnerRepository.java").toUri().toASCIIString());
+		
+		editor.assertNoDefinitionLinkTargets("lastName%");
 	}
 
 	@Test

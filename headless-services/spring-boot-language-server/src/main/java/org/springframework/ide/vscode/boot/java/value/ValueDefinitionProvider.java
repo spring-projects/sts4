@@ -29,6 +29,8 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.app.FeatureFlag;
 import org.springframework.ide.vscode.boot.java.IJavaLocationLinksProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
@@ -44,8 +46,11 @@ public class ValueDefinitionProvider implements IJavaLocationLinksProvider {
 	private static final Logger log = LoggerFactory.getLogger(ValueDefinitionProvider.class);
 	private final PropertyExtractor propertyExtractor;
 	
-	public ValueDefinitionProvider() {
+	private final BootJavaConfig config;
+
+	public ValueDefinitionProvider(BootJavaConfig config) {
 		this.propertyExtractor = new PropertyExtractor();
+		this.config = config;
 	}
 	
 	@Override
@@ -56,17 +61,26 @@ public class ValueDefinitionProvider implements IJavaLocationLinksProvider {
 		if (valueNode != null) {
 			String value = ASTUtils.getExpressionValueAsString(valueNode);
 			if (value != null) {
+				// both kinds of navigation can be turned off separately
 				if (value.startsWith("classpath")) {
-					return getDefinitionForClasspathResource(project, cu, valueNode, value);
+					return isEnabled(FeatureFlag.CLASSPATH_RESOURCE_NAVIGATION)
+							? getDefinitionForClasspathResource(project, cu, valueNode, value)
+							: Collections.emptyList();
 				}
 				else {
-					return getDefinitionForProperty(project, cu, valueNode);
+					return isEnabled(FeatureFlag.PROPERTY_KEY_NAVIGATION)
+							? getDefinitionForProperty(project, cu, valueNode)
+							: Collections.emptyList();
 				}
 			}
 		}
 		return Collections.emptyList();
 	}
 	
+	private boolean isEnabled(FeatureFlag feature) {
+		return config == null || config.isFeatureEnabled(feature);
+	}
+
 	private List<LocationLink> getDefinitionForProperty(IJavaProject project, CompilationUnit cu, Expression valueNode) {
 		String propertyKey = propertyExtractor.extractPropertyKey(valueNode);
 		

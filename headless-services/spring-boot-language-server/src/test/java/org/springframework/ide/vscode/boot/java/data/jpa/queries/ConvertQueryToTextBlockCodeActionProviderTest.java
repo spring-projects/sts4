@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -85,6 +86,21 @@ public class ConvertQueryToTextBlockCodeActionProviderTest {
 		assertTrue(result.contains("@Query(\"\"\"\n"), result);
 		assertTrue(result.contains("SELECT"), result);
 		assertTrue(result.contains("\"\"\")\n    List<User> usersWithUsernamesStartingWith(String username);"), result);
+	}
+
+	@Test
+	void conversionTurnedOffByFeatureFlag() throws Exception {
+		IJavaProject testProject = useProject("aot-data-repositories-jpa");
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("query-text-block-conversion", false))));
+		// a configuration change re-indexes the project, wait for it before asserting
+		indexer.waitOperation().get(5, TimeUnit.SECONDS);
+
+		Path filePath = Paths.get(testProject.getLocationUri())
+				.resolve("src/main/java/example/springdata/aot/UserRepository.java");
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8), filePath.toUri().toASCIIString());
+
+		assertEquals(0, withTitle(editor.getCodeActions("SELECT u FROM example.springdata.aot.User u", 1)).size());
 	}
 
 	@Test

@@ -21,6 +21,7 @@ import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.app.FeatureFlag;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.codeaction.JdtAstCodeActionProvider;
@@ -52,7 +53,7 @@ public class QueryMethodCodeActionProvider implements JdtAstCodeActionProvider {
 
 	@Override
 	public boolean isApplicable(IJavaProject project) {
-		return isValidProject(project);
+		return config.isFeatureEnabled(FeatureFlag.ADD_QUERY_ANNOTATION) && isValidProject(project);
 	}
 	
 	static boolean isValidProject(IJavaProject project) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2024 Pivotal, Inc.
+ * Copyright (c) 2016, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,8 +12,10 @@
 package org.springframework.ide.vscode.boot.properties.completions;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.app.FeatureFlag;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -61,6 +63,9 @@ public class SpringPropertiesCompletionEngine implements ICompletionEngine, Lang
 	 */
 	@Override
 	public InternalCompletionList getCompletions(TextDocument doc, int offset) throws BadLocationException {
+		if (!config.isFeatureEnabled(FeatureFlag.PROPERTIES_COMPLETION)) {
+			return new InternalCompletionList(List.of(), true);
+		}
 		Collection<ICompletionProposal> completionItems = new PropertiesCompletionProposalsCalculator(indexProvider.getIndex(doc).getProperties(), config.getPropertyCompletionSettings(),
 				typeUtilProvider.getTypeUtil(sourceLinks, doc), completionFactory, doc, offset, preferLowerCaseEnums).calculate();
 		

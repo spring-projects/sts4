@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -85,6 +86,33 @@ public class SpelDefinitionProviderTest {
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);
 
+	}
+
+	@Test
+	public void testBeanDefinitionLinkInSpelTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("spel-navigation", false))));
+		// a configuration change re-indexes the project, wait for it and bring the test beans back
+		indexer.waitOperation().get(5, TimeUnit.SECONDS);
+		springIndex.updateBeans(project.getElementName(), new Bean[] { visitService, spelExpressionsClass });
+
+		String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+				import org.springframework.beans.factory.annotation.Value;
+				import org.springframework.stereotype.Controller;
+
+				@Controller
+				public class SpelExpressionsClass {
+
+					@Value(value = "#{@visitService.isValidVersion('${app.version}') ? 'Valid Version' :'Invalid Version'}")
+					private String versionValidity;
+				}""", tempJavaDocUri);
+
+		assertEquals(1, springIndex.getBeansWithName(project.getElementName(), "visitService").length);
+
+		editor.assertNoDefinitionLinkTargets("visitService");
 	}
 
 	@Test

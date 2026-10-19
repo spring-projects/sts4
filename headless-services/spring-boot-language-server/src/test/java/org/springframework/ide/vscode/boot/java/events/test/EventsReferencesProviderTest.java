@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -64,6 +65,33 @@ public class EventsReferencesProviderTest {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 	
+	@Test
+	public void testEventReferencesTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("event-navigation", false))));
+		// a configuration change re-indexes the project, wait for it before asserting
+		indexer.waitOperation().get(5, TimeUnit.SECONDS);
+
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/com/example/events/demo/CustomEventListener.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+        		package com.example.events.demo;
+        		
+        		import org.springframework.context.event.EventListener;
+        		import org.springframework.stereotype.Component;
+
+        		@Component
+        		public class CustomEventListener {
+	
+        			@EventListener
+        			public void handle<*>Event(CustomEvent event) {
+        				System.out.println(event);
+        			}
+        		}""", tempJavaDocUri);
+		
+		List<? extends Location> references = editor.getReferences();
+		assertTrue(references == null || references.isEmpty());
+	}
+
 	@Test
 	public void testEventListenerFindsAllPublishers() throws Exception {
         String tempJavaDocUri = directory.toPath().resolve("src/main/java/com/example/events/demo/CustomEventListener.java").toUri().toString();

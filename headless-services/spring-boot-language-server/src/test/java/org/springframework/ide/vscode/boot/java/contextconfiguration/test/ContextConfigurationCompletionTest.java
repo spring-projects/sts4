@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Broadcom, Inc.
+ * Copyright (c) 2017, 2026 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
@@ -137,6 +138,14 @@ public class ContextConfigurationCompletionTest {
                 "@ContextConfiguration(\"/a-random-resource-root.xml\"<*>)",
                 "@ContextConfiguration(\"/org/random-resource-org.xml\"<*>)",
                 "@ContextConfiguration(\"/org/test/random-resource-org-test.xml\"<*>)");
+    }
+
+    @Test
+    void testCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("context-configuration-completion", false))));
+        prepareCase("@ContextConfiguration(\"onClass\")", "@ContextConfiguration(<*>)");
+
+        assertClasspathCompletions();
     }
 
     @Test

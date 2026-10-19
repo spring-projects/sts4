@@ -143,6 +143,53 @@ public class SqlDialectQuickFixProviderTest {
 	}
 
 	@Test
+	void dialectQuickFixTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration("""
+				{
+				"boot-java": {
+					"feature-flags": {
+						"sql-dialect-quickfix": false
+					}
+				},
+				"spring-boot": {
+					"ls": {
+						"problem": {
+							"data-query": {
+								"SQL_SYNTAX": "ERROR"
+							}
+						}
+					}
+				}
+			}
+			""");
+		directory = new File(ProjectsHarness.class.getResource("/test-projects/boot-mariadb-postgresql/").toURI());
+		String projectDir = directory.toURI().toString();
+		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
+
+		String source = """
+				package example.demo;
+
+				import org.springframework.data.jdbc.repository.query.Query;
+				import org.springframework.data.repository.CrudRepository;
+
+				public interface MachineRepository extends CrudRepository<Object, Integer> {
+
+					@Query("SELECTX * FROM machine")
+					List<Object> findAll();
+
+				}
+				""";
+		String docUri = directory.toPath().resolve("src/main/java/example/demo/MachineRepository.java").toUri()
+				.toString();
+		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
+
+		Diagnostic syntaxError = findProblem(editor, QueryProblemType.SQL_SYNTAX);
+		assertTrue(syntaxError != null, "Expected a SQL_SYNTAX diagnostic");
+
+		assertEquals(0, dialectActionsOnly(editor.getCodeActions(syntaxError)).size());
+	}
+
+	@Test
 	void syntaxErrorOffersRemainingApplicableDialectPlusAutoWhenClasspathAmbiguousAndOneIsSelected() throws Exception {
 		// Same ambiguous classpath, MySQL forced: offer PostgreSQL plus auto, excluding MySQL itself.
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/boot-mariadb-postgresql/").toURI());

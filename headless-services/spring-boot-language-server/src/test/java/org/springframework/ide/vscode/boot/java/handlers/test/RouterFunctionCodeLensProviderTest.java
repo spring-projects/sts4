@@ -18,6 +18,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.lsp4j.CodeLens;
@@ -98,6 +99,18 @@ public class RouterFunctionCodeLensProviderTest {
 		assertTrue(prompt.contains("method route at line 22"));
 		// Verify it does NOT contain the full method implementation
 		assertFalse(prompt.contains("RouterFunctions.route(GET"));
+	}
+
+	@Test
+	public void testNoCodeLensWhenTurnedOffByFeatureFlag() throws Exception {
+		setCommandParamsHandler(true);
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("router-function-code-lens", false))));
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/QuoteRouter.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+
+		assertTrue(harness.getCodeLenses(openedDoc).isEmpty());
 	}
 
 	@Test

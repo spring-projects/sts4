@@ -299,6 +299,22 @@ public class BootJavaConfig implements InitializingBean {
 		return size == null || size < 1 ? 10 : size;
 	}
 
+	/**
+	 * Whether the given feature is turned on via the {@code boot-java.feature-flags} setting, an object
+	 * mapping feature ids to {@code true} or {@code false}. A feature is only turned off by an explicit
+	 * {@code false}; a missing setting, a missing id or a non-boolean value leaves it on.
+	 */
+	public boolean isFeatureEnabled(FeatureFlag feature) {
+		JsonElement flags = settings.getRawProperty("boot-java", "feature-flags");
+		if (flags != null && flags.isJsonObject()) {
+			JsonElement value = flags.getAsJsonObject().get(feature.getId());
+			if (value != null && value.isJsonPrimitive() && value.getAsJsonPrimitive().isBoolean()) {
+				return value.getAsBoolean();
+			}
+		}
+		return true;
+	}
+
 	public Settings getRawSettings() {
 		return settings;
 	}

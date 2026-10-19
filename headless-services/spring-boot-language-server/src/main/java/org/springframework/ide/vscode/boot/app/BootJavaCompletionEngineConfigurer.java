@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import static org.springframework.ide.vscode.boot.app.FeatureFlagGuards.onlyWhen;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,8 +59,8 @@ import com.google.common.collect.ImmutableList;
 public class BootJavaCompletionEngineConfigurer {
 	
 
-	@Bean JavaSnippetManager javaSnippetManager(SimpleLanguageServer server) {
-		JavaSnippetManager snippetManager = new JavaSnippetManager(server::createSnippetBuilder);
+	@Bean JavaSnippetManager javaSnippetManager(SimpleLanguageServer server, BootJavaConfig config) {
+		JavaSnippetManager snippetManager = new JavaSnippetManager(server::createSnippetBuilder, () -> config.isFeatureEnabled(FeatureFlag.JAVA_SNIPPET_COMPLETION));
 
 		// PT 160529904: Eclipse templates are duplicated, due to templates in Eclipse also being contributed by
 		// STS3 bundle. Therefore do not include templates if client is Eclipse
@@ -122,53 +124,53 @@ public class BootJavaCompletionEngineConfigurer {
 		
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		
-		providers.put(Annotations.VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
-		providers.put(Annotations.CONTEXT_CONFIGURATION, new ContextConfigurationProcessor(javaProjectFinder));
-		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
+		providers.put(Annotations.VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties, config));
+		providers.put(Annotations.CONTEXT_CONFIGURATION, onlyWhen(config, FeatureFlag.CONTEXT_CONFIGURATION_COMPLETION, new ContextConfigurationProcessor(javaProjectFinder)));
+		providers.put(Annotations.REPOSITORY, onlyWhen(config, FeatureFlag.DATA_REPOSITORY_COMPLETION, new DataRepositoryCompletionProcessor()));
 		
 		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"resources", new ConditionalOnResourceCompletionProcessor())));
+				"resources", onlyWhen(config, FeatureFlag.CONDITIONAL_ON_RESOURCE_COMPLETION, new ConditionalOnResourceCompletionProcessor()))));
 
 		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"value", new ConditionalOnPropertyCompletionProcessor(indexProvider, adHocProperties, ConditionalOnPropertyCompletionProcessor.Mode.PROPERTY),
-				"name", new ConditionalOnPropertyCompletionProcessor(indexProvider, adHocProperties, ConditionalOnPropertyCompletionProcessor.Mode.PROPERTY),
-				"prefix", new ConditionalOnPropertyCompletionProcessor(indexProvider, adHocProperties, ConditionalOnPropertyCompletionProcessor.Mode.PREFIX))));
+				"value", onlyWhen(config, FeatureFlag.CONDITIONAL_ON_PROPERTY_COMPLETION, new ConditionalOnPropertyCompletionProcessor(indexProvider, adHocProperties, ConditionalOnPropertyCompletionProcessor.Mode.PROPERTY)),
+				"name", onlyWhen(config, FeatureFlag.CONDITIONAL_ON_PROPERTY_COMPLETION, new ConditionalOnPropertyCompletionProcessor(indexProvider, adHocProperties, ConditionalOnPropertyCompletionProcessor.Mode.PROPERTY)),
+				"prefix", onlyWhen(config, FeatureFlag.CONDITIONAL_ON_PROPERTY_COMPLETION, new ConditionalOnPropertyCompletionProcessor(indexProvider, adHocProperties, ConditionalOnPropertyCompletionProcessor.Mode.PREFIX)))));
 
 		providers.put(Annotations.SCOPE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"value", new ScopeCompletionProcessor())));
+				"value", onlyWhen(config, FeatureFlag.SCOPE_COMPLETION, new ScopeCompletionProcessor()))));
 
 		providers.put(Annotations.DEPENDS_ON, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"value", new DependsOnCompletionProcessor(springIndex))));
+				"value", onlyWhen(config, FeatureFlag.BEAN_NAME_COMPLETION, new DependsOnCompletionProcessor(springIndex)))));
 
 		providers.put(Annotations.CONDITIONAL_ON_BEAN, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"name", new BeanNamesCompletionProcessor(springIndex),
-				"type", new BeanTypesCompletionProcessor(springIndex))));
+				"name", onlyWhen(config, FeatureFlag.BEAN_NAME_COMPLETION, new BeanNamesCompletionProcessor(springIndex)),
+				"type", onlyWhen(config, FeatureFlag.BEAN_TYPE_COMPLETION, new BeanTypesCompletionProcessor(springIndex)))));
 
 		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"name", new BeanNamesCompletionProcessor(springIndex),
-				"type", new BeanTypesCompletionProcessor(springIndex),
-				"ignoredType", new BeanTypesCompletionProcessor(springIndex))));
+				"name", onlyWhen(config, FeatureFlag.BEAN_NAME_COMPLETION, new BeanNamesCompletionProcessor(springIndex)),
+				"type", onlyWhen(config, FeatureFlag.BEAN_TYPE_COMPLETION, new BeanTypesCompletionProcessor(springIndex)),
+				"ignoredType", onlyWhen(config, FeatureFlag.BEAN_TYPE_COMPLETION, new BeanTypesCompletionProcessor(springIndex)))));
 
 		providers.put(Annotations.QUALIFIER, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"value", new QualifierCompletionProvider(springIndex))));
+				"value", onlyWhen(config, FeatureFlag.BEAN_NAME_COMPLETION, new QualifierCompletionProvider(springIndex)))));
 		
 		providers.put(Annotations.PROFILE, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"value", new ProfileCompletionProvider(springIndex))));
+				"value", onlyWhen(config, FeatureFlag.PROFILE_COMPLETION, new ProfileCompletionProvider(springIndex)))));
 		
 		providers.put(Annotations.RESOURCE_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"name", new ResourceCompletionProvider(springIndex))));
+				"name", onlyWhen(config, FeatureFlag.BEAN_NAME_COMPLETION, new ResourceCompletionProvider(springIndex)))));
 		
 		providers.put(Annotations.RESOURCE_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"name", new ResourceCompletionProvider(springIndex))));
+				"name", onlyWhen(config, FeatureFlag.BEAN_NAME_COMPLETION, new ResourceCompletionProvider(springIndex)))));
 
 		providers.put(Annotations.NAMED_JAKARTA, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"value", new NamedCompletionProvider(springIndex))));
+				"value", onlyWhen(config, FeatureFlag.BEAN_NAME_COMPLETION, new NamedCompletionProvider(springIndex)))));
 		
 		providers.put(Annotations.NAMED_JAVAX, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"value", new NamedCompletionProvider(springIndex))));
+				"value", onlyWhen(config, FeatureFlag.BEAN_NAME_COMPLETION, new NamedCompletionProvider(springIndex)))));
 		
 		providers.put(Annotations.SCHEDULED, new AnnotationAttributeCompletionProcessor(javaProjectFinder, Map.of(
-				"cron", new CronExpressionCompletionProvider())));
+				"cron", onlyWhen(config, FeatureFlag.CRON_COMPLETION, new CronExpressionCompletionProvider()))));
 
 		providers.put(Annotations.BEAN, new BeanCompletionProvider(javaProjectFinder, springIndex, config));
 

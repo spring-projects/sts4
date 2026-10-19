@@ -11,9 +11,11 @@
 package org.springframework.ide.vscode.boot.java.conditionals.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -82,6 +84,18 @@ public class ConditionalOnPropertyReferenceFinderTest {
     	assertEquals(7, location.getRange().getEnd().getCharacter());
     }
     
+    @Test
+    void testFindReferencesToPropertyTurnedOffByFeatureFlag() throws Exception {
+    	harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("property-key-navigation", false))));
+    	// a configuration change re-indexes the project, wait for it before asserting
+    	indexer.waitOperation().get(5, TimeUnit.SECONDS);
+    	harness.getServer().getWorkspaceService().setWorkspaceFolders(List.of(new WorkspaceFolder(directory.toURI().toString(), directory.getName())));
+    	
+    	List<? extends Location> references = getReferences("@ConditionalOnProperty(\"my.<*>prop\")");
+    	
+    	assertTrue(references == null || references.isEmpty());
+    }
+
     @Test
     void testFindReferencesToPropertyFromAnnotationWithNameAttribute() throws Exception {
     	harness.getServer().getWorkspaceService().setWorkspaceFolders(List.of(new WorkspaceFolder(directory.toURI().toString(), directory.getName())));

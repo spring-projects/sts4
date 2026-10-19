@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -86,6 +87,42 @@ public class ConditionalOnBeanCompletionTest {
     @Test
     public void testConditionalOnBeanCompletionWithoutQuotesWithoutPrefixWithTypeAttribute() throws Exception {
         assertCompletions("@ConditionalOnBean(type=<*>)", 2, "@ConditionalOnBean(type=\"org.example.type1\"<*>)");
+    }
+
+    @Test
+    public void testConditionalOnBeanNameCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("bean-name-completion", false))));
+        // a configuration change re-indexes the project, wait for it before asserting
+        indexer.waitOperation().get(5, TimeUnit.SECONDS);
+        springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
+        assertCompletions("@ConditionalOnBean(name=<*>)", 0, null);
+    }
+
+    @Test
+    public void testConditionalOnBeanTypeCompletionStaysWhenBeanNameCompletionTurnedOff() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("bean-name-completion", false))));
+        // a configuration change re-indexes the project, wait for it before asserting
+        indexer.waitOperation().get(5, TimeUnit.SECONDS);
+        springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
+        assertCompletions("@ConditionalOnBean(type=<*>)", 2, "@ConditionalOnBean(type=\"org.example.type1\"<*>)");
+    }
+
+    @Test
+    public void testConditionalOnBeanTypeCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("bean-type-completion", false))));
+        // a configuration change re-indexes the project, wait for it before asserting
+        indexer.waitOperation().get(5, TimeUnit.SECONDS);
+        springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
+        assertCompletions("@ConditionalOnBean(type=<*>)", 0, null);
+    }
+
+    @Test
+    public void testConditionalOnBeanNameCompletionStaysWhenBeanTypeCompletionTurnedOff() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("bean-type-completion", false))));
+        // a configuration change re-indexes the project, wait for it before asserting
+        indexer.waitOperation().get(5, TimeUnit.SECONDS);
+        springIndex.updateBeans(project.getElementName(), new Bean[] {bean1, bean2});
+        assertCompletions("@ConditionalOnBean(name=<*>)", 2, "@ConditionalOnBean(name=\"bean1\"<*>)");
     }
 
     @Test

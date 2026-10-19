@@ -1095,6 +1095,9 @@ public class LanguageServerHarness {
 
 	public List<SemanticTokenData> getSemanticTokensFull(TextDocumentInfo doc) throws InterruptedException, ExecutionException {
 		SemanticTokens tokens = server.getTextDocumentService().semanticTokensFull(new SemanticTokensParams(doc.getId())).get();
+		if (tokens == null) {
+			return List.of();
+		}
 		SemanticTokensLegend legend = server.getTextDocumentService().getSemanticTokensWithRegistrationOptions().getLegend();
 		return new SemanticTokensStreamProcessor(doc::toOffset).getTokensData(tokens.getData(), legend);
 	}

@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.data.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -65,6 +66,19 @@ public class DataRepositoryAotMetadataCodeLensProviderJpaTest {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 	
+	@Test
+	void noCodeLensWhenTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of(
+				"java", Map.of("codelens-over-query-methods", true),
+				"feature-flags", Map.of("data-query-aot-code-lens", false))));
+
+		Path filePath = Paths.get(testProject.getLocationUri())
+				.resolve("src/main/java/example/springdata/aot/UserRepository.java");
+		Editor editor = harness.newEditor(LanguageId.JAVA, new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8), filePath.toUri().toASCIIString());
+
+		assertTrue(editor.getCodeLenses().isEmpty());
+	}
+
 	@Test
 	void codeLensOverMethod() throws Exception {		
 		Path filePath = Paths.get(testProject.getLocationUri())

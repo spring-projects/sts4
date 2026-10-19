@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
@@ -62,6 +63,13 @@ public class ScopeCompletionTest {
                 "@Scope(\"session\"<*>)",
                 "@Scope(\"singleton\"<*>)",
                 "@Scope(\"websocket\"<*>)");
+    }
+
+    @Test
+    void testCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("scope-completion", false))));
+        prepareCase("@Scope(\"onClass\")", "@Scope(<*>)");
+        assertEquals(0, editor.getCompletions().size());
     }
 
     @Test

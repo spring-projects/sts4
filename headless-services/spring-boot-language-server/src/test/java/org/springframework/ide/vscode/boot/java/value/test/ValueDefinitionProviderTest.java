@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023, 2024 VMware, Inc.
+ * Copyright (c) 2023, 2026 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.lsp4j.LocationLink;
@@ -90,6 +91,24 @@ public class ValueDefinitionProviderTest {
 				new Range(new Position(6, 8), new Position(6, 22)));
 
 		editor.assertDefinitionLinkTargets("some.prop", List.of(expectedLocation));
+	}
+
+	@Test
+	void propertiesCase_ValueAnnotationTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("property-key-navigation", false))));
+		projectFile("src/main/resources/application.properties", "some.prop=5");
+		Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+				import org.springframework.beans.factory.annotation.Value;
+
+				public class TestValueCompletion {
+
+					@Value("${some.prop}")
+					private String value1;
+				}""");
+
+		editor.assertDefinitionLinkTargets("some.prop", List.of());
 	}
 
 	@Test
@@ -252,6 +271,67 @@ public class ValueDefinitionProviderTest {
 		editor.assertDefinitionLinkTargets("classpath:random-resource.md", List.of(expectedLocation));
 	}
 
+	@Test
+	void classpathResourceStillFoundWhenPropertyKeyNavigationTurnedOff() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("property-key-navigation", false))));
+		Path randomResourceFilePath = projectFile("src/main/resources/random-resource.md", "");
+		Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
 
+				import org.springframework.beans.factory.annotation.Value;
+
+				public class TestValueCompletion {
+
+					@Value("classpath:random-resource.md")
+					private String value1;
+				}""");
+
+		LocationLink expectedLocation = new LocationLink(randomResourceFilePath.toUri().toASCIIString(),
+				new Range(new Position(0, 0), new Position(0, 0)),
+				new Range(new Position(0, 0), new Position(0, 0)),
+				new Range(new Position(6, 8), new Position(6, 38)));
+
+		editor.assertDefinitionLinkTargets("classpath:random-resource.md", List.of(expectedLocation));
+	}
+
+	@Test
+	void classpathResourceNavigationTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("classpath-resource-navigation", false))));
+		projectFile("src/main/resources/random-resource.md", "");
+		Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+				import org.springframework.beans.factory.annotation.Value;
+
+				public class TestValueCompletion {
+
+					@Value("classpath:random-resource.md")
+					private String value1;
+				}""");
+
+		editor.assertDefinitionLinkTargets("classpath:random-resource.md", List.of());
+	}
+
+	@Test
+	void propertyKeyStillFoundWhenClasspathResourceNavigationTurnedOff() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("classpath-resource-navigation", false))));
+		Path propertiesFilePath = projectFile("src/main/resources/application.properties", "some.prop=5");
+		Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+				import org.springframework.beans.factory.annotation.Value;
+
+				public class TestValueCompletion {
+
+					@Value("${some.prop}")
+					private String value1;
+				}""");
+
+		LocationLink expectedLocation = new LocationLink(propertiesFilePath.toUri().toASCIIString(),
+				new Range(new Position(0, 0), new Position(0, 11)), new Range(new Position(0, 10), new Position(0, 11)),
+				new Range(new Position(6, 8), new Position(6, 22)));
+
+		editor.assertDefinitionLinkTargets("some.prop", List.of(expectedLocation));
+	}
 
 }

@@ -738,6 +738,14 @@ public class Editor {
 	public List<? extends CodeLens> getCodeLenses() throws Exception {
 		return harness.getCodeLenses(doc);
 	}
+
+	public List<org.eclipse.lsp4j.InlayHint> getInlayHints() throws Exception {
+		return harness.getInlayHints(doc);
+	}
+
+	public List<org.springframework.ide.vscode.commons.languageserver.semantic.tokens.SemanticTokenData> getSemanticTokensFull() throws Exception {
+		return harness.getSemanticTokensFull(doc);
+	}
 	
 	public List<? extends CodeLens> getLiveDataCodeLenses() throws Exception {
 		HighlightParams highlights = this.highlightsFuture.get(HIGHLIGHTS_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);

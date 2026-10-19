@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2025 Pivotal, Inc.
+ * Copyright (c) 2017, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
@@ -140,7 +141,7 @@ public class ValueCompletionTest {
 	
 	@Test
     void testPrefixIdentification() {
-        ValueCompletionProcessor processor = new ValueCompletionProcessor(projectFinder, null, null);
+        ValueCompletionProcessor processor = new ValueCompletionProcessor(projectFinder, null, null, null);
 
         assertEquals("pre", processor.identifyPropertyPrefix("pre", 3));
         assertEquals("pre", processor.identifyPropertyPrefix("prefix", 3));
@@ -167,6 +168,32 @@ public class ValueCompletionTest {
         		"@Value(\"classpath:a-random-resource-root.md\"<*>)",
         		"@Value(\"classpath:org/random-resource-org.md\"<*>)",
         		"@Value(\"classpath:org/test/random-resource-org-test.txt\"<*>)");
+    }
+
+    @Test
+    void testPropertyCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("value-property-completion", false))));
+        prepareCase("@Value(\"onField\")", "@Value(<*>)");
+
+        assertPropertyCompletions();
+
+        assertClasspathCompletions(
+        		"@Value(\"classpath:a-random-resource-root.md\"<*>)",
+        		"@Value(\"classpath:org/random-resource-org.md\"<*>)",
+        		"@Value(\"classpath:org/test/random-resource-org-test.txt\"<*>)");
+    }
+
+    @Test
+    void testClasspathCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("value-classpath-completion", false))));
+        prepareCase("@Value(\"onField\")", "@Value(<*>)");
+
+        assertClasspathCompletions();
+
+        assertPropertyCompletions(
+                "@Value(\"${data.prop2}\"<*>)",
+                "@Value(\"${else.prop3}\"<*>)",
+                "@Value(\"${spring.prop1}\"<*>)");
     }
 
     @Test

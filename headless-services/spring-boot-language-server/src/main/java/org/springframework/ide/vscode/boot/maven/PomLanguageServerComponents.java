@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.app.FeatureFlag;
+import org.springframework.ide.vscode.boot.app.FeatureFlagGuards;
 import org.springframework.ide.vscode.boot.validation.generations.MavenMetadataProvider;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
@@ -25,10 +27,11 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 public class PomLanguageServerComponents implements LanguageServerComponents{
 	
-	private PomInlayHintHandler inlayHintHandler;
+	private InlayHintHandler inlayHintHandler;
 	
 	public PomLanguageServerComponents(SimpleLanguageServer server, JavaProjectFinder projectFinder, ProjectObserver projectObserver, SpringProjectsProvider generationsProvider, MavenMetadataProvider mavenMetadataProvider, BootJavaConfig bootJavaConfig) {
-		this.inlayHintHandler = new PomInlayHintHandler(server, projectFinder, projectObserver, generationsProvider, mavenMetadataProvider, bootJavaConfig);
+		this.inlayHintHandler = FeatureFlagGuards.onlyWhen(bootJavaConfig, FeatureFlag.POM_INLAY_HINTS,
+				new PomInlayHintHandler(server, projectFinder, projectObserver, generationsProvider, mavenMetadataProvider, bootJavaConfig));
 	}
 
 	@Override

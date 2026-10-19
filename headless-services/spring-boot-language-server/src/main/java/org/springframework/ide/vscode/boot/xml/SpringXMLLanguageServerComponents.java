@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2025 Pivotal, Inc.
+ * Copyright (c) 2019, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.app.FeatureFlag;
+import org.springframework.ide.vscode.boot.app.FeatureFlagGuards;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.spel.SpelReconciler;
@@ -46,7 +48,8 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 			SpelReconciler spelReconciler) {
 
 		this.projectFinder = serverParams.projectFinder;
-		this.docSymbolProvider = params -> springIndexer.getDocumentSymbols(params.getTextDocument().getUri());
+		DocumentSymbolHandler documentSymbols = params -> springIndexer.getDocumentSymbols(params.getTextDocument().getUri());
+		this.docSymbolProvider = FeatureFlagGuards.onlyWhen(config, FeatureFlag.DOCUMENT_SYMBOLS, documentSymbols);
 
 		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);

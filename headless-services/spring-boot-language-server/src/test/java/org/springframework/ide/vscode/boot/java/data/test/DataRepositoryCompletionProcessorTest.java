@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2023 Pivotal, Inc.
+ * Copyright (c) 2018, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,10 +14,12 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.eclipse.lsp4j.CompletionItem;
@@ -58,6 +60,14 @@ public class DataRepositoryCompletionProcessorTest {
     void testStandardFindByCompletions() throws Exception {
         prepareCase("{", "{<*>");
         assertStandardCompletions();
+    }
+
+    @Test
+    void testCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("data-repository-completion", false))));
+        prepareCase("{", "{<*>");
+
+        assertTrue(editor.getCompletions().stream().noneMatch(c -> c.getLabel().startsWith("findBy")));
     }
 
     @Test

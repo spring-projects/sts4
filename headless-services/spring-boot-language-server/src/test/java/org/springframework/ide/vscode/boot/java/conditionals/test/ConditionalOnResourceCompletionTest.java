@@ -18,6 +18,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -75,6 +76,16 @@ public class ConditionalOnResourceCompletionTest {
 
         assertClasspathCompletions(
                 "@ConditionalOnResource(resources=\"classpath:org/test/foo\"<*>)");
+    }
+
+    @Test
+    void testCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("conditional-on-resource-completion", false))));
+        // a configuration change re-indexes the project, wait for it before asserting
+        indexer.waitOperation().get(5, TimeUnit.SECONDS);
+        prepareCase("@ConditionalOnResource(resources=\"onClass\")", "@ConditionalOnResource(resources=<*>)");
+
+        assertClasspathCompletions();
     }
 
     @Test

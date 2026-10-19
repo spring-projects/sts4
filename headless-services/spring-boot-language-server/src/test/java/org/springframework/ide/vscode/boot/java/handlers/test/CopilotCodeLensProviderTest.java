@@ -20,6 +20,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -110,6 +111,19 @@ public class CopilotCodeLensProviderTest {
 		assertTrue(containsCodeLens(codeLenses.get(0), QueryType.DEFAULT.getTitle(), 9, 1, 9, 109));
 		assertTrue(containsCodeLens(codeLenses.get(1), QueryType.DEFAULT.getTitle(), 13, 1, 13, 40));
 		assertTrue(containsCodeLens(codeLenses.get(2), QueryType.DEFAULT.getTitle(), 17, 1, 17, 93));
+	}
+
+	@Test
+	public void testNoCodeLensesWhenTurnedOffByFeatureFlag() throws Exception {
+		setCommandParamsHandler(true);
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("ai-assistant-code-lens", false))));
+		indexer.waitOperation().get(5, TimeUnit.SECONDS);
+
+		String docUri = directory.toPath().resolve("src/main/java/org/test/OwnerRepository.java").toUri().toString();
+		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
+		TextDocumentInfo openedDoc = harness.openDocument(doc);
+
+		assertTrue(harness.getCodeLenses(openedDoc).isEmpty());
 	}
 
 	@Test

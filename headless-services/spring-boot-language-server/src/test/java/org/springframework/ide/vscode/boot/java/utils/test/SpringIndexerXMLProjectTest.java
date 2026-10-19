@@ -11,11 +11,14 @@
 package org.springframework.ide.vscode.boot.java.utils.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +37,8 @@ import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.languageserver.testharness.TextDocumentInfo;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.annotation.DirtiesContext;
@@ -101,6 +106,37 @@ public class SpringIndexerXMLProjectTest {
         assertTrue(containsBean("jdbcTemplate", "org.springframework.jdbc.core.JdbcTemplate", docUri, beans));
         assertTrue(containsBean("namedParameterJdbcTemplate", "org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate", docUri, beans));
         assertTrue(containsBean("persistenceExceptionTranslationPostProcessor", "org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor", docUri, beans));
+    }
+
+    private void turnOffAndWaitForIndex(String id) throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of(
+                "support-spring-xml-config", Map.of("on", true, "scan-folders", "src/main,config"),
+                "feature-flags", Map.of(id, false))));
+        symbolIndex.waitOperation().get(5, TimeUnit.SECONDS);
+    }
+
+    @Test
+    void testWorkspaceSymbolsTurnedOffByFeatureFlagKeepIndexActive() throws Exception {
+        assertEquals(5, harness.getWorkspaceSymbols("").size());
+
+        turnOffAndWaitForIndex("workspace-symbols");
+
+        assertTrue(harness.getWorkspaceSymbols("").isEmpty());
+        assertEquals(5, symbolIndex.getAllSymbols("").size());
+        assertEquals(5, springIndex.getBeansOfProject("test-annotation-indexing-xml-project").length);
+    }
+
+    @Test
+    void testDocumentSymbolsTurnedOffByFeatureFlagKeepIndexActive() throws Exception {
+        String docUri = directory.toPath().resolve("config/simple-spring-config.xml").toUri().toString();
+        TextDocumentInfo doc = harness.openDocument(harness.getOrReadFile(new File(new URI(docUri)), LanguageId.XML.getId()));
+        assertFalse(harness.getDocumentSymbols(doc).isEmpty());
+
+        turnOffAndWaitForIndex("document-symbols");
+
+        assertTrue(harness.getDocumentSymbols(doc).isEmpty());
+        assertFalse(symbolIndex.getDocumentSymbols(docUri).isEmpty());
+        assertEquals(5, harness.getWorkspaceSymbols("").size());
     }
 
     @Test

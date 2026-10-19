@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -93,6 +94,31 @@ public class ConditionalOnBeanDefinitionProviderTest {
                 null);
 
         editor.assertDefinitionLinkTargets("bean1", List.of(expectedLocation));
+    }
+
+    @Test
+    public void testConditionalOnBeanWithNameTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("bean-name-navigation", false))));
+        // a configuration change re-indexes the project, wait for it before asserting
+        indexer.waitOperation().get(5, TimeUnit.SECONDS);
+        String tempJavaDocUri = directory.toPath().resolve("src/main/java/org/test/TempClass.java").toUri().toString();
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+        		import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+                import org.springframework.context.annotation.Bean;
+                import org.springframework.context.annotation.Configuration;
+
+				@Configuration
+                public class TestConditionalOnBeanCompletion {
+                @ConditionalOnBean(name = "bean1")
+                @Bean
+                public void method() {
+                }
+				}""", tempJavaDocUri);
+
+        editor.assertDefinitionLinkTargets("bean1", List.of());
     }
 
     @Test

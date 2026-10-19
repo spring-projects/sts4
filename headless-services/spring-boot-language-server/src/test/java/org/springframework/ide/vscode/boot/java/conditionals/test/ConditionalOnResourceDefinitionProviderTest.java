@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.conditionals.test;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -81,6 +82,26 @@ public class ConditionalOnResourceDefinitionProviderTest {
                 new Range(new Position(5, 23), new Position(5, 60)));
 
         editor.assertDefinitionLinkTargets("classpath:a-random-resource-root.md", List.of(expectedLocation));
+    }
+
+    @Test
+    void testFindClasspathResourceTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("classpath-resource-navigation", false))));
+        // a configuration change re-indexes the project, wait for it before asserting
+        indexer.waitOperation().get(5, TimeUnit.SECONDS);
+
+        Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+				import org.springframework.boot.autoconfigure.condition.ConditionalOnResource;
+				import org.springframework.context.annotation.Configuration;
+				
+				@Configuration
+				@ConditionalOnResource("classpath:a-random-resource-root.md")
+				public class TestConditionalOnResourceCompletion {
+					private String value1;
+				}""", testSourceUri);
+
+        editor.assertDefinitionLinkTargets("classpath:a-random-resource-root.md", List.of());
     }
 
     @Test

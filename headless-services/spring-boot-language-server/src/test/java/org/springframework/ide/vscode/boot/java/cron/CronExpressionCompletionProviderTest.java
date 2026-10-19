@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -84,6 +85,14 @@ public class CronExpressionCompletionProviderTest {
 		assertCompletions("@Scheduled(cron=<*>)", 24, "@Scheduled(cron=\"0 0 * * * *\"<*>)");
 	}
 	
+	@Test
+	public void testCronExpressionCompletionTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("cron-completion", false))));
+		// a configuration change re-indexes the project, wait for it before asserting
+		indexer.waitOperation().get(5, TimeUnit.SECONDS);
+		assertCompletions("@Scheduled(cron=<*>)", 0, null);
+	}
+
 	@Test
 	public void testCronExpressionCompletionWithAttributeNameAndPrefix() throws Exception {
 		assertCompletions("@Scheduled(cron=\"0<*>\")", 24, "@Scheduled(cron=\"0 0 * * * *<*>\")");

@@ -10,11 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import static org.springframework.ide.vscode.boot.app.FeatureFlagGuards.onlyWhen;
+
 import org.openrewrite.maven.cache.InMemoryMavenPomCache;
 import org.openrewrite.maven.cache.MavenPomCache;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.java.codeaction.JdtAstCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.data.DataRepositoryAotMetadataService;
 import org.springframework.ide.vscode.boot.java.data.QueryMethodCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.data.jpa.queries.ConvertQueryToTextBlockCodeActionProvider;
@@ -63,8 +66,8 @@ public class RewriteConfig {
 	}
 
 	@ConditionalOnBean(JdtRefactorings.class)
-	@Bean ConvertQueryToTextBlockCodeActionProvider convertQueryToTextBlockCodeActionProvider(JdtRefactorings jdtRefactorings) {
-		return new ConvertQueryToTextBlockCodeActionProvider(jdtRefactorings);
+	@Bean JdtAstCodeActionProvider convertQueryToTextBlockCodeActionProvider(JdtRefactorings jdtRefactorings, BootJavaConfig config) {
+		return onlyWhen(config, FeatureFlag.QUERY_TEXT_BLOCK_CONVERSION, new ConvertQueryToTextBlockCodeActionProvider(jdtRefactorings));
 	}
 
 }

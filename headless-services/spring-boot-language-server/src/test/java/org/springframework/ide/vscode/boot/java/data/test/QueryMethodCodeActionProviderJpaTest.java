@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -79,6 +80,21 @@ public class QueryMethodCodeActionProviderJpaTest {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 	
+	@Test
+	void convertToQueryCodeActionTurnedOffByFeatureFlag() throws Exception {
+		harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("add-query-annotation", false))));
+		// a configuration change re-indexes the project, wait for it before asserting
+		indexer.waitOperation().get(5, TimeUnit.SECONDS);
+
+		Path filePath = Paths.get(testProject.getLocationUri())
+				.resolve("src/main/java/example/springdata/aot/UserRepository.java");
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8), filePath.toUri().toASCIIString());
+
+		List<CodeAction> codeActions = editor.getCodeActions("findUserByLastnameStartingWith(String lastname)", 1);
+		assertEquals(0, codeActions.stream().filter(ca -> "Add `@Query`".equals(ca.getLabel())).count());
+	}
+
 	@Test
 	void convertToQueryCodeAction() throws Exception {
 		Path filePath = Paths.get(testProject.getLocationUri())

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2025 VMware, Inc.
+ * Copyright (c) 2022, 2026 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.app.FeatureFlag;
+import org.springframework.ide.vscode.boot.app.FeatureFlagGuards;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -26,9 +28,11 @@ public class SpringFactoriesLanguageServerComponents implements LanguageServerCo
 	
 	private SpringFactoriesReconcileEngine reconciler;
 	private SpringSymbolIndex springIndex;
+	private final BootJavaConfig config;
 	
 	public SpringFactoriesLanguageServerComponents(JavaProjectFinder projectFinder, SpringSymbolIndex springIndex, BootJavaConfig config) {
 		this.springIndex = springIndex;
+		this.config = config;
 		reconciler = new SpringFactoriesReconcileEngine(projectFinder, config);
 	}
 
@@ -49,7 +53,8 @@ public class SpringFactoriesLanguageServerComponents implements LanguageServerCo
 
 	@Override
 	public Optional<DocumentSymbolHandler> getDocumentSymbolProvider() {
-		return Optional.of(params -> springIndex.getDocumentSymbols(params.getTextDocument().getUri()));
+		DocumentSymbolHandler documentSymbols = params -> springIndex.getDocumentSymbols(params.getTextDocument().getUri());
+		return Optional.of(FeatureFlagGuards.onlyWhen(config, FeatureFlag.DOCUMENT_SYMBOLS, documentSymbols));
 	}
 
 }

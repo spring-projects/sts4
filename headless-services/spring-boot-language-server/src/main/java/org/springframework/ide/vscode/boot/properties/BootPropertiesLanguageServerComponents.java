@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.app.FeatureFlag;
+import org.springframework.ide.vscode.boot.app.FeatureFlagGuards;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.cron.CronSemanticTokens;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
@@ -78,6 +80,7 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 	private SourceLinks sourceLinks;
 	private final CronPropertiesSemanticTokensHandler cronSemanticTokensHandler;
 	private final CronPropertiesInlayHintsHandler cronInlayHintsHandler;
+	private final BootJavaConfig config;
 
 	public BootPropertiesLanguageServerComponents(
 			SimpleLanguageServer server,
@@ -90,6 +93,7 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 			CronSemanticTokens cronSemanticTokens,
 			BootJavaConfig config) {
 		this.server = server;
+		this.config = config;
 		this.parser = parser;
 		this.indexProvider = serverParams.indexProvider;
 		this.typeUtilProvider = serverParams.typeUtilProvider;
@@ -139,11 +143,11 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 			String uri = document.getUri();
 			if (uri != null) {
 				if (uri.endsWith(PROPERTIES)) {
-					return propertiesHovers.getHoverInfo(document, offset);
+					return config.isFeatureEnabled(FeatureFlag.PROPERTIES_HOVER) ? propertiesHovers.getHoverInfo(document, offset) : null;
 				} else {
 					for (String yml : YML) {
 						if (uri.endsWith(yml)) {
-							return ymlHovers.getHoverInfo(document, offset);
+							return config.isFeatureEnabled(FeatureFlag.YAML_HOVER) ? ymlHovers.getHoverInfo(document, offset) : null;
 						}
 					}
 				}
@@ -183,7 +187,7 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 
 	@Override
 	public Optional<SemanticTokensHandler> getSemanticTokensHandler() {
-		return Optional.of(cronSemanticTokensHandler);
+		return Optional.of(FeatureFlagGuards.onlyWhen(config, FeatureFlag.CRON_SEMANTIC_TOKENS, cronSemanticTokensHandler));
 	}
 
 	public SpringPropertyIndexProvider getPropertiesIndexProvider() {

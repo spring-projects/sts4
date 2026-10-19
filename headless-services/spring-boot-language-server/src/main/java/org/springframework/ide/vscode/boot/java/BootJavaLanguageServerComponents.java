@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
+import static org.springframework.ide.vscode.boot.app.FeatureFlagGuards.onlyWhen;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -22,6 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.app.FeatureFlag;
+import org.springframework.ide.vscode.boot.java.cron.JdtCronSemanticTokensProvider;
+import org.springframework.ide.vscode.boot.java.spel.JdtSpelSemanticTokensProvider;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtQueryDocHighlightsProvider;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQueriesInlayHintsProvider;
+import org.springframework.ide.vscode.boot.java.data.jpa.queries.JdtDataQuerySemanticTokensProvider;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
@@ -150,7 +158,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		this.codeActionProvider = appContext.getBean(BootJavaCodeActionProvider.class);
 
 
-		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder, springIndex, springSymbolIndex, cuCache);
+		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder, springIndex, springSymbolIndex, cuCache, config);
 		documents.onReferences(referencesHandler);
 		
 		//
@@ -169,10 +177,11 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		// create and handle commands
 		new SpringProcessCommandHandler(server, liveDataService, liveDataLocalProcessConnector, appContext.getBeansOfType(SpringProcessConnectorRemote.class).values());
 		
-		docSymbolProvider = params -> springSymbolIndex.getDocumentSymbols(params.getTextDocument().getUri());
+		DocumentSymbolHandler documentSymbols = params -> springSymbolIndex.getDocumentSymbols(params.getTextDocument().getUri());
+		docSymbolProvider = onlyWhen(config, FeatureFlag.DOCUMENT_SYMBOLS, documentSymbols);
 		
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(springSymbolIndex,
-				new LiveAppURLSymbolProvider(liveDataProvider)));
+				new LiveAppURLSymbolProvider(liveDataProvider), config));
 
 		spelSemanticTokens = appContext.getBean(SpelSemanticTokens.class);
 		dataRepositoryAotMetadataService = appContext.getBean(DataRepositoryAotMetadataService.class);
@@ -184,12 +193,14 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		
 		Map<String, JdtSemanticTokensProvider> jdtSemanticTokensProviders = appContext.getBeansOfType(JdtSemanticTokensProvider.class);
 		if (!jdtSemanticTokensProviders.isEmpty()) {
-			semanticTokensHandler = new JdtSemanticTokensHandler(cuCache, projectFinder, jdtSemanticTokensProviders.values());
+			semanticTokensHandler = new JdtSemanticTokensHandler(cuCache, projectFinder,
+					jdtSemanticTokensProviders.values().stream().map(p -> guard(config, p)).toList());
 		}
 		
 		Map<String, JdtInlayHintsProvider> jdtInlayHintsProviders = appContext.getBeansOfType(JdtInlayHintsProvider.class);
 		if (!jdtSemanticTokensProviders.isEmpty()) {
-			inlayHintsHandler = new JdtInlayHintsHandler(cuCache, projectFinder, jdtInlayHintsProviders.values());
+			inlayHintsHandler = new JdtInlayHintsHandler(cuCache, projectFinder,
+					jdtInlayHintsProviders.values().stream().map(p -> guard(config, p)).toList());
 		}
 		
 		config.addListener(ignore -> {
@@ -294,19 +305,19 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder,
-			SpringMetamodelIndex index, SpringSymbolIndex symbolIndex, CompilationUnitCache cuCache) {
+			SpringMetamodelIndex index, SpringSymbolIndex symbolIndex, CompilationUnitCache cuCache, BootJavaConfig config) {
 		
 		Map<String, ReferenceProvider> specificProviders = new HashMap<>();
 
-		specificProviders.put(Annotations.VALUE, new ValuePropertyReferencesProvider(projectFinder, index));
-		specificProviders.put(Annotations.CONDITIONAL_ON_PROPERTY, new ValuePropertyReferencesProvider(projectFinder, index));
-		specificProviders.put(Annotations.QUALIFIER, new QualifierReferencesProvider(index));
-		specificProviders.put(Annotations.NAMED_JAKARTA, new NamedReferencesProvider(index));
-		specificProviders.put(Annotations.NAMED_JAVAX, new NamedReferencesProvider(index));
-		specificProviders.put(Annotations.PROFILE, new ProfileReferencesProvider(index));
+		specificProviders.put(Annotations.VALUE, onlyWhen(config, FeatureFlag.PROPERTY_KEY_NAVIGATION, new ValuePropertyReferencesProvider(projectFinder, index)));
+		specificProviders.put(Annotations.CONDITIONAL_ON_PROPERTY, onlyWhen(config, FeatureFlag.PROPERTY_KEY_NAVIGATION, new ValuePropertyReferencesProvider(projectFinder, index)));
+		specificProviders.put(Annotations.QUALIFIER, onlyWhen(config, FeatureFlag.BEAN_NAME_NAVIGATION, new QualifierReferencesProvider(index)));
+		specificProviders.put(Annotations.NAMED_JAKARTA, onlyWhen(config, FeatureFlag.BEAN_NAME_NAVIGATION, new NamedReferencesProvider(index)));
+		specificProviders.put(Annotations.NAMED_JAVAX, onlyWhen(config, FeatureFlag.BEAN_NAME_NAVIGATION, new NamedReferencesProvider(index)));
+		specificProviders.put(Annotations.PROFILE, onlyWhen(config, FeatureFlag.PROFILE_NAVIGATION, new ProfileReferencesProvider(index)));
 		
 		List<ReferenceProvider> unspecificProviders = new ArrayList<>();
-		unspecificProviders.add(new EventReferenceProvider(index));
+		unspecificProviders.add(onlyWhen(config, FeatureFlag.EVENT_NAVIGATION, new EventReferenceProvider(index)));
 
 		return new BootJavaReferencesHandler(this, cuCache, projectFinder, specificProviders, unspecificProviders);
 	}
@@ -316,22 +327,52 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			BootJavaConfig config, SpringSymbolIndex springSymbolIndex) {
 
 		Collection<CodeLensProvider> codeLensProvider = new ArrayList<>();
-		codeLensProvider.add(new WebfluxHandlerCodeLensProvider(springIndex));
-		codeLensProvider.add(new CopilotCodeLensProvider(projectFinder, server, spelSemanticTokens));
-		codeLensProvider.add(new RouterFunctionCodeLensProvider());
-		codeLensProvider.add(new DataRepositoryAotMetadataCodeLensProvider(server, projectFinder, repositoryAotMetadataService, jdtRefactorings, config));
-		codeLensProvider.add(new WebConfigCodeLensProvider(projectFinder, springIndex, config, server, springSymbolIndex));
+		codeLensProvider.add(onlyWhen(config, FeatureFlag.WEBFLUX_HANDLER_CODE_LENS, new WebfluxHandlerCodeLensProvider(springIndex)));
+		codeLensProvider.add(onlyWhen(config, FeatureFlag.AI_ASSISTANT_CODE_LENS, new CopilotCodeLensProvider(projectFinder, server, spelSemanticTokens)));
+		codeLensProvider.add(onlyWhen(config, FeatureFlag.ROUTER_FUNCTION_CODE_LENS, new RouterFunctionCodeLensProvider()));
+		codeLensProvider.add(onlyWhen(config, FeatureFlag.DATA_QUERY_AOT_CODE_LENS, new DataRepositoryAotMetadataCodeLensProvider(server, projectFinder, repositoryAotMetadataService, jdtRefactorings, config)));
+		codeLensProvider.add(onlyWhen(config, FeatureFlag.WEB_CONFIG_CODE_LENS, new WebConfigCodeLensProvider(projectFinder, springIndex, config, server, springSymbolIndex)));
 
 		return new BootJavaCodeLensEngine(this, codeLensProvider);
 	}
 
+	// Maps the providers that are discovered as beans to their feature flag. Providers without a flag are returned as they are.
+	private static JdtSemanticTokensProvider guard(BootJavaConfig config, JdtSemanticTokensProvider provider) {
+		if (provider instanceof JdtDataQuerySemanticTokensProvider) {
+			return onlyWhen(config, FeatureFlag.DATA_QUERY_SEMANTIC_TOKENS, provider);
+		}
+		if (provider instanceof JdtSpelSemanticTokensProvider) {
+			return onlyWhen(config, FeatureFlag.SPEL_SEMANTIC_TOKENS, provider);
+		}
+		if (provider instanceof JdtCronSemanticTokensProvider) {
+			return onlyWhen(config, FeatureFlag.CRON_SEMANTIC_TOKENS, provider);
+		}
+		return provider;
+	}
+
+	private static JdtInlayHintsProvider guard(BootJavaConfig config, JdtInlayHintsProvider provider) {
+		if (provider instanceof JdtDataQueriesInlayHintsProvider) {
+			return onlyWhen(config, FeatureFlag.DATA_QUERY_INLAY_HINTS, provider);
+		}
+		return provider;
+	}
+
+	private static JdtAstDocHighlightsProvider guard(BootJavaConfig config, JdtAstDocHighlightsProvider provider) {
+		if (provider instanceof JdtQueryDocHighlightsProvider) {
+			return onlyWhen(config, FeatureFlag.DATA_QUERY_HIGHLIGHT, provider);
+		}
+		return provider;
+	}
+
 	protected BootJavaDocumentHighlightEngine createDocumentHighlightEngine(ApplicationContext appContext) {
 		Collection<HighlightProvider> highlightProvider = new ArrayList<>();
-		highlightProvider.add(new WebfluxRouteHighlightProdivder(appContext.getBean(SpringMetamodelIndex.class)));
+		BootJavaConfig config = appContext.getBean(BootJavaConfig.class);
+		highlightProvider.add(onlyWhen(config, FeatureFlag.WEBFLUX_ROUTE_HIGHLIGHT, new WebfluxRouteHighlightProdivder(appContext.getBean(SpringMetamodelIndex.class))));
 		
 		Map<String, JdtAstDocHighlightsProvider> astHighlightProviders = appContext.getBeansOfType(JdtAstDocHighlightsProvider.class);
 		if (!astHighlightProviders.isEmpty()) {
-			highlightProvider.add(new JdtDocHighlightsProvider(projectFinder, cuCache, astHighlightProviders.values()));
+			highlightProvider.add(new JdtDocHighlightsProvider(projectFinder, cuCache,
+					astHighlightProviders.values().stream().map(p -> guard(config, p)).toList()));
 		}
 
 		return new BootJavaDocumentHighlightEngine(this, highlightProvider);

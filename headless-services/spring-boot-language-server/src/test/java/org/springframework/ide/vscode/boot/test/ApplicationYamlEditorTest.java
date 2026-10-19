@@ -19,6 +19,7 @@ import static org.springframework.ide.vscode.languageserver.testharness.Editor.I
 import java.io.File;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
@@ -843,6 +844,17 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
     }
 
     @Test
+    void testNoHoverWhenTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("yaml-hover", false))));
+        defaultTestData();
+        Editor editor = newEditor(
+                "server:\n" +
+                        "  port: 8888"
+        );
+        editor.assertNoHover("port");
+    }
+
+    @Test
     void testHoverInfoForEnumValueInMapKey() throws Exception {
         Editor editor;
         IJavaProject project = createPredefinedMavenProject("empty-boot-1.3.0-app");
@@ -957,6 +969,31 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
         editor.assertHoverContains("name", "Set the name"); // javadoc from setter
         editor.assertHoverContains("next", "Get the next"); // javadoc from getter
 
+    }
+
+    @Test
+    void testCompletionTurnedOffByFeatureFlag() throws Exception {
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("yaml-completion", false))));
+        defaultTestData();
+        assertNoCompletions(
+                "server:\n" +
+                        "  po<*>"
+        );
+    }
+
+    @Test
+    void testLinkTargetsTurnedOffByFeatureFlag() throws Exception {
+        MavenJavaProject project = createPredefinedMavenProject("enums-boot-1.3.2-app");
+        useProject(project);
+        harness.changeConfiguration(Map.of("boot-java", Map.of("feature-flags", Map.of("yaml-navigation", false))));
+        data("foo.link-tester", "demo.LinkTestSubject", null, "for testing different Pojo link cases");
+        Editor editor = newEditor(
+                "foo:\n" +
+                        "  data:\n" +
+                        "    wavelen: 666\n"
+        );
+
+        definitionLinkAsserts.assertLinkTargets(editor, "data", project, editor.rangeOf("data:", "data"));
     }
 
     @Test
