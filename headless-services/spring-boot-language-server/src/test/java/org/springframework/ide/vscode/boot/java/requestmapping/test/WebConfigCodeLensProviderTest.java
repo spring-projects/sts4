@@ -92,7 +92,9 @@ public class WebConfigCodeLensProviderTest {
 				.resolve("src/main/java/org/test/versions/MappingClassWithMultipleVersions.java");
 		Editor editor = harness.newEditor(LanguageId.JAVA, new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8), filePath.toUri().toASCIIString());
 
-		assertTrue(editor.getCodeLenses().isEmpty());
+		// only this provider's lenses are checked, others may still add lenses to the same file
+		assertTrue(editor.getCodeLenses().stream().noneMatch(cl ->
+				cl.getCommand().getTitle().startsWith("Web Config") || cl.getCommand().getTitle().startsWith("Properties Config")));
 	}
 
 	@Test

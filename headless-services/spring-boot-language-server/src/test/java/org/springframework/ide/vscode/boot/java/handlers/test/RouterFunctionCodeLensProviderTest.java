@@ -110,7 +110,9 @@ public class RouterFunctionCodeLensProviderTest {
 		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
 
-		assertTrue(harness.getCodeLenses(openedDoc).isEmpty());
+		// only this provider's lenses are checked, others may still add lenses to the same file
+		assertTrue(harness.getCodeLenses(openedDoc).stream()
+				.noneMatch(cl -> QueryType.ROUTER_CONVERSION.getTitle().equals(cl.getCommand().getTitle())));
 	}
 
 	@Test

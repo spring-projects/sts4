@@ -18,12 +18,15 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
@@ -123,7 +126,10 @@ public class CopilotCodeLensProviderTest {
 		TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
 		TextDocumentInfo openedDoc = harness.openDocument(doc);
 
-		assertTrue(harness.getCodeLenses(openedDoc).isEmpty());
+		// only this provider's lenses are checked, others may still add lenses to the same file
+		Set<String> aiAssistantTitles = Arrays.stream(QueryType.values()).map(QueryType::getTitle).collect(Collectors.toSet());
+		assertTrue(harness.getCodeLenses(openedDoc).stream()
+				.noneMatch(cl -> aiAssistantTitles.contains(cl.getCommand().getTitle())));
 	}
 
 	@Test

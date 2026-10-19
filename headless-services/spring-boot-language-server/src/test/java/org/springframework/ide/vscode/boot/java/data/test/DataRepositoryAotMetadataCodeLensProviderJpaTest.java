@@ -39,6 +39,8 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
@@ -68,15 +70,25 @@ public class DataRepositoryAotMetadataCodeLensProviderJpaTest {
 	
 	@Test
 	void noCodeLensWhenTurnedOffByFeatureFlag() throws Exception {
+		Path filePath = Paths.get(testProject.getLocationUri())
+				.resolve("src/main/java/example/springdata/aot/UserRepository.java");
+		Editor editor = harness.newEditor(LanguageId.JAVA, new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8), filePath.toUri().toASCIIString());
+		assertTrue(aotLensTitles(editor).contains("Go To Implementation"));
+
 		harness.changeConfiguration(Map.of("boot-java", Map.of(
 				"java", Map.of("codelens-over-query-methods", true),
 				"feature-flags", Map.of("data-query-aot-code-lens", false))));
 
-		Path filePath = Paths.get(testProject.getLocationUri())
-				.resolve("src/main/java/example/springdata/aot/UserRepository.java");
-		Editor editor = harness.newEditor(LanguageId.JAVA, new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8), filePath.toUri().toASCIIString());
+		// only the lenses of this provider are checked: other lens providers (for example the AI assistant
+		// one, which is switched on in a static field by other tests) may still add lenses to the same methods
+		assertTrue(aotLensTitles(editor).isEmpty());
+	}
 
-		assertTrue(editor.getCodeLenses().isEmpty());
+	private Set<String> aotLensTitles(Editor editor) throws Exception {
+		return editor.getCodeLenses().stream()
+				.map(cl -> cl.getCommand().getTitle())
+				.filter(title -> Set.of("Turn into @Query", "Go To Implementation", "Refresh AOT Metadata").contains(title))
+				.collect(Collectors.toSet());
 	}
 
 	@Test

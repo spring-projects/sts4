@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.requestmapping.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -91,7 +92,9 @@ public class WebFluxCodeLensProviderTest {
         TextDocumentInfo doc = harness.getOrReadFile(new File(new URI(docUri)), LanguageId.JAVA.getId());
         TextDocumentInfo openedDoc = harness.openDocument(doc);
 
-        assertTrue(harness.getCodeLenses(openedDoc).isEmpty());
+        // only this provider's lenses are checked, others may still add lenses to the same file
+        assertFalse(containsCodeLens(harness.getCodeLenses(openedDoc), "GET /person/{id} - Accept: application/json", 9, 29, 9, 38));
+        assertFalse(containsCodeLens(harness.getCodeLenses(openedDoc), "POST /person/ - Content-Type: application/json", 13, 29, 13, 41));
     }
 
     @Test
