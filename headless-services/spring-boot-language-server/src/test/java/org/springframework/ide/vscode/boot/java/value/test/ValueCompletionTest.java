@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.bootiful.AdHocPropertyHarnessTestConf;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
@@ -141,7 +142,7 @@ public class ValueCompletionTest {
 	
 	@Test
     void testPrefixIdentification() {
-        ValueCompletionProcessor processor = new ValueCompletionProcessor(projectFinder, null, null, null);
+        ValueCompletionProcessor processor = new ValueCompletionProcessor(projectFinder, null, null, new BootJavaConfig(null));
 
         assertEquals("pre", processor.identifyPropertyPrefix("pre", 3));
         assertEquals("pre", processor.identifyPropertyPrefix("prefix", 3));

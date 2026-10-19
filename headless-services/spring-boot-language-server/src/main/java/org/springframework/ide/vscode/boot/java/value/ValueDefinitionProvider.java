@@ -63,12 +63,12 @@ public class ValueDefinitionProvider implements IJavaLocationLinksProvider {
 			if (value != null) {
 				// both kinds of navigation can be turned off separately
 				if (value.startsWith("classpath")) {
-					return isEnabled(FeatureFlag.CLASSPATH_RESOURCE_NAVIGATION)
+					return config.isFeatureEnabled(FeatureFlag.CLASSPATH_RESOURCE_NAVIGATION)
 							? getDefinitionForClasspathResource(project, cu, valueNode, value)
 							: Collections.emptyList();
 				}
 				else {
-					return isEnabled(FeatureFlag.PROPERTY_KEY_NAVIGATION)
+					return config.isFeatureEnabled(FeatureFlag.PROPERTY_KEY_NAVIGATION)
 							? getDefinitionForProperty(project, cu, valueNode)
 							: Collections.emptyList();
 				}
@@ -77,10 +77,6 @@ public class ValueDefinitionProvider implements IJavaLocationLinksProvider {
 		return Collections.emptyList();
 	}
 	
-	private boolean isEnabled(FeatureFlag feature) {
-		return config == null || config.isFeatureEnabled(feature);
-	}
-
 	private List<LocationLink> getDefinitionForProperty(IJavaProject project, CompilationUnit cu, Expression valueNode) {
 		String propertyKey = propertyExtractor.extractPropertyKey(valueNode);
 		

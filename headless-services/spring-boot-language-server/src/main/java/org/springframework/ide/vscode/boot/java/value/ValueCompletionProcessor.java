@@ -243,7 +243,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 
 	private List<Match<PropertyInfo>> findMatches(String prefix, IDocument doc) {
 		// property key proposals can be turned off, classpath resource proposals stay
-		if (config != null && !config.isFeatureEnabled(FeatureFlag.VALUE_PROPERTY_COMPLETION)) {
+		if (!config.isFeatureEnabled(FeatureFlag.VALUE_PROPERTY_COMPLETION)) {
 			return new ArrayList<>();
 		}
 
@@ -270,7 +270,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	}
 
 	private void addClasspathResourceProposals(IJavaProject project, TextDocument doc, int startOffset, int endOffset, String prefix, boolean includeQuotes, Collection<ICompletionProposal> completions) {
-		if (config != null && !config.isFeatureEnabled(FeatureFlag.VALUE_CLASSPATH_COMPLETION)) {
+		if (!config.isFeatureEnabled(FeatureFlag.VALUE_CLASSPATH_COMPLETION)) {
 			return;
 		}
 
