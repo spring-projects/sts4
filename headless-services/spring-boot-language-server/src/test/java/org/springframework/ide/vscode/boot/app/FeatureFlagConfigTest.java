@@ -70,6 +70,22 @@ public class FeatureFlagConfigTest {
 	}
 
 	@Test
+	void disabledFeaturesAreParsedOncePerChange() {
+		BootJavaConfig config = configWith("""
+				{"boot-java": {"feature-flags": {
+					"value-property-completion": false,
+					"scope-completion": false,
+					"bean-name-navigation": true,
+					"unknown-feature": false
+				}}}""");
+
+		assertEquals(Set.of(FeatureFlag.VALUE_PROPERTY_COMPLETION, FeatureFlag.SCOPE_COMPLETION), config.getDisabledFeatures());
+
+		config.handleConfigurationChange(new Settings(null));
+		assertTrue(config.getDisabledFeatures().isEmpty());
+	}
+
+	@Test
 	void malformedFlagsLeaveFeaturesEnabled() {
 		BootJavaConfig config = configWith("{\"boot-java\": {\"feature-flags\": [\"value-property-completion\"]}}");
 		assertTrue(config.isFeatureEnabled(FeatureFlag.VALUE_PROPERTY_COMPLETION));

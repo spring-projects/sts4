@@ -14,7 +14,11 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -56,7 +60,8 @@ public class BootJavaConfig implements InitializingBean {
 	public static final boolean VALIDAITON_SPEL_EXPRESSIONS_ENABLED_DEFAULT = true;
 
 	private final SettingsStore settingsStore;
-	private Settings settings = new Settings(null);
+	private volatile Settings settings = new Settings(null);
+	private volatile Set<FeatureFlag> disabledFeatures = Collections.unmodifiableSet(EnumSet.noneOf(FeatureFlag.class));
 	private ListenerList<Void> listeners = new ListenerList<Void>();
 
 	public BootJavaConfig(SettingsStore settingsStore) {
@@ -199,6 +204,7 @@ public class BootJavaConfig implements InitializingBean {
 	
 	public void handleConfigurationChange(Settings newConfig) {
 		this.settings = newConfig;
+		this.disabledFeatures = parseDisabledFeatures(newConfig);
 		listeners.fire(null);
 	}
 
@@ -305,14 +311,38 @@ public class BootJavaConfig implements InitializingBean {
 	 * {@code false}; a missing setting, a missing id or a non-boolean value leaves it on.
 	 */
 	public boolean isFeatureEnabled(FeatureFlag feature) {
+		return !disabledFeatures.contains(feature);
+	}
+
+	/**
+	 * The features that are turned off by the current {@code boot-java.feature-flags} setting.
+	 */
+	public Set<FeatureFlag> getDisabledFeatures() {
+		return disabledFeatures;
+	}
+
+	private static Set<FeatureFlag> parseDisabledFeatures(Settings settings) {
+		EnumSet<FeatureFlag> disabled = EnumSet.noneOf(FeatureFlag.class);
 		JsonElement flags = settings.getRawProperty("boot-java", "feature-flags");
 		if (flags != null && flags.isJsonObject()) {
-			JsonElement value = flags.getAsJsonObject().get(feature.getId());
-			if (value != null && value.isJsonPrimitive() && value.getAsJsonPrimitive().isBoolean()) {
-				return value.getAsBoolean();
+			for (Map.Entry<String, JsonElement> entry : flags.getAsJsonObject().entrySet()) {
+				Optional<FeatureFlag> feature = FeatureFlag.fromId(entry.getKey());
+				JsonElement value = entry.getValue();
+				if (feature.isEmpty()) {
+					log.warn("Unknown feature id in boot-java.feature-flags: '{}'", entry.getKey());
+				}
+				else if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isBoolean()) {
+					log.warn("Value for feature id '{}' in boot-java.feature-flags is not a boolean: {}", entry.getKey(), value);
+				}
+				else if (!value.getAsBoolean()) {
+					disabled.add(feature.get());
+				}
 			}
 		}
-		return true;
+		else if (flags != null && !flags.isJsonNull()) {
+			log.warn("boot-java.feature-flags must be an object mapping feature ids to true or false: {}", flags);
+		}
+		return Collections.unmodifiableSet(disabled);
 	}
 
 	public Settings getRawSettings() {
