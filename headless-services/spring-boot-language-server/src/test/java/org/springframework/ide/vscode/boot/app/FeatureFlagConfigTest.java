@@ -14,7 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -98,23 +97,6 @@ public class FeatureFlagConfigTest {
 
 		config.handleConfigurationChange(new Settings(JsonParser.parseString("{\"boot-java\": {\"feature-flags\": {\"scope-completion\": false}}}")));
 		assertFalse(config.isFeatureEnabled(FeatureFlag.SCOPE_COMPLETION));
-	}
-
-	@Test
-	void everyIdConstantHasAFeatureFlagAndViceVersa() throws Exception {
-		Set<String> constants = new HashSet<>();
-		for (Field field : FeatureFlagIds.class.getDeclaredFields()) {
-			if (field.getType() == String.class) {
-				constants.add((String) field.get(null));
-			}
-		}
-
-		Set<String> enumIds = new HashSet<>();
-		for (FeatureFlag feature : FeatureFlag.values()) {
-			enumIds.add(feature.getId());
-		}
-
-		assertEquals(constants, enumIds);
 	}
 
 	@Test

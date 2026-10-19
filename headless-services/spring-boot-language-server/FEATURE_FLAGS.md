@@ -165,4 +165,4 @@ Cron expression hints have no flag. They are switched with the existing setting 
 |---|---|
 | `pom-inlay-hints` | Spring Boot version and starter hints |
 
-Ids are part of the settings contract and stay stable once released. The authoritative list is `FeatureFlagIds` in `org.springframework.ide.vscode.boot.app`.
+Ids are part of the settings contract and stay stable once released. The authoritative list is the `FeatureFlag` enum in `org.springframework.ide.vscode.boot.app`.
