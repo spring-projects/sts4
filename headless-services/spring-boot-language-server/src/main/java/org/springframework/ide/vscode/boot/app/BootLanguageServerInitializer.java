@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.boot.app;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
@@ -194,6 +196,17 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 	}
 	
+	private void refreshAfterFeatureFlagsChange() {
+		// the refresh requests don't block, so they are sent right away (and not via the async runner,
+		// which configuration changes might be waiting on)
+		if (server.getWorkspaceService().supportsCodeLensRefresh()) {
+			server.getClient().refreshCodeLenses();
+		}
+		if (server.getWorkspaceService().supportsSemanticTokensRefresh()) {
+			server.getClient().refreshSemanticTokens();
+		}
+	}
+
 	private void startListening() {
 		components.getReconcileEngine().ifPresent(reconcileEngine -> {
 			server.getTextDocumentService().onDidChangeContent(params -> {
@@ -212,9 +225,16 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			});
 //			ServerUtils.listenToClassFileChanges(server.getWorkspaceService().getFileObserver(), projectFinder, project -> validateAll(components, server, project));
 		});
+		AtomicReference<Set<FeatureFlag>> disabledFeatures = new AtomicReference<>(config.getDisabledFeatures());
 		config.addListener(evt -> {
 			if (server.getClient() != null) {
 				server.getClient().refreshInlayHints();
+				
+				// code lenses and semantic tokens are not re-requested by the client on their own
+				Set<FeatureFlag> newDisabledFeatures = config.getDisabledFeatures();
+				if (!newDisabledFeatures.equals(disabledFeatures.getAndSet(newDisabledFeatures))) {
+					refreshAfterFeatureFlagsChange();
+				}
 			}
 			
 			reconcile();

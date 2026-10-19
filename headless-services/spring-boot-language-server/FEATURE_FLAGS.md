@@ -11,7 +11,7 @@ It is an object that maps a feature id to `true` (on) or `false` (off):
 ```
 
 - A feature is off only if its id is explicitly set to `false`. Everything else leaves it on: a missing setting, a missing id, a non-boolean value, or an unknown id.
-- The setting is read on every request, so changes apply without restarting the language server.
+- Changes apply without restarting the language server. When the flags change, the language server asks the client to refresh inlay hints, code lenses and semantic tokens. The document outline has no such refresh request in the protocol and updates with the next edit of the file.
 - Flags only switch features off. Existing dedicated settings (for example the code lens settings) still apply on top of them.
 - Where the setting goes depends on the client. In VS Code, put it in `settings.json`. VS Code merges object-valued settings across scopes, so a workspace can re-enable a single id.
 
