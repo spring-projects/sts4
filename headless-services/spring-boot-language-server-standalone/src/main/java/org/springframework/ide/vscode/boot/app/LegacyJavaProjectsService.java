@@ -136,8 +136,9 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 					java.io.File pomFile = new java.io.File(dirFile, MavenCore.POM_XML);
 					if (pomFile.exists() && pomFile.isFile()) {
 						log.info("Found Maven project: {}", pomFile.getAbsolutePath());
-						mavenProjectCache.project(pomFile);
-						registerMavenModulePoms(pomFile, new HashSet<>());
+						File normalizedPom = pomFile.toPath().toAbsolutePath().normalize().toFile();
+						mavenProjectCache.project(normalizedPom);
+						registerMavenModulePoms(normalizedPom, new HashSet<>());
 						return java.nio.file.FileVisitResult.SKIP_SUBTREE;
 					}
 
