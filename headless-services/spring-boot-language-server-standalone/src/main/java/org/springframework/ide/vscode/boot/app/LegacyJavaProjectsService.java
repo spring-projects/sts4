@@ -182,7 +182,7 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 		try {
 			project = MavenCore.getDefault().readProject(pomFile, false);
 		}
-		catch (MavenException e) {
+		catch (MavenException | RuntimeException e) {
 			log.debug("Cannot read Maven project model, module discovery may be incomplete: {}", pomPath, e);
 			return;
 		}
