@@ -70,11 +70,9 @@ public class CommonQuickfixes {
 			null
 	);
 
-	private final QuickfixType missingPropertyFix;
-
-	// Set once the client has declared support for creating files through workspace edits; stays
-	// false when no LSP client ever connects (MCP-only mode), so the fix is never offered there.
-	private volatile boolean createFileSupported = false;
+	// Registered once the client has declared support for creating files through workspace edits; stays
+	// null when no LSP client ever connects (MCP-only mode), so the fix is never offered there.
+	private volatile QuickfixType missingPropertyFix;
 
 	private final Gson gson = new Gson();
 
@@ -99,8 +97,15 @@ public class CommonQuickfixes {
 	}
 
 	public CommonQuickfixes(QuickfixRegistry r, JavaProjectFinder projectFinder, CompletableFuture<ClientCapabilities> clientCapabilities) {
-		clientCapabilities.thenAccept(capabilities -> createFileSupported = supportsCreateFile(capabilities));
-		missingPropertyFix = r.register(MISSING_PROPERTY_APP_QF_ID, (Object _params) -> Mono.fromSupplier(() -> {
+		clientCapabilities.thenAccept(capabilities -> {
+			if (supportsCreateFile(capabilities)) {
+				missingPropertyFix = r.register(MISSING_PROPERTY_APP_QF_ID, (Object params) -> createMissingPropertyFix(params, projectFinder));
+			}
+		});
+	}
+
+	private Mono<QuickfixEdit> createMissingPropertyFix(Object _params, JavaProjectFinder projectFinder) {
+		return Mono.fromSupplier(() -> {
 			MissingPropertyData params = gson.fromJson((JsonElement)_params, MissingPropertyData.class);
 			try {
 				Optional<IJavaProject> p = projectFinder.find(params.getDoc());
@@ -142,7 +147,7 @@ public class CommonQuickfixes {
 				log.error("", e);
 			}
 			return NULL_FIX;
-		}));
+		});
 	}
 
 	/**
@@ -150,7 +155,7 @@ public class CommonQuickfixes {
 	 * declared support for creating files via workspace edits.
 	 */
 	public QuickfixType getMissingPropertyFix() {
-		return createFileSupported ? missingPropertyFix : null;
+		return missingPropertyFix;
 	}
 
 	private static boolean supportsCreateFile(ClientCapabilities capabilities) {
