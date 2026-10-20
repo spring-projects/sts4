@@ -137,7 +137,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 					appContext.getBean(CronSemanticTokens.class), config, appContext.getBean(BootPropertiesReconcileEngine.class)),
 			new BootJavaLanguageServerComponents(appContext),
 			new SpringXMLLanguageServerComponents(server, springIndexer, params, config, appContext.getBean(SpelReconciler.class)),
-			new SpringFactoriesLanguageServerComponents(appContext.getBean(SpringFactoriesReconcileEngine.class), springIndexer),
+			new SpringFactoriesLanguageServerComponents(appContext.getBean(SpringFactoriesReconcileEngine.class), projectFinder, springIndexer, config),
 			new PomLanguageServerComponents(server, projectFinder, params.projectObserver, appContext.getBean(SpringProjectsProvider.class), appContext.getBean(MavenMetadataProvider.class), appContext.getBean(BootJavaConfig.class)),
 			new JpaQueryPropertiesLanguageServerComponents(server.getTextDocumentService(), projectFinder, appContext.getBean(JpqlSemanticTokens.class),
 					appContext.getBean(HqlSemanticTokens.class), appContext.getBean(JpqlSupportState.class), (Reconciler) appContext.getBean("hqlReconciler"), (Reconciler) appContext.getBean("jpqlReconciler"), config)
