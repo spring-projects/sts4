@@ -17,11 +17,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.IndexerTestConf;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
@@ -50,6 +52,9 @@ public class SpringPropertiesIndexTest {
 	@Autowired
 	private DefaultSpringPropertyIndexProvider propertyIndexProvider;
 
+	@Autowired
+	private SpringSymbolIndex symbolIndex;
+
     @Test
     void testPropertiesIndexRefreshOnProjectChange() throws Exception {
         harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/boot-1.2.0-properties-live-metadta/").toURI()));
@@ -72,12 +77,14 @@ public class SpringPropertiesIndexTest {
         propertyIndexProvider.getIndex(doc);
         verify(progressService, never()).createIndefiniteProgressTask(any(), any(), any());
 
-        // Change POM file for the project
-        harness.changeFile(new File(directory, MavenCore.POM_XML).toURI().toASCIIString());
-
-        // POM has changed, hence project needs to be reloaded, cached value is cleared
+        // Change POM file for the project. The index may be rebuilt eagerly in the background
+        // (e.g. to reconcile the config files of the project), hence the mock is set up beforehand
         progressService = mock(ProgressService.class);
         propertyIndexProvider.setProgressService(progressService);
+        harness.changeFile(new File(directory, MavenCore.POM_XML).toURI().toASCIIString());
+        symbolIndex.waitOperation().get(30, TimeUnit.SECONDS);
+
+        // POM has changed, hence project needs to be reloaded, cached value is cleared and rebuilt
         propertyIndexProvider.getIndex(doc);
         verify(progressService, atLeastOnce()).createIndefiniteProgressTask(any(), any(), any());
     }
