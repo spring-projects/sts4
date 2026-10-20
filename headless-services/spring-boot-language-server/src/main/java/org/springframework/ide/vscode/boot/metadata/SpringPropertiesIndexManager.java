@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2023 Pivotal, Inc.
+ * Copyright (c) 2014, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,9 @@
 package org.springframework.ide.vscode.boot.metadata;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
@@ -40,7 +43,7 @@ import com.google.common.collect.ImmutableList;
  *
  * @author Kris De Volder
  */
-public class SpringPropertiesIndexManager extends ListenerManager<Listener<SpringPropertiesIndexManager>> {
+public class SpringPropertiesIndexManager extends ListenerManager<Listener<Collection<IJavaProject>>> {
 		
 	private static final Logger log = LoggerFactory.getLogger(SpringPropertiesIndexManager.class);
 
@@ -98,11 +101,18 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 		}
 	}
 
+	/**
+	 * Discards all indexes and notifies the listeners with the projects whose index had been built,
+	 * since only those can have results depending on it.
+	 */
 	public synchronized void clear() {
 		if (indexes != null) {
+			List<IJavaProject> affected = new ArrayList<>(indexes.asMap().keySet());
 			indexes.invalidateAll();
-			for (Listener<SpringPropertiesIndexManager> l : getListeners()) {
-				l.changed(this);
+			if (!affected.isEmpty()) {
+				for (Listener<Collection<IJavaProject>> l : getListeners()) {
+					l.changed(affected);
+				}
 			}
 		}
 	}

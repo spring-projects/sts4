@@ -100,13 +100,6 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 		this.cronSemanticTokensHandler = new CronPropertiesSemanticTokensHandler(cronSemanticTokens, parser);
 		this.cronInlayHintsHandler = new CronPropertiesInlayHintsHandler(config::isCronInlayHintsEnabled, parser);
 
-		indexProvider.onChange(() -> {
-			getReconcileEngine().ifPresent(reconciler -> {
-				server.getTextDocumentService().getAll().stream().filter(doc -> getInterestingLanguages().contains(doc.getLanguageId())).forEach(doc -> {
-					server.validateWith(doc.getId(), reconciler);
-				});
-			});
-		});
 		
 		// Register YAML -> Props conversion command
 		new YamlToPropertiesCommand(server);

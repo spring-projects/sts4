@@ -44,6 +44,8 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
@@ -86,7 +88,7 @@ public class SpringIndexerConfigFilesTest {
 		String yamlUri = uri("src/main/resources/application-dev.yml");
 		String factoriesUri = uri("src/main/resources/META-INF/spring.factories");
 
-		assertEquals(Set.of(propertiesUri, yamlUri, factoriesUri), diagnostics.stream().map(CachedDiagnostic::getDocURI).collect(Collectors.toSet()));
+		assertEquals(Set.of(propertiesUri, yamlUri, factoriesUri, uri("src/test/resources/application.properties")), diagnostics.stream().map(CachedDiagnostic::getDocURI).collect(Collectors.toSet()));
 
 		assertEquals(Set.of("PROP_UNKNOWN_PROPERTY", "PROP_VALUE_TYPE_MISMATCH"), codes(diagnostics, propertiesUri));
 		assertEquals(Set.of("YAML_UNKNOWN_PROPERTY", "YAML_SHOULD_ESCAPE"), codes(diagnostics, yamlUri));
@@ -102,10 +104,10 @@ public class SpringIndexerConfigFilesTest {
 	}
 
 	@Test
-	void ignoresTestResourcesAndUnrelatedPropertyFiles() throws Exception {
+	void ignoresUnrelatedPropertyFilesAndBuildOutput() throws Exception {
 		Set<String> uris = configFilesIndexer.getDiagnostics(project).stream().map(CachedDiagnostic::getDocURI).collect(Collectors.toSet());
 
-		assertFalse(uris.contains(uri("src/test/resources/application.properties")));
+		assertFalse(uris.contains(uri("target/classes/application.properties")));
 		assertFalse(uris.contains(uri("src/main/resources/messages.properties")));
 		assertFalse(configFilesIndexer.isInterestedIn(uri("src/main/resources/messages.properties")));
 		assertTrue(configFilesIndexer.isInterestedIn(uri("src/main/resources/application.properties")));
@@ -145,6 +147,55 @@ public class SpringIndexerConfigFilesTest {
 	}
 
 	@Test
+	void reconcilesOpenedDocumentFromEditorContentInsteadOfDisk() throws Exception {
+		String propertiesUri = uri("src/main/resources/application.properties");
+		assertEquals(Set.of("PROP_UNKNOWN_PROPERTY", "PROP_VALUE_TYPE_MISMATCH"), codes(configFilesIndexer.getDiagnostics(project), propertiesUri));
+
+		// unsaved editor content differs from the file on disk
+		Editor editor = harness.newEditorFromFileUri(propertiesUri, LanguageId.BOOT_PROPERTIES);
+		editor.setText("server.port=8080\nserver.port=9090\n");
+
+		indexer.updateDocument(propertiesUri, null, "test").get(10, TimeUnit.SECONDS);
+		assertEquals(Set.of("PROP_DUPLICATE_KEY"), codes(configFilesIndexer.getDiagnostics(project), propertiesUri));
+	}
+
+	@Test
+	void ignoresConfigFilesInBuildOutputFolders() throws Exception {
+		Path file = directory.toPath().resolve("target/classes/application.properties");
+		String docUri = file.toUri().toASCIIString();
+
+		Files.createDirectories(file.getParent());
+		Files.writeString(file, "server.port=nope\n");
+		try {
+			indexer.createDocument(docUri).get(10, TimeUnit.SECONDS);
+			indexer.initializeProject(project, true).get(10, TimeUnit.SECONDS);
+			assertEquals(Set.of(), codes(configFilesIndexer.getDiagnostics(project), docUri));
+		} finally {
+			Files.deleteIfExists(file);
+		}
+	}
+
+	@Test
+	void reconcilesOpenedConfigFilesOutsideOfSourceFolders() throws Exception {
+		Path file = directory.toPath().resolve("config/application.properties");
+		String docUri = file.toUri().toASCIIString();
+
+		Files.createDirectories(file.getParent());
+		Files.writeString(file, "server.port=nope\n");
+		try {
+			indexer.initializeProject(project, true).get(10, TimeUnit.SECONDS);
+			assertEquals(Set.of(), codes(configFilesIndexer.getDiagnostics(project), docUri));
+
+			harness.newEditorFromFileUri(docUri, LanguageId.BOOT_PROPERTIES);
+			indexer.initializeProject(project, true).get(10, TimeUnit.SECONDS);
+			assertEquals(Set.of("PROP_VALUE_TYPE_MISMATCH"), codes(configFilesIndexer.getDiagnostics(project), docUri));
+		} finally {
+			Files.deleteIfExists(file);
+			Files.deleteIfExists(file.getParent());
+		}
+	}
+
+	@Test
 	void mcpToolReturnsConfigFileDiagnostics() throws Exception {
 		DiagnosticsMcpTools tools = new DiagnosticsMcpTools(new ProjectLookup(projectFinder), indexer, versionDiagnosticProvider);
 
@@ -153,7 +204,7 @@ public class SpringIndexerConfigFilesTest {
 		Set<String> codes = result.stream().map(ProjectDiagnostic::code).collect(Collectors.toSet());
 		assertTrue(codes.containsAll(Set.of("PROP_UNKNOWN_PROPERTY", "PROP_VALUE_TYPE_MISMATCH", "YAML_UNKNOWN_PROPERTY", "YAML_SHOULD_ESCAPE", "FACTORIES_KEY_NOT_SUPPORTED")), codes.toString());
 
-		ProjectDiagnostic typeMismatch = result.stream().filter(d -> "PROP_VALUE_TYPE_MISMATCH".equals(d.code())).findFirst().get();
+		ProjectDiagnostic typeMismatch = result.stream().filter(d -> "PROP_VALUE_TYPE_MISMATCH".equals(d.code()) && d.uri().endsWith("src/main/resources/application.properties")).findFirst().get();
 		assertEquals(uri("src/main/resources/application.properties"), typeMismatch.uri());
 		assertEquals("error", typeMismatch.severity());
 		assertEquals(3, typeMismatch.startLine());

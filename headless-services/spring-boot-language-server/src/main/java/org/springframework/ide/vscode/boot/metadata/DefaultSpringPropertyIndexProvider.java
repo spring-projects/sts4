@@ -11,7 +11,9 @@
 
 package org.springframework.ide.vscode.boot.metadata;
 
+import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
@@ -27,18 +29,11 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 	private JavaProjectFinder javaProjectFinder;
 	private SpringPropertiesIndexManager indexManager;
 
-	private Runnable changeHandler = null;
-
 	private ProgressService progressService = ProgressService.NO_PROGRESS;
 
 	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder, ProjectObserver projectObserver, FileObserver fileObserver, ValueProviderRegistry valueProviders, BootJavaConfig config) {
 		this.javaProjectFinder = javaProjectFinder;
 		this.indexManager = new SpringPropertiesIndexManager(valueProviders, projectObserver, fileObserver);
-		this.indexManager.addListener(info -> {
-			if (changeHandler != null) {
-				changeHandler.run();
-			}
-		});
 		if (config != null) {
 			config.addListener(v -> indexManager.setCommonPropertiesFile(config.getCommonPropertiesFile()));
 		}
@@ -72,8 +67,8 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 	}
 
 	@Override
-	public void onChange(Runnable changeHandler) {
-		this.changeHandler = changeHandler;
+	public void onChange(Consumer<Collection<IJavaProject>> listener) {
+		indexManager.addListener(listener::accept);
 	}
 
 }

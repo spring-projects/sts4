@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2023 Pivotal, Inc.
+ * Copyright (c) 2016, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,9 @@
 package org.springframework.ide.vscode.boot.metadata;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -63,5 +66,24 @@ public class PropertiesIndexTest {
         FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService).getProperties();
         PropertyInfo propertyInfo = index.get("my.server.port");
         assertNull(propertyInfo);
+    }
+
+    @Test
+    void clearNotifiesWithProjectsWithBuiltIndex() throws Exception {
+        SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
+                new ValueProviderRegistry(), null, null);
+        List<IJavaProject> notified = new ArrayList<>();
+        List<IJavaProject> notifiedByOther = new ArrayList<>();
+        indexManager.addListener(notified::addAll);
+        indexManager.addListener(notifiedByOther::addAll);
+
+        IJavaProject mavenProject = projects.mavenProject(CUSTOM_PROPERTIES_PROJECT);
+        indexManager.clear();
+        assertEquals(List.of(), notified);
+
+        indexManager.get(mavenProject, progressService);
+        indexManager.clear();
+        assertEquals(List.of(mavenProject), notified);
+        assertEquals(List.of(mavenProject), notifiedByOther);
     }
 }

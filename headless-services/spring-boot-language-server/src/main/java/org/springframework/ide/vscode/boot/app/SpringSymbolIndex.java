@@ -229,8 +229,17 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		BiFunction<TextDocument, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorFactory = (doc, aggregator) -> server.createProblemCollector(doc, aggregator);
 		springIndexerJava = new SpringIndexerJava(handler, componentIndexers, this.cache, projectFinder(), server.getProgressService(), jdtReconciler, problemCollectorFactory, config.getJavaValidationSettingsJson(), cuCache);
 		factoriesIndexer = new SpringFactoriesIndexer(handler, cache);
-		// config-file diagnostics are only collected, never published: open documents keep their regular document reconciler
-		configFilesIndexer = new SpringIndexerConfigFiles(bootPropertiesReconcileEngine, springFactoriesReconcileEngine, (doc, aggregator) -> server.createProblemCollector(doc, aggregator, false));
+		configFilesIndexer = new SpringIndexerConfigFiles(bootPropertiesReconcileEngine, springFactoriesReconcileEngine,
+				projectFinder(), server.getTextDocumentService(),
+				(doc, aggregator) -> server.createProblemCollector(doc, aggregator));
+
+		// the properties metadata of projects changed: their config files need to be reconciled again
+		params.indexProvider.onChange(projects -> projects.forEach(project -> {
+			if (project.getElementName() != null) {
+				this.latestScheduledTaskByProject.put(project.getElementName(),
+						CompletableFuture.runAsync(new InitializeProject(project, configFilesIndexer, true), this.updateQueue));
+			}
+		}));
 
 		this.indexers = new SpringIndexer[] {
 				factoriesIndexer, // factories indexder should be the first, so that java indexers and reconcilers can rely on those indexed elements
@@ -323,7 +332,6 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			}
 			springIndexerJava.setScanTestJavaSources(config.isScanTestJavaSources());
 			springIndexerJava.setValidationSeveritySettings(this.config.getJavaValidationSettingsJson());
-			configFilesIndexer.setScanTestSources(config.isScanTestJavaSources());
 		}
 	}
 	

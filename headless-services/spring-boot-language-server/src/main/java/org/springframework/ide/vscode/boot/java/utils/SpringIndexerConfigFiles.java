@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.utils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -35,25 +34,28 @@ import org.springframework.ide.vscode.boot.java.reconcilers.CachedDiagnostic;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesReconcileEngine;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.LazyTextDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * Indexer that reconciles the Spring Boot configuration files of a project
  * ({@code application*.properties}, {@code application*.yml}/{@code .yaml}, the {@code bootstrap*}
- * variants and {@code *.factories} files) found in its own source and resource folders, and keeps
+ * variants and {@code *.factories} files) found in its own source and resource folders (plus opened ones), and keeps
  * the resulting diagnostics per project so that they can be queried without a client having opened
  * the files - which is what {@code getProjectDiagnostics} needs in the MCP-only standalone mode.
  *
  * <p>Diagnostics are kept in memory only: the files are few and cheap to reconcile, and their
  * diagnostics depend on the project's classpath metadata, so persisting them across sessions
- * would only add cache-invalidation complexity. Nothing is published to an LSP client here;
- * open documents keep getting their diagnostics from the regular document reconciler.
+ * would only add cache-invalidation complexity. Opened documents are reconciled from the
+ * editor's content rather than from disk.
  *
  * @author Martin Lippert
  */
@@ -75,21 +77,20 @@ public class SpringIndexerConfigFiles implements SpringIndexer {
 	private final IReconcileEngine propertiesReconcileEngine;
 	private final IReconcileEngine factoriesReconcileEngine;
 	private final BiFunction<TextDocument, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator;
+	private final JavaProjectFinder projectFinder;
+	private final SimpleTextDocumentService documents;
 
 	// project name -> doc URI -> diagnostics of that file
 	private final Map<String, Map<String, List<CachedDiagnostic>>> diagnosticsByProject = new ConcurrentHashMap<>();
 
-	private volatile boolean scanTestSources = false;
-
 	public SpringIndexerConfigFiles(IReconcileEngine propertiesReconcileEngine, IReconcileEngine factoriesReconcileEngine,
+			JavaProjectFinder projectFinder, SimpleTextDocumentService documents,
 			BiFunction<TextDocument, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator) {
+		this.projectFinder = projectFinder;
+		this.documents = documents;
 		this.propertiesReconcileEngine = propertiesReconcileEngine;
 		this.factoriesReconcileEngine = factoriesReconcileEngine;
 		this.problemCollectorCreator = problemCollectorCreator;
-	}
-
-	public void setScanTestSources(boolean scanTestSources) {
-		this.scanTestSources = scanTestSources;
 	}
 
 	@Override
@@ -138,14 +139,23 @@ public class SpringIndexerConfigFiles implements SpringIndexer {
 		long startTime = System.currentTimeMillis();
 
 		Map<String, List<CachedDiagnostic>> perDoc = new ConcurrentHashMap<>();
-		List<Path> files = getFiles(project);
-		for (Path file : files) {
-			String docURI = UriUtil.toUri(file.toFile()).toASCIIString();
+		List<String> docURIs = new ArrayList<>();
+		for (Path file : getFiles(project)) {
+			docURIs.add(UriUtil.toUri(file.toFile()).toASCIIString());
+		}
+		// opened config files outside of the scanned folders are reconciled as well
+		for (TextDocument openDoc : documents.getAll()) {
+			String docURI = openDoc.getUri();
+			if (isInterestedIn(docURI) && !covers(project, docURI) && projectFinder.find(openDoc.getId()).filter(project::equals).isPresent()) {
+				docURIs.add(docURI);
+			}
+		}
+		for (String docURI : docURIs) {
 			perDoc.put(docURI, reconcile(docURI, null));
 		}
 		diagnosticsByProject.put(project.getElementName(), perDoc);
 
-		log.info("reconcile config files for project: {} - no. of files: {} - took ms: {}", project.getElementName(), files.size(),
+		log.info("reconcile config files for project: {} - no. of files: {} - took ms: {}", project.getElementName(), docURIs.size(),
 				System.currentTimeMillis() - startTime);
 	}
 
@@ -157,7 +167,7 @@ public class SpringIndexerConfigFiles implements SpringIndexer {
 	@Override
 	public void updateFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception {
 		String docURI = updatedDoc.getDocURI();
-		if (!isInterestedIn(docURI) || !isInScannedFolder(project, UriUtil.toFile(docURI).toPath())) {
+		if (!covers(project, docURI)) {
 			return;
 		}
 		Map<String, List<CachedDiagnostic>> perDoc = diagnosticsByProject.computeIfAbsent(project.getElementName(),
@@ -188,10 +198,12 @@ public class SpringIndexerConfigFiles implements SpringIndexer {
 
 	private List<CachedDiagnostic> reconcile(String docURI, String content) {
 		try {
-			if (content == null) {
-				content = Files.readString(UriUtil.toFile(docURI).toPath(), StandardCharsets.UTF_8);
+			// prefer the editor's version of an opened document over what is on disk; otherwise read the file lazily
+			TextDocument doc = documents.getLatestSnapshot(docURI);
+			if (doc == null) {
+				LanguageId language = languageOf(docURI);
+				doc = content != null ? new TextDocument(docURI, language, 0, content) : new LazyTextDocument(docURI, language);
 			}
-			TextDocument doc = new TextDocument(docURI, languageOf(docURI), 0, content);
 
 			List<CachedDiagnostic> diagnostics = new ArrayList<>();
 			IProblemCollector problemCollector = problemCollectorCreator.apply(doc,
@@ -211,6 +223,7 @@ public class SpringIndexerConfigFiles implements SpringIndexer {
 		return docURI.endsWith(BootPropertiesReconcileEngine.PROPERTIES) ? LanguageId.BOOT_PROPERTIES : LanguageId.BOOT_PROPERTIES_YAML;
 	}
 
+	/** Config files in the project's own source and resource folders (test folders included). */
 	private List<Path> getFiles(IJavaProject project) {
 		List<Path> files = new ArrayList<>();
 		for (Path folder : getFoldersToScan(project)) {
@@ -225,19 +238,23 @@ public class SpringIndexerConfigFiles implements SpringIndexer {
 		return files;
 	}
 
-	private boolean isInScannedFolder(IJavaProject project, Path path) {
-		Path normalized = path.toAbsolutePath().normalize();
-		return getFoldersToScan(project).stream().anyMatch(normalized::startsWith);
+	/** Whether the document is a config file in one of the project's scanned folders. */
+	private boolean covers(IJavaProject project, String docURI) {
+		if (!isInterestedIn(docURI)) {
+			return false;
+		}
+		Path file = UriUtil.toFile(docURI).toPath().toAbsolutePath().normalize();
+		return getFoldersToScan(project).stream().anyMatch(file::startsWith);
 	}
 
-	/** Own source and resource folders of the project (test folders only when enabled), deduplicated and existing. */
+	/** Own source and resource folders of the project, deduplicated and existing. */
 	private Set<Path> getFoldersToScan(IJavaProject project) {
 		Set<Path> folders = new LinkedHashSet<>();
 		IClasspath classpath = project.getClasspath();
 		if (classpath != null) {
 			try {
 				for (CPE cpe : classpath.getClasspathEntries()) {
-					if (Classpath.isProjectSource(cpe) && (scanTestSources || !cpe.isTest())) {
+					if (Classpath.isProjectSource(cpe)) {
 						Path folder = new File(cpe.getPath()).toPath().toAbsolutePath().normalize();
 						if (Files.isDirectory(folder)) {
 							folders.add(folder);
