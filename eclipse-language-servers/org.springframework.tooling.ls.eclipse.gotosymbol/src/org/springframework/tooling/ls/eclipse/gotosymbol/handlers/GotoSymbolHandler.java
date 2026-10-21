@@ -11,18 +11,24 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.gotosymbol.handlers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.bindings.TriggerSequence;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.lsp4e.LSPEclipseUtils;
-import org.eclipse.lsp4e.LanguageServiceAccessor;
-import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.lsp4e.LanguageServers;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -34,7 +40,10 @@ import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialo
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InFileSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InProjectSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InWorkspaceSymbolsProvider;
+import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.SelectionTracker.DocumentData;
+import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.SymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.SymbolsProviderScopePreference;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 
 @SuppressWarnings("restriction")
 public class GotoSymbolHandler extends AbstractHandler {
@@ -59,27 +68,88 @@ public class GotoSymbolHandler extends AbstractHandler {
 			debug("GotoSymbolDialog already open: send 'toggle' signal");
 			currentDialog.toggleSymbolsProvider();
 		} else {
-			IWorkbenchPart part = getActiveWorkbenchPart(HandlerUtil.getActiveEditor(event));
-			if (part instanceof ITextEditor) {
-				final Shell shell = HandlerUtil.getActiveShell(event);
-				final ITextEditor textEditor = (ITextEditor) part;
+			IWorkbenchPart part = getActiveWorkbenchPart(HandlerUtil.getActivePart(event));
+			ITextEditor textEditor = part instanceof ITextEditor ? (ITextEditor) part : null;
 
-				int lastSymbolsProviderIndex = SymbolsProviderScopePreference.INSTANCE.getIndex();
-				GotoSymbolDialogModel model = new GotoSymbolDialogModel(getKeybindings(event), lastSymbolsProviderIndex, InWorkspaceSymbolsProvider.createFor(event), InProjectSymbolsProvider.createFor(event), InFileSymbolsProvider.createFor(textEditor))
-				.setOkHandler(GotoSymbolDialogModel.OPEN_IN_EDITOR_OK_HANDLER);
-				GotoSymbolDialog dialog = new GotoSymbolDialog(shell, textEditor, model, /*alignRight*/ false);
-				currentDialog = model;
-				dialog.open();
-				debug("GotoSymbolDialog opened");
-				dialog.getShell().addDisposeListener(de -> {
-					debug("GotoSymbolDialog closed!");
-					SymbolsProviderScopePreference.INSTANCE.setIndex(model.getCurrentSymbolsProviderIndex());
-					currentDialog = null;
-				});
+			// Provider order is: workspace, project, file. The scope is selected by index.
+			List<SymbolsProvider> providers = new ArrayList<>();
+			if (InWorkspaceSymbolsProvider.hasActiveServer()) {
+				providers.add(InWorkspaceSymbolsProvider.createForWorkspace());
 			}
+			int initialIndex;
+			DocumentData documentData = null;
+			if (textEditor != null) {
+				// The project scope needs a project, the file scope needs a language server for the document
+				SymbolsProvider projectProvider = InProjectSymbolsProvider.createFor(event);
+				if (projectProvider != null) {
+					providers.add(projectProvider);
+				}
+				if (hasDocumentSymbolServer(textEditor)) {
+					providers.add(InFileSymbolsProvider.createFor(textEditor));
+				}
+				// The remembered scope may not be available for this editor
+				initialIndex = Math.min(SymbolsProviderScopePreference.INSTANCE.getIndex(), providers.size() - 1);
+			} else {
+				// No text editor is active (e.g. Project / Package Explorer has the focus). The initial scope is the one
+				// closest to the selection: file for a file, project for a project, source folder, package etc.
+				// and workspace if there is nothing selected.
+				IResource resource = resourceFor(HandlerUtil.getCurrentSelection(event));
+				IProject selectedProject = resource == null ? null : resource.getProject();
+				// Project and file scopes only make sense if a language server has started for the selected project
+				if (InWorkspaceSymbolsProvider.hasActiveServer(selectedProject)) {
+					providers.add(InProjectSymbolsProvider.createFor(LiveExpression.constant(selectedProject)));
+					if (resource instanceof IFile file) {
+						documentData = new DocumentData(file);
+						providers.add(InFileSymbolsProvider.createFor(LiveExpression.constant(documentData)));
+					}
+				}
+				initialIndex = providers.size() - 1;
+			}
+			if (providers.isEmpty()) {
+				return null;
+			}
+
+			GotoSymbolDialogModel model = new GotoSymbolDialogModel(getKeybindings(event), initialIndex, providers.toArray(new SymbolsProvider[0]))
+					.setOkHandler(GotoSymbolDialogModel.OPEN_IN_EDITOR_OK_HANDLER);
+			// Without an editor no part is passed, so the dialog is sized and positioned relative to the shell, not the active view
+			GotoSymbolDialog dialog = new GotoSymbolDialog(HandlerUtil.getActiveShell(event), textEditor, model, /*alignRight*/ false);
+			currentDialog = model;
+			dialog.open();
+			debug("GotoSymbolDialog opened");
+			final DocumentData dialogDocumentData = documentData;
+			dialog.getShell().addDisposeListener(de -> {
+				debug("GotoSymbolDialog closed!");
+				if (textEditor != null) {
+					// Only remember the scope the user picked in an editor, not one derived from an explorer selection
+					SymbolsProviderScopePreference.INSTANCE.setIndex(model.getCurrentSymbolsProviderIndex());
+				}
+				if (dialogDocumentData != null) {
+					dialogDocumentData.dispose();
+				}
+				currentDialog = null;
+			});
 			debug("<<<GotoSymbolHandler.execute");
 		}
 		
+		return null;
+	}
+
+	private static boolean hasDocumentSymbolServer(ITextEditor textEditor) {
+		IDocument document = LSPEclipseUtils.getDocument(textEditor);
+		return document != null && LanguageServers.forDocument(document)
+				.withFilter(capabilities -> LSPEclipseUtils.hasCapability(capabilities.getDocumentSymbolProvider()))
+				.anyMatching();
+	}
+
+	private static IResource resourceFor(ISelection selection) {
+		if (selection instanceof IStructuredSelection ss && !ss.isEmpty()) {
+			Object element = ss.getFirstElement();
+			if (element instanceof IResource r) {
+				return r;
+			} else if (element instanceof IAdaptable a) {
+				return a.getAdapter(IResource.class);
+			}
+		}
 		return null;
 	}
 
@@ -98,17 +168,9 @@ public class GotoSymbolHandler extends AbstractHandler {
 		boolean r = _isEnabled();
 		return r;
 	}
+	
 	public boolean _isEnabled() {
-		IWorkbenchPart part = getActiveWorkbenchPart(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart());
-		if (part instanceof ITextEditor) {
-			debug("activePart instanceof ITextEditor");
-			List<LSPDocumentInfo> infos = LanguageServiceAccessor.getLSPDocumentInfosFor(
-					LSPEclipseUtils.getDocument((ITextEditor) part),
-					capabilities -> LSPEclipseUtils.hasCapability(capabilities.getDocumentSymbolProvider()));
-			return !infos.isEmpty();
-		}
-		debug("activePart not ITextEditor: "+part);
-		return false;
+		return InWorkspaceSymbolsProvider.hasActiveServer();
 	}
 	
 	private static IWorkbenchPart getActiveWorkbenchPart(IWorkbenchPart part) {

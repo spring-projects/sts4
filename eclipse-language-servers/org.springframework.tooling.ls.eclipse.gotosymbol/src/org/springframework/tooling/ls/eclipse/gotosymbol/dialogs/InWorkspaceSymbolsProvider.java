@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -24,7 +25,9 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServers;
+import org.eclipse.lsp4e.LanguageServerWrapper;
 import org.eclipse.lsp4e.LanguageServers.LanguageServerProjectExecutor;
+import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbol;
@@ -50,6 +53,36 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 		return new InWorkspaceSymbolsProvider(lss);
 	}
 	
+	private static List<LanguageServerWrapper> startedServers(IProject project) {
+		return project == null
+				? LanguageServiceAccessor.getStartedWrappers(WS_SYMBOL_CAP, true)
+				: LanguageServiceAccessor.getStartedWrappers(project, WS_SYMBOL_CAP, true);
+	}
+
+	/**
+	 * @return <code>true</code> if a started language server with workspace symbols support is available for the project
+	 */
+	public static boolean hasActiveServer(IProject project) {
+		return project != null && project.isAccessible() && !startedServers(project).isEmpty();
+	}
+
+	/**
+	 * @return <code>true</code> if any started language server supports workspace symbols
+	 */
+	public static boolean hasActiveServer() {
+		return LanguageServiceAccessor.hasActiveLanguageServers(WS_SYMBOL_CAP);
+	}
+
+	/**
+	 * Creates a provider that queries all started language servers supporting workspace symbols,
+	 * independent of any project.
+	 */
+	public static InWorkspaceSymbolsProvider createForWorkspace() {
+		return new InWorkspaceSymbolsProvider(params -> startedServers(null).stream()
+				.map(wrapper -> wrapper.<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>>execute(ls -> ls.getWorkspaceService().symbol(params)))
+				.collect(Collectors.toList()));
+	}
+
 	public static InWorkspaceSymbolsProvider createFor(IProject project) {
 		LanguageServerProjectExecutor lss = LanguageServers.forProject(project).withFilter(capabilities -> LSPEclipseUtils.hasCapability(capabilities.getWorkspaceSymbolProvider())).excludeInactive();
 		return new InWorkspaceSymbolsProvider(lss);
@@ -58,10 +91,14 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 
 	private static final Duration TIMEOUT = Duration.ofSeconds(2);
 	private static final int MAX_RESULTS = 200;
-	private LanguageServers<?> languageServers;
+	private final Function<WorkspaceSymbolParams, List<CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>>>> requester;
 	
 	public InWorkspaceSymbolsProvider(LanguageServers<?> languageServers) {
-		this.languageServers = languageServers;
+		this(params -> languageServers.computeAll(ls -> ls.getWorkspaceService().symbol(params)));
+	}
+
+	private InWorkspaceSymbolsProvider(Function<WorkspaceSymbolParams, List<CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>>>> requester) {
+		this.requester = requester;
 	}
 
 	@Override
@@ -82,7 +119,7 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 		// really use this with a single language server anyways.
 		WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
 
-		List<CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>>> responses = languageServers.computeAll(ls -> ls.getWorkspaceService().symbol(params));
+		List<CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>>> responses = requester.apply(params);
 		
 		Flux<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> first = Flux.fromIterable(responses).flatMap(Mono::fromFuture).timeout(TIMEOUT);
 		

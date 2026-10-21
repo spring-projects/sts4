@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,18 +18,12 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.lsp4e.LSPEclipseUtils;
-import org.eclipse.lsp4e.LanguageServerPlugin;
-import org.eclipse.lsp4e.ui.UI;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springframework.tooling.ls.eclipse.gotosymbol.favourites.FavouritesPreference;
 import org.springsource.ide.eclipse.commons.core.util.FuzzyMatcher;
@@ -93,13 +88,15 @@ public class GotoSymbolDialogModel {
 		/**
 		 * Called by the ui to perform the dialog's action. The dialog will be
 		 * closed by the ui this returns true, otherwise it remains open.
+		 * 
+		 * @param documentUri URI of the document the selection is from if the current scope is a single file, otherwise <code>null</code>
 		 */
-		boolean performOk(SymbolContainer selection);
+		boolean performOk(SymbolContainer selection, URI documentUri);
 	}
 	
-	private static final OKHandler DEFAULT_OK_HANDLER = (selection) -> true;
+	private static final OKHandler DEFAULT_OK_HANDLER = (selection, documentUri) -> true;
 	
-	public static final OKHandler OPEN_IN_EDITOR_OK_HANDLER = symbolInformation -> {
+	public static final OKHandler OPEN_IN_EDITOR_OK_HANDLER = (symbolInformation, documentUri) -> {
 
 		if (symbolInformation != null && symbolInformation.isSymbolInformation()) {
 			Location location = symbolInformation.getSymbolInformation().getLocation();
@@ -122,21 +119,11 @@ public class GotoSymbolDialogModel {
 
 			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 			LSPEclipseUtils.openInEditor(location, page);
-		} else if (symbolInformation.isDocumentSymbol()) {
-			ITextEditor editor = UI.getActiveTextEditor();
-			if (editor != null) {
-				IDocument doc = LSPEclipseUtils.getDocument(editor);
-				if (doc != null) {
-					try {
-						Range range = symbolInformation.getDocumentSymbol().getSelectionRange();
-						int offset = LSPEclipseUtils.toOffset(range.getStart(), doc);
-						int endOffset = LSPEclipseUtils.toOffset(range.getEnd(), doc);
-						editor.selectAndReveal(offset, endOffset - offset);
-					} catch (BadLocationException e) {
-						LanguageServerPlugin.logError(e);
-					}
-				}
-			}
+		} else if (symbolInformation != null && symbolInformation.isDocumentSymbol() && documentUri != null) {
+			// Opens the document in a new editor or activates the one that is already open
+			Location location = new Location(documentUri.toASCIIString(), symbolInformation.getDocumentSymbol().getSelectionRange());
+			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			LSPEclipseUtils.openInEditor(location, page);
 		}
 		return true;
 	};
@@ -167,15 +154,18 @@ public class GotoSymbolDialogModel {
 					String query = searchBox.getValue();
 					Collection<SymbolContainer> fetched = sp.fetchFor(query);
 					if (keyBindings == null) {
+						// nothing to toggle to, so don't advertise the key binding
 						status.setValue(HighlightedText.plain(currentProviderName));
 					} else {
-						status.setValue(HighlightedText
+						HighlightedText appendHighlight = HighlightedText
 									.create()
 									.appendHighlight("Showing ")
-									.appendHighlight(currentProviderName)
-									.appendPlain(". Press [" + keyBindings + "] for ")
-									.appendPlain(nextSymbolsProvider().getName())
-								);
+									.appendHighlight(currentProviderName);
+						if (nextSymbolsProvider() != currentSymbolsProvider.getValue()) {
+							appendHighlight.appendPlain(". Press [" + keyBindings + "] for ")
+								.appendPlain(nextSymbolsProvider().getName());
+						}
+						status.setValue(appendHighlight);
 					}
 					return ImmutableSet.copyOf(fetched);
 				} else {
@@ -305,7 +295,8 @@ public class GotoSymbolDialogModel {
 	}
 	
 	public boolean performOk(SymbolContainer selection) {
-		return this.okHandler.performOk(selection);
+		SymbolsProvider sp = currentSymbolsProvider.getValue();
+		return this.okHandler.performOk(selection, sp == null ? null : sp.getDocumentUri());
 	}
 
 	public boolean fromFileProvider(SymbolContainer symbolInformation) {

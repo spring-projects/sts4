@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
+import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,14 @@ public interface SymbolsProvider {
 
 	 */
 	boolean fromFile(SymbolContainer symbol);
+
+	/**
+	 * @return URI of the document that is the source of the symbols of a file provider, <code>null</code> for any other provider.
+	 * Document symbols do not carry a location of their own, so this is needed to open the document for such a symbol.
+	 */
+	default URI getDocumentUri() {
+		return null;
+	}
 
 	// helper methods for symbol providers to convert lists
 	static List<SymbolContainer> toSymbolContainerFromSymbolInformation(List<? extends SymbolInformation> symbols) {
