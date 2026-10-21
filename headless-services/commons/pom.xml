@@ -256,11 +256,26 @@
 				</configuration>
 			</plugin>
 
+			<!-- exposes the mockito-core jar path as ${org.mockito:mockito-core:jar} for the surefire -javaagent below -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>mockito-agent-property</id>
+						<goals>
+							<goal>properties</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- load Mockito as a java agent, so that it does not self-attach (which JDKs will disallow in the future) -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration combine.self="append">
-					<argLine>--add-opens java.base/java.lang=ALL-UNNAMED --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED</argLine>
+					<argLine>-javaagent:${org.mockito:mockito-core:jar} --add-opens java.base/java.lang=ALL-UNNAMED --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED</argLine>
 				</configuration>
 			</plugin>
 	
@@ -297,6 +312,11 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

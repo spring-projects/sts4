@@ -453,7 +453,7 @@
 					<excludes>
 						<exclude>test-projects/**</exclude>
 					</excludes>
-					<argLine>-Dorg.eclipse.jdt.disable_JRT_cache=true -Djdk.util.zip.disableZip64ExtraFieldValidation=true</argLine>
+					<argLine>-javaagent:${org.mockito:mockito-core:jar} -Dorg.eclipse.jdt.disable_JRT_cache=true -Djdk.util.zip.disableZip64ExtraFieldValidation=true</argLine>
 				</configuration>
 			</plugin>
 
