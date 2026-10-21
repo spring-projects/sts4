@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Rogue Wave Software Inc. and others.
+ * Copyright (c) 2016, 2026 Rogue Wave Software Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,8 +21,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.ITextEditor;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springsource.ide.eclipse.commons.livexp.ui.IPageWithSections;
 
@@ -31,7 +31,7 @@ public class GotoSymbolDialog extends PopupDialog implements IPageWithSections {
 	private static final Point DEFAULT_SIZE = new Point(280, 300);
 
 	private final GotoSymbolSection content;
-	private ITextEditor fTextEditor;
+	private IWorkbenchPart fPart;
 	
 	/**
 	 * If true, align the dialog so it looks like its attached right side of the editor. Otherwise, dialog is centered on the editor instead.
@@ -39,7 +39,11 @@ public class GotoSymbolDialog extends PopupDialog implements IPageWithSections {
 	private boolean alignRight;
 	private IDialogSettings dlgSettings;
 
-	public GotoSymbolDialog(Shell parentShell, ITextEditor textEditor, GotoSymbolDialogModel model, boolean alignRight) {
+	/**
+	 * @param part the text editor the dialog is positioned relative to. If <code>null</code> or not
+	 * adaptable to a {@link Control}, the dialog is sized and positioned relative to the parent shell.
+	 */
+	public GotoSymbolDialog(Shell parentShell, IWorkbenchPart part, GotoSymbolDialogModel model, boolean alignRight) {
 		super(parentShell, PopupDialog.INFOPOPUPRESIZE_SHELLSTYLE, 
 				/*focus*/true, /*persistSize*/true, /*persistLoc*/true, 
 				/*menu*/false, /*showPersistActions*/false, null, null
@@ -47,7 +51,7 @@ public class GotoSymbolDialog extends PopupDialog implements IPageWithSections {
 		//Note: because of the way shell is initialized, the options to persist size / location do not work.
 		// If we want this to work, it will have to be debugged. 
 		//For the time being I've simply disabled the menu that makes it appear like this should work.
-		this.fTextEditor = textEditor;
+		this.fPart = part;
 		this.content = new GotoSymbolSection(this, model);
 		this.alignRight = alignRight;
 		create();
@@ -81,7 +85,7 @@ public class GotoSymbolDialog extends PopupDialog implements IPageWithSections {
 	protected void configureShell(Shell shell) {
 		super.configureShell(shell);
 		
-		Control control = fTextEditor.getAdapter(Control.class);
+		Control control = fPart == null ? null : fPart.getAdapter(Control.class);
 		Point dialogueSize = DEFAULT_SIZE;
 		if (control != null) {
 			//Set size relative to editor's size.
@@ -92,7 +96,13 @@ public class GotoSymbolDialog extends PopupDialog implements IPageWithSections {
 				//centered on the editor
 				shell.setLocation(control.toDisplay(control.getBounds().width/4, control.getBounds().height/4));
 			}
-		} 
+		} else if (getParentShell() != null) {
+			//No control to attach to (for example a view is active): use the parent shell instead
+			Shell parent = getParentShell();
+			Point parentSize = parent.getSize();
+			dialogueSize = new Point(parentSize.x/2, parentSize.y/2);
+			shell.setLocation(parent.getLocation().x + parentSize.x/4, parent.getLocation().y + parentSize.y/4);
+		}
 		shell.setSize(dialogueSize);
 	}
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2024 Pivotal, Inc.
+ * Copyright (c) 2017, 2026 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -81,6 +81,12 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 	@Override
 	public String getName() {
 		return "Symbols in File";
+	}
+
+	@Override
+	public URI getDocumentUri() {
+		IDocument document = doc.get();
+		return document == null ? null : LSPEclipseUtils.toUri(document);
 	}
 
 	@Override
