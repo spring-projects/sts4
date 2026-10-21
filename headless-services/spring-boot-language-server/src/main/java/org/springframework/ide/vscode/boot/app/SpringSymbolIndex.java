@@ -61,10 +61,13 @@ import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.DocumentDescriptor;
 import org.springframework.ide.vscode.boot.java.utils.SpringFactoriesIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerConfigFiles;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXML;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXMLNamespaceHandler;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXMLNamespaceHandlerBeans;
+import org.springframework.ide.vscode.boot.properties.BootPropertiesReconcileEngine;
+import org.springframework.ide.vscode.boot.factories.SpringFactoriesReconcileEngine;
 import org.springframework.ide.vscode.boot.java.utils.SymbolHandler;
 import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -111,6 +114,8 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	@Autowired SpringMetamodelIndex springIndex;
 	@Autowired JdtReconciler jdtReconciler;
 	@Autowired CompilationUnitCache cuCache;
+	@Autowired BootPropertiesReconcileEngine bootPropertiesReconcileEngine;
+	@Autowired SpringFactoriesReconcileEngine springFactoriesReconcileEngine;
 
 	private final ExecutorService updateQueue = Executors.newSingleThreadExecutor();
 	private final Map<String, CompletableFuture<Void>> latestScheduledTaskByProject = new ConcurrentHashMap<String, CompletableFuture<Void>>();
@@ -149,6 +154,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	private SpringIndexerXML springIndexerXML;
 	private SpringIndexerJava springIndexerJava;
 	private SpringFactoriesIndexer factoriesIndexer;
+	private SpringIndexerConfigFiles configFilesIndexer;
 
 	private String watchXMLChangedRegistration;
 	
@@ -223,10 +229,22 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		BiFunction<TextDocument, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorFactory = (doc, aggregator) -> server.createProblemCollector(doc, aggregator);
 		springIndexerJava = new SpringIndexerJava(handler, componentIndexers, this.cache, projectFinder(), server.getProgressService(), jdtReconciler, problemCollectorFactory, config.getJavaValidationSettingsJson(), cuCache);
 		factoriesIndexer = new SpringFactoriesIndexer(handler, cache);
+		configFilesIndexer = new SpringIndexerConfigFiles(bootPropertiesReconcileEngine, springFactoriesReconcileEngine,
+				projectFinder(), server.getTextDocumentService(),
+				(doc, aggregator) -> server.createProblemCollector(doc, aggregator));
+
+		// the properties metadata of projects changed: their config files need to be reconciled again
+		params.indexProvider.onChange(projects -> projects.forEach(project -> {
+			if (project.getElementName() != null) {
+				this.latestScheduledTaskByProject.put(project.getElementName(),
+						CompletableFuture.runAsync(new InitializeProject(project, configFilesIndexer, true), this.updateQueue));
+			}
+		}));
 
 		this.indexers = new SpringIndexer[] {
 				factoriesIndexer, // factories indexder should be the first, so that java indexers and reconcilers can rely on those indexed elements
-				springIndexerJava
+				springIndexerJava,
+				configFilesIndexer
 		};
 
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
@@ -267,7 +285,9 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	}
 
 	public void registerFileListeners() {
-		List<String> globPattern = Stream.concat(Arrays.stream(springIndexerJava.getFileWatchPatterns()), Arrays.stream(factoriesIndexer.getFileWatchPatterns()))
+		List<String> globPattern = Stream.of(springIndexerJava.getFileWatchPatterns(), factoriesIndexer.getFileWatchPatterns(), configFilesIndexer.getFileWatchPatterns())
+				.flatMap(Arrays::stream)
+				.distinct()
 				.collect(Collectors.toList());
 
 		getWorkspaceService().getFileObserver().onFilesChanged(globPattern, (files) -> {
@@ -297,11 +317,11 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	public void configureIndexer(SymbolIndexConfig config) {
 		synchronized (this) {
 			if (config.isScanXml() && !(Arrays.asList(this.indexers).contains(springIndexerXML))) {
-				this.indexers = new SpringIndexer[] { springIndexerJava, factoriesIndexer, springIndexerXML };
+				this.indexers = new SpringIndexer[] { springIndexerJava, factoriesIndexer, configFilesIndexer, springIndexerXML };
 				springIndexerXML.updateScanFolders(config.getXmlScanFolders());
 				addXmlFileListeners(Arrays.asList(springIndexerXML.getFileWatchPatterns()));
 			} else if (!config.isScanXml() && Arrays.asList(this.indexers).contains(springIndexerXML)) {
-				this.indexers = new SpringIndexer[] { springIndexerJava, factoriesIndexer };
+				this.indexers = new SpringIndexer[] { springIndexerJava, factoriesIndexer, configFilesIndexer };
 				springIndexerXML.updateScanFolders(new String[0]);
 				removeXmlFileListeners();
 			} else if (config.isScanXml()) {
@@ -407,6 +427,10 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 
 	public SpringIndexerJava getJavaIndexer() {
 		return springIndexerJava;
+	}
+
+	public SpringIndexerConfigFiles getConfigFilesIndexer() {
+		return configFilesIndexer;
 	}
 	
 	public CompletableFuture<Void> deleteProject(IJavaProject project) {
