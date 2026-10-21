@@ -87,6 +87,20 @@ class StandaloneFileWatcherTest {
 	}
 
 	@Test
+	void removesProjectsFromTheCacheWhenTheirDirectoryIsDeleted() throws Exception {
+		Path projectDirectory = root.resolve("deleted-project");
+		Files.createDirectories(projectDirectory.resolve("src"));
+		Files.writeString(projectDirectory.resolve("pom.xml"), "<project/>");
+		watcher.start(root);
+
+		Files.delete(projectDirectory.resolve("src"));
+		Files.delete(projectDirectory.resolve("pom.xml"));
+		Files.delete(projectDirectory);
+
+		verify(projectsService, timeout(WAIT_MILLIS)).removeProjectsUnder(projectDirectory);
+	}
+
+	@Test
 	void directoryMovedIntoTheWorkspaceIsWatchedAndItsBuildFileTriggersProjectDiscovery(@TempDir Path staging) throws Exception {
 		watcher.start(root);
 

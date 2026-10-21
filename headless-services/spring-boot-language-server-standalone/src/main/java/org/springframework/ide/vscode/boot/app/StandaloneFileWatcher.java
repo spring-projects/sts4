@@ -234,6 +234,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 				if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
 					created(path);
 				} else if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
+					projectsService.removeProjectsUnder(path);
 					enqueue(path, Change.DELETED);
 				} else if (Files.isRegularFile(path)) {
 					enqueue(path, Change.CHANGED);

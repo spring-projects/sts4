@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.env.Environment;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectCache;
@@ -50,7 +52,7 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 
 	private static final Logger log = LoggerFactory.getLogger(LegacyJavaProjectsService.class);
 
-	/** System property naming the directory below which Maven/Gradle build files are discovered. */
+	/** Property naming the directory below which Maven/Gradle build files are discovered. */
 	static final String PROPERTY_PROJECT_DIR = "spring.boot.ls.project.dir";
 
 	static final java.util.Set<String> IGNORED_DIRECTORIES = java.util.Set.of(
@@ -61,8 +63,10 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 	private final CompositeProjectOvserver projectObserver;
 	private final MavenProjectCache mavenProjectCache;
 	private final GradleProjectCache gradleProjectCache;
+	private final Environment environment;
 
-	public LegacyJavaProjectsService(SimpleLanguageServer server) {
+	public LegacyJavaProjectsService(SimpleLanguageServer server, Environment environment) {
+		this.environment = environment;
 		this.mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null,
 					(uri, cpe) -> JavaDocProviders.createFor(cpe));
 		this.mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
@@ -111,9 +115,14 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 		discoverProjects();
 	}
 
-	/** Scans the configured project directory for build files that are not cached yet; a no-op without the property. */
+	public void removeProjectsUnder(Path directory) {
+		mavenProjectCache.removeProjectsUnder(directory);
+		gradleProjectCache.removeProjectsUnder(directory);
+	}
+
+	/** Scans the configured project directory for build files that are not cached yet. */
 	public void discoverProjects() {
-		String projectDir = System.getProperty(PROPERTY_PROJECT_DIR);
+		String projectDir = environment.getProperty(PROPERTY_PROJECT_DIR);
 		if (projectDir != null && !projectDir.isEmpty()) {
 			initializeProject(new java.io.File(projectDir));
 		}

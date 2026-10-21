@@ -34,8 +34,8 @@ import org.springframework.ide.vscode.commons.util.FileChangeNotifier;
 public class StandaloneProjectServiceConfig {
 	
 	@Bean
-	LegacyJavaProjectsService javaProjectsService(SimpleLanguageServer server) {
-		return new LegacyJavaProjectsService(server);
+	LegacyJavaProjectsService javaProjectsService(SimpleLanguageServer server, Environment environment) {
+		return new LegacyJavaProjectsService(server, environment);
 	}
 	
 	@Bean

@@ -15,7 +15,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -32,7 +34,7 @@ import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
  */
 public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends AbstractJavaProjectCache<File, P> {
 	
-	private List<String> subscriptions;	
+	private final Map<File, List<String>> subscriptions = new ConcurrentHashMap<>();
 	protected boolean asyncUpdate;
 	protected final Path projectCacheFolder;
 	private boolean alwaysFireEventOnUpdate;
@@ -43,7 +45,6 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 		super(server);
 		this.projectCacheFolder = projectCacheFolder;
 		this.asyncUpdate = asyncUpdate;
-		this.subscriptions = new ArrayList<>();
 	}
 	
 	
@@ -55,17 +56,32 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 	protected void attachListeners(File file, P project) {
 		super.attachListeners(file, project);
 		List<String> globPattern = Arrays.asList(file.toString().replace(File.separator, "/"));
-		subscriptions.add(getFileObserver().onFilesChanged(globPattern, (uris) -> performUpdate(project, asyncUpdate, true)));
-		subscriptions.add(getFileObserver().onFilesDeleted(globPattern, (uris) -> {
-			cache.invalidate(file);
-			notifyProjectDeleted(project);
-			dispose();
-		}));
+		List<String> projectSubscriptions = new ArrayList<>();
+		projectSubscriptions.add(getFileObserver().onFilesChanged(globPattern, (uris) -> performUpdate(project, asyncUpdate, true)));
+		projectSubscriptions.add(getFileObserver().onFilesDeleted(globPattern, (uris) -> removeProject(file, project)));
+		subscriptions.put(file, projectSubscriptions);
 	}
-	
-	private void dispose() {
-		subscriptions.forEach(s -> getFileObserver().unsubscribe(s));
-		subscriptions.clear();
+
+	/**
+	 * Removes cached projects whose build files are located under the deleted directory.
+	 */
+	public void removeProjectsUnder(Path directory) {
+		Path normalizedDirectory = directory.toAbsolutePath().normalize();
+		cache.asMap().forEach((file, project) -> {
+			if (file.toPath().toAbsolutePath().normalize().startsWith(normalizedDirectory)) {
+				removeProject(file, project);
+			}
+		});
+	}
+
+	private void removeProject(File file, P project) {
+		if (cache.asMap().remove(file, project)) {
+			notifyProjectDeleted(project);
+			List<String> projectSubscriptions = subscriptions.remove(file);
+			if (projectSubscriptions != null) {
+				projectSubscriptions.forEach(getFileObserver()::unsubscribe);
+			}
+		}
 	}
 	
 	final protected void performUpdate(P project, boolean async, boolean notify) {
