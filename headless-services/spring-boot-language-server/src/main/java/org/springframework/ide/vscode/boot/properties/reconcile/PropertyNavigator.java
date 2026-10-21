@@ -151,9 +151,9 @@ public class PropertyNavigator {
 						parser.parse(indexStr);
 					} catch (Exception e) {
 						// list/array/set indexes must be integers; map keys are checked against the declared key type
-						ApplicationPropertiesProblemType problemType = typeUtil.isMap(type)
-								? ApplicationPropertiesProblemType.PROP_VALUE_TYPE_MISMATCH
-								: ApplicationPropertiesProblemType.PROP_NON_INTEGER_IN_BRACKETS;
+						ApplicationPropertiesProblemType problemType = typeUtil.isIndexable(type)
+								? ApplicationPropertiesProblemType.PROP_NON_INTEGER_IN_BRACKETS
+								: ApplicationPropertiesProblemType.PROP_VALUE_TYPE_MISMATCH;
 						problemCollector.accept(problem(problemType,
 							"Expecting '"+typeUtil.niceTypeName(keytype)+"' for '[...]' notation '"+textBetween(region.getStart(), lbrack)+"'",
 							lbrack+1, rbrack-lbrack-1
