@@ -22,16 +22,15 @@ import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,9 +79,9 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 	private final LegacyJavaProjectsService projectsService;
 	private final StandaloneProperties properties;
 
-	private final Map<WatchKey, Path> watchedDirectories = new HashMap<>();
+	private final Map<WatchKey, Path> watchedDirectories = new ConcurrentHashMap<>();
 	private final Map<Path, Change> pending = new LinkedHashMap<>();
-	private final AtomicBoolean running = new AtomicBoolean();
+	private volatile boolean running;
 
 	private WatchService watchService;
 	private ScheduledExecutorService scheduler;
@@ -119,7 +118,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 	}
 
 	synchronized void start(Path root) {
-		if (running.get() || !Files.isDirectory(root)) {
+		if (running || !Files.isDirectory(root)) {
 			return;
 		}
 		debounceMillis = properties.getFilewatcher().getDebounceMs();
@@ -134,7 +133,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 				return;
 			}
 			scheduler = Executors.newSingleThreadScheduledExecutor(r -> daemon(r, "spring-tools-file-watcher-flush"));
-			running.set(true);
+			running = true;
 			thread = daemon(this::loop, "spring-tools-file-watcher");
 			thread.start();
 			log.info("file watcher started for {} ({} directories, {} ms quiet period)", root, registered, debounceMillis);
@@ -184,9 +183,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 		WatchKey key = dir.register(watchService, new WatchEvent.Kind<?>[] {
 				StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE },
 				sensitivityModifiers());
-		synchronized (watchedDirectories) {
-			watchedDirectories.put(key, dir);
-		}
+		watchedDirectories.put(key, dir);
 	}
 
 	/** On JDKs whose watch service polls (macOS), ask for the 2-second poll interval instead of the 10-second default. */
@@ -209,17 +206,14 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 	}
 
 	private void loop() {
-		while (running.get()) {
+		while (running) {
 			WatchKey key;
 			try {
 				key = watchService.take();
 			} catch (InterruptedException | ClosedWatchServiceException e) {
 				return;
 			}
-			Path dir;
-			synchronized (watchedDirectories) {
-				dir = watchedDirectories.get(key);
-			}
+			Path dir = watchedDirectories.get(key);
 			for (WatchEvent<?> event : key.pollEvents()) {
 				if (event.kind() == StandardWatchEventKinds.OVERFLOW) {
 					log.info("file watcher lost events for {}; scheduling a full refresh", dir);
@@ -240,9 +234,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 				}
 			}
 			if (!key.reset()) {
-				synchronized (watchedDirectories) {
-					watchedDirectories.remove(key);
-				}
+				watchedDirectories.remove(key);
 			}
 		}
 	}
@@ -363,7 +355,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 	}
 
 	boolean isRunning() {
-		return running.get();
+		return running;
 	}
 
 	@Override
@@ -372,7 +364,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 	}
 
 	private synchronized void closeQuietly() {
-		running.set(false);
+		running = false;
 		if (thread != null) {
 			thread.interrupt();
 			thread = null;
@@ -389,9 +381,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 			}
 			watchService = null;
 		}
-		synchronized (watchedDirectories) {
-			watchedDirectories.clear();
-		}
+		watchedDirectories.clear();
 	}
 
 	private static Thread daemon(Runnable runnable, String name) {
