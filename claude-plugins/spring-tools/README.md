@@ -168,3 +168,5 @@ spring-tools/
 ## How it works
 
 Claude Code parses the MCP configuration in `plugin.json` at startup. This triggers `launcher.js`, which checks if the heavy Java JAR is downloaded. If not, it executes `install.js` to download it from Spring's CDN. Then it boots the standalone Spring Tools Language Server, instructing it to expose its MCP tools over `stdio` (the language server's own LSP socket transport is disabled, since nothing in this plugin connects to it).
+
+The launcher sets `languageserver.standalone.project-dir` to the current working directory. The standalone server uses that Spring Boot property for project discovery, settings-file loading, and file watching. Watcher behavior can be configured with `languageserver.standalone.filewatcher.enabled`, `languageserver.standalone.filewatcher.debounce-ms`, and `languageserver.standalone.filewatcher.max-directories`.

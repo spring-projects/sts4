@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.env.Environment;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.commons.gradle.GradleCore;
 import org.springframework.ide.vscode.commons.gradle.GradleProjectCache;
@@ -52,9 +51,6 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 
 	private static final Logger log = LoggerFactory.getLogger(LegacyJavaProjectsService.class);
 
-	/** Property naming the directory below which Maven/Gradle build files are discovered. */
-	static final String PROPERTY_PROJECT_DIR = "spring.boot.ls.project.dir";
-
 	static final java.util.Set<String> IGNORED_DIRECTORIES = java.util.Set.of(
 			"target", "node_modules", "build", ".git", "bin"
 	);
@@ -63,10 +59,10 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 	private final CompositeProjectOvserver projectObserver;
 	private final MavenProjectCache mavenProjectCache;
 	private final GradleProjectCache gradleProjectCache;
-	private final Environment environment;
+	private final StandaloneProperties properties;
 
-	public LegacyJavaProjectsService(SimpleLanguageServer server, Environment environment) {
-		this.environment = environment;
+	public LegacyJavaProjectsService(SimpleLanguageServer server, StandaloneProperties properties) {
+		this.properties = properties;
 		this.mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null,
 					(uri, cpe) -> JavaDocProviders.createFor(cpe));
 		this.mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
@@ -122,7 +118,7 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 
 	/** Scans the configured project directory for build files that are not cached yet. */
 	public void discoverProjects() {
-		String projectDir = environment.getProperty(PROPERTY_PROJECT_DIR);
+		String projectDir = properties.getProjectDir();
 		if (projectDir != null && !projectDir.isEmpty()) {
 			initializeProject(new java.io.File(projectDir));
 		}

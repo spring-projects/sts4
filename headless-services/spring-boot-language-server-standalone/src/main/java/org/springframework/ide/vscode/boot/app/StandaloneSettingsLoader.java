@@ -73,14 +73,16 @@ public class StandaloneSettingsLoader implements SmartInitializingSingleton {
 	static final String PROPERTIES_SETTINGS_FILE = ".claude/spring-tools.properties";
 
 	private final SettingsStore settingsStore;
+	private final StandaloneProperties properties;
 
-	public StandaloneSettingsLoader(SettingsStore settingsStore) {
+	public StandaloneSettingsLoader(SettingsStore settingsStore, StandaloneProperties properties) {
 		this.settingsStore = settingsStore;
+		this.properties = properties;
 	}
 
 	@Override
 	public void afterSingletonsInstantiated() {
-		String projectDir = System.getProperty("spring.boot.ls.project.dir");
+		String projectDir = properties.getProjectDir();
 		if (projectDir == null || projectDir.isBlank()) {
 			return;
 		}

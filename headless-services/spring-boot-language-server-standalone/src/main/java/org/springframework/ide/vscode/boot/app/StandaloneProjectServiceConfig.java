@@ -32,12 +32,12 @@ import org.springframework.ide.vscode.commons.util.FileChangeNotifier;
  * {@code @ConditionalOnMissingClass}.
  */
 @Configuration(proxyBeanMethods = false)
-@EnableConfigurationProperties(StandaloneFileWatcherProperties.class)
+@EnableConfigurationProperties(StandaloneProperties.class)
 public class StandaloneProjectServiceConfig {
 	
 	@Bean
-	LegacyJavaProjectsService javaProjectsService(SimpleLanguageServer server, Environment environment) {
-		return new LegacyJavaProjectsService(server, environment);
+	LegacyJavaProjectsService javaProjectsService(SimpleLanguageServer server, StandaloneProperties properties) {
+		return new LegacyJavaProjectsService(server, properties);
 	}
 	
 	@Bean
@@ -47,7 +47,7 @@ public class StandaloneProjectServiceConfig {
 
 	@Bean
 	StandaloneFileWatcher standaloneFileWatcher(Environment environment, FileChangeNotifier fileChangeNotifier,
-			LegacyJavaProjectsService projectsService, StandaloneFileWatcherProperties properties) {
+			LegacyJavaProjectsService projectsService, StandaloneProperties properties) {
 		return new StandaloneFileWatcher(environment, fileChangeNotifier, projectsService, properties);
 	}
 

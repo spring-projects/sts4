@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Broadcom, Inc. */
+
 const fs = require('fs');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
@@ -28,7 +30,7 @@ async function start() {
         "-Dlogging.level.root=INFO",
         "-Dspring.ai.mcp.server.stdio=true",
         "-Dlanguageserver.enabled=false",
-        `-Dspring.boot.ls.project.dir=${process.cwd()}`,
+        `-Dlanguageserver.standalone.project-dir=${process.cwd()}`,
         "-jar",
         jarPath
     ];

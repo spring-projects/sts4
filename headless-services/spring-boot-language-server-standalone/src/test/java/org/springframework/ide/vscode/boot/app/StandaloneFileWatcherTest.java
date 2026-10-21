@@ -52,14 +52,14 @@ class StandaloneFileWatcherTest {
 
 	private final Map<String, Object> properties = new HashMap<>();
 	private final StandardEnvironment environment = new StandardEnvironment();
-	private final StandaloneFileWatcherProperties watcherProperties = new StandaloneFileWatcherProperties();
+	private final StandaloneProperties watcherProperties = new StandaloneProperties();
 	private final FileChangeNotifier notifier = mock(FileChangeNotifier.class);
 	private final LegacyJavaProjectsService projectsService = mock(LegacyJavaProjectsService.class);
 	private StandaloneFileWatcher watcher;
 
 	@BeforeEach
 	void setUp() throws IOException {
-		watcherProperties.setDebounceMs(50);
+		watcherProperties.getFilewatcher().setDebounceMs(50);
 		environment.getPropertySources().addFirst(new MapPropertySource("test", properties));
 		Files.createDirectories(root.resolve("src/main/java"));
 		watcher = new StandaloneFileWatcher(environment, notifier, projectsService, watcherProperties);
@@ -148,7 +148,7 @@ class StandaloneFileWatcherTest {
 
 	@Test
 	void createdAndDeletedWithinTheQuietPeriodIsNotReported() throws Exception {
-		watcherProperties.setDebounceMs(400);
+		watcherProperties.getFilewatcher().setDebounceMs(400);
 		watcher.start(root);
 
 		Path file = root.resolve("src/main/java/Transient.java");
@@ -161,7 +161,7 @@ class StandaloneFileWatcherTest {
 
 	@Test
 	void givesUpAboveTheDirectoryCapAndStaysOffWithoutBlockingNotifications() throws Exception {
-		watcherProperties.setMaxDirectories(2);
+		watcherProperties.getFilewatcher().setMaxDirectories(2);
 		Files.createDirectories(root.resolve("a/b"));
 		Files.createDirectories(root.resolve("c"));
 
@@ -174,7 +174,7 @@ class StandaloneFileWatcherTest {
 
 	@Test
 	void startsOnContextRefreshOnlyForTheMcpOnlyServerWithWatchingEnabled() {
-		properties.put(LegacyJavaProjectsService.PROPERTY_PROJECT_DIR, root.toString());
+		watcherProperties.setProjectDir(root.toString());
 		ContextRefreshedEvent event = new ContextRefreshedEvent(new StaticApplicationContext());
 
 		properties.put(StandaloneFileWatcher.PROPERTY_LANGUAGE_SERVER_ENABLED, "true");
@@ -182,29 +182,31 @@ class StandaloneFileWatcherTest {
 		assertThat(watcher.isRunning()).as("LSP clients watch files themselves").isFalse();
 
 		properties.put(StandaloneFileWatcher.PROPERTY_LANGUAGE_SERVER_ENABLED, "false");
-		watcherProperties.setEnabled(false);
+		watcherProperties.getFilewatcher().setEnabled(false);
 		watcher.onApplicationEvent(event);
 		assertThat(watcher.isRunning()).as("watching can be disabled by configuration").isFalse();
 
-		watcherProperties.setEnabled(true);
+		watcherProperties.getFilewatcher().setEnabled(true);
 		watcher.onApplicationEvent(event);
 		assertThat(watcher.isRunning()).isTrue();
 	}
 
 	@Test
-	void bindsStandaloneFileWatcherConfigurationProperties() {
+	void bindsStandaloneConfigurationPropertiesAlongsideLanguageServerStandaloneFlag() {
 		properties.put("languageserver.standalone", "true");
-		properties.put(StandaloneFileWatcherProperties.PREFIX + ".enabled", "false");
-		properties.put(StandaloneFileWatcherProperties.PREFIX + ".debounce-ms", "125");
-		properties.put(StandaloneFileWatcherProperties.PREFIX + ".max-directories", "42");
+		properties.put(StandaloneProperties.PREFIX + ".project-dir", root.toString());
+		properties.put(StandaloneProperties.PREFIX + ".filewatcher.enabled", "false");
+		properties.put(StandaloneProperties.PREFIX + ".filewatcher.debounce-ms", "125");
+		properties.put(StandaloneProperties.PREFIX + ".filewatcher.max-directories", "42");
 
-		StandaloneFileWatcherProperties bound = Binder.get(environment)
-				.bind(StandaloneFileWatcherProperties.PREFIX, Bindable.of(StandaloneFileWatcherProperties.class))
+		StandaloneProperties bound = Binder.get(environment)
+				.bind(StandaloneProperties.PREFIX, Bindable.of(StandaloneProperties.class))
 				.orElseThrow(AssertionError::new);
 
-		assertThat(bound.isEnabled()).isFalse();
-		assertThat(bound.getDebounceMs()).isEqualTo(125);
-		assertThat(bound.getMaxDirectories()).isEqualTo(42);
+		assertThat(bound.getProjectDir()).isEqualTo(root.toString());
+		assertThat(bound.getFilewatcher().isEnabled()).isFalse();
+		assertThat(bound.getFilewatcher().getDebounceMs()).isEqualTo(125);
+		assertThat(bound.getFilewatcher().getMaxDirectories()).isEqualTo(42);
 		assertThat(Binder.get(environment).bind("languageserver", Bindable.of(LanguageServerProperties.class))
 				.orElseThrow(AssertionError::new).isStandalone()).isTrue();
 	}

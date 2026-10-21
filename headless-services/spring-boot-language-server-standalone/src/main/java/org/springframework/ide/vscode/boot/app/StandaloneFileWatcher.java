@@ -58,10 +58,10 @@ import org.springframework.ide.vscode.commons.util.FileChangeNotifier;
  * watch the tree (for example the inotify watch limit is reached) the watcher logs the reason and
  * stops; the MCP notification tools keep working.
  *
- * <p>Configuration properties under {@link StandaloneFileWatcherProperties#PREFIX} control
- * whether watching is enabled (default {@code true}), the debounce interval (default 300 ms),
- * and the maximum watched directory count (default 20000). The watcher does not start while
- * the LSP transport is enabled, because the client watches files in that mode.
+ * <p>Configuration properties under {@link StandaloneProperties#PREFIX} configure the project
+ * directory and the file watcher (enabled by default, with a 300 ms debounce interval and a
+ * maximum of 20000 directories). The watcher does not start while the LSP transport is enabled,
+ * because the client watches files in that mode.
  *
  * @author Broadcom, Inc.
  */
@@ -78,7 +78,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 	private final Environment environment;
 	private final FileChangeNotifier fileChangeNotifier;
 	private final LegacyJavaProjectsService projectsService;
-	private final StandaloneFileWatcherProperties properties;
+	private final StandaloneProperties properties;
 
 	private final Map<WatchKey, Path> watchedDirectories = new HashMap<>();
 	private final Map<Path, Change> pending = new LinkedHashMap<>();
@@ -93,7 +93,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 	private boolean discoverProjectsOnFlush;
 
 	public StandaloneFileWatcher(Environment environment, FileChangeNotifier fileChangeNotifier,
-			LegacyJavaProjectsService projectsService, StandaloneFileWatcherProperties properties) {
+			LegacyJavaProjectsService projectsService, StandaloneProperties properties) {
 		this.environment = environment;
 		this.fileChangeNotifier = fileChangeNotifier;
 		this.projectsService = projectsService;
@@ -102,17 +102,17 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		String projectDir = environment.getProperty(LegacyJavaProjectsService.PROPERTY_PROJECT_DIR);
+		String projectDir = properties.getProjectDir();
 		if (projectDir == null || projectDir.isEmpty()) {
-			log.info("file watcher not started: {} is not set", LegacyJavaProjectsService.PROPERTY_PROJECT_DIR);
+			log.info("file watcher not started: {}.project-dir is not set", StandaloneProperties.PREFIX);
 			return;
 		}
 		if (environment.getProperty(PROPERTY_LANGUAGE_SERVER_ENABLED, Boolean.class, true)) {
 			log.info("file watcher not started: the LSP transport is enabled and the client watches files");
 			return;
 		}
-		if (!properties.isEnabled()) {
-			log.info("file watcher disabled via {}.enabled=false", StandaloneFileWatcherProperties.PREFIX);
+		if (!properties.getFilewatcher().isEnabled()) {
+			log.info("file watcher disabled via {}.filewatcher.enabled=false", StandaloneProperties.PREFIX);
 			return;
 		}
 		start(Path.of(projectDir).toAbsolutePath().normalize());
@@ -122,14 +122,14 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 		if (running.get() || !Files.isDirectory(root)) {
 			return;
 		}
-		debounceMillis = properties.getDebounceMs();
-		maxDirectories = properties.getMaxDirectories();
+		debounceMillis = properties.getFilewatcher().getDebounceMs();
+		maxDirectories = properties.getFilewatcher().getMaxDirectories();
 		try {
 			watchService = root.getFileSystem().newWatchService();
 			int registered = registerTree(root);
 			if (registered < 0) {
-				log.warn("file watcher not started: more than {} directories below {}; increase {}.max-directories or rely on the fileChanged/refreshWorkspace tools",
-						maxDirectories, root, StandaloneFileWatcherProperties.PREFIX);
+				log.warn("file watcher not started: more than {} directories below {}; increase {}.filewatcher.max-directories or rely on the fileChanged/refreshWorkspace tools",
+						maxDirectories, root, StandaloneProperties.PREFIX);
 				closeQuietly();
 				return;
 			}
