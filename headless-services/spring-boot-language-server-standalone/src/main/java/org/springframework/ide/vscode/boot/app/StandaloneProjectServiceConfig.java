@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -31,6 +32,7 @@ import org.springframework.ide.vscode.commons.util.FileChangeNotifier;
  * {@code @ConditionalOnMissingClass}.
  */
 @Configuration(proxyBeanMethods = false)
+@EnableConfigurationProperties(StandaloneFileWatcherProperties.class)
 public class StandaloneProjectServiceConfig {
 	
 	@Bean
@@ -44,8 +46,9 @@ public class StandaloneProjectServiceConfig {
 	}
 
 	@Bean
-	StandaloneFileWatcher standaloneFileWatcher(Environment environment, FileChangeNotifier fileChangeNotifier, LegacyJavaProjectsService projectsService) {
-		return new StandaloneFileWatcher(environment, fileChangeNotifier, projectsService);
+	StandaloneFileWatcher standaloneFileWatcher(Environment environment, FileChangeNotifier fileChangeNotifier,
+			LegacyJavaProjectsService projectsService, StandaloneFileWatcherProperties properties) {
+		return new StandaloneFileWatcher(environment, fileChangeNotifier, projectsService, properties);
 	}
 
 }

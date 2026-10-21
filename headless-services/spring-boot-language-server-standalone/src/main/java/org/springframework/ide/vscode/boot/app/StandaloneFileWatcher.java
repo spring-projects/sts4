@@ -58,19 +58,15 @@ import org.springframework.ide.vscode.commons.util.FileChangeNotifier;
  * watch the tree (for example the inotify watch limit is reached) the watcher logs the reason and
  * stops; the MCP notification tools keep working.
  *
- * <p>System properties: {@value #PROPERTY_ENABLED} ({@code true} by default; the watcher never
- * starts while the LSP transport is enabled, because the client watches files in that mode),
- * {@value #PROPERTY_DEBOUNCE_MS} (quiet period in milliseconds, 300 by default) and
- * {@value #PROPERTY_MAX_DIRECTORIES} (directories watched before the watcher gives up, 20000 by
- * default).
+ * <p>Configuration properties under {@link StandaloneFileWatcherProperties#PREFIX} control
+ * whether watching is enabled (default {@code true}), the debounce interval (default 300 ms),
+ * and the maximum watched directory count (default 20000). The watcher does not start while
+ * the LSP transport is enabled, because the client watches files in that mode.
  *
  * @author Broadcom, Inc.
  */
 public class StandaloneFileWatcher implements ApplicationListener<ContextRefreshedEvent>, DisposableBean {
 
-	static final String PROPERTY_ENABLED = "spring.boot.ls.project.watch";
-	static final String PROPERTY_DEBOUNCE_MS = "spring.boot.ls.project.watch.debounce-ms";
-	static final String PROPERTY_MAX_DIRECTORIES = "spring.boot.ls.project.watch.max-directories";
 	static final String PROPERTY_LANGUAGE_SERVER_ENABLED = "languageserver.enabled";
 
 	private static final Logger log = LoggerFactory.getLogger(StandaloneFileWatcher.class);
@@ -82,6 +78,7 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 	private final Environment environment;
 	private final FileChangeNotifier fileChangeNotifier;
 	private final LegacyJavaProjectsService projectsService;
+	private final StandaloneFileWatcherProperties properties;
 
 	private final Map<WatchKey, Path> watchedDirectories = new HashMap<>();
 	private final Map<Path, Change> pending = new LinkedHashMap<>();
@@ -95,10 +92,12 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 	private int maxDirectories;
 	private boolean discoverProjectsOnFlush;
 
-	public StandaloneFileWatcher(Environment environment, FileChangeNotifier fileChangeNotifier, LegacyJavaProjectsService projectsService) {
+	public StandaloneFileWatcher(Environment environment, FileChangeNotifier fileChangeNotifier,
+			LegacyJavaProjectsService projectsService, StandaloneFileWatcherProperties properties) {
 		this.environment = environment;
 		this.fileChangeNotifier = fileChangeNotifier;
 		this.projectsService = projectsService;
+		this.properties = properties;
 	}
 
 	@Override
@@ -112,8 +111,8 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 			log.info("file watcher not started: the LSP transport is enabled and the client watches files");
 			return;
 		}
-		if (!environment.getProperty(PROPERTY_ENABLED, Boolean.class, true)) {
-			log.info("file watcher disabled via -D{}=false", PROPERTY_ENABLED);
+		if (!properties.isEnabled()) {
+			log.info("file watcher disabled via {}.enabled=false", StandaloneFileWatcherProperties.PREFIX);
 			return;
 		}
 		start(Path.of(projectDir).toAbsolutePath().normalize());
@@ -123,14 +122,14 @@ public class StandaloneFileWatcher implements ApplicationListener<ContextRefresh
 		if (running.get() || !Files.isDirectory(root)) {
 			return;
 		}
-		debounceMillis = environment.getProperty(PROPERTY_DEBOUNCE_MS, Long.class, 300L);
-		maxDirectories = environment.getProperty(PROPERTY_MAX_DIRECTORIES, Integer.class, 20000);
+		debounceMillis = properties.getDebounceMs();
+		maxDirectories = properties.getMaxDirectories();
 		try {
 			watchService = root.getFileSystem().newWatchService();
 			int registered = registerTree(root);
 			if (registered < 0) {
-				log.warn("file watcher not started: more than {} directories below {}; raise -D{} or rely on the fileChanged/refreshWorkspace tools",
-						maxDirectories, root, PROPERTY_MAX_DIRECTORIES);
+				log.warn("file watcher not started: more than {} directories below {}; increase {}.max-directories or rely on the fileChanged/refreshWorkspace tools",
+						maxDirectories, root, StandaloneFileWatcherProperties.PREFIX);
 				closeQuietly();
 				return;
 			}

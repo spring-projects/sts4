@@ -31,10 +31,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.support.StaticApplicationContext;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.util.FileChangeNotifier;
 
 /**
@@ -49,16 +52,17 @@ class StandaloneFileWatcherTest {
 
 	private final Map<String, Object> properties = new HashMap<>();
 	private final StandardEnvironment environment = new StandardEnvironment();
+	private final StandaloneFileWatcherProperties watcherProperties = new StandaloneFileWatcherProperties();
 	private final FileChangeNotifier notifier = mock(FileChangeNotifier.class);
 	private final LegacyJavaProjectsService projectsService = mock(LegacyJavaProjectsService.class);
 	private StandaloneFileWatcher watcher;
 
 	@BeforeEach
 	void setUp() throws IOException {
-		properties.put(StandaloneFileWatcher.PROPERTY_DEBOUNCE_MS, "50");
+		watcherProperties.setDebounceMs(50);
 		environment.getPropertySources().addFirst(new MapPropertySource("test", properties));
 		Files.createDirectories(root.resolve("src/main/java"));
-		watcher = new StandaloneFileWatcher(environment, notifier, projectsService);
+		watcher = new StandaloneFileWatcher(environment, notifier, projectsService, watcherProperties);
 	}
 
 	@AfterEach
@@ -144,7 +148,7 @@ class StandaloneFileWatcherTest {
 
 	@Test
 	void createdAndDeletedWithinTheQuietPeriodIsNotReported() throws Exception {
-		properties.put(StandaloneFileWatcher.PROPERTY_DEBOUNCE_MS, "400");
+		watcherProperties.setDebounceMs(400);
 		watcher.start(root);
 
 		Path file = root.resolve("src/main/java/Transient.java");
@@ -157,7 +161,7 @@ class StandaloneFileWatcherTest {
 
 	@Test
 	void givesUpAboveTheDirectoryCapAndStaysOffWithoutBlockingNotifications() throws Exception {
-		properties.put(StandaloneFileWatcher.PROPERTY_MAX_DIRECTORIES, "2");
+		watcherProperties.setMaxDirectories(2);
 		Files.createDirectories(root.resolve("a/b"));
 		Files.createDirectories(root.resolve("c"));
 
@@ -178,13 +182,31 @@ class StandaloneFileWatcherTest {
 		assertThat(watcher.isRunning()).as("LSP clients watch files themselves").isFalse();
 
 		properties.put(StandaloneFileWatcher.PROPERTY_LANGUAGE_SERVER_ENABLED, "false");
-		properties.put(StandaloneFileWatcher.PROPERTY_ENABLED, "false");
+		watcherProperties.setEnabled(false);
 		watcher.onApplicationEvent(event);
-		assertThat(watcher.isRunning()).as("opt-out via -Dspring.boot.ls.project.watch=false").isFalse();
+		assertThat(watcher.isRunning()).as("watching can be disabled by configuration").isFalse();
 
-		properties.remove(StandaloneFileWatcher.PROPERTY_ENABLED);
+		watcherProperties.setEnabled(true);
 		watcher.onApplicationEvent(event);
 		assertThat(watcher.isRunning()).isTrue();
+	}
+
+	@Test
+	void bindsStandaloneFileWatcherConfigurationProperties() {
+		properties.put("languageserver.standalone", "true");
+		properties.put(StandaloneFileWatcherProperties.PREFIX + ".enabled", "false");
+		properties.put(StandaloneFileWatcherProperties.PREFIX + ".debounce-ms", "125");
+		properties.put(StandaloneFileWatcherProperties.PREFIX + ".max-directories", "42");
+
+		StandaloneFileWatcherProperties bound = Binder.get(environment)
+				.bind(StandaloneFileWatcherProperties.PREFIX, Bindable.of(StandaloneFileWatcherProperties.class))
+				.orElseThrow(AssertionError::new);
+
+		assertThat(bound.isEnabled()).isFalse();
+		assertThat(bound.getDebounceMs()).isEqualTo(125);
+		assertThat(bound.getMaxDirectories()).isEqualTo(42);
+		assertThat(Binder.get(environment).bind("languageserver", Bindable.of(LanguageServerProperties.class))
+				.orElseThrow(AssertionError::new).isStandalone()).isTrue();
 	}
 
 	@Test
