@@ -268,4 +268,22 @@ public class HqlQueryFormatterTest {
 				formatter.format("FROM Employee e WHERE e.active = true"));
 	}
 
+	// https://github.com/spring-projects/spring-tools/issues/2059
+	@Test
+	void setReturningFunctionInFrom() {
+		assertEquals("""
+				SELECT a
+				FROM generate_series(1, 10) a""",
+				formatter.format("SELECT a FROM generate_series(1, 10) a"));
+	}
+
+	@Test
+	void setReturningFunctionInJoin() {
+		assertEquals("""
+				SELECT e
+				FROM Employee e
+				  JOIN generate_series(1, 10) n ON e.id = n""",
+				formatter.format("SELECT e FROM Employee e JOIN generate_series(1, 10) n ON e.id = n"));
+	}
+
 }

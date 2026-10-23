@@ -282,6 +282,18 @@ public class HqlBaseListener implements HqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterJoinFunction(HqlParser.JoinFunctionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitJoinFunction(HqlParser.JoinFunctionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterJoinSubquery(HqlParser.JoinSubqueryContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -289,6 +301,18 @@ public class HqlBaseListener implements HqlListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitJoinSubquery(HqlParser.JoinSubqueryContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSetReturningFunction(HqlParser.SetReturningFunctionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSetReturningFunction(HqlParser.SetReturningFunctionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

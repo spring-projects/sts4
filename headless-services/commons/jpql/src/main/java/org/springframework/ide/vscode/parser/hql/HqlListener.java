@@ -237,6 +237,18 @@ public interface HqlListener extends ParseTreeListener {
 	 */
 	void exitJoinPath(HqlParser.JoinPathContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code JoinFunction}
+	 * labeled alternative in {@link HqlParser#joinTarget}.
+	 * @param ctx the parse tree
+	 */
+	void enterJoinFunction(HqlParser.JoinFunctionContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code JoinFunction}
+	 * labeled alternative in {@link HqlParser#joinTarget}.
+	 * @param ctx the parse tree
+	 */
+	void exitJoinFunction(HqlParser.JoinFunctionContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code JoinSubquery}
 	 * labeled alternative in {@link HqlParser#joinTarget}.
 	 * @param ctx the parse tree
@@ -248,6 +260,16 @@ public interface HqlListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitJoinSubquery(HqlParser.JoinSubqueryContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link HqlParser#setReturningFunction}.
+	 * @param ctx the parse tree
+	 */
+	void enterSetReturningFunction(HqlParser.SetReturningFunctionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link HqlParser#setReturningFunction}.
+	 * @param ctx the parse tree
+	 */
+	void exitSetReturningFunction(HqlParser.SetReturningFunctionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link HqlParser#updateStatement}.
 	 * @param ctx the parse tree
@@ -330,13 +352,13 @@ public interface HqlListener extends ParseTreeListener {
 	void exitValuesList(HqlParser.ValuesListContext ctx);
 	/**
 	 * Enter a parse tree produced by the {@code values}
-	 * labeled alternative in {@link HqlParser#queryqueryjoinTargetjoinTargetexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionprimaryExpressionprimaryExpressionprimaryExpressionprimaryExpressionprimaryExpressionfunctionfunctionfunctionfunctionfunctionfunctionfunctionfunctionframeStartframeStartframeStartframeStartframeExclusionframeExclusionframeExclusionframeExclusionframeEndframeEndframeEndframeEndpredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicate}.
+	 * labeled alternative in {@link HqlParser#queryqueryjoinTargetjoinTargetjoinTargetexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionprimaryExpressionprimaryExpressionprimaryExpressionprimaryExpressionprimaryExpressionfunctionfunctionfunctionfunctionfunctionfunctionfunctionfunctionframeStartframeStartframeStartframeStartframeExclusionframeExclusionframeExclusionframeExclusionframeEndframeEndframeEndframeEndpredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicate}.
 	 * @param ctx the parse tree
 	 */
 	void enterValues(HqlParser.ValuesContext ctx);
 	/**
 	 * Exit a parse tree produced by the {@code values}
-	 * labeled alternative in {@link HqlParser#queryqueryjoinTargetjoinTargetexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionprimaryExpressionprimaryExpressionprimaryExpressionprimaryExpressionprimaryExpressionfunctionfunctionfunctionfunctionfunctionfunctionfunctionfunctionframeStartframeStartframeStartframeStartframeExclusionframeExclusionframeExclusionframeExclusionframeEndframeEndframeEndframeEndpredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicate}.
+	 * labeled alternative in {@link HqlParser#queryqueryjoinTargetjoinTargetjoinTargetexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionexpressionprimaryExpressionprimaryExpressionprimaryExpressionprimaryExpressionprimaryExpressionfunctionfunctionfunctionfunctionfunctionfunctionfunctionfunctionframeStartframeStartframeStartframeStartframeExclusionframeExclusionframeExclusionframeExclusionframeEndframeEndframeEndframeEndpredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicatepredicate}.
 	 * @param ctx the parse tree
 	 */
 	void exitValues(HqlParser.ValuesContext ctx);
