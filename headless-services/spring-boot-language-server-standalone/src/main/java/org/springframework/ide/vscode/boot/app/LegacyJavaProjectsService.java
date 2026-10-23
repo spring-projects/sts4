@@ -56,7 +56,7 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 
 	private static final Logger log = LoggerFactory.getLogger(LegacyJavaProjectsService.class);
 
-	private static final java.util.Set<String> IGNORED_DIRECTORIES = java.util.Set.of(
+	static final java.util.Set<String> IGNORED_DIRECTORIES = java.util.Set.of(
 			"target", "node_modules", "build", ".git", "bin"
 	);
 
@@ -64,8 +64,10 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 	private final CompositeProjectOvserver projectObserver;
 	private final MavenProjectCache mavenProjectCache;
 	private final GradleProjectCache gradleProjectCache;
+	private final StandaloneProperties properties;
 
-	public LegacyJavaProjectsService(SimpleLanguageServer server) {
+	public LegacyJavaProjectsService(SimpleLanguageServer server, StandaloneProperties properties) {
+		this.properties = properties;
 		this.mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null,
 					(uri, cpe) -> JavaDocProviders.createFor(cpe));
 		this.mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
@@ -82,10 +84,7 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 	}
 	
 	public void onApplicationEvent(ContextRefreshedEvent event) {
-		String projectDir = System.getProperty("spring.boot.ls.project.dir");
-		if (projectDir != null && !projectDir.isEmpty()) {
-			initializeProject(new java.io.File(projectDir));
-		}
+		discoverProjects();
 	}
 
 	@Override
@@ -111,6 +110,23 @@ public class LegacyJavaProjectsService implements JavaProjectsService, Applicati
 	@Override
 	public void notifyProjectsChanged(boolean clean) {
 		this.projectObserver.notifyProjectsChanged(clean);
+		// Pick up build files that appeared after startup (new modules, generated projects, git
+		// checkouts). project(file) only fires "created" for keys that are not cached yet, so the
+		// projects notified above are not indexed a second time.
+		discoverProjects();
+	}
+
+	public void removeProjectsUnder(Path directory) {
+		mavenProjectCache.removeProjectsUnder(directory);
+		gradleProjectCache.removeProjectsUnder(directory);
+	}
+
+	/** Scans the configured project directory for build files that are not cached yet. */
+	public void discoverProjects() {
+		String projectDir = properties.getProjectDir();
+		if (projectDir != null && !projectDir.isEmpty()) {
+			initializeProject(new java.io.File(projectDir));
+		}
 	}
 
 	@Override

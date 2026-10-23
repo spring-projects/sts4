@@ -39,6 +39,7 @@ class StandaloneSettingsLoaderTest {
 
 	@TempDir Path projectDir;
 
+	private final StandaloneProperties standaloneProperties = new StandaloneProperties();
 	private AutoCloseable mocks;
 
 	@BeforeEach
@@ -49,7 +50,6 @@ class StandaloneSettingsLoaderTest {
 	@AfterEach
 	void teardown() throws Exception {
 		mocks.close();
-		System.clearProperty("spring.boot.ls.project.dir");
 	}
 
 	// -----------------------------------------------------------------------
@@ -160,28 +160,28 @@ class StandaloneSettingsLoaderTest {
 
 	@Test
 	void noProjectDirProperty_doesNotFireConfigChange() {
-		System.clearProperty("spring.boot.ls.project.dir");
-		new StandaloneSettingsLoader(settingsStore).afterSingletonsInstantiated();
+		standaloneProperties.setProjectDir(null);
+		new StandaloneSettingsLoader(settingsStore, standaloneProperties).afterSingletonsInstantiated();
 		verify(settingsStore, never()).update(any());
 	}
 
 	@Test
 	void noSettingsFiles_doesNotFireConfigChange() {
-		System.setProperty("spring.boot.ls.project.dir", projectDir.toString());
-		new StandaloneSettingsLoader(settingsStore).afterSingletonsInstantiated();
+		standaloneProperties.setProjectDir(projectDir.toString());
+		new StandaloneSettingsLoader(settingsStore, standaloneProperties).afterSingletonsInstantiated();
 		verify(settingsStore, never()).update(any());
 	}
 
 	@Test
 	void onlyJsonFile_firesWithJsonSettings() throws IOException {
-		System.setProperty("spring.boot.ls.project.dir", projectDir.toString());
+		standaloneProperties.setProjectDir(projectDir.toString());
 		writeClaudeFile("spring-tools.json", """
 				{
 				  "boot-java": { "validation": { "java": { "boot2": "OFF" } } }
 				}
 				""");
 
-		new StandaloneSettingsLoader(settingsStore).afterSingletonsInstantiated();
+		new StandaloneSettingsLoader(settingsStore, standaloneProperties).afterSingletonsInstantiated();
 
 		JsonObject settings = captureSettings();
 		assertThat(settings
@@ -194,12 +194,12 @@ class StandaloneSettingsLoaderTest {
 
 	@Test
 	void onlyPropertiesFile_firesWithConvertedSettings() throws IOException {
-		System.setProperty("spring.boot.ls.project.dir", projectDir.toString());
+		standaloneProperties.setProjectDir(projectDir.toString());
 		writeClaudeFile("spring-tools.properties",
 				"boot-java.validation.java.boot2=OFF\n" +
 				"spring-boot.ls.problem.boot2.JAVA_PUBLIC_BEAN_METHOD=IGNORE\n");
 
-		new StandaloneSettingsLoader(settingsStore).afterSingletonsInstantiated();
+		new StandaloneSettingsLoader(settingsStore, standaloneProperties).afterSingletonsInstantiated();
 
 		JsonObject settings = captureSettings();
 		assertThat(settings
@@ -219,7 +219,7 @@ class StandaloneSettingsLoaderTest {
 
 	@Test
 	void propertiesFileWithComments_ignoresCommentLines() throws IOException {
-		System.setProperty("spring.boot.ls.project.dir", projectDir.toString());
+		standaloneProperties.setProjectDir(projectDir.toString());
 		writeClaudeFile("spring-tools.properties",
 				"# This is a comment\n" +
 				"boot-java.validation.java.boot2=OFF\n" +
@@ -227,7 +227,7 @@ class StandaloneSettingsLoaderTest {
 				"# Another comment\n" +
 				"boot-java.validation.spel.on=ON\n");
 
-		new StandaloneSettingsLoader(settingsStore).afterSingletonsInstantiated();
+		new StandaloneSettingsLoader(settingsStore, standaloneProperties).afterSingletonsInstantiated();
 
 		JsonObject settings = captureSettings();
 		JsonObject validation = settings.getAsJsonObject("boot-java").getAsJsonObject("validation");
@@ -237,7 +237,7 @@ class StandaloneSettingsLoaderTest {
 
 	@Test
 	void bothFiles_mergedOnce_jsonOverridesProperties() throws IOException {
-		System.setProperty("spring.boot.ls.project.dir", projectDir.toString());
+		standaloneProperties.setProjectDir(projectDir.toString());
 		// properties: boot2=ON (will be overridden) and spel=ON (only in properties)
 		writeClaudeFile("spring-tools.properties",
 				"boot-java.validation.java.boot2=ON\n" +
@@ -247,7 +247,7 @@ class StandaloneSettingsLoaderTest {
 				{ "boot-java": { "validation": { "java": { "boot2": "OFF" } } } }
 				""");
 
-		new StandaloneSettingsLoader(settingsStore).afterSingletonsInstantiated();
+		new StandaloneSettingsLoader(settingsStore, standaloneProperties).afterSingletonsInstantiated();
 
 		// didChangeConfiguration must be called exactly once (merged, not twice)
 		JsonObject settings = captureSettings();
@@ -260,17 +260,17 @@ class StandaloneSettingsLoaderTest {
 
 	@Test
 	void invalidJsonFile_doesNotFireConfigChange() throws IOException {
-		System.setProperty("spring.boot.ls.project.dir", projectDir.toString());
+		standaloneProperties.setProjectDir(projectDir.toString());
 		writeClaudeFile("spring-tools.json", "not { valid } json");
-		new StandaloneSettingsLoader(settingsStore).afterSingletonsInstantiated();
+		new StandaloneSettingsLoader(settingsStore, standaloneProperties).afterSingletonsInstantiated();
 		verify(settingsStore, never()).update(any());
 	}
 
 	@Test
 	void jsonFileWithNonObjectTopLevel_doesNotFireConfigChange() throws IOException {
-		System.setProperty("spring.boot.ls.project.dir", projectDir.toString());
+		standaloneProperties.setProjectDir(projectDir.toString());
 		writeClaudeFile("spring-tools.json", "[1, 2, 3]");
-		new StandaloneSettingsLoader(settingsStore).afterSingletonsInstantiated();
+		new StandaloneSettingsLoader(settingsStore, standaloneProperties).afterSingletonsInstantiated();
 		verify(settingsStore, never()).update(any());
 	}
 
