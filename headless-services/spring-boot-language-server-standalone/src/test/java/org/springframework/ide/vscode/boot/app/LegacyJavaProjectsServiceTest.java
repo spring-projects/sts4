@@ -47,7 +47,7 @@ class LegacyJavaProjectsServiceTest {
 		when(workspaceService.getFileObserver()).thenReturn(new BasicFileObserver());
 		when(server.getWorkspaceService()).thenReturn(workspaceService);
 		when(server.getDiagnosticService()).thenReturn(mock(DiagnosticService.class));
-		service = new LegacyJavaProjectsService(server);
+		service = new LegacyJavaProjectsService(server, new StandaloneProperties());
 	}
 
 	@Test
