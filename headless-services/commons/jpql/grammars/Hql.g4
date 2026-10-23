@@ -111,6 +111,7 @@ joinSpecifier
 
 fromRoot
 	: entityName variable?
+	| setReturningFunction variable?
 	| LATERAL? '(' subquery ')' variable?
 	;
 
@@ -120,7 +121,13 @@ join
 
 joinTarget
 	: path variable?                        # JoinPath
+	| setReturningFunction variable?        # JoinFunction
 	| LATERAL? '(' subquery ')' variable?   # JoinSubquery
+	;
+
+// Set-returning functions (Hibernate 7), e.g. generate_series(1, 10)
+setReturningFunction
+	: functionName '(' functionArguments? ')'
 	;
 
 // https://docs.jboss.org/hibernate/orm/6.1/userguide/html_single/Hibernate_User_Guide.html#hql-update

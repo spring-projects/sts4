@@ -140,6 +140,50 @@ public class QueryReconcilerTest {
 		editor.assertProblems();
 	}
 
+	// https://github.com/spring-projects/spring-tools/issues/2059
+	@Test
+	void noErrorsForSetReturningFunctionInFromClause() throws Exception {
+		String source = """
+				package example.demo;
+
+				import org.springframework.data.jpa.repository.Query;
+				import org.springframework.data.repository.Repository;
+				import org.springframework.data.repository.query.Param;
+
+				public interface JpaFunctionRepository extends Repository<Object, Integer> {
+
+					@Query(" SELECT a FROM generate_series(CAST(:min AS INTEGER), CAST(:max AS INTEGER)) a ")
+					List<Integer> generateSeries(@Param("min") Integer min, @Param("max") Integer max);
+
+				}
+				""";
+		String docUri = directory.toPath().resolve("src/main/java/example/demo/JpaFunctionRepository.java").toUri()
+				.toString();
+		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
+		editor.assertProblems();
+	}
+
+	@Test
+	void noErrorsForSetReturningFunctionWithJoinInFromClause() throws Exception {
+		String source = """
+				package example.demo;
+
+				import org.springframework.data.jpa.repository.Query;
+				import org.springframework.data.repository.Repository;
+
+				public interface JpaFunctionRepository extends Repository<Object, Integer> {
+
+					@Query("SELECT o FROM Owner o JOIN generate_series(1, 10) n ON o.id = n")
+					List<Object> ownersInSeries();
+
+				}
+				""";
+		String docUri = directory.toPath().resolve("src/main/java/example/demo/JpaFunctionRepository.java").toUri()
+				.toString();
+		Editor editor = harness.newEditor(LanguageId.JAVA, source, docUri);
+		editor.assertProblems();
+	}
+
 	@Test
 	void errorReported_1() throws Exception {
 		String source = """
