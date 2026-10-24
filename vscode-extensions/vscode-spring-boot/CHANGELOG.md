@@ -2,6 +2,7 @@
 
 #### all fixes and improvements in detail
 
+* _(Spring Boot)_ Set-Returning Functions not supported (Hibernate 7) [#2059](https://github.com/spring-projects/spring-tools/issues/2059)
 * _(Spring Boot)_ integrate feature flags [#2058](https://github.com/spring-projects/spring-tools/issues/2058)
 * _(Spring Boot)_ add validation for `@ModelAttribute` attribute (against type instead of param name) [#2054](https://github.com/spring-projects/spring-tools/issues/2054)
 * _(Spring Boot)_ Structure view baseline history fills with identical snapshots when many projects share one git repository [#2021](https://github.com/spring-projects/spring-tools/issues/2021)
