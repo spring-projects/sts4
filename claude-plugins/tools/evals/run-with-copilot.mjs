@@ -28,13 +28,14 @@ import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { PLUGIN_DIR, MCP_SERVER_NAME, parseFrontMatter } from '../lib/plugin-config.mjs';
-import { copilotAgentId, toolGradePasses } from '../lib/eval-grading.mjs';
+import { combineToolTraces, copilotAgentId, toolGradePasses } from '../lib/eval-grading.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, '..', '..', '..');
 const pluginDir = join(repoRoot, PLUGIN_DIR);
 const evalsDir = join(pluginDir, 'evals');
 const fixture = join(repoRoot, 'headless-services/spring-boot-language-server/src/test/resources/test-projects/sf7-validation');
+const mcpToolNames = new Set(JSON.parse(readFileSync(join(evalsDir, 'mocks', MCP_SERVER_NAME, '_tools.json'), 'utf8')).tools.map(({ name }) => name));
 
 const args = process.argv.slice(2);
 const only = valueOf('--case');
@@ -176,12 +177,10 @@ try {
         const agent = agentGrader ? copilotAgentId(agentGrader.input_match) : undefined;
 
         const { answer, stderr, status } = runCopilot({ prompt: testCase.prompt, plugin, workspace, logs, agent });
+        const mockTrace = readFileSync(tracePath, 'utf8').split('\n').filter(Boolean)
+            .map((line) => JSON.parse(line));
         const trace = [
-            ...logTrace(logs),
-            // The mock server sees the MCP calls even when the debug log misses one.
-            ...readFileSync(tracePath, 'utf8').split('\n').filter(Boolean)
-                .map((line) => JSON.parse(line))
-                .map((entry) => ({ ...entry, tool: `${MCP_SERVER_NAME}-${entry.tool}` })),
+            ...combineToolTraces(logTrace(logs), mockTrace, mcpToolNames),
             ...(agent ? [{ tool: 'agent', input: JSON.stringify({ agent }) }] : []),
         ];
         writeFileSync(join(caseRoot, 'answer.txt'), answer);
