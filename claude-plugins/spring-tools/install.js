@@ -180,6 +180,12 @@ function urlToOptions(target) {
     };
 }
 
+function createTunnelAgent(socket) {
+    const agent = new https.Agent({ keepAlive: false });
+    agent.createConnection = () => socket;
+    return agent;
+}
+
 /** GET with redirects, host allow-list and proxy support; resolves with a 200 response stream. */
 async function get(url, redirectCount = 0) {
     const target = assertAllowedUrl(url);
@@ -188,7 +194,7 @@ async function get(url, redirectCount = 0) {
     let request;
     if (proxy && target.protocol === 'https:') {
         const socket = await connectThroughProxy(proxy, target);
-        request = https.request({ ...urlToOptions(target), headers, agent: false, createConnection: () => socket });
+        request = https.request({ ...urlToOptions(target), headers, agent: createTunnelAgent(socket) });
     } else if (proxy) {
         const auth = proxyAuthHeader(proxy);
         request = http.request({
@@ -272,11 +278,31 @@ async function acquireLock(lockPath) {
             }
         }
         try {
-            if (Date.now() - fs.statSync(lockPath).mtimeMs > LOCK_STALE_MS) {
+            const lock = fs.statSync(lockPath);
+            const ownerPid = Number(fs.readFileSync(lockPath, 'utf8').trim().split(/\s+/, 1)[0]);
+            const hasOwnerPid = Number.isSafeInteger(ownerPid) && ownerPid > 0;
+            let ownerAlive = false;
+            if (hasOwnerPid) {
+                try {
+                    process.kill(ownerPid, 0);
+                    ownerAlive = true;
+                } catch (ownerError) {
+                    if (ownerError.code === 'EPERM') {
+                        ownerAlive = true;
+                    } else if (ownerError.code !== 'ESRCH') {
+                        throw ownerError;
+                    }
+                }
+            }
+            if ((hasOwnerPid && !ownerAlive) || Date.now() - lock.mtimeMs > LOCK_STALE_MS) {
                 fs.unlinkSync(lockPath);
                 continue;
             }
-        } catch { /* lock vanished between the checks */ }
+        } catch (lockError) {
+            if (lockError.code !== 'ENOENT') {
+                throw lockError;
+            }
+        }
         if (Date.now() - started > LOCK_WAIT_MAX_MS) {
             throw new Error(`Gave up waiting for another installer holding ${lockPath}`);
         }
@@ -416,4 +442,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { JAR_NAME, DEFAULT_DOWNLOAD_BASE, downloadUrls, assertAllowedUrl, proxyFor, hostMatchesNoProxy, ensureJar, pluginVersion, defaultInstallDir, parseArgs, findSourceRoot };
+module.exports = { JAR_NAME, DEFAULT_DOWNLOAD_BASE, downloadUrls, assertAllowedUrl, proxyFor, hostMatchesNoProxy, ensureJar, pluginVersion, defaultInstallDir, parseArgs, findSourceRoot, createTunnelAgent };

@@ -20,13 +20,13 @@ import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { after, before, beforeEach, test } from 'node:test';
+import { after, afterEach, before, beforeEach, test } from 'node:test';
 
 const require = createRequire(import.meta.url);
 const here = dirname(fileURLToPath(import.meta.url));
 const pluginRoot = join(here, '..', '..', 'spring-tools');
 const installer = require(join(pluginRoot, 'install.js'));
-const { JAR_NAME, ensureJar, downloadUrls, assertAllowedUrl, proxyFor, hostMatchesNoProxy, pluginVersion, defaultInstallDir, parseArgs } = installer;
+const { JAR_NAME, ensureJar, downloadUrls, assertAllowedUrl, proxyFor, hostMatchesNoProxy, pluginVersion, defaultInstallDir, parseArgs, createTunnelAgent } = installer;
 
 const version = pluginVersion(pluginRoot);
 // Download-failure tests must not resolve the build fallback against this file's own checkout
@@ -118,6 +118,13 @@ beforeEach(() => {
     state.mode = 'ok';
     state.requests = [];
     dest = mkdtempSync(join(tmpdir(), 'spring-tools-install-'));
+});
+
+afterEach(() => {
+    if (dest) {
+        rmSync(dest, { recursive: true, force: true });
+        dest = undefined;
+    }
 });
 
 const leftovers = () => readdirSync(dest).filter((n) => n !== JAR_NAME);
@@ -278,9 +285,29 @@ test('proxy selection follows HTTPS_PROXY, ALL_PROXY and NO_PROXY like curl', ()
     assert.equal(hostMatchesNoProxy('cdn.spring.io', 'notspring.io'), false);
 });
 
+test('HTTPS requests reuse the established CONNECT tunnel', () => {
+    const socket = {};
+    const agent = createTunnelAgent(socket);
+    assert.strictEqual(agent.createConnection({}), socket);
+    agent.destroy();
+});
+
+test('recovers immediately when the installer that owns the lock has exited', async (t) => {
+    if (skipWithoutLoopback(t)) return;
+    const exited = spawnSync(process.execPath, ['-e', 'process.stdout.write(String(process.pid))'], { encoding: 'utf8' });
+    assert.equal(exited.status, 0, exited.stderr);
+    const deadPid = Number(exited.stdout);
+    assert.ok(Number.isSafeInteger(deadPid) && deadPid > 0);
+
+    const lockPath = join(dest, `${JAR_NAME}.lock`);
+    writeFileSync(lockPath, `${deadPid} ${new Date().toISOString()}\n`);
+    const result = await ensureJar({ pluginRoot, dest, log: quiet });
+
+    assert.equal(result.status, 'downloaded');
+    assert.ok(readFileSync(result.jarPath).equals(jarBytes));
+    assert.deepEqual(leftovers(), []);
+});
+
 after(() => {
-    for (const dir of readdirSync(tmpdir()).filter((n) => n.startsWith('spring-tools-install-'))) {
-        rmSync(join(tmpdir(), dir), { recursive: true, force: true });
-    }
     rmSync(isolatedRoot, { recursive: true, force: true });
 });

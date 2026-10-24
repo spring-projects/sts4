@@ -35,7 +35,7 @@ const SERVER_INSTRUCTIONS = [
     'getProjectDiagnostics reports Spring-specific problems with a code such as JAVA_PUBLIC_BEAN_METHOD; every code has a fix playbook. Use the quickfix skill when available, or read the matching explanations/<CODE>.md file, then validate the project with the validate skill or getProjectDiagnostics.',
     'Bean wiring: getBeanDetails, findBeansByType, getBeanUsageInfo. Endpoints: getRequestMappings, findRequestMappingsByMethod. Build facts: getSpringBootVersion, getJavaVersion, getResolvedProjectClasspath.',
     'Architecture: getLogicalStructure, getStereotypesList, findComponentsByStereotype and the logical-structure baseline tools. Spring versions and support: getReleases, getGenerations, getUpcomingReleases, getLatestReleaseInformation.',
-    'For guidance, use the matching Spring Tools skill when available: architecture and structure, beans, endpoints, project-info, or spring-versions.',
+    'For guidance, use the quickfix or validate Spring Tools skill when available.',
     'The server watches the workspace directory, so edits, new files and new projects are picked up within a second without any notification; call fileChanged/fileDeleted only when a change might have been missed and refreshWorkspace when the index looks stale (e.g. after a large git checkout).',
 ].join(' ');
 

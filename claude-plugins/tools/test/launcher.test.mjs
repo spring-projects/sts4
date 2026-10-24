@@ -116,7 +116,7 @@ test('server instructions name entry-point tools, use host-neutral skill guidanc
         assert.ok(SERVER_INSTRUCTIONS.includes(tool), `${tool} should be mentioned`);
     }
     // Each host-neutral skill name must map to an installed skill in this package.
-    for (const skill of ['quickfix', 'validate', 'architecture', 'beans', 'endpoints', 'project-info', 'spring-versions']) {
+    for (const skill of ['quickfix', 'validate']) {
         assert.ok(existsSync(join(pluginRoot, 'skills', skill, 'SKILL.md')), `skill ${skill} referenced by the instructions is missing`);
     }
     assert.ok(SERVER_INSTRUCTIONS.includes('watches'), 'clients should know they need not notify the server about every edit');
