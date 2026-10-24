@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 
 import {
+    checkEvals,
     HOOK_SERVER,
     PLUGIN_DIR,
     SCOPED_TOOL_PREFIX,
@@ -65,6 +66,13 @@ test('every skill has a SKILL.md whose name matches its directory and whose tool
         assert.ok(existsSync(file), `${dirName} has no SKILL.md`);
         assert.deepEqual(checkSkill(dirName, readFileSync(file, 'utf8'), tools, skillNames), [], dirName);
     }
+});
+
+test('every MCP tool has positive behavioral eval coverage', () => {
+    const agentNames = readdirSync(join(pluginDir, 'agents'))
+        .filter((file) => file.endsWith('.md'))
+        .map((file) => file.replace(/\.md$/, ''));
+    assert.deepEqual(checkEvals(join(pluginDir, 'evals'), tools, skillNames, agentNames), []);
 });
 
 test('the quickfix skill reads explanations by diagnostic code and may look up the Spring Boot version', () => {

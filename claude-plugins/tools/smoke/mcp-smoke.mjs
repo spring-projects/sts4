@@ -66,6 +66,31 @@ const check = (cond, label) => {
     console.log(`${cond ? 'PASS' : 'FAIL'} ${label}`);
 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const childPids = (parentPid) => {
+    try {
+        return execFileSync('pgrep', ['-P', String(parentPid)], { encoding: 'utf8' })
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean)
+            .map(Number);
+    } catch (error) {
+        if (error.status === 1) {
+            return [];
+        }
+        throw error;
+    }
+};
+const isProcessAlive = (pid) => {
+    try {
+        process.kill(pid, 0);
+        return true;
+    } catch (error) {
+        if (error.code === 'ESRCH') {
+            return false;
+        }
+        throw error;
+    }
+};
 
 const child = spawn(process.execPath, [join(pluginDir, 'launcher.js')], {
     env: { ...process.env, CLAUDE_PROJECT_DIR: workspace, CLAUDE_PLUGIN_DATA: dataDir, CLAUDE_PLUGIN_ROOT: pluginDir },
@@ -240,23 +265,19 @@ try {
     check(false, error.message);
 } finally {
     const killed = Date.now();
+    const serverPids = process.platform === 'win32' ? [] : childPids(child.pid);
     child.kill('SIGTERM');
     if (process.platform !== 'win32') {
         // The JVM must not outlive the launcher; graceful shutdown takes about a second.
-        let alive = '';
+        let alive = serverPids.filter(isProcessAlive);
         for (let i = 0; i < 30; i++) {
-            try {
-                alive = execFileSync('pgrep', ['-f', '[s]pring-boot-language-server-standalone-exec.jar'], { encoding: 'utf8' }).trim();
-            } catch (error) {
-                if (error.status === 1) alive = '';
-                else throw error;
-            }
-            if (!alive) break;
+            alive = alive.filter(isProcessAlive);
+            if (alive.length === 0) break;
             await sleep(1000);
         }
-        check(alive === '', `no orphaned JVM after SIGTERM to the launcher (${Date.now() - killed} ms${alive ? `, survivors: ${alive}` : ''})`);
-        if (alive) {
-            try { execFileSync('pkill', ['-f', '[s]pring-boot-language-server-standalone-exec.jar']); } catch { /* the process may have exited between the check and cleanup */ }
+        check(alive.length === 0, `no orphaned JVM after SIGTERM to the launcher (${Date.now() - killed} ms${alive.length ? `, survivors: ${alive.join(', ')}` : ''})`);
+        for (const pid of alive) {
+            process.kill(pid, 'SIGKILL');
         }
     }
     const failed = results.filter((r) => !r).length;
